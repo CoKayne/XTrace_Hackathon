@@ -14,10 +14,14 @@ const scanCopy = [
 ];
 
 const dealDirectory = [
-  { name: "Asteria Bio", meta: "AI diagnostics · Series A", status: "Decision delta", tone: "signal" },
-  { name: "Northstar Robotics", meta: "Industrial automation · Seed", status: "Watching", tone: "neutral" },
-  { name: "Arcspan Energy", meta: "Grid software · Series B", status: "Evaluating", tone: "neutral" },
-  { name: "Harbor AI", meta: "Security infrastructure · Seed", status: "Passed", tone: "neutral" },
+  { name: "Asteria Bio", meta: "AI diagnostics · Series A", status: "Passed · revisit", tone: "signal", memories: 14, tags: ["healthcare", "diagnostics", "ai", "regulatory"] },
+  { name: "Northstar Robotics", meta: "Automotive automation · Seed", status: "Watching", tone: "neutral", memories: 31, tags: ["automotive", "汽車", "manufacturing", "robotics", "chassis"] },
+  { name: "Arcspan Energy", meta: "Grid & battery software · Series B", status: "Evaluating", tone: "neutral", memories: 18, tags: ["energy", "battery", "電池", "electric vehicle", "ev", "automotive"] },
+  { name: "Harbor AI", meta: "Security infrastructure · Seed", status: "Passed", tone: "neutral", memories: 22, tags: ["security", "infrastructure", "ai"] },
+  { name: "Cinder Systems", meta: "Developer tools · Series A", status: "Invested", tone: "invested", memories: 47, tags: ["developer tools", "software", "infrastructure"] },
+  { name: "Torque Materials", meta: "EV battery materials · Series A", status: "Interested", tone: "interested", memories: 19, tags: ["automotive", "汽車", "electric vehicle", "ev", "battery", "電池", "materials"] },
+  { name: "VectorForge", meta: "Lightweight vehicle chassis · Seed", status: "Interested", tone: "interested", memories: 11, tags: ["automotive", "汽車", "chassis", "車架", "manufacturing", "materials"] },
+  { name: "CombustionX", meta: "Next-gen powertrain · Series B", status: "Passed", tone: "neutral", memories: 26, tags: ["automotive", "汽車", "engine", "引擎", "powertrain", "mobility"] },
 ];
 
 const detailTabs: Array<{ id: DetailTab; label: string; count?: string }> = [
@@ -29,28 +33,45 @@ const detailTabs: Array<{ id: DetailTab; label: string; count?: string }> = [
 ];
 
 const marketSignals = [
-  { title: "FDA pilots accelerated review for AI-enabled diagnostics", category: "Regulatory", scope: "Watchlist", deals: "1 deal", confidence: "High", sources: "2 primary", time: "2h ago", tone: "signal" },
-  { title: "Enterprise inference prices fall across major cloud providers", category: "Technology", scope: "Global", deals: "3 deals", confidence: "High", sources: "3 sources", time: "6h ago", tone: "neutral" },
-  { title: "Hospital IT budgets shift toward clinical automation", category: "Demand", scope: "Watchlist", deals: "2 deals", confidence: "Medium", sources: "1 source", time: "1d ago", tone: "neutral" },
-  { title: "Series A median valuations hold flat in vertical AI", category: "Funding", scope: "Global", deals: "4 deals", confidence: "Medium", sources: "2 sources", time: "2d ago", tone: "neutral" },
+  { title: "FDA pilots accelerated review for AI-enabled diagnostics", category: "Regulatory", scope: "Watchlist", deals: "1 deal", confidence: "High", sources: "Federal Register + FDA", time: "2h ago", tone: "signal" },
+  { title: "Enterprise inference prices fall across major cloud providers", category: "Technology", scope: "Global", deals: "3 deals", confidence: "High", sources: "AWS · Google · Azure", time: "6h ago", tone: "neutral" },
+  { title: "Hospital IT budgets shift toward clinical automation", category: "Demand", scope: "Watchlist", deals: "2 deals", confidence: "Medium", sources: "HIMSS survey", time: "1d ago", tone: "neutral" },
+  { title: "Series A median valuations hold flat in vertical AI", category: "Funding", scope: "Global", deals: "4 deals", confidence: "Medium", sources: "PitchBook + SEC", time: "2d ago", tone: "neutral" },
 ];
 
 const workspaceDeals = [
   { name: "Asteria Bio", sector: "AI diagnostics", stage: "Series A", status: "Passed", owner: "KM", last: "8 mo", memories: "14", coverage: 96, alert: "1 new" },
+  { name: "Torque Materials", sector: "EV battery materials", stage: "Series A", status: "Interested", owner: "KM", last: "12d", memories: "19", coverage: 94, alert: "—" },
   { name: "Northstar Robotics", sector: "Industrial automation", stage: "Seed", status: "Watching", owner: "JL", last: "42d", memories: "31", coverage: 100, alert: "—" },
+  { name: "VectorForge", sector: "Vehicle chassis", stage: "Seed", status: "Interested", owner: "AP", last: "18d", memories: "11", coverage: 91, alert: "—" },
   { name: "Arcspan Energy", sector: "Grid software", stage: "Series B", status: "Evaluating", owner: "KM", last: "5d", memories: "18", coverage: 92, alert: "—" },
   { name: "Harbor AI", sector: "Security infrastructure", stage: "Seed", status: "Passed", owner: "AP", last: "4 mo", memories: "22", coverage: 88, alert: "—" },
   { name: "Cinder Systems", sector: "Developer tools", stage: "Series A", status: "Invested", owner: "JL", last: "8d", memories: "47", coverage: 100, alert: "—" },
 ];
 
 const pipelineDeals = [
-  { name: "Arcspan Energy", sector: "Grid software", stage: "IC", owner: "KM", last: "Today", next: "Partner references", amount: "$8.0M", score: "82" },
-  { name: "Northstar Robotics", sector: "Industrial automation", stage: "Diligence", owner: "JL", last: "Yesterday", next: "Technical deep dive", amount: "$4.5M", score: "76" },
-  { name: "Morrow Health", sector: "Care operations", stage: "First meeting", owner: "AP", last: "Jul 20", next: "Founder follow-up", amount: "$3.0M", score: "68" },
-  { name: "Cobalt Security", sector: "Identity infrastructure", stage: "New", owner: "JL", last: "Jul 19", next: "Triage inbound", amount: "$2.5M", score: "—" },
-  { name: "Fathom Materials", sector: "Advanced materials", stage: "Diligence", owner: "KM", last: "Jul 18", next: "Customer calls", amount: "$6.0M", score: "71" },
-  { name: "Cinder Systems", sector: "Developer tools", stage: "Closing", owner: "JL", last: "Jul 17", next: "Finalize allocation", amount: "$5.0M", score: "88" },
+  { name: "Arcspan Energy", sector: "Grid software", stage: "IC", owner: "KM", last: "Today", next: "Partner references", amount: "$8.0M", factors: "4 positive" },
+  { name: "Northstar Robotics", sector: "Industrial automation", stage: "Diligence", owner: "JL", last: "Yesterday", next: "Technical deep dive", amount: "$4.5M", factors: "3 positive" },
+  { name: "Morrow Health", sector: "Care operations", stage: "First meeting", owner: "AP", last: "Jul 20", next: "Founder follow-up", amount: "$3.0M", factors: "2 positive" },
+  { name: "Cobalt Security", sector: "Identity infrastructure", stage: "New", owner: "JL", last: "Jul 19", next: "Triage inbound", amount: "$2.5M", factors: "Not assessed" },
+  { name: "Fathom Materials", sector: "Advanced materials", stage: "Diligence", owner: "KM", last: "Jul 18", next: "Customer calls", amount: "$6.0M", factors: "3 positive" },
+  { name: "Cinder Systems", sector: "Developer tools", stage: "Closing", owner: "JL", last: "Jul 17", next: "Finalize allocation", amount: "$5.0M", factors: "5 positive" },
 ];
+
+function matchesDealSearch(deal: (typeof dealDirectory)[number], rawQuery: string) {
+  const query = rawQuery.trim().toLowerCase();
+  if (!query) return true;
+  const directText = `${deal.name} ${deal.meta} ${deal.status} ${deal.tags.join(" ")}`.toLowerCase();
+  if (directText.includes(query)) return true;
+
+  const semanticGroups = [
+    { aliases: ["automotive", "car", "cars", "vehicle", "vehicles", "mobility", "汽車", "汽車業", "車用", "電動車"], concepts: ["automotive", "汽車", "engine", "引擎", "chassis", "車架", "battery", "電池", "ev", "electric vehicle", "mobility", "powertrain"] },
+    { aliases: ["healthcare", "health", "醫療", "生技"], concepts: ["healthcare", "diagnostics", "clinical", "hospital", "biotech"] },
+    { aliases: ["enterprise software", "software", "saas", "軟體"], concepts: ["software", "developer tools", "infrastructure", "security", "ai"] },
+  ];
+  const group = semanticGroups.find(({ aliases }) => aliases.some((alias) => query.includes(alias) || alias.includes(query)));
+  return group ? group.concepts.some((concept) => directText.includes(concept)) : directText.split(/\s+/).some((term) => term.startsWith(query));
+}
 
 const portfolioCompanies = [
   { name: "Cinder Systems", sector: "Developer tools", owner: "JL", value: "$18.4M", multiple: "2.3×", runway: "21 mo", health: "On plan", next: "Board · Aug 04" },
@@ -71,8 +92,11 @@ export default function Home() {
   const [reviewed, setReviewed] = useState(false);
   const [signalFilter, setSignalFilter] = useState("All");
   const [pipelineFilter, setPipelineFilter] = useState("All");
+  const [batchReview, setBatchReview] = useState<"idle" | "running" | "complete">("idle");
+  const [batchCompanies, setBatchCompanies] = useState(0);
   const [toast, setToast] = useState("");
   const timers = useRef<number[]>([]);
+  const searchResults = dealDirectory.filter((deal) => matchesDealSearch(deal, searchQuery));
 
   const clearTimers = () => {
     timers.current.forEach((timer) => window.clearTimeout(timer));
@@ -122,6 +146,19 @@ export default function Home() {
   function notify(message: string) {
     setToast(message);
     timers.current.push(window.setTimeout(() => setToast(""), 3200));
+  }
+
+  function startBatchReassessment() {
+    const count = searchResults.length;
+    setBatchCompanies(count);
+    setBatchReview("running");
+    setPanel(null);
+    setView("deals");
+    setToast(`RE-EVALUATING ${count} COMPANIES AGAINST NEW INFORMATION`);
+    timers.current.push(window.setTimeout(() => {
+      setBatchReview("complete");
+      setToast("RE-EVALUATION COMPLETE · 2 COMPANIES REQUIRE REVIEW");
+    }, 2400), window.setTimeout(() => setToast(""), 5600));
   }
 
   function scrollToDetails(tab: DetailTab = "overview") {
@@ -307,10 +344,10 @@ export default function Home() {
                     </div>
                     <h3>FDA pilots accelerated review for AI-enabled diagnostics</h3>
                     <div className="confidence-row">
-                      <div className="confidence-ring"><span>91%</span></div>
+                      <div className="confidence-ring"><span>High</span></div>
                       <div>
-                        <strong>High confidence match</strong>
-                        <p>Regulatory language and sector threshold both satisfied.</p>
+                        <strong>Revisit condition matched</strong>
+                        <p>Exact condition, relevant sector, and primary-source evidence are all present.</p>
                       </div>
                     </div>
                     <button className="evidence-pill live-evidence" onClick={() => setPanel("evidence")}>
@@ -369,6 +406,13 @@ export default function Home() {
                 <div className="context-stat"><span>DEAL OWNER</span><strong>KM</strong></div>
                 <button className="agenda-button" onClick={() => notify("ASTERIA BIO ADDED TO MONDAY IC AGENDA")}>+ Add to IC agenda</button>
               </div>
+              <div className="record-lineage" aria-label="Company profile sources">
+                <strong>COMPANY PROFILE SOURCES</strong>
+                <button onClick={() => notify("SOURCE OPENED · ASTERIA BIO OFFICIAL WEBSITE")}>Official website</button>
+                <button onClick={() => notify("SOURCE OPENED · FOUNDER DECK · JUL 15")}>Founder deck · Jul 15</button>
+                <button onClick={() => notify("SOURCE OPENED · CRM COMPANY RECORD")}>CRM company record</button>
+                <span>Profile verified Jul 21, 2026</span>
+              </div>
 
               <div className="detail-tabs" role="tablist" aria-label="Company intelligence">
                 {detailTabs.map((tab) => (
@@ -387,17 +431,18 @@ export default function Home() {
               <div className="detail-panel" role="tabpanel">
                 {detailTab === "overview" && (
                   <div className="overview-layout">
-                    <div className="conviction-card">
-                      <div className="panel-label"><span>RE-ENTRY CONVICTION</span><small>Evidence weighted</small></div>
-                      <div className="conviction-score"><strong>78</strong><span>/100</span><i>+17</i></div>
-                      <p>Regulatory risk moved materially. Traction remains strong; entry price is the main open concern.</p>
-                      <div className="score-bars">
+                    <div className="conviction-card potential-card">
+                      <div className="panel-label"><span>INVESTMENT POTENTIAL</span><small>Evidence, not a score</small></div>
+                      <div className="potential-count"><strong>4</strong><span>positive factors</span></div>
+                      <p>Observable changes that strengthen the investment case. Partners retain the decision.</p>
+                      <div className="potential-factors">
                         {[
-                          ["Team", 86], ["Market", 82], ["Product", 76], ["Traction", 88], ["Price", 64], ["Regulatory", 75],
-                        ].map(([label, score]) => (
-                          <div className="score-row" key={label as string}>
-                            <span>{label}</span><i><b style={{ width: `${score}%` }} /></i><strong>{score}</strong>
-                          </div>
+                          ["Regulatory path", "Original blocker materially changed"],
+                          ["Commercial traction", "$2.4M ARR · +38% QoQ"],
+                          ["Customer validation", "9 hospital pilots · 67% conversion"],
+                          ["Market timing", "Hospital automation budgets expanding"],
+                        ].map(([label, evidence]) => (
+                          <div key={label}><span>✓</span><p><strong>{label}</strong><small>{evidence}</small></p></div>
                         ))}
                       </div>
                     </div>
@@ -435,6 +480,7 @@ export default function Home() {
                       <div className="fit-row"><span>↗</span><div><strong>1 channel synergy</strong><small>Meridian Health has 43 target hospital relationships</small></div></div>
                       <div className="fit-row"><span>○</span><div><strong>Exposure remains balanced</strong><small>Healthcare represents 16% of current fund NAV</small></div></div>
                     </div>
+                    <div className="source-footer">Sources: official website · founder deck · CRM interactions · Federal Register · company KPI update <span>Every displayed fact retains source lineage</span></div>
                   </div>
                 )}
 
@@ -513,7 +559,7 @@ export default function Home() {
                       {[
                         ["JUL 21, 2026", "Decision delta detected", "Market signal matched the team’s documented revisit condition.", "live"],
                         ["NOV 18, 2025", "Investment committee passed", "Regulatory pathway was the decisive unresolved risk.", ""],
-                        ["NOV 12, 2025", "Partner meeting", "Team conviction was strong; pricing and FDA path remained open.", ""],
+                        ["NOV 12, 2025", "Partner meeting", "Team interest was strong; pricing and FDA path remained open.", ""],
                         ["OCT 29, 2025", "Founder introduction", "Inbound from Meridian Health CEO; initial product demo completed.", ""],
                       ].map(([date, title, copy, tone]) => (
                         <article className={tone} key={date}>
@@ -552,11 +598,11 @@ export default function Home() {
                 <span>{pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).length} visible · Updated 12 min ago</span>
               </div>
               <div className="data-table pipeline-table" role="table" aria-label="Deal pipeline">
-                <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Owner</span><span>Last activity</span><span>Next action</span><span>Target check</span><span>Score</span></div>
+                <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Owner</span><span>Last activity</span><span>Next action</span><span>Target check</span><span>Potential factors</span></div>
                 {pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).map((deal) => (
                   <button className="data-row" role="row" key={deal.name} onClick={() => notify(`${deal.name.toUpperCase()} · DEAL WORKSPACE OPENED`)}>
                     <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong><small>{deal.sector}</small></span></span>
-                    <span><em className={`stage-${deal.stage.toLowerCase().replace(" ", "-")}`}>{deal.stage}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><strong>{deal.next}</strong></span><span>{deal.amount}</span><span className="score-cell">{deal.score} <i>→</i></span>
+                    <span><em className={`stage-${deal.stage.toLowerCase().replace(" ", "-")}`}>{deal.stage}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><strong>{deal.next}</strong></span><span>{deal.amount}</span><span className="potential-cell">{deal.factors} <i>→</i></span>
                   </button>
                 ))}
               </div>
@@ -627,25 +673,27 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="view-footnote"><span>Source policy</span><p>Only medium- and high-confidence events enter deal matching. Failed sources remain visible and never silently disappear from coverage.</p><button onClick={() => notify("SOURCE POLICY · AUDIT LOG OPENED")}>View audit log →</button></div>
+              <div className="view-footnote"><span>Public-source ledger</span><p>Federal Register, FDA, SEC EDGAR, AWS, Google Cloud, Microsoft Azure, HIMSS, and PitchBook. Each signal preserves the original URL, publisher, publication date, and retrieval time.</p><button onClick={() => notify("PUBLIC SOURCE LEDGER OPENED")}>Inspect all sources →</button></div>
             </section>
           )}
 
           {view === "deals" && (
             <section className="workspace-view" aria-labelledby="deals-title">
               <div className="view-heading">
-                <div><p className="eyebrow">INSTITUTIONAL MEMORY</p><h1 id="deals-title">Deal memory</h1><p>Every decision, interaction, concern, and revisit condition—searchable across the fund.</p></div>
-                <button className="secondary-button view-action" onClick={() => setPanel("search")}>Search in natural language</button>
+                <div><p className="eyebrow">INSTITUTIONAL MEMORY</p><h1 id="deals-title">Deal memory</h1><p>Fuzzy-search every invested, interested, active, watched, and passed company stored in fund memory.</p></div>
+                <button className="secondary-button view-action" onClick={() => setPanel("search")}>Fuzzy-search companies</button>
               </div>
 
+              {batchReview !== "idle" && <div className={`batch-review-banner ${batchReview}`}><span>{batchReview === "running" ? "↻" : "✓"}</span><div><strong>{batchReview === "running" ? `Re-evaluating ${batchCompanies} related companies` : "Cross-company re-evaluation complete"}</strong><small>{batchReview === "running" ? "Comparing all stored memories with verified information collected since each last review." : "2 companies have new evidence that may strengthen the investment case."}</small></div><button disabled={batchReview === "running"} onClick={() => { if (batchReview === "complete") openAsteria(); }}>{batchReview === "running" ? "Running…" : "Review changes →"}</button></div>}
+
               <section className="memory-kpis">
-                <article><span>COMPANIES</span><strong>12</strong><small>Across 4 statuses</small></article>
+                <article><span>COMPANIES</span><strong>12</strong><small>Invested · interested · active · passed</small></article>
                 <article><span>VERIFIED MEMORIES</span><strong>486</strong><small>171 facts · 92 artifacts · 223 episodes</small></article>
                 <article><span>SYNC COVERAGE</span><strong>96%</strong><small>1 interaction needs retry</small></article>
                 <article><span>OLDEST OPEN LOOP</span><strong>8 mo</strong><small>Asteria Bio · now triggered</small></article>
               </section>
 
-              <div className="table-toolbar"><div className="filter-group"><button className="active">All deals</button><button>Evaluating</button><button>Watching</button><button>Passed</button><button>Invested</button></div><span>Sorted by last interaction</span></div>
+              <div className="table-toolbar"><div className="filter-group"><button className="active">All companies</button><button>Invested</button><button>Interested</button><button>Evaluating</button><button>Watching</button><button>Passed</button></div><span>Sorted by last interaction</span></div>
               <div className="data-table deal-table" role="table" aria-label="Deal memory directory">
                 <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Status</span><span>Owner</span><span>Last touch</span><span>Memory coverage</span><span>Alert</span></div>
                 {workspaceDeals.map((deal) => (
@@ -671,7 +719,7 @@ export default function Home() {
                   <span className="new-badge">NEW · DECISION DELTA</span>
                   <h2>Asteria Bio deserves partner review.</h2>
                   <p>A regulatory change directly addresses the uncertainty behind the November pass. Includes current traction, deal economics, portfolio fit, and three remaining diligence risks.</p>
-                  <div><span>91% confidence</span><span>6 sources</span><span>3 open risks</span><span>Owner · KM</span></div>
+                  <div><span>Revisit condition matched</span><span>6 sources</span><span>4 positive factors</span><span>3 open risks</span><span>Owner · KM</span></div>
                   <button className="primary-button" onClick={() => setPanel("brief")}>Open partner brief <span>→</span></button>
                 </div>
                 <div className="report-preview" aria-hidden="true"><span>VSEE</span><h3>Decision delta<br />Asteria Bio</h3><i /><p>THEN → NOW → NEXT MOVE</p><small>JUL 22 · FUND II</small></div>
@@ -700,26 +748,29 @@ export default function Home() {
             <button className="drawer-close" onClick={() => setPanel(null)} aria-label="Close panel">×</button>
             {panel === "search" ? (
               <>
-                <p className="drawer-overline">DEAL MEMORY / NATURAL LANGUAGE SEARCH</p>
-                <h2 id="drawer-title">Find any decision your fund has made.</h2>
-                <p className="drawer-lede">Search company names, founder conversations, concerns, metrics, or the conditions that would change your mind.</p>
+                <p className="drawer-overline">DEAL MEMORY / INDUSTRY-AWARE SEARCH</p>
+                <h2 id="drawer-title">Find every related company in fund memory.</h2>
+                <p className="drawer-lede">Search by company, industry, value-chain component, concern, or thesis. Results include invested, interested, active, watched, and passed companies.</p>
                 <label className="search-field">
                   <span>⌕</span>
-                  <input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Try “diagnostics with regulatory risk”" />
+                  <input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Try “汽車業”, “automotive”, or “healthcare”" />
                   <kbd>ESC</kbd>
                 </label>
-                <div className="search-suggestions"><span>TRY</span><button onClick={() => setSearchQuery("passed because of regulatory risk")}>Regulatory risk</button><button onClick={() => setSearchQuery("healthcare Series A")}>Healthcare Series A</button></div>
+                <div className="search-suggestions"><span>TRY</span><button onClick={() => setSearchQuery("汽車業")}>汽車業</button><button onClick={() => setSearchQuery("healthcare")}>Healthcare</button><button onClick={() => setSearchQuery("developer tools")}>Developer tools</button></div>
+                {searchQuery && <div className="semantic-scope"><span>RELATED INDUSTRY SCOPE</span><p>{searchQuery.toLowerCase().includes("汽車") || searchQuery.toLowerCase().includes("auto") ? "Automotive · engines · chassis · batteries · EV infrastructure · manufacturing automation" : "Company descriptions, industry tags, interaction summaries, decisions, and source-linked memories"}</p></div>}
                 <div className="deal-results">
-                  {dealDirectory.filter((deal) => `${deal.name} ${deal.meta} ${deal.status}`.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery).map((deal, index) => (
+                  {searchResults.map((deal) => (
                     <button key={deal.name} onClick={deal.name === "Asteria Bio" ? openAsteria : () => notify(`${deal.name.toUpperCase()} · MEMORY OPENED`)}>
                       <span className="result-monogram">{deal.name.charAt(0)}</span>
-                      <span><strong>{deal.name}</strong><small>{deal.meta}</small></span>
+                      <span><strong>{deal.name}</strong><small>{deal.meta} · {deal.memories} memories</small></span>
                       <em className={deal.tone}>{deal.status}</em>
                       <i>→</i>
                     </button>
                   ))}
+                  {searchResults.length === 0 && <div className="no-results"><strong>No related companies found</strong><small>Try a broader industry, component, concern, or thesis keyword.</small></div>}
                 </div>
-                <p className="search-footnote">12 deals · 486 memories · Facts, artifacts, and episodes searched together</p>
+                {searchResults.length > 0 && <button className="batch-review-button" onClick={startBatchReassessment}><span>↻</span><span><strong>Re-evaluate all {searchResults.length} companies</strong><small>Use every verified public signal and stored memory collected since the last review</small></span><i>→</i></button>}
+                <p className="search-footnote">{searchResults.length} companies found · All statuses included · Facts, artifacts, episodes, and industry relationships searched together</p>
               </>
             ) : panel === "evidence" ? (
               <>
@@ -735,7 +786,7 @@ export default function Home() {
                       <small>#fact_7A21 · Confirmed Nov 18, 2025 · Exact lineage</small>
                     </div>
                   </div>
-                  <div className="chain-connector"><span>CAUSAL OVERLAP · 94%</span></div>
+                  <div className="chain-connector"><span>REVISIT CONDITION MATCHED</span></div>
                   <div className="chain-item live">
                     <span className="chain-number">02</span>
                     <div>
@@ -746,7 +797,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="model-note">
-                  <span>MODEL ASSESSMENT</span>
+                  <span>EVIDENCE ASSESSMENT</span>
                   <p>The event does not guarantee approval. It removes the precise regulatory uncertainty documented in the original pass decision, making a fresh diligence call actionable.</p>
                 </div>
                 <button className="drawer-primary" onClick={() => setPanel("brief")}>Turn evidence into partner brief →</button>
@@ -761,8 +812,8 @@ export default function Home() {
                   <div className="brief-meta"><span>SUBJECT</span><strong>Decision delta detected · Asteria Bio</strong></div>
                   <div className="brief-body">
                     <p><strong>What changed</strong><br />A new accelerated review pilot directly addresses the FDA-pathway uncertainty behind our November pass.</p>
-                    <p><strong>Why now</strong><br />The revisit condition recorded by the deal team is now materially satisfied with 91% confidence.</p>
-                    <div className="brief-facts"><span><small>ARR</small>$2.4M</span><span><small>QOQ GROWTH</small>+38%</span><span><small>PRE-MONEY</small>$48M</span><span><small>CONVICTION</small>78/100</span></div>
+                    <p><strong>Why now</strong><br />The revisit condition recorded by the deal team is materially satisfied by current primary-source evidence.</p>
+                    <div className="brief-facts"><span><small>ARR</small>$2.4M</span><span><small>QOQ GROWTH</small>+38%</span><span><small>PRE-MONEY</small>$48M</span><span><small>UPSIDE FACTORS</small>4 verified</span></div>
                     <p><strong>Remaining risk</strong><br />Clinical evidence is still narrow and the round does not yet have a committed lead.</p>
                     <p><strong>Recommended action</strong><br />Schedule a 30-minute re-evaluation with the original deal team this week.</p>
                   </div>
