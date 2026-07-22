@@ -269,18 +269,16 @@ export default function Home() {
             <div>
               <p className="eyebrow">FUND II · OPERATING OVERVIEW</p>
               <h1 id="hero-title">Good morning, Kayne.</h1>
-              <p className="subline">Your Wednesday brief: one decision change needs review, two diligence items are due, and IC has one company on the agenda.</p>
+              <p className="subline">1 decision change needs review. 2 diligence items are due.</p>
             </div>
             <div className="heading-actions">
               <span>WEDNESDAY · JUL 22, 2026</span>
-              <button onClick={() => navigateProduct("pipeline")}>View deal pipeline</button>
             </div>
           </section>
 
           <section className="kpi-grid" aria-label="Workspace health">
             <article><span>ACTIVE PIPELINE</span><strong>$29M</strong><small>6 opportunities</small></article>
-            <article><span>IC THIS WEEK</span><strong>1</strong><small>Arcspan Energy</small></article>
-            <article><span>MEMORY COVERAGE</span><strong>96%</strong><small>188 verified memories</small></article>
+            <article><span>IC AGENDA</span><strong>1</strong><small>Arcspan Energy</small></article>
             <article><span>PARTNER REVIEW</span><strong className="signal">{reviewed ? "0" : "1"}</strong><small>{reviewed ? "All caught up" : "Decision delta"}</small></article>
           </section>
 
@@ -328,11 +326,6 @@ export default function Home() {
                             <div><strong>{item.title}</strong><p>{item.detail}</p>{status === "complete" && <small>{item.result}</small>}</div>
                           </div>;
                         })}
-                      </div>
-                      <div className="thinking-metrics">
-                        <span><small>SOURCES</small><strong>{scanStep === 0 ? "4 searching" : "6 verified"}</strong></span>
-                        <span><small>MEMORY SCOPE</small><strong>{analysisMemoryCount} records</strong></span>
-                        <span><small>DECISION DELTAS</small><strong>{scanStep < 2 ? "Evaluating" : "1 candidate"}</strong></span>
                       </div>
                     </div>
                   )}
@@ -432,24 +425,14 @@ export default function Home() {
               </article>
             )}
 
-            <div className="ticker" aria-label="Monitored deals">
-              <strong>MONITORING</strong>
-              <span className={scanState === "matched" ? "hot" : ""}><i /> Asteria Bio</span>
-              <span><i /> Northstar Robotics</span>
-              <span><i /> Arcspan Energy</span>
-              <span><i /> Harbor AI</span>
-              <small>VSEE MEMORY + VERIFIED MARKET SOURCES</small>
-            </div>
           </section>
-
-          <div className="source-notice"><span>!</span><p><strong>Crunchbase enrichment is delayed.</strong> Market analysis completed with Federal Register, SEC, and configured RSS sources.</p><button onClick={() => navigateProduct("signals")}>View source health</button></div>
 
           {scanState === "matched" && analysisMode === "global" && (
             <section className="deal-intelligence" id="deal-intelligence" aria-labelledby="deal-room-title">
               <div className="section-heading">
                 <div>
                   <p className="eyebrow">PARTNER DECISION ROOM</p>
-                  <h2 id="deal-room-title">Everything that matters before the second meeting.</h2>
+                  <h2 id="deal-room-title">Asteria Bio · decision-ready view</h2>
                 </div>
                 <div className="freshness">
                   <span className="system-dot" />
@@ -464,15 +447,12 @@ export default function Home() {
                 </div>
                 <div className="context-stat"><span>STAGE</span><strong>Series A</strong></div>
                 <div className="context-stat"><span>RAISING</span><strong>$12M</strong></div>
-                <div className="context-stat"><span>LAST TOUCH</span><strong>8 mo ago</strong></div>
                 <div className="context-stat"><span>DEAL OWNER</span><strong>KM</strong></div>
                 <button className={`agenda-button ${inAgenda ? "added" : ""}`} onClick={() => { setInAgenda(!inAgenda); notify(inAgenda ? "ASTERIA BIO REMOVED FROM IC AGENDA" : "ASTERIA BIO ADDED TO MONDAY IC AGENDA"); }}>{inAgenda ? "✓ On IC agenda" : "+ Add to IC agenda"}</button>
               </div>
               <div className="record-lineage" aria-label="Company profile sources">
-                <strong>COMPANY PROFILE SOURCES</strong>
-                <button onClick={() => { setDrawerContext("Asteria Bio · Official website"); setPanel("sources"); }}>Official website</button>
-                <button onClick={() => { setDrawerContext("Asteria Bio · Founder deck · Jul 15"); setPanel("sources"); }}>Founder deck · Jul 15</button>
-                <button onClick={() => { setDrawerContext("Asteria Bio · CRM company record"); setPanel("sources"); }}>CRM company record</button>
+                <strong>PROFILE VERIFIED · 3 SOURCES</strong>
+                <button onClick={() => { setDrawerContext("Asteria Bio · Company profile sources"); setPanel("sources"); }}>View source lineage →</button>
                 <span>Profile verified Jul 21, 2026</span>
               </div>
 
@@ -493,22 +473,6 @@ export default function Home() {
               <div className="detail-panel" role="tabpanel">
                 {detailTab === "overview" && (
                   <div className="overview-layout">
-                    <div className="conviction-card potential-card">
-                      <div className="panel-label"><span>INVESTMENT POTENTIAL</span><small>Evidence, not a score</small></div>
-                      <div className="potential-count"><strong>4</strong><span>positive factors</span></div>
-                      <p>Observable changes that strengthen the investment case. Partners retain the decision.</p>
-                      <div className="potential-factors">
-                        {[
-                          ["Regulatory path", "Original blocker materially changed"],
-                          ["Commercial traction", "$2.4M ARR · +38% QoQ"],
-                          ["Customer validation", "9 hospital pilots · 67% conversion"],
-                          ["Market timing", "Hospital automation budgets expanding"],
-                        ].map(([label, evidence]) => (
-                          <div key={label}><span>✓</span><p><strong>{label}</strong><small>{evidence}</small></p></div>
-                        ))}
-                      </div>
-                    </div>
-
                     <div className="snapshot-grid">
                       <article className="snapshot-card signal-card">
                         <span>WHY NOW</span>
@@ -534,13 +498,6 @@ export default function Home() {
                         <p>Clinical evidence depth, customer concentration, and lead-investor timing.</p>
                         <button onClick={() => setDetailTab("risks")}>Review diligence gaps →</button>
                       </article>
-                    </div>
-
-                    <div className="fund-fit">
-                      <div className="panel-label"><span>FUND FIT</span><small>Conflict check complete</small></div>
-                      <div className="fit-row positive"><span>✓</span><div><strong>No direct conflict</strong><small>0 overlapping diagnostic products across 24 active investments</small></div></div>
-                      <div className="fit-row"><span>↗</span><div><strong>1 channel synergy</strong><small>Meridian Health has 43 target hospital relationships</small></div></div>
-                      <div className="fit-row"><span>○</span><div><strong>Exposure remains balanced</strong><small>Healthcare represents 16% of current fund NAV</small></div></div>
                     </div>
                     <div className="source-footer">Sources: official website · founder deck · CRM interactions · Federal Register · company KPI update <span>Every displayed fact retains source lineage</span></div>
                   </div>
@@ -630,7 +587,7 @@ export default function Home() {
                       ))}
                     </div>
                     <div className="memory-summary">
-                      <div className="panel-label"><span>MEMORY COVERAGE</span><small>Exact lineage</small></div>
+                      <div className="panel-label"><span>CAPTURED DEAL HISTORY</span><small>Source-linked</small></div>
                       <strong>14</strong><span>verified memories</span>
                       <ul><li>6 facts</li><li>3 artifacts</li><li>5 episodes</li></ul>
                       <button onClick={() => setPanel("search")}>Search all deal memory →</button>
@@ -648,12 +605,6 @@ export default function Home() {
                 <div><p className="eyebrow">DEAL FLOW</p><h1 id="pipeline-title">Deal pipeline</h1><p>Track every opportunity from first touch through investment committee and close.</p></div>
                 <button className="primary-button view-action" onClick={() => setPanel("newDeal")}>+ Add company</button>
               </div>
-
-              <section className="pipeline-summary" aria-label="Pipeline summary">
-                {[
-                  ["New", "1", "$2.5M"], ["First meeting", "1", "$3.0M"], ["Diligence", "2", "$10.5M"], ["IC", "1", "$8.0M"], ["Closing", "1", "$5.0M"],
-                ].map(([stage, count, value]) => <button key={stage} className={pipelineFilter === stage ? "active" : ""} onClick={() => setPipelineFilter(pipelineFilter === stage ? "All" : stage)}><span>{stage}</span><strong>{count}</strong><small>{value} target</small><i /></button>)}
-              </section>
 
               <div className="table-toolbar">
                 <div className="filter-group">{["All", "New", "First meeting", "Diligence", "IC", "Closing"].map((filter) => <button key={filter} className={pipelineFilter === filter ? "active" : ""} onClick={() => setPipelineFilter(filter)}>{filter}</button>)}</div>
@@ -703,7 +654,7 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="view-footnote"><span>Public-source ledger</span><p>Federal Register, FDA, SEC EDGAR, AWS, Google Cloud, Microsoft Azure, HIMSS, and PitchBook. Each signal preserves the original URL, publisher, publication date, and retrieval time.</p><button onClick={() => { setDrawerContext("Public-source ledger"); setPanel("sources"); }}>Inspect all sources →</button></div>
+              <div className="view-footnote"><span>Source lineage</span><p>Every signal retains its publisher, date, and original URL.</p><button onClick={() => { setDrawerContext("Public-source ledger"); setPanel("sources"); }}>Inspect sources →</button></div>
             </section>
           )}
 
@@ -714,18 +665,17 @@ export default function Home() {
                 <button className="secondary-button view-action" onClick={() => setPanel("search")}>Fuzzy-search companies</button>
               </div>
 
-              {batchReview === "complete" && <div className="batch-review-banner complete"><span>✓</span><div><strong>{batchCompanies}-company re-evaluation complete</strong><small>The radar analyzed only the selected companies and preserved the result in the activity log.</small></div><button onClick={() => { setView("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review scan →</button></div>}
+              {batchReview === "complete" && <div className="batch-review-banner complete"><span>✓</span><div><strong>{batchCompanies}-company re-evaluation complete</strong><small>Only the selected companies were analyzed.</small></div><button onClick={() => { setView("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review analysis →</button></div>}
 
               <section className="memory-kpis">
                 <article><span>COMPANIES</span><strong>8</strong><small>Invested · interested · active · passed</small></article>
                 <article><span>VERIFIED MEMORIES</span><strong>188</strong><small>71 facts · 42 artifacts · 75 episodes</small></article>
-                <article><span>SYNC COVERAGE</span><strong>96%</strong><small>1 interaction needs retry</small></article>
-                <article><span>OLDEST OPEN LOOP</span><strong>8 mo</strong><small>Asteria Bio · now triggered</small></article>
+                <article><span>MEMORY COMPLETENESS</span><strong>96%</strong><small>Deal interactions captured</small></article>
               </section>
 
               <div className="table-toolbar"><div className="filter-group">{["All", "Invested", "Interested", "Evaluating", "Watching", "Passed"].map((filter) => <button key={filter} className={dealFilter === filter ? "active" : ""} onClick={() => setDealFilter(filter)}>{filter === "All" ? "All companies" : filter}</button>)}</div><span>{filteredWorkspaceDeals.length} companies · Sorted by last interaction</span></div>
               <div className="data-table deal-table" role="table" aria-label="Deal memory directory">
-                <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Status</span><span>Owner</span><span>Last touch</span><span>Memory coverage</span><span>Alert</span></div>
+                <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Status</span><span>Owner</span><span>Last touch</span><span>Captured history</span><span>Alert</span></div>
                 {filteredWorkspaceDeals.map((deal) => (
                   <button className={`data-row ${deal.alert !== "—" ? "signal" : ""}`} role="row" key={deal.name} onClick={deal.name === "Asteria Bio" ? openAsteria : () => { setSearchQuery(deal.name); setPanel("search"); }}>
                     <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong><small>{deal.sector}</small></span></span>
@@ -749,10 +699,9 @@ export default function Home() {
                   <span className="new-badge">NEW · DECISION DELTA</span>
                   <h2>Asteria Bio deserves partner review.</h2>
                   <p>A regulatory change directly addresses the uncertainty behind the November pass. Includes current traction, deal economics, fund fit, and three remaining diligence risks.</p>
-                  <div><span>Revisit condition matched</span><span>6 sources</span><span>4 positive factors</span><span>3 open risks</span><span>Owner · KM</span></div>
+                  <div><span>Revisit condition matched</span><span>6 sources</span><span>3 open risks</span></div>
                   <button className="primary-button" onClick={() => setPanel("brief")}>Open partner brief <span>→</span></button>
                 </div>
-                <div className="report-preview" aria-hidden="true"><span>VSEE</span><h3>Decision delta<br />Asteria Bio</h3><i /><p>THEN → NOW → NEXT MOVE</p><small>JUL 22 · FUND II</small></div>
               </div>
 
               <div className="reports-section-heading"><h2>Recent reports</h2><span>Showing 4 of 18</span></div>
@@ -803,8 +752,8 @@ export default function Home() {
                   ))}
                   {searchResults.length === 0 && <div className="no-results"><strong>No related companies found</strong><small>Try a broader industry, component, concern, or thesis keyword.</small></div>}
                 </div>
-                {searchResults.length > 0 && <button className="batch-review-button" disabled={!selectedCompanies.length} onClick={startBatchReassessment}><span>↻</span><span><strong>{selectedCompanies.length ? `Re-evaluate ${selectedCompanies.length} selected ${selectedCompanies.length === 1 ? "company" : "companies"}` : "Select companies to re-evaluate"}</strong><small>Rerun the radar only against the selected companies and their stored memories</small></span><i>→</i></button>}
-                <p className="search-footnote">{searchResults.length} companies found · All statuses included · Facts, artifacts, episodes, and industry relationships searched together</p>
+                {searchResults.length > 0 && <button className="batch-review-button" disabled={!selectedCompanies.length} onClick={startBatchReassessment}><span>↻</span><span><strong>{selectedCompanies.length ? `Re-evaluate ${selectedCompanies.length} selected ${selectedCompanies.length === 1 ? "company" : "companies"}` : "Select companies to re-evaluate"}</strong><small>Analyze only the selected companies and their stored memories</small></span><i>→</i></button>}
+                <p className="search-footnote">{searchResults.length} companies found · All statuses included</p>
               </>
             ) : panel === "help" ? (
               <>
