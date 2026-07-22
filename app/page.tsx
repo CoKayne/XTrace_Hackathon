@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 type ScanState = "idle" | "scanning" | "matched";
-type Panel = "evidence" | "brief" | "search" | null;
+type Panel = "evidence" | "brief" | "search" | "help" | "notifications" | "sources" | "activity" | "newDeal" | null;
 type DetailTab = "overview" | "traction" | "deal" | "risks" | "history";
-type AppView = "overview" | "pipeline" | "portfolio" | "signals" | "deals" | "reports";
+type AppView = "overview" | "pipeline" | "signals" | "deals" | "reports";
 
 const scanCopy = [
   "Acquiring verified market signals",
-  "Sweeping 486 decision memories",
+  "Sweeping 188 decision memories",
   "Testing 12 documented revisit conditions",
 ];
 
@@ -47,6 +47,7 @@ const workspaceDeals = [
   { name: "Arcspan Energy", sector: "Grid software", stage: "Series B", status: "Evaluating", owner: "KM", last: "5d", memories: "18", coverage: 92, alert: "—" },
   { name: "Harbor AI", sector: "Security infrastructure", stage: "Seed", status: "Passed", owner: "AP", last: "4 mo", memories: "22", coverage: 88, alert: "—" },
   { name: "Cinder Systems", sector: "Developer tools", stage: "Series A", status: "Invested", owner: "JL", last: "8d", memories: "47", coverage: 100, alert: "—" },
+  { name: "CombustionX", sector: "Next-gen powertrain", stage: "Series B", status: "Passed", owner: "AP", last: "3 mo", memories: "26", coverage: 97, alert: "—" },
 ];
 
 const pipelineDeals = [
@@ -73,14 +74,6 @@ function matchesDealSearch(deal: (typeof dealDirectory)[number], rawQuery: strin
   return group ? group.concepts.some((concept) => directText.includes(concept)) : directText.split(/\s+/).some((term) => term.startsWith(query));
 }
 
-const portfolioCompanies = [
-  { name: "Cinder Systems", sector: "Developer tools", owner: "JL", value: "$18.4M", multiple: "2.3×", runway: "21 mo", health: "On plan", next: "Board · Aug 04" },
-  { name: "Kestrel Cloud", sector: "Cloud infrastructure", owner: "KM", value: "$14.1M", multiple: "1.8×", runway: "14 mo", health: "Watch", next: "Renewal · Aug 12" },
-  { name: "Meridian Care", sector: "Healthcare services", owner: "AP", value: "$11.7M", multiple: "1.5×", runway: "19 mo", health: "On plan", next: "Board · Aug 18" },
-  { name: "Relay Commerce", sector: "B2B commerce", owner: "JL", value: "$9.6M", multiple: "1.2×", runway: "9 mo", health: "Attention", next: "Cash plan · Jul 29" },
-  { name: "Orbit Ledger", sector: "Fintech infrastructure", owner: "KM", value: "$8.9M", multiple: "1.6×", runway: "16 mo", health: "On plan", next: "KPI review · Aug 08" },
-];
-
 export default function Home() {
   const [view, setView] = useState<AppView>("overview");
   const [scanState, setScanState] = useState<ScanState>("matched");
@@ -92,11 +85,19 @@ export default function Home() {
   const [reviewed, setReviewed] = useState(false);
   const [signalFilter, setSignalFilter] = useState("All");
   const [pipelineFilter, setPipelineFilter] = useState("All");
+  const [dealFilter, setDealFilter] = useState("All");
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  const [analysisCompanies, setAnalysisCompanies] = useState<string[]>(dealDirectory.map((deal) => deal.name));
+  const [analysisMode, setAnalysisMode] = useState<"global" | "selected">("global");
+  const [inAgenda, setInAgenda] = useState(false);
+  const [drawerContext, setDrawerContext] = useState("");
   const [batchReview, setBatchReview] = useState<"idle" | "running" | "complete">("idle");
   const [batchCompanies, setBatchCompanies] = useState(0);
   const [toast, setToast] = useState("");
   const timers = useRef<number[]>([]);
   const searchResults = dealDirectory.filter((deal) => matchesDealSearch(deal, searchQuery));
+  const filteredWorkspaceDeals = workspaceDeals.filter((deal) => dealFilter === "All" || deal.status === dealFilter);
+  const analysisMemoryCount = analysisMode === "global" ? 188 : dealDirectory.filter((deal) => analysisCompanies.includes(deal.name)).reduce((sum, deal) => sum + deal.memories, 0);
 
   const clearTimers = () => {
     timers.current.forEach((timer) => window.clearTimeout(timer));
@@ -117,9 +118,18 @@ export default function Home() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  function runScan() {
+  function runScan(companies?: string[]) {
     if (scanState === "scanning") return;
     clearTimers();
+    const targets = companies?.length ? companies : dealDirectory.map((deal) => deal.name);
+    setAnalysisCompanies(targets);
+    setAnalysisMode(companies?.length ? "selected" : "global");
+    if (companies?.length) {
+      setBatchCompanies(companies.length);
+      setBatchReview("running");
+    } else {
+      setBatchReview("idle");
+    }
     setPanel(null);
     setToast("");
     setScanStep(0);
@@ -131,6 +141,7 @@ export default function Home() {
       window.setTimeout(() => {
         setScanStep(3);
         setScanState("matched");
+        if (companies?.length) setBatchReview("complete");
       }, 3400),
     );
   }
@@ -149,16 +160,40 @@ export default function Home() {
   }
 
   function startBatchReassessment() {
-    const count = searchResults.length;
-    setBatchCompanies(count);
-    setBatchReview("running");
-    setPanel(null);
-    setView("deals");
-    setToast(`RE-EVALUATING ${count} COMPANIES AGAINST NEW INFORMATION`);
-    timers.current.push(window.setTimeout(() => {
-      setBatchReview("complete");
-      setToast("RE-EVALUATION COMPLETE · 2 COMPANIES REQUIRE REVIEW");
-    }, 2400), window.setTimeout(() => setToast(""), 5600));
+    if (!selectedCompanies.length) return;
+    setView("overview");
+    runScan(selectedCompanies);
+  }
+
+  function toggleSelectedCompany(name: string) {
+    setSelectedCompanies((current) => current.includes(name) ? current.filter((company) => company !== name) : [...current, name]);
+  }
+
+  function openActivity(context: string) {
+    setDrawerContext(context);
+    setPanel("activity");
+  }
+
+  function exportMemoryCoverage() {
+    const rows = ["Company,Status,Owner,Memories,Coverage", ...workspaceDeals.map((deal) => `${deal.name},${deal.status},${deal.owner},${deal.memories},${deal.coverage}%`)];
+    const url = URL.createObjectURL(new Blob([rows.join("\n")], { type: "text/csv" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "vsee-memory-coverage.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+    notify("MEMORY COVERAGE CSV DOWNLOADED");
+  }
+
+  function exportActivityLog() {
+    const content = "VSee activity log\n14:34 — Evidence refreshed\n11:20 — Partner note added\nJul 21 — Company record verified\n";
+    const url = URL.createObjectURL(new Blob([content], { type: "text/plain" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "vsee-activity-log.txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+    notify("ACTIVITY LOG DOWNLOADED");
   }
 
   function scrollToDetails(tab: DetailTab = "overview") {
@@ -176,6 +211,9 @@ export default function Home() {
     clearTimers();
     setScanStep(3);
     setScanState("matched");
+    setAnalysisMode("global");
+    setAnalysisCompanies(dealDirectory.map((deal) => deal.name));
+    setBatchReview("idle");
     setView("overview");
     setPanel(null);
     window.setTimeout(() => document.querySelector(".match-card")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
@@ -191,8 +229,7 @@ export default function Home() {
         <p className="nav-section-label">WORKSPACE</p>
         <nav className="rail-nav" aria-label="Product areas">
           <button className={`rail-item ${view === "overview" ? "active" : ""}`} onClick={() => navigateProduct("overview")}><span>⌂</span><b>Overview</b>{!reviewed && <em>1</em>}</button>
-          <button className={`rail-item ${view === "pipeline" ? "active" : ""}`} onClick={() => navigateProduct("pipeline")}><span>▤</span><b>Deal pipeline</b><small>31</small></button>
-          <button className={`rail-item ${view === "portfolio" ? "active" : ""}`} onClick={() => navigateProduct("portfolio")}><span>◫</span><b>Portfolio</b><small>24</small></button>
+          <button className={`rail-item ${view === "pipeline" ? "active" : ""}`} onClick={() => navigateProduct("pipeline")}><span>▤</span><b>Deal pipeline</b><small>6</small></button>
         </nav>
         <p className="nav-section-label intelligence-label">INTELLIGENCE</p>
         <nav className="rail-nav" aria-label="Intelligence areas">
@@ -217,8 +254,8 @@ export default function Home() {
             <button className="memory-search" onClick={() => setPanel("search")} aria-label="Search deal memory">
               <span>⌕</span> Search companies, decisions, or concerns <kbd>⌘ K</kbd>
             </button>
-            <button className="utility-button" onClick={() => notify("HELP CENTER OPENED")} aria-label="Help">?</button>
-            <button className="utility-button notification-button" onClick={() => notify("1 UNREAD PARTNER REVIEW")} aria-label="Notifications">○<i /></button>
+            <button className="utility-button" onClick={() => setPanel("help")} aria-label="Help">?</button>
+            <button className="utility-button notification-button" onClick={() => setPanel("notifications")} aria-label="Notifications">○<i /></button>
             <button className={`scan-button ${scanState === "scanning" ? "scanning" : ""}`} onClick={() => { setView("overview"); runScan(); }} disabled={scanState === "scanning"}>
               <span className="button-dot" />
               {scanState === "scanning" ? "Analyzing…" : "+ New analysis"}
@@ -232,7 +269,7 @@ export default function Home() {
             <div>
               <p className="eyebrow">FUND II · OPERATING OVERVIEW</p>
               <h1 id="hero-title">Good morning, Kayne.</h1>
-              <p className="subline">Your Wednesday brief: one decision change needs review, two diligence items are due, and IC has four companies on the agenda.</p>
+              <p className="subline">Your Wednesday brief: one decision change needs review, two diligence items are due, and IC has one company on the agenda.</p>
             </div>
             <div className="heading-actions">
               <span>WEDNESDAY · JUL 22, 2026</span>
@@ -241,9 +278,9 @@ export default function Home() {
           </section>
 
           <section className="kpi-grid" aria-label="Workspace health">
-            <article><span>ACTIVE PIPELINE</span><strong>$62M</strong><small>31 opportunities</small></article>
-            <article><span>IC THIS WEEK</span><strong>4</strong><small>2 decision-ready</small></article>
-            <article><span>PORTFOLIO VALUE</span><strong>$148M</strong><small>1.7× gross MOIC</small></article>
+            <article><span>ACTIVE PIPELINE</span><strong>$29M</strong><small>6 opportunities</small></article>
+            <article><span>IC THIS WEEK</span><strong>1</strong><small>Arcspan Energy</small></article>
+            <article><span>MEMORY COVERAGE</span><strong>96%</strong><small>188 verified memories</small></article>
             <article><span>PARTNER REVIEW</span><strong className="signal">{reviewed ? "0" : "1"}</strong><small>{reviewed ? "All caught up" : "Decision delta"}</small></article>
           </section>
 
@@ -278,10 +315,10 @@ export default function Home() {
                 <div className="scan-copy">
                   {scanState === "idle" ? (
                     <>
-                      <p className="scan-overline">486 INVESTMENT MEMORIES ONLINE</p>
+                      <p className="scan-overline">188 INVESTMENT MEMORIES ONLINE</p>
                       <h2>Find the decision<br />the market just changed.</h2>
-                      <p>Twelve historical deals are ready to compare against today&apos;s verified market signals.</p>
-                      <button className="stage-cta" onClick={runScan}>Begin comparison <span>→</span></button>
+                      <p>Eight companies and 188 source-linked memories are ready to compare against today&apos;s verified market signals.</p>
+                      <button className="stage-cta" onClick={() => runScan()}>Begin comparison <span>→</span></button>
                     </>
                   ) : (
                     <>
@@ -289,8 +326,8 @@ export default function Home() {
                       <h2>{scanCopy[Math.min(scanStep, 2)]}</h2>
                       <div className="scan-live-metrics">
                         <span><i /> SOURCES <strong>{scanStep === 0 ? "04" : "06"}</strong></span>
-                        <span><i /> MEMORIES <strong>{scanStep < 2 ? "486" : "486/486"}</strong></span>
-                        <span><i /> MATCHES <strong>{scanStep < 2 ? "—" : "01"}</strong></span>
+                        <span><i /> MEMORIES <strong>{scanStep < 2 ? analysisMemoryCount : `${analysisMemoryCount}/${analysisMemoryCount}`}</strong></span>
+                        <span><i /> MATCHES <strong>{scanStep < 2 ? "—" : analysisMode === "selected" ? (analysisCompanies.some((name) => ["Asteria Bio", "Arcspan Energy"].includes(name)) ? "01" : "00") : "01"}</strong></span>
                       </div>
                       <div className="pipeline" aria-label="Analysis progress">
                         {scanCopy.map((step, index) => (
@@ -310,6 +347,27 @@ export default function Home() {
                   <span style={{ "--x": "12%", "--y": "78%", "--d": ".75s" } as CSSProperties}>Harbor AI</span>
                 </div>
               </div>
+            ) : analysisMode === "selected" ? (
+              <article className="batch-match-card">
+                <div className="batch-result-head">
+                  <span className="batch-result-icon">✓</span>
+                  <div><p>SELECTED-COMPANY RE-EVALUATION</p><h2>{analysisCompanies.length} companies scanned against new evidence</h2><small>{analysisMemoryCount} stored memories · 8 public sources · completed just now</small></div>
+                  <button onClick={() => { setSearchQuery(""); setPanel("search"); }}>Change selection</button>
+                </div>
+                <div className="batch-result-summary">
+                  <article><span>REVISIT CONDITIONS MET</span><strong>{analysisCompanies.some((name) => ["Asteria Bio", "Arcspan Energy"].includes(name)) ? "1" : "0"}</strong><small>Requires partner review</small></article>
+                  <article><span>NEW SUPPORTING FACTORS</span><strong>{Math.min(analysisCompanies.length + 1, 5)}</strong><small>Across selected companies</small></article>
+                  <article><span>NO MATERIAL CHANGE</span><strong>{Math.max(analysisCompanies.length - 1, 0)}</strong><small>Thesis remains unchanged</small></article>
+                </div>
+                <div className="batch-company-results">
+                  {analysisCompanies.map((name) => {
+                    const deal = dealDirectory.find((item) => item.name === name);
+                    const changed = ["Asteria Bio", "Arcspan Energy", "Torque Materials"].includes(name);
+                    return <button key={name} onClick={() => { setSearchQuery(name); setPanel("search"); }}><span className="result-monogram">{name.charAt(0)}</span><span><strong>{name}</strong><small>{deal?.meta} · {deal?.memories} memories checked</small></span><em className={changed ? "changed" : "stable"}>{changed ? "New evidence" : "No material change"}</em><i>→</i></button>;
+                  })}
+                </div>
+                <div className="batch-result-actions"><button className="secondary-button" onClick={() => { setSearchQuery(""); setPanel("search"); }}>Re-evaluate another set</button><button className="primary-button" onClick={() => navigateProduct("deals")}>Open Deal Memory <span>→</span></button></div>
+              </article>
             ) : (
               <article className="match-card">
                 <div className="match-flash" aria-hidden="true" />
@@ -395,7 +453,7 @@ export default function Home() {
 
           <div className="source-notice"><span>!</span><p><strong>Crunchbase enrichment is delayed.</strong> Market analysis completed with Federal Register, SEC, and configured RSS sources.</p><button onClick={() => navigateProduct("signals")}>View source health</button></div>
 
-          {scanState === "matched" && (
+          {scanState === "matched" && analysisMode === "global" && (
             <section className="deal-intelligence" id="deal-intelligence" aria-labelledby="deal-room-title">
               <div className="section-heading">
                 <div>
@@ -417,13 +475,13 @@ export default function Home() {
                 <div className="context-stat"><span>RAISING</span><strong>$12M</strong></div>
                 <div className="context-stat"><span>LAST TOUCH</span><strong>8 mo ago</strong></div>
                 <div className="context-stat"><span>DEAL OWNER</span><strong>KM</strong></div>
-                <button className="agenda-button" onClick={() => notify("ASTERIA BIO ADDED TO MONDAY IC AGENDA")}>+ Add to IC agenda</button>
+                <button className={`agenda-button ${inAgenda ? "added" : ""}`} onClick={() => { setInAgenda(!inAgenda); notify(inAgenda ? "ASTERIA BIO REMOVED FROM IC AGENDA" : "ASTERIA BIO ADDED TO MONDAY IC AGENDA"); }}>{inAgenda ? "✓ On IC agenda" : "+ Add to IC agenda"}</button>
               </div>
               <div className="record-lineage" aria-label="Company profile sources">
                 <strong>COMPANY PROFILE SOURCES</strong>
-                <button onClick={() => notify("SOURCE OPENED · ASTERIA BIO OFFICIAL WEBSITE")}>Official website</button>
-                <button onClick={() => notify("SOURCE OPENED · FOUNDER DECK · JUL 15")}>Founder deck · Jul 15</button>
-                <button onClick={() => notify("SOURCE OPENED · CRM COMPANY RECORD")}>CRM company record</button>
+                <button onClick={() => { setDrawerContext("Asteria Bio · Official website"); setPanel("sources"); }}>Official website</button>
+                <button onClick={() => { setDrawerContext("Asteria Bio · Founder deck · Jul 15"); setPanel("sources"); }}>Founder deck · Jul 15</button>
+                <button onClick={() => { setDrawerContext("Asteria Bio · CRM company record"); setPanel("sources"); }}>CRM company record</button>
                 <span>Profile verified Jul 21, 2026</span>
               </div>
 
@@ -487,8 +545,8 @@ export default function Home() {
                       </article>
                     </div>
 
-                    <div className="portfolio-fit">
-                      <div className="panel-label"><span>PORTFOLIO FIT</span><small>Conflict check complete</small></div>
+                    <div className="fund-fit">
+                      <div className="panel-label"><span>FUND FIT</span><small>Conflict check complete</small></div>
                       <div className="fit-row positive"><span>✓</span><div><strong>No direct conflict</strong><small>0 overlapping diagnostic products across 24 active investments</small></div></div>
                       <div className="fit-row"><span>↗</span><div><strong>1 channel synergy</strong><small>Meridian Health has 43 target hospital relationships</small></div></div>
                       <div className="fit-row"><span>○</span><div><strong>Exposure remains balanced</strong><small>Healthcare represents 16% of current fund NAV</small></div></div>
@@ -597,12 +655,12 @@ export default function Home() {
             <section className="workspace-view" aria-labelledby="pipeline-title">
               <div className="view-heading">
                 <div><p className="eyebrow">DEAL FLOW</p><h1 id="pipeline-title">Deal pipeline</h1><p>Track every opportunity from first touch through investment committee and close.</p></div>
-                <button className="primary-button view-action" onClick={() => notify("NEW DEAL WORKSPACE CREATED")}>+ Add company</button>
+                <button className="primary-button view-action" onClick={() => setPanel("newDeal")}>+ Add company</button>
               </div>
 
               <section className="pipeline-summary" aria-label="Pipeline summary">
                 {[
-                  ["New", "8", "$14M"], ["First meeting", "7", "$11M"], ["Diligence", "9", "$21M"], ["IC", "4", "$11M"], ["Closing", "3", "$5M"],
+                  ["New", "1", "$2.5M"], ["First meeting", "1", "$3.0M"], ["Diligence", "2", "$10.5M"], ["IC", "1", "$8.0M"], ["Closing", "1", "$5.0M"],
                 ].map(([stage, count, value]) => <button key={stage} className={pipelineFilter === stage ? "active" : ""} onClick={() => setPipelineFilter(pipelineFilter === stage ? "All" : stage)}><span>{stage}</span><strong>{count}</strong><small>{value} target</small><i /></button>)}
               </section>
 
@@ -613,52 +671,20 @@ export default function Home() {
               <div className="data-table pipeline-table" role="table" aria-label="Deal pipeline">
                 <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Owner</span><span>Last activity</span><span>Next action</span><span>Target check</span><span>Potential factors</span></div>
                 {pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).map((deal) => (
-                  <button className="data-row" role="row" key={deal.name} onClick={() => notify(`${deal.name.toUpperCase()} · DEAL WORKSPACE OPENED`)}>
+                  <button className="data-row" role="row" key={deal.name} onClick={() => openActivity(`${deal.name} · Deal workspace`)}>
                     <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong><small>{deal.sector}</small></span></span>
                     <span><em className={`stage-${deal.stage.toLowerCase().replace(" ", "-")}`}>{deal.stage}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><strong>{deal.next}</strong></span><span>{deal.amount}</span><span className="potential-cell">{deal.factors} <i>→</i></span>
                   </button>
                 ))}
               </div>
-              <div className="view-footnote"><span>Pipeline policy</span><p>Every stage change retains its owner, timestamp, decision rationale, and linked source artifacts.</p><button onClick={() => notify("PIPELINE AUDIT LOG OPENED")}>View activity log →</button></div>
-            </section>
-          )}
-
-          {view === "portfolio" && (
-            <section className="workspace-view" aria-labelledby="portfolio-title">
-              <div className="view-heading">
-                <div><p className="eyebrow">PORTFOLIO OPERATIONS</p><h1 id="portfolio-title">Portfolio</h1><p>Operating health, ownership, upcoming governance, and fund-level exposure in one view.</p></div>
-                <button className="secondary-button view-action" onClick={() => notify("PORTFOLIO REPORT PREPARED")}>Export quarterly view</button>
-              </div>
-
-              <section className="portfolio-kpis">
-                <article><span>FAIR VALUE</span><strong>$148.2M</strong><small>+$6.4M this quarter</small></article>
-                <article><span>GROSS MOIC</span><strong>1.7×</strong><small>Fund II · net 1.5×</small></article>
-                <article><span>MEDIAN RUNWAY</span><strong>16 mo</strong><small>2 companies below 12</small></article>
-                <article><span>FOLLOW-ON RESERVE</span><strong>$32.5M</strong><small>41% of remaining capital</small></article>
-              </section>
-
-              <div className="portfolio-briefing">
-                <article><span className="briefing-label">NEXT 30 DAYS</span><strong>5 board meetings</strong><p>Two require partner pre-reads; one portfolio company has a cash-plan review.</p><button onClick={() => notify("BOARD CALENDAR OPENED")}>Open governance calendar →</button></article>
-                <article><span className="briefing-label">ATTENTION REQUIRED</span><strong>Relay Commerce</strong><p>Runway is below ten months and Q2 net retention missed plan by 8 points.</p><button onClick={() => notify("RELAY COMMERCE WORKSPACE OPENED")}>Review operating plan →</button></article>
-                <article><span className="briefing-label">CONCENTRATION</span><strong>28% in healthcare</strong><p>Within mandate; two active healthcare deals would move exposure to 34%.</p><button onClick={() => notify("EXPOSURE MODEL OPENED")}>Model new investment →</button></article>
-              </div>
-
-              <div className="table-toolbar"><div className="filter-group"><button className="active">All companies</button><button>On plan</button><button>Watch</button><button>Attention</button></div><span>24 companies · Valuations as of Jun 30</span></div>
-              <div className="data-table portfolio-table" role="table" aria-label="Portfolio companies">
-                <div className="data-row table-head" role="row"><span>Company</span><span>Owner</span><span>Fair value</span><span>MOIC</span><span>Runway</span><span>Health</span><span>Next milestone</span></div>
-                {portfolioCompanies.map((company) => (
-                  <button className="data-row" role="row" key={company.name} onClick={() => notify(`${company.name.toUpperCase()} · PORTFOLIO WORKSPACE OPENED`)}>
-                    <span><span className="result-monogram">{company.name.charAt(0)}</span><span><strong>{company.name}</strong><small>{company.sector}</small></span></span><span>{company.owner}</span><span>{company.value}</span><span>{company.multiple}</span><span>{company.runway}</span><span><em className={`health-${company.health.toLowerCase().replace(" ", "-")}`}>{company.health}</em></span><span>{company.next} <i>→</i></span>
-                  </button>
-                ))}
-              </div>
+              <div className="view-footnote"><span>Pipeline policy</span><p>Every stage change retains its owner, timestamp, decision rationale, and linked source artifacts.</p><button onClick={() => { setDrawerContext("Pipeline activity log"); setPanel("activity"); }}>View activity log →</button></div>
             </section>
           )}
 
           {view === "signals" && (
             <section className="workspace-view" aria-labelledby="signals-title">
               <div className="view-heading">
-                <div><p className="eyebrow">MARKET INTELLIGENCE</p><h1 id="signals-title">Market signals</h1><p>Verified events prioritized by relevance to your active, passed, and portfolio deals.</p></div>
+                <div><p className="eyebrow">MARKET INTELLIGENCE</p><h1 id="signals-title">Market signals</h1><p>Verified events prioritized by relevance to invested, interested, active, watched, and passed companies.</p></div>
                 <button className="primary-button view-action" onClick={() => { setView("overview"); runScan(); }}>Run analysis <span>→</span></button>
               </div>
 
@@ -679,14 +705,14 @@ export default function Home() {
               <div className="data-table signal-table" role="table" aria-label="Market signals">
                 <div className="data-row table-head" role="row"><span>Signal</span><span>Scope</span><span>Deal impact</span><span>Confidence</span><span>Evidence</span><span>Observed</span></div>
                 {marketSignals.filter((signal) => signalFilter === "All" || signal.category === signalFilter).map((signal, index) => (
-                  <button className={`data-row ${signal.tone}`} role="row" key={signal.title} onClick={index === 0 ? openAsteria : () => notify("SIGNAL OPENED · NO HIGH-CONFIDENCE DEAL MATCH") }>
+                  <button className={`data-row ${signal.tone}`} role="row" key={signal.title} onClick={index === 0 ? openAsteria : () => { setDrawerContext(signal.title); setPanel("sources"); } }>
                     <span><i className="row-dot" /><span><strong>{signal.title}</strong><small>{signal.category}</small></span></span>
                     <span><em>{signal.scope}</em></span><span>{signal.deals}</span><span className={signal.confidence === "High" ? "high-copy" : ""}>{signal.confidence}</span><span>{signal.sources}</span><span>{signal.time} <i>→</i></span>
                   </button>
                 ))}
               </div>
 
-              <div className="view-footnote"><span>Public-source ledger</span><p>Federal Register, FDA, SEC EDGAR, AWS, Google Cloud, Microsoft Azure, HIMSS, and PitchBook. Each signal preserves the original URL, publisher, publication date, and retrieval time.</p><button onClick={() => notify("PUBLIC SOURCE LEDGER OPENED")}>Inspect all sources →</button></div>
+              <div className="view-footnote"><span>Public-source ledger</span><p>Federal Register, FDA, SEC EDGAR, AWS, Google Cloud, Microsoft Azure, HIMSS, and PitchBook. Each signal preserves the original URL, publisher, publication date, and retrieval time.</p><button onClick={() => { setDrawerContext("Public-source ledger"); setPanel("sources"); }}>Inspect all sources →</button></div>
             </section>
           )}
 
@@ -697,26 +723,26 @@ export default function Home() {
                 <button className="secondary-button view-action" onClick={() => setPanel("search")}>Fuzzy-search companies</button>
               </div>
 
-              {batchReview !== "idle" && <div className={`batch-review-banner ${batchReview}`}><span>{batchReview === "running" ? "↻" : "✓"}</span><div><strong>{batchReview === "running" ? `Re-evaluating ${batchCompanies} related companies` : "Cross-company re-evaluation complete"}</strong><small>{batchReview === "running" ? "Comparing all stored memories with verified information collected since each last review." : "2 companies have new evidence that may strengthen the investment case."}</small></div><button disabled={batchReview === "running"} onClick={() => { if (batchReview === "complete") openAsteria(); }}>{batchReview === "running" ? "Running…" : "Review changes →"}</button></div>}
+              {batchReview === "complete" && <div className="batch-review-banner complete"><span>✓</span><div><strong>{batchCompanies}-company re-evaluation complete</strong><small>The radar analyzed only the selected companies and preserved the result in the activity log.</small></div><button onClick={() => { setView("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review scan →</button></div>}
 
               <section className="memory-kpis">
-                <article><span>COMPANIES</span><strong>12</strong><small>Invested · interested · active · passed</small></article>
-                <article><span>VERIFIED MEMORIES</span><strong>486</strong><small>171 facts · 92 artifacts · 223 episodes</small></article>
+                <article><span>COMPANIES</span><strong>8</strong><small>Invested · interested · active · passed</small></article>
+                <article><span>VERIFIED MEMORIES</span><strong>188</strong><small>71 facts · 42 artifacts · 75 episodes</small></article>
                 <article><span>SYNC COVERAGE</span><strong>96%</strong><small>1 interaction needs retry</small></article>
                 <article><span>OLDEST OPEN LOOP</span><strong>8 mo</strong><small>Asteria Bio · now triggered</small></article>
               </section>
 
-              <div className="table-toolbar"><div className="filter-group"><button className="active">All companies</button><button>Invested</button><button>Interested</button><button>Evaluating</button><button>Watching</button><button>Passed</button></div><span>Sorted by last interaction</span></div>
+              <div className="table-toolbar"><div className="filter-group">{["All", "Invested", "Interested", "Evaluating", "Watching", "Passed"].map((filter) => <button key={filter} className={dealFilter === filter ? "active" : ""} onClick={() => setDealFilter(filter)}>{filter === "All" ? "All companies" : filter}</button>)}</div><span>{filteredWorkspaceDeals.length} companies · Sorted by last interaction</span></div>
               <div className="data-table deal-table" role="table" aria-label="Deal memory directory">
                 <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Status</span><span>Owner</span><span>Last touch</span><span>Memory coverage</span><span>Alert</span></div>
-                {workspaceDeals.map((deal) => (
-                  <button className={`data-row ${deal.alert !== "—" ? "signal" : ""}`} role="row" key={deal.name} onClick={deal.name === "Asteria Bio" ? openAsteria : () => notify(`${deal.name.toUpperCase()} · DEAL WORKSPACE OPENED`)}>
+                {filteredWorkspaceDeals.map((deal) => (
+                  <button className={`data-row ${deal.alert !== "—" ? "signal" : ""}`} role="row" key={deal.name} onClick={deal.name === "Asteria Bio" ? openAsteria : () => { setSearchQuery(deal.name); setPanel("search"); }}>
                     <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong><small>{deal.sector}</small></span></span>
                     <span>{deal.stage}</span><span><em>{deal.status}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><i className="coverage-track"><b style={{ width: `${deal.coverage}%` }} /></i>{deal.memories} memories</span><span className={deal.alert !== "—" ? "high-copy" : ""}>{deal.alert} <i>→</i></span>
                   </button>
                 ))}
               </div>
-              <div className="view-footnote"><span>Canonical record</span><p>Confirmed deal fields remain distinct from AI-extracted memories. Every memory keeps its source and interaction lineage.</p><button onClick={() => notify("MEMORY LINEAGE · EXPORT PREPARED")}>Export coverage →</button></div>
+              <div className="view-footnote"><span>Canonical record</span><p>Confirmed deal fields remain distinct from AI-extracted memories. Every memory keeps its source and interaction lineage.</p><button onClick={exportMemoryCoverage}>Export coverage →</button></div>
             </section>
           )}
 
@@ -731,7 +757,7 @@ export default function Home() {
                 <div className="report-feature-copy">
                   <span className="new-badge">NEW · DECISION DELTA</span>
                   <h2>Asteria Bio deserves partner review.</h2>
-                  <p>A regulatory change directly addresses the uncertainty behind the November pass. Includes current traction, deal economics, portfolio fit, and three remaining diligence risks.</p>
+                  <p>A regulatory change directly addresses the uncertainty behind the November pass. Includes current traction, deal economics, fund fit, and three remaining diligence risks.</p>
                   <div><span>Revisit condition matched</span><span>6 sources</span><span>4 positive factors</span><span>3 open risks</span><span>Owner · KM</span></div>
                   <button className="primary-button" onClick={() => setPanel("brief")}>Open partner brief <span>→</span></button>
                 </div>
@@ -745,8 +771,8 @@ export default function Home() {
                   ["Asteria Bio · Decision delta", "IC brief", "6 sources", "Ready", "Today, 14:34", "KM"],
                   ["Weekly market digest · Jul 20", "Market digest", "31 events", "Sent", "Jul 20", "System"],
                   ["Arcspan Energy · Diligence update", "Deal brief", "18 memories", "Draft", "Jul 18", "KM"],
-                  ["Portfolio risk scan · Q3", "Portfolio", "24 companies", "Sent", "Jul 15", "JL"],
-                ].map((report, index) => <button className="data-row" key={report[0]} onClick={index === 0 ? () => setPanel("brief") : () => notify(`${report[0].toUpperCase()} · REPORT OPENED`)}>{report.map((value, itemIndex) => <span key={value} className={itemIndex === 3 && value === "Ready" ? "high-copy" : ""}>{itemIndex === 0 ? <strong>{value}</strong> : value}{itemIndex === 5 && <i>→</i>}</span>)}</button>)}
+                  ["Deal memory integrity · Jul", "Data quality", "188 memories", "Sent", "Jul 15", "JL"],
+                ].map((report, index) => <button className="data-row" key={report[0]} onClick={index === 0 ? () => setPanel("brief") : () => openActivity(report[0])}>{report.map((value, itemIndex) => <span key={`${value}-${itemIndex}`} className={itemIndex === 3 && value === "Ready" ? "high-copy" : ""}>{itemIndex === 0 ? <strong>{value}</strong> : value}{itemIndex === 5 && <i>→</i>}</span>)}</button>)}
               </div>
             </section>
           )}
@@ -771,19 +797,79 @@ export default function Home() {
                 </label>
                 <div className="search-suggestions"><span>TRY</span><button onClick={() => setSearchQuery("汽車業")}>汽車業</button><button onClick={() => setSearchQuery("healthcare")}>Healthcare</button><button onClick={() => setSearchQuery("developer tools")}>Developer tools</button></div>
                 {searchQuery && <div className="semantic-scope"><span>RELATED INDUSTRY SCOPE</span><p>{searchQuery.toLowerCase().includes("汽車") || searchQuery.toLowerCase().includes("auto") ? "Automotive · engines · chassis · batteries · EV infrastructure · manufacturing automation" : "Company descriptions, industry tags, interaction summaries, decisions, and source-linked memories"}</p></div>}
+                {searchResults.length > 0 && <div className="search-selection-toolbar"><span>{selectedCompanies.filter((name) => searchResults.some((deal) => deal.name === name)).length} selected</span><button onClick={() => { const names = searchResults.map((deal) => deal.name); const allSelected = names.every((name) => selectedCompanies.includes(name)); setSelectedCompanies(allSelected ? selectedCompanies.filter((name) => !names.includes(name)) : Array.from(new Set([...selectedCompanies, ...names]))); }}>{searchResults.every((deal) => selectedCompanies.includes(deal.name)) ? "Clear results" : "Select all results"}</button></div>}
                 <div className="deal-results">
                   {searchResults.map((deal) => (
-                    <button key={deal.name} onClick={deal.name === "Asteria Bio" ? openAsteria : () => notify(`${deal.name.toUpperCase()} · MEMORY OPENED`)}>
-                      <span className="result-monogram">{deal.name.charAt(0)}</span>
-                      <span><strong>{deal.name}</strong><small>{deal.meta} · {deal.memories} memories</small></span>
-                      <em className={deal.tone}>{deal.status}</em>
-                      <i>→</i>
-                    </button>
+                    <div className={`deal-result-row ${selectedCompanies.includes(deal.name) ? "selected" : ""}`} key={deal.name}>
+                      <button className="result-selector" aria-label={`Select ${deal.name} for re-evaluation`} aria-pressed={selectedCompanies.includes(deal.name)} onClick={() => toggleSelectedCompany(deal.name)}>{selectedCompanies.includes(deal.name) ? "✓" : ""}</button>
+                      <button className="result-open" onClick={deal.name === "Asteria Bio" ? openAsteria : () => openActivity(`${deal.name} · Deal Memory`)}>
+                        <span className="result-monogram">{deal.name.charAt(0)}</span>
+                        <span><strong>{deal.name}</strong><small>{deal.meta} · {deal.memories} memories</small></span>
+                        <em className={deal.tone}>{deal.status}</em>
+                        <i>→</i>
+                      </button>
+                    </div>
                   ))}
                   {searchResults.length === 0 && <div className="no-results"><strong>No related companies found</strong><small>Try a broader industry, component, concern, or thesis keyword.</small></div>}
                 </div>
-                {searchResults.length > 0 && <button className="batch-review-button" onClick={startBatchReassessment}><span>↻</span><span><strong>Re-evaluate all {searchResults.length} companies</strong><small>Use every verified public signal and stored memory collected since the last review</small></span><i>→</i></button>}
+                {searchResults.length > 0 && <button className="batch-review-button" disabled={!selectedCompanies.length} onClick={startBatchReassessment}><span>↻</span><span><strong>{selectedCompanies.length ? `Re-evaluate ${selectedCompanies.length} selected ${selectedCompanies.length === 1 ? "company" : "companies"}` : "Select companies to re-evaluate"}</strong><small>Rerun the radar only against the selected companies and their stored memories</small></span><i>→</i></button>}
                 <p className="search-footnote">{searchResults.length} companies found · All statuses included · Facts, artifacts, episodes, and industry relationships searched together</p>
+              </>
+            ) : panel === "help" ? (
+              <>
+                <p className="drawer-overline">VSEE HELP</p>
+                <h2 id="drawer-title">What would you like to do?</h2>
+                <p className="drawer-lede">Jump directly into the core workflows. Keyboard search is available anywhere with ⌘K.</p>
+                <div className="action-list">
+                  <button onClick={() => { setPanel(null); navigateProduct("pipeline"); }}><strong>Review the deal pipeline</strong><small>Filter opportunities by stage and open a company workspace.</small><i>→</i></button>
+                  <button onClick={() => setPanel("search")}><strong>Search Deal Memory</strong><small>Find companies by name, industry, component, or thesis.</small><i>→</i></button>
+                  <button onClick={() => { setPanel(null); setView("overview"); runScan(); }}><strong>Run a global analysis</strong><small>Compare all eight companies with the latest verified signals.</small><i>→</i></button>
+                </div>
+              </>
+            ) : panel === "notifications" ? (
+              <>
+                <p className="drawer-overline">NOTIFICATIONS / 01 UNREAD</p>
+                <h2 id="drawer-title">Partner review queue</h2>
+                <p className="drawer-lede">Only material decision changes and assigned diligence items appear here.</p>
+                <div className="notification-card"><span>NEW</span><div><strong>Asteria Bio · Decision delta</strong><p>The documented FDA revisit condition is now supported by new primary-source evidence.</p><small>2h ago · Assigned to KM</small></div><button onClick={openAsteria}>Review →</button></div>
+                <button className="drawer-secondary" onClick={() => { setReviewed(true); setPanel(null); notify("ALL NOTIFICATIONS MARKED READ"); }}>Mark all as read</button>
+              </>
+            ) : panel === "sources" ? (
+              <>
+                <p className="drawer-overline">SOURCE RECORD</p>
+                <h2 id="drawer-title">{drawerContext || "Verified source ledger"}</h2>
+                <p className="drawer-lede">Every public fact retains publisher, publication date, retrieval time, and its original URL.</p>
+                <div className="source-ledger">
+                  <a href="https://www.federalregister.gov/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>Federal Register</strong><small>Regulatory notice · retrieved Jul 21, 2026</small><i>↗</i></a>
+                  <a href="https://www.fda.gov/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>U.S. Food & Drug Administration</strong><small>Program guidance · retrieved Jul 21, 2026</small><i>↗</i></a>
+                  <a href="https://www.sec.gov/edgar/search/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>SEC EDGAR</strong><small>Company filings · synced Jul 21, 2026</small><i>↗</i></a>
+                  <button onClick={() => { setPanel("activity"); setDrawerContext("Internal source lineage"); }}><span>INTERNAL</span><strong>Founder deck + CRM record</strong><small>Permissioned fund memory · verified Jul 15, 2026</small><i>→</i></button>
+                </div>
+              </>
+            ) : panel === "activity" ? (
+              <>
+                <p className="drawer-overline">ACTIVITY & LINEAGE</p>
+                <h2 id="drawer-title">{drawerContext || "Workspace activity"}</h2>
+                <p className="drawer-lede">A complete, timestamped record of changes, sources, ownership, and decisions.</p>
+                <div className="activity-timeline">
+                  <article><span>14:34</span><div><strong>Evidence refreshed</strong><p>Public sources and stored company memories synchronized.</p></div></article>
+                  <article><span>11:20</span><div><strong>Partner note added</strong><p>Next diligence question assigned to the deal owner.</p></div></article>
+                  <article><span>JUL 21</span><div><strong>Company record verified</strong><p>Stage, owner, and source lineage confirmed.</p></div></article>
+                </div>
+                <button className="drawer-primary" onClick={() => { setPanel(null); exportActivityLog(); }}>Export activity log</button>
+              </>
+            ) : panel === "newDeal" ? (
+              <>
+                <p className="drawer-overline">NEW COMPANY</p>
+                <h2 id="drawer-title">Create a deal workspace</h2>
+                <p className="drawer-lede">Start with the canonical company record. Memories and source lineage can be attached after creation.</p>
+                <form className="new-deal-form" onSubmit={(event) => { event.preventDefault(); setPanel(null); notify("NEW COMPANY ADDED TO PIPELINE · STAGE: NEW"); }}>
+                  <label><span>Company name</span><input required placeholder="Company name" /></label>
+                  <label><span>Sector</span><input required placeholder="e.g. Climate software" /></label>
+                  <label><span>Stage</span><select defaultValue="Seed"><option>Pre-seed</option><option>Seed</option><option>Series A</option><option>Series B</option></select></label>
+                  <label><span>Owner</span><select defaultValue="KM"><option>KM</option><option>JL</option><option>AP</option></select></label>
+                  <button className="drawer-primary" type="submit">Create company workspace →</button>
+                </form>
               </>
             ) : panel === "evidence" ? (
               <>
