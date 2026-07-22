@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ScanState = "idle" | "scanning" | "matched";
 type Panel = "evidence" | "brief" | "search" | "help" | "notifications" | "sources" | "activity" | "newDeal" | null;
@@ -288,63 +288,54 @@ export default function Home() {
             <div className="signal-meta">
               <span className="signal-kicker">
                 <i />
-                {scanState === "matched" ? "DECISION DELTA DETECTED" : scanState === "scanning" ? "SCANNING DECISION MEMORY" : "READY TO COMPARE"}
+                {scanState === "matched" ? "DECISION DELTA DETECTED" : scanState === "scanning" ? "ANALYZING DECISION MEMORY" : "READY TO COMPARE"}
               </span>
               <span>JUL 21, 2026 · 14:32 PT</span>
             </div>
 
             {scanState !== "matched" ? (
               <div className={`scan-stage ${scanState}`}>
-                <div className="radar" aria-hidden="true">
-                  <span className="radar-grid" />
-                  <span className="radar-ring ring-one" />
-                  <span className="radar-ring ring-two" />
-                  <span className="radar-ring ring-three" />
-                  <span className="radar-axis horizontal" />
-                  <span className="radar-axis vertical" />
-                  <span className="radar-sweep" />
-                  <span className="radar-pulse pulse-one" />
-                  <span className="radar-pulse pulse-two" />
-                  <span className="radar-blip blip-one"><i /><b>FDA</b></span>
-                  <span className="radar-blip blip-two"><i /><b>SEC</b></span>
-                  <span className="radar-blip blip-three"><i /><b>CRM</b></span>
-                  <span className="radar-blip blip-four"><i /><b>RSS</b></span>
-                  <span className="radar-core">VS</span>
-                  <span className="radar-coordinates">37.7749° N · 122.4194° W</span>
-                </div>
-                <div className="scan-copy">
+                <div className="thinking-shell">
+                  <div className="thinking-header">
+                    <div className="thinking-identity"><span className="thinking-mark">VS</span><div><strong>VSee Intelligence</strong><small>Evidence-grounded decision analysis</small></div></div>
+                    <span className={`thinking-state ${scanState}`}><i />{scanState === "scanning" ? "Thinking" : "Ready"}</span>
+                  </div>
+
+                  <div className="thinking-prompt">
+                    <span>ANALYSIS REQUEST</span>
+                    <p>{analysisMode === "selected" ? `Re-evaluate ${analysisCompanies.length} selected companies using every new verified signal.` : "Compare every new verified market signal with the fund’s complete decision memory."}</p>
+                  </div>
+
                   {scanState === "idle" ? (
-                    <>
-                      <p className="scan-overline">188 INVESTMENT MEMORIES ONLINE</p>
+                    <div className="thinking-idle">
+                      <p className="scan-overline">188 INVESTMENT MEMORIES READY</p>
                       <h2>Find the decision<br />the market just changed.</h2>
-                      <p>Eight companies and 188 source-linked memories are ready to compare against today&apos;s verified market signals.</p>
-                      <button className="stage-cta" onClick={() => runScan()}>Begin comparison <span>→</span></button>
-                    </>
+                      <p>Eight companies, 188 source-linked memories, and 12 documented revisit conditions are ready for analysis.</p>
+                      <button className="stage-cta" onClick={() => runScan()}>Begin analysis <span>→</span></button>
+                    </div>
                   ) : (
-                    <>
-                      <p className="scan-overline active-copy">LIVE ANALYSIS</p>
-                      <h2>{scanCopy[Math.min(scanStep, 2)]}</h2>
-                      <div className="scan-live-metrics">
-                        <span><i /> SOURCES <strong>{scanStep === 0 ? "04" : "06"}</strong></span>
-                        <span><i /> MEMORIES <strong>{scanStep < 2 ? analysisMemoryCount : `${analysisMemoryCount}/${analysisMemoryCount}`}</strong></span>
-                        <span><i /> MATCHES <strong>{scanStep < 2 ? "—" : analysisMode === "selected" ? (analysisCompanies.some((name) => ["Asteria Bio", "Arcspan Energy"].includes(name)) ? "01" : "00") : "01"}</strong></span>
+                    <div className="thinking-body" aria-label="Live analysis trace">
+                      <div className="thinking-summary"><span className="thinking-loader"><i /><i /><i /></span><strong>{scanCopy[Math.min(scanStep, 2)]}</strong><small>Working across source lineage and investment memory</small></div>
+                      <div className="thinking-trace">
+                        {[
+                          { title: "Searching verified market sources", detail: "Federal Register · FDA · SEC EDGAR · configured RSS", result: "6 current sources retrieved" },
+                          { title: `Reading ${analysisMemoryCount} decision memories`, detail: `${analysisCompanies.length} ${analysisCompanies.length === 1 ? "company" : "companies"} · facts · artifacts · partner episodes`, result: `${analysisMemoryCount} memories loaded with lineage` },
+                          { title: "Testing documented revisit conditions", detail: "Regulatory change · commercial traction · valuation · market timing", result: analysisMode === "selected" && !analysisCompanies.some((name) => ["Asteria Bio", "Arcspan Energy"].includes(name)) ? "No material decision change found" : "1 decision delta requires partner review" },
+                        ].map((item, index) => {
+                          const status = index < scanStep ? "complete" : index === scanStep ? "current" : "pending";
+                          return <div className={`trace-step ${status}`} key={item.title}>
+                            <span className="trace-status">{status === "complete" ? "✓" : status === "current" ? <i /> : `0${index + 1}`}</span>
+                            <div><strong>{item.title}</strong><p>{item.detail}</p>{status === "complete" && <small>{item.result}</small>}</div>
+                          </div>;
+                        })}
                       </div>
-                      <div className="pipeline" aria-label="Analysis progress">
-                        {scanCopy.map((step, index) => (
-                          <div className={`pipeline-step ${index < scanStep ? "complete" : index === scanStep ? "current" : ""}`} key={step}>
-                            <span>{index < scanStep ? "✓" : `0${index + 1}`}</span>
-                            <p>{step}</p>
-                          </div>
-                        ))}
+                      <div className="thinking-metrics">
+                        <span><small>SOURCES</small><strong>{scanStep === 0 ? "4 searching" : "6 verified"}</strong></span>
+                        <span><small>MEMORY SCOPE</small><strong>{analysisMemoryCount} records</strong></span>
+                        <span><small>DECISION DELTAS</small><strong>{scanStep < 2 ? "Evaluating" : "1 candidate"}</strong></span>
                       </div>
-                    </>
+                    </div>
                   )}
-                </div>
-                <div className="memory-samples" aria-hidden="true">
-                  <span style={{ "--x": "8%", "--y": "18%", "--d": "0s" } as CSSProperties}>Northstar Robotics</span>
-                  <span style={{ "--x": "67%", "--y": "13%", "--d": ".25s" } as CSSProperties}>Asteria Bio</span>
-                  <span style={{ "--x": "73%", "--y": "72%", "--d": ".5s" } as CSSProperties}>Arcspan Energy</span>
-                  <span style={{ "--x": "12%", "--y": "78%", "--d": ".75s" } as CSSProperties}>Harbor AI</span>
                 </div>
               </div>
             ) : analysisMode === "selected" ? (
