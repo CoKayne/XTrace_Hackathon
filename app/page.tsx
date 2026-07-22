@@ -8,9 +8,9 @@ type DetailTab = "overview" | "traction" | "deal" | "risks" | "history";
 type AppView = "overview" | "pipeline" | "portfolio" | "signals" | "deals" | "reports";
 
 const scanCopy = [
-  "Indexing verified market signals",
-  "Comparing against 486 decision memories",
-  "Testing 12 revisit conditions",
+  "Acquiring verified market signals",
+  "Sweeping 486 decision memories",
+  "Testing 12 documented revisit conditions",
 ];
 
 const dealDirectory = [
@@ -126,12 +126,12 @@ export default function Home() {
     setScanState("scanning");
 
     timers.current.push(
-      window.setTimeout(() => setScanStep(1), 760),
-      window.setTimeout(() => setScanStep(2), 1510),
+      window.setTimeout(() => setScanStep(1), 980),
+      window.setTimeout(() => setScanStep(2), 2100),
       window.setTimeout(() => {
         setScanStep(3);
         setScanState("matched");
-      }, 2380),
+      }, 3400),
     );
   }
 
@@ -259,13 +259,21 @@ export default function Home() {
             {scanState !== "matched" ? (
               <div className={`scan-stage ${scanState}`}>
                 <div className="radar" aria-hidden="true">
+                  <span className="radar-grid" />
                   <span className="radar-ring ring-one" />
                   <span className="radar-ring ring-two" />
                   <span className="radar-ring ring-three" />
                   <span className="radar-axis horizontal" />
                   <span className="radar-axis vertical" />
                   <span className="radar-sweep" />
+                  <span className="radar-pulse pulse-one" />
+                  <span className="radar-pulse pulse-two" />
+                  <span className="radar-blip blip-one"><i /><b>FDA</b></span>
+                  <span className="radar-blip blip-two"><i /><b>SEC</b></span>
+                  <span className="radar-blip blip-three"><i /><b>CRM</b></span>
+                  <span className="radar-blip blip-four"><i /><b>RSS</b></span>
                   <span className="radar-core">VS</span>
+                  <span className="radar-coordinates">37.7749° N · 122.4194° W</span>
                 </div>
                 <div className="scan-copy">
                   {scanState === "idle" ? (
@@ -279,6 +287,11 @@ export default function Home() {
                     <>
                       <p className="scan-overline active-copy">LIVE ANALYSIS</p>
                       <h2>{scanCopy[Math.min(scanStep, 2)]}</h2>
+                      <div className="scan-live-metrics">
+                        <span><i /> SOURCES <strong>{scanStep === 0 ? "04" : "06"}</strong></span>
+                        <span><i /> MEMORIES <strong>{scanStep < 2 ? "486" : "486/486"}</strong></span>
+                        <span><i /> MATCHES <strong>{scanStep < 2 ? "—" : "01"}</strong></span>
+                      </div>
                       <div className="pipeline" aria-label="Analysis progress">
                         {scanCopy.map((step, index) => (
                           <div className={`pipeline-step ${index < scanStep ? "complete" : index === scanStep ? "current" : ""}`} key={step}>
