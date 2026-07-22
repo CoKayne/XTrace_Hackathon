@@ -129,9 +129,9 @@ export default function Home() {
   return (
     <div className="app-shell">
       <aside className="rail" aria-label="Primary navigation">
-        <button className="brand-lockup" aria-label="Second Look overview" onClick={() => navigateProduct("overview")}>
+        <button className="brand-lockup" aria-label="VSee overview" onClick={() => navigateProduct("overview")}>
           <span className="brand-mark"><i><b>SL</b></i></span>
-          <span className="brand-copy"><strong>Second Look</strong><small>Decision intelligence</small></span>
+          <span className="brand-copy"><strong>VSee</strong><small>Decision intelligence</small></span>
         </button>
         <p className="nav-section-label">WORKSPACE</p>
         <nav className="rail-nav" aria-label="Product areas">
@@ -585,12 +585,12 @@ export default function Home() {
               <div className="report-feature">
                 <div className="report-feature-copy">
                   <span className="new-badge">NEW · DECISION DELTA</span>
-                  <h2>Asteria Bio deserves a second look.</h2>
+                  <h2>Asteria Bio deserves partner review.</h2>
                   <p>A regulatory change directly addresses the uncertainty behind the November pass. Includes current traction, deal economics, portfolio fit, and three remaining diligence risks.</p>
                   <div><span>91% confidence</span><span>6 sources</span><span>3 open risks</span><span>Owner · KM</span></div>
                   <button className="primary-button" onClick={() => setPanel("brief")}>Open partner brief <span>→</span></button>
                 </div>
-                <div className="report-preview" aria-hidden="true"><span>SECOND LOOK</span><h3>Decision delta<br />Asteria Bio</h3><i /><p>THEN → NOW → NEXT MOVE</p><small>JUL 22 · FUND II</small></div>
+                <div className="report-preview" aria-hidden="true"><span>VSEE</span><h3>Decision delta<br />Asteria Bio</h3><i /><p>THEN → NOW → NEXT MOVE</p><small>JUL 22 · FUND II</small></div>
               </div>
 
               <div className="reports-section-heading"><h2>Recent reports</h2><span>Showing 4 of 18</span></div>
@@ -641,7 +641,7 @@ export default function Home() {
               <>
                 <p className="drawer-overline">EVIDENCE CHAIN / 02 SOURCES</p>
                 <h2 id="drawer-title">Why this decision changed</h2>
-                <p className="drawer-lede">Second Look found a direct semantic match between the condition recorded by your deal team and a new regulatory signal.</p>
+                <p className="drawer-lede">VSee found a direct semantic match between the condition recorded by your deal team and a new regulatory signal.</p>
                 <div className="evidence-chain">
                   <div className="chain-item">
                     <span className="chain-number">01</span>
@@ -670,7 +670,7 @@ export default function Home() {
             ) : (
               <>
                 <p className="drawer-overline">PARTNER BRIEF / READY</p>
-                <h2 id="drawer-title">Asteria Bio deserves a second look.</h2>
+                <h2 id="drawer-title">Asteria Bio deserves partner review.</h2>
                 <p className="drawer-lede">A decision-ready brief, grounded in one historical memory and one verified market signal.</p>
                 <div className="brief-card">
                   <div className="brief-meta"><span>TO</span><strong>Investment Committee</strong></div>
