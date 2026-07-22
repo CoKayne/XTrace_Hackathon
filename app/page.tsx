@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 type ScanState = "idle" | "scanning" | "matched";
 type Panel = "evidence" | "brief" | "search" | null;
 type DetailTab = "overview" | "traction" | "deal" | "risks" | "history";
-type AppView = "overview" | "signals" | "deals" | "reports";
+type AppView = "overview" | "pipeline" | "portfolio" | "signals" | "deals" | "reports";
 
 const scanCopy = [
   "Indexing verified market signals",
@@ -43,16 +43,34 @@ const workspaceDeals = [
   { name: "Cinder Systems", sector: "Developer tools", stage: "Series A", status: "Invested", owner: "JL", last: "8d", memories: "47", coverage: 100, alert: "—" },
 ];
 
+const pipelineDeals = [
+  { name: "Arcspan Energy", sector: "Grid software", stage: "IC", owner: "KM", last: "Today", next: "Partner references", amount: "$8.0M", score: "82" },
+  { name: "Northstar Robotics", sector: "Industrial automation", stage: "Diligence", owner: "JL", last: "Yesterday", next: "Technical deep dive", amount: "$4.5M", score: "76" },
+  { name: "Morrow Health", sector: "Care operations", stage: "First meeting", owner: "AP", last: "Jul 20", next: "Founder follow-up", amount: "$3.0M", score: "68" },
+  { name: "Cobalt Security", sector: "Identity infrastructure", stage: "New", owner: "JL", last: "Jul 19", next: "Triage inbound", amount: "$2.5M", score: "—" },
+  { name: "Fathom Materials", sector: "Advanced materials", stage: "Diligence", owner: "KM", last: "Jul 18", next: "Customer calls", amount: "$6.0M", score: "71" },
+  { name: "Cinder Systems", sector: "Developer tools", stage: "Closing", owner: "JL", last: "Jul 17", next: "Finalize allocation", amount: "$5.0M", score: "88" },
+];
+
+const portfolioCompanies = [
+  { name: "Cinder Systems", sector: "Developer tools", owner: "JL", value: "$18.4M", multiple: "2.3×", runway: "21 mo", health: "On plan", next: "Board · Aug 04" },
+  { name: "Kestrel Cloud", sector: "Cloud infrastructure", owner: "KM", value: "$14.1M", multiple: "1.8×", runway: "14 mo", health: "Watch", next: "Renewal · Aug 12" },
+  { name: "Meridian Care", sector: "Healthcare services", owner: "AP", value: "$11.7M", multiple: "1.5×", runway: "19 mo", health: "On plan", next: "Board · Aug 18" },
+  { name: "Relay Commerce", sector: "B2B commerce", owner: "JL", value: "$9.6M", multiple: "1.2×", runway: "9 mo", health: "Attention", next: "Cash plan · Jul 29" },
+  { name: "Orbit Ledger", sector: "Fintech infrastructure", owner: "KM", value: "$8.9M", multiple: "1.6×", runway: "16 mo", health: "On plan", next: "KPI review · Aug 08" },
+];
+
 export default function Home() {
   const [view, setView] = useState<AppView>("overview");
-  const [scanState, setScanState] = useState<ScanState>("idle");
-  const [scanStep, setScanStep] = useState(0);
+  const [scanState, setScanState] = useState<ScanState>("matched");
+  const [scanStep, setScanStep] = useState(3);
   const [panel, setPanel] = useState<Panel>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [tasks, setTasks] = useState([false, false, false]);
   const [reviewed, setReviewed] = useState(false);
   const [signalFilter, setSignalFilter] = useState("All");
+  const [pipelineFilter, setPipelineFilter] = useState("All");
   const [toast, setToast] = useState("");
   const timers = useRef<number[]>([]);
 
@@ -130,12 +148,17 @@ export default function Home() {
     <div className="app-shell">
       <aside className="rail" aria-label="Primary navigation">
         <button className="brand-lockup" aria-label="VSee overview" onClick={() => navigateProduct("overview")}>
-          <span className="brand-mark"><i><b>SL</b></i></span>
-          <span className="brand-copy"><strong>VSee</strong><small>Decision intelligence</small></span>
+          <span className="brand-mark"><i><b>VS</b></i></span>
+          <span className="brand-copy"><strong>VSee</strong><small>Investment workspace</small></span>
         </button>
         <p className="nav-section-label">WORKSPACE</p>
         <nav className="rail-nav" aria-label="Product areas">
           <button className={`rail-item ${view === "overview" ? "active" : ""}`} onClick={() => navigateProduct("overview")}><span>⌂</span><b>Overview</b>{!reviewed && <em>1</em>}</button>
+          <button className={`rail-item ${view === "pipeline" ? "active" : ""}`} onClick={() => navigateProduct("pipeline")}><span>▤</span><b>Deal pipeline</b><small>31</small></button>
+          <button className={`rail-item ${view === "portfolio" ? "active" : ""}`} onClick={() => navigateProduct("portfolio")}><span>◫</span><b>Portfolio</b><small>24</small></button>
+        </nav>
+        <p className="nav-section-label intelligence-label">INTELLIGENCE</p>
+        <nav className="rail-nav" aria-label="Intelligence areas">
           <button className={`rail-item ${view === "signals" ? "active" : ""}`} onClick={() => navigateProduct("signals")}><span>↗</span><b>Market signals</b></button>
           <button className={`rail-item ${view === "deals" ? "active" : ""}`} onClick={() => navigateProduct("deals")}><span>□</span><b>Deal memory</b></button>
           <button className={`rail-item ${view === "reports" ? "active" : ""}`} onClick={() => navigateProduct("reports")}><span>≡</span><b>Reports & briefs</b></button>
@@ -157,12 +180,11 @@ export default function Home() {
             <button className="memory-search" onClick={() => setPanel("search")} aria-label="Search deal memory">
               <span>⌕</span> Search companies, decisions, or concerns <kbd>⌘ K</kbd>
             </button>
-            <span className="index-status">
-              {scanState === "scanning" ? "ANALYSIS · PROCESSING" : "LAST SYNC · 2H AGO"}
-            </span>
+            <button className="utility-button" onClick={() => notify("HELP CENTER OPENED")} aria-label="Help">?</button>
+            <button className="utility-button notification-button" onClick={() => notify("1 UNREAD PARTNER REVIEW")} aria-label="Notifications">○<i /></button>
             <button className={`scan-button ${scanState === "scanning" ? "scanning" : ""}`} onClick={() => { setView("overview"); runScan(); }} disabled={scanState === "scanning"}>
               <span className="button-dot" />
-              {scanState === "scanning" ? "Analyzing…" : "Run analysis"}
+              {scanState === "scanning" ? "Analyzing…" : "+ New analysis"}
             </button>
           </div>
         </header>
@@ -171,21 +193,21 @@ export default function Home() {
           {view === "overview" && <>
           <section className="product-heading" aria-labelledby="hero-title">
             <div>
-              <p className="eyebrow">OVERVIEW</p>
-              <h1 id="hero-title">Decision intelligence</h1>
-              <p className="subline">One high-confidence change requires partner review. All other monitored deals are within their expected conditions.</p>
+              <p className="eyebrow">FUND II · OPERATING OVERVIEW</p>
+              <h1 id="hero-title">Good morning, Kayne.</h1>
+              <p className="subline">Your Wednesday brief: one decision change needs review, two diligence items are due, and IC has four companies on the agenda.</p>
             </div>
             <div className="heading-actions">
               <span>WEDNESDAY · JUL 22, 2026</span>
-              <button onClick={() => setPanel("search")}>Open deal memory</button>
+              <button onClick={() => navigateProduct("pipeline")}>View deal pipeline</button>
             </div>
           </section>
 
           <section className="kpi-grid" aria-label="Workspace health">
-            <article><span>REVIEW QUEUE</span><strong className="signal">{reviewed ? "0" : "1"}</strong><small>{reviewed ? "All caught up" : "High-confidence alert"}</small></article>
-            <article><span>MONITORED DEALS</span><strong>12</strong><small>4 passed · 3 watching</small></article>
-            <article><span>MEMORY COVERAGE</span><strong>96%</strong><small>486 verified memories</small></article>
-            <article><span>SOURCE HEALTH</span><strong>3/4</strong><small className="warning-copy">1 source delayed</small></article>
+            <article><span>ACTIVE PIPELINE</span><strong>$62M</strong><small>31 opportunities</small></article>
+            <article><span>IC THIS WEEK</span><strong>4</strong><small>2 decision-ready</small></article>
+            <article><span>PORTFOLIO VALUE</span><strong>$148M</strong><small>1.7× gross MOIC</small></article>
+            <article><span>PARTNER REVIEW</span><strong className="signal">{reviewed ? "0" : "1"}</strong><small>{reviewed ? "All caught up" : "Decision delta"}</small></article>
           </section>
 
           <section className={`signal-zone ${scanState}`} aria-live="polite">
@@ -206,7 +228,7 @@ export default function Home() {
                   <span className="radar-axis horizontal" />
                   <span className="radar-axis vertical" />
                   <span className="radar-sweep" />
-                  <span className="radar-core">SL</span>
+                  <span className="radar-core">VS</span>
                 </div>
                 <div className="scan-copy">
                   {scanState === "idle" ? (
@@ -269,7 +291,7 @@ export default function Home() {
                       </div>
                     </dl>
                     <button className="evidence-pill" onClick={() => setPanel("evidence")}>
-                      <i /> XTrace Memory #fact_7A21 <span>Verified</span>
+                      <i /> VSee Memory #fact_7A21 <span>Verified</span>
                     </button>
                   </section>
 
@@ -317,7 +339,7 @@ export default function Home() {
               <span><i /> Northstar Robotics</span>
               <span><i /> Arcspan Energy</span>
               <span><i /> Harbor AI</span>
-              <small>XTRACE MEMORY + VERIFIED MARKET SOURCES</small>
+              <small>VSEE MEMORY + VERIFIED MARKET SOURCES</small>
             </div>
           </section>
 
@@ -512,6 +534,68 @@ export default function Home() {
           )}
           </>}
 
+          {view === "pipeline" && (
+            <section className="workspace-view" aria-labelledby="pipeline-title">
+              <div className="view-heading">
+                <div><p className="eyebrow">DEAL FLOW</p><h1 id="pipeline-title">Deal pipeline</h1><p>Track every opportunity from first touch through investment committee and close.</p></div>
+                <button className="primary-button view-action" onClick={() => notify("NEW DEAL WORKSPACE CREATED")}>+ Add company</button>
+              </div>
+
+              <section className="pipeline-summary" aria-label="Pipeline summary">
+                {[
+                  ["New", "8", "$14M"], ["First meeting", "7", "$11M"], ["Diligence", "9", "$21M"], ["IC", "4", "$11M"], ["Closing", "3", "$5M"],
+                ].map(([stage, count, value]) => <button key={stage} className={pipelineFilter === stage ? "active" : ""} onClick={() => setPipelineFilter(pipelineFilter === stage ? "All" : stage)}><span>{stage}</span><strong>{count}</strong><small>{value} target</small><i /></button>)}
+              </section>
+
+              <div className="table-toolbar">
+                <div className="filter-group">{["All", "New", "First meeting", "Diligence", "IC", "Closing"].map((filter) => <button key={filter} className={pipelineFilter === filter ? "active" : ""} onClick={() => setPipelineFilter(filter)}>{filter}</button>)}</div>
+                <span>{pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).length} visible · Updated 12 min ago</span>
+              </div>
+              <div className="data-table pipeline-table" role="table" aria-label="Deal pipeline">
+                <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Owner</span><span>Last activity</span><span>Next action</span><span>Target check</span><span>Score</span></div>
+                {pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).map((deal) => (
+                  <button className="data-row" role="row" key={deal.name} onClick={() => notify(`${deal.name.toUpperCase()} · DEAL WORKSPACE OPENED`)}>
+                    <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong><small>{deal.sector}</small></span></span>
+                    <span><em className={`stage-${deal.stage.toLowerCase().replace(" ", "-")}`}>{deal.stage}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><strong>{deal.next}</strong></span><span>{deal.amount}</span><span className="score-cell">{deal.score} <i>→</i></span>
+                  </button>
+                ))}
+              </div>
+              <div className="view-footnote"><span>Pipeline policy</span><p>Every stage change retains its owner, timestamp, decision rationale, and linked source artifacts.</p><button onClick={() => notify("PIPELINE AUDIT LOG OPENED")}>View activity log →</button></div>
+            </section>
+          )}
+
+          {view === "portfolio" && (
+            <section className="workspace-view" aria-labelledby="portfolio-title">
+              <div className="view-heading">
+                <div><p className="eyebrow">PORTFOLIO OPERATIONS</p><h1 id="portfolio-title">Portfolio</h1><p>Operating health, ownership, upcoming governance, and fund-level exposure in one view.</p></div>
+                <button className="secondary-button view-action" onClick={() => notify("PORTFOLIO REPORT PREPARED")}>Export quarterly view</button>
+              </div>
+
+              <section className="portfolio-kpis">
+                <article><span>FAIR VALUE</span><strong>$148.2M</strong><small>+$6.4M this quarter</small></article>
+                <article><span>GROSS MOIC</span><strong>1.7×</strong><small>Fund II · net 1.5×</small></article>
+                <article><span>MEDIAN RUNWAY</span><strong>16 mo</strong><small>2 companies below 12</small></article>
+                <article><span>FOLLOW-ON RESERVE</span><strong>$32.5M</strong><small>41% of remaining capital</small></article>
+              </section>
+
+              <div className="portfolio-briefing">
+                <article><span className="briefing-label">NEXT 30 DAYS</span><strong>5 board meetings</strong><p>Two require partner pre-reads; one portfolio company has a cash-plan review.</p><button onClick={() => notify("BOARD CALENDAR OPENED")}>Open governance calendar →</button></article>
+                <article><span className="briefing-label">ATTENTION REQUIRED</span><strong>Relay Commerce</strong><p>Runway is below ten months and Q2 net retention missed plan by 8 points.</p><button onClick={() => notify("RELAY COMMERCE WORKSPACE OPENED")}>Review operating plan →</button></article>
+                <article><span className="briefing-label">CONCENTRATION</span><strong>28% in healthcare</strong><p>Within mandate; two active healthcare deals would move exposure to 34%.</p><button onClick={() => notify("EXPOSURE MODEL OPENED")}>Model new investment →</button></article>
+              </div>
+
+              <div className="table-toolbar"><div className="filter-group"><button className="active">All companies</button><button>On plan</button><button>Watch</button><button>Attention</button></div><span>24 companies · Valuations as of Jun 30</span></div>
+              <div className="data-table portfolio-table" role="table" aria-label="Portfolio companies">
+                <div className="data-row table-head" role="row"><span>Company</span><span>Owner</span><span>Fair value</span><span>MOIC</span><span>Runway</span><span>Health</span><span>Next milestone</span></div>
+                {portfolioCompanies.map((company) => (
+                  <button className="data-row" role="row" key={company.name} onClick={() => notify(`${company.name.toUpperCase()} · PORTFOLIO WORKSPACE OPENED`)}>
+                    <span><span className="result-monogram">{company.name.charAt(0)}</span><span><strong>{company.name}</strong><small>{company.sector}</small></span></span><span>{company.owner}</span><span>{company.value}</span><span>{company.multiple}</span><span>{company.runway}</span><span><em className={`health-${company.health.toLowerCase().replace(" ", "-")}`}>{company.health}</em></span><span>{company.next} <i>→</i></span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
           {view === "signals" && (
             <section className="workspace-view" aria-labelledby="signals-title">
               <div className="view-heading">
@@ -646,7 +730,7 @@ export default function Home() {
                   <div className="chain-item">
                     <span className="chain-number">01</span>
                     <div>
-                      <p>XTRACE DECISION MEMORY</p>
+                      <p>VSEE DECISION MEMORY</p>
                       <blockquote>“Re-open when accelerated review expands to AI-assisted diagnostics.”</blockquote>
                       <small>#fact_7A21 · Confirmed Nov 18, 2025 · Exact lineage</small>
                     </div>
