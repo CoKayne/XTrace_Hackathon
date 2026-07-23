@@ -8,14 +8,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: "VSee — VC Decision Intelligence",
     description: "The market changed. XTrace revises the belief.",
-    images: [{ url: "/og.png", width: 1536, height: 1024, alt: "VSee XTrace connects an old investment belief to new market evidence." }],
+    images: [{ url: "/og-flat20.png", width: 1536, height: 1024, alt: "VSee XTrace connects an old investment belief to new market evidence." }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "VSee — VC Decision Intelligence",
     description: "The market changed. XTrace revises the belief.",
-    images: ["/og.png"],
+    images: ["/og-flat20.png"],
   },
 };
 
