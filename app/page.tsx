@@ -164,6 +164,9 @@ export default function Home() {
     setToast("");
     setScanStep(0);
     setScanState("idle");
+    setReviewed(true);
+    setAnalysisMode("global");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function notify(message: string) {
@@ -264,7 +267,7 @@ export default function Home() {
         </nav>
         <p className="nav-section-label intelligence-label">INTELLIGENCE</p>
         <nav className="rail-nav" aria-label="Intelligence areas">
-          <button className={`rail-item ${view === "signals" ? "active" : ""}`} onClick={() => navigateProduct("signals")}><span>↗</span><b>Market signals</b></button>
+          <button className={`rail-item ${view === "signals" ? "active" : ""}`} onClick={() => navigateProduct("signals")}><span>◉</span><b>Market signals</b></button>
           <button className={`rail-item ${view === "deals" ? "active" : ""}`} onClick={() => navigateProduct("deals")}><span>□</span><b>Deal memory</b></button>
           <button className={`rail-item ${view === "reports" ? "active" : ""}`} onClick={() => navigateProduct("reports")}><span>≡</span><b>Reports & briefs</b></button>
         </nav>
@@ -299,10 +302,18 @@ export default function Home() {
           {view === "overview" && <>
           <section className={`signal-zone ${scanState}`} aria-live="polite">
             <div className="signal-meta">
-              <span className="signal-kicker">
-                <i />
-                {scanState === "matched" ? (scanUsesXTrace ? "BELIEF REVISED" : "MARKET SIGNAL FOUND") : scanState === "scanning" ? "AGENT RUNNING" : "XTRACE AGENT READY"}
-              </span>
+              {scanState === "matched" ? (
+                <button className="signal-kicker signal-dismiss" onClick={replay} aria-label="Close analysis result and return to Overview">
+                  <i />
+                  {scanUsesXTrace ? "BELIEF REVISED" : "MARKET SIGNAL FOUND"}
+                  <b>CLOSE ×</b>
+                </button>
+              ) : (
+                <span className="signal-kicker">
+                  <i />
+                  {scanState === "scanning" ? "AGENT RUNNING" : "XTRACE AGENT READY"}
+                </span>
+              )}
               <span>JUL 23, 2026</span>
             </div>
 
@@ -324,7 +335,7 @@ export default function Home() {
                       <p className="scan-overline">{scanUsesXTrace ? "XTRACE ON · 188 MEMORIES CONNECTED" : "XTRACE OFF · MARKET-ONLY MODE"}</p>
                       <h2>Wake the agent.<br />Find the belief that changed.</h2>
                       <p>{scanUsesXTrace ? "The agent will connect live market signals to the reasons behind past investment decisions." : "The agent will find market changes, but it cannot identify which past investment beliefs they invalidate."}</p>
-                      <button className="stage-cta" onClick={() => runScan()}>Wake Agent & Scan Market <span>→</span></button>
+                      <button className="stage-cta" onClick={() => runScan()}>Wake Agent & Scan Market</button>
                     </div>
                   ) : (
                     <div className="thinking-body" aria-label="Live analysis trace">
@@ -349,7 +360,7 @@ export default function Home() {
                   <section><span>VERIFIED MARKET SIGNAL</span><h3>FDA pilots accelerated review for AI-enabled diagnostics</h3><p>One material regulatory event was captured and added to the signal ledger.</p><button className="secondary-button" onClick={() => { setDrawerContext("FDA accelerated review signal"); setPanel("sources"); }}>Inspect source</button></section>
                   <aside><span>XTRACE OFF</span><strong>Impacted deal: unknown</strong><p>No decision memories were queried, so the agent cannot identify which prior belief should be revisited.</p></aside>
                 </div>
-                <div className="market-only-action"><div><strong>See what XTrace changes</strong><small>Connect the same signal to 188 source-linked investment memories.</small></div><button className="primary-button" onClick={() => { setXtraceEnabled(true); runScan(undefined, true); }}>Turn on XTrace & re-run <span>→</span></button></div>
+                <div className="market-only-action"><div><strong>See what XTrace changes</strong><small>Connect the same signal to 188 source-linked investment memories.</small></div><button className="primary-button" onClick={() => { setXtraceEnabled(true); runScan(undefined, true); }}>Turn on XTrace & re-run</button></div>
               </article>
             ) : analysisMode === "selected" ? (
               <article className="batch-match-card">
@@ -367,10 +378,10 @@ export default function Home() {
                   {analysisCompanies.map((name) => {
                     const deal = dealDirectory.find((item) => item.name === name);
                     const changed = ["Asteria Bio", "Arcspan Energy", "Torque Materials"].includes(name);
-                    return <button key={name} onClick={() => { setSearchQuery(name); setPanel("search"); }}><span className="result-monogram">{name.charAt(0)}</span><span><strong>{name}</strong><small>{deal?.meta} · {deal?.memories} memories checked</small></span><em className={changed ? "changed" : "stable"}>{changed ? "New evidence" : "No material change"}</em><i>→</i></button>;
+                    return <button key={name} onClick={() => { setSearchQuery(name); setPanel("search"); }}><span className="result-monogram">{name.charAt(0)}</span><span><strong>{name}</strong><small>{deal?.meta} · {deal?.memories} memories checked</small></span><em className={changed ? "changed" : "stable"}>{changed ? "New evidence" : "No material change"}</em></button>;
                   })}
                 </div>
-                <div className="batch-result-actions"><button className="secondary-button" onClick={() => { setSearchQuery(""); setPanel("search"); }}>Re-evaluate another set</button><button className="primary-button" onClick={() => navigateProduct("deals")}>Open Deal Memory <span>→</span></button></div>
+                <div className="batch-result-actions"><button className="secondary-button" onClick={() => { setSearchQuery(""); setPanel("search"); }}>Re-evaluate another set</button><button className="primary-button" onClick={() => navigateProduct("deals")}>Open Deal Memory</button></div>
               </article>
             ) : (
               <article className="match-card">
@@ -437,7 +448,7 @@ export default function Home() {
                     <div className="outreach-meta"><span>TO</span><strong>Asteria deal team</strong><span>SUBJECT</span><strong>Re-open Asteria Bio · FDA condition changed</strong></div>
                     <p>Team — the FDA uncertainty behind our November pass has materially changed. XTrace matched the new accelerated-review pilot to our documented revisit condition. I recommend a 30-minute re-evaluation this week to review traction, remaining clinical risk, and round dynamics.</p>
                   </div>
-                  <div className="outreach-actions"><button className="secondary-button" onClick={() => setPanel("evidence")}>Inspect evidence</button><button className={`primary-button ${outreachApproved ? "approved" : ""}`} onClick={() => { setOutreachApproved(true); setReviewed(true); notify("OUTREACH APPROVED · AUDIT LOG UPDATED"); }}>{outreachApproved ? "✓ Outreach approved" : "Approve outreach"}<span>→</span></button></div>
+                  <div className="outreach-actions"><button className="secondary-button" onClick={() => setPanel("evidence")}>Inspect evidence</button><button className={`primary-button ${outreachApproved ? "approved" : ""}`} onClick={() => { setOutreachApproved(true); setReviewed(true); notify("OUTREACH APPROVED · AUDIT LOG UPDATED"); }}>{outreachApproved ? "✓ Outreach approved" : "Approve outreach"}</button></div>
                 </div>
               </article>
             )}
@@ -469,7 +480,7 @@ export default function Home() {
               </div>
               <div className="record-lineage" aria-label="Company profile sources">
                 <strong>PROFILE VERIFIED · 3 SOURCES</strong>
-                <button onClick={() => { setDrawerContext("Asteria Bio · Company profile sources"); setPanel("sources"); }}>View source lineage →</button>
+                <button onClick={() => { setDrawerContext("Asteria Bio · Company profile sources"); setPanel("sources"); }}>View source lineage</button>
               </div>
 
               <div className="detail-tabs" role="tablist" aria-label="Company intelligence">
@@ -494,25 +505,25 @@ export default function Home() {
                         <span>WHY NOW</span>
                         <strong>Regulatory unlock</strong>
                         <p>The exact revisit condition from the November pass is now materially satisfied.</p>
-                        <button onClick={() => setPanel("evidence")}>View evidence chain →</button>
+                        <button onClick={() => setPanel("evidence")}>View evidence chain</button>
                       </article>
                       <article className="snapshot-card">
                         <span>TRACTION</span>
                         <strong>$2.4M ARR</strong>
                         <p><em>+38% QoQ</em> · 9 hospital pilots · 67% pilot-to-contract conversion</p>
-                        <button onClick={() => setDetailTab("traction")}>Open operating metrics →</button>
+                        <button onClick={() => setDetailTab("traction")}>Open operating metrics</button>
                       </article>
                       <article className="snapshot-card">
                         <span>DEAL ECONOMICS</span>
                         <strong>$48M pre</strong>
                         <p>$12M raise · 18% target ownership · 2.9× ARR multiple at entry</p>
-                        <button onClick={() => setDetailTab("deal")}>Inspect round terms →</button>
+                        <button onClick={() => setDetailTab("deal")}>Inspect round terms</button>
                       </article>
                       <article className="snapshot-card risk-card">
                         <span>WHAT COULD BREAK</span>
                         <strong>3 open risks</strong>
                         <p>Clinical evidence depth, customer concentration, and lead-investor timing.</p>
-                        <button onClick={() => setDetailTab("risks")}>Review diligence gaps →</button>
+                        <button onClick={() => setDetailTab("risks")}>Review diligence gaps</button>
                       </article>
                     </div>
                     <div className="source-footer">Sources: official website · founder deck · CRM interactions · Federal Register · company KPI update <span>Every displayed fact retains source lineage</span></div>
@@ -584,7 +595,7 @@ export default function Home() {
                         }} className={tasks[index] ? "done" : ""}>{tasks[index] ? "✓ Added" : "+ Diligence"}</button>
                       </article>
                     ))}
-                    <div className="risk-summary"><strong>{tasks.filter(Boolean).length}/3</strong><span>Diligence questions added to the re-evaluation brief</span><button onClick={() => setPanel("brief")}>Review brief →</button></div>
+                    <div className="risk-summary"><strong>{tasks.filter(Boolean).length}/3</strong><span>Diligence questions added to the re-evaluation brief</span><button onClick={() => setPanel("brief")}>Review brief</button></div>
                   </div>
                 )}
 
@@ -606,7 +617,7 @@ export default function Home() {
                       <div className="panel-label"><span>CAPTURED DEAL HISTORY</span><small>Source-linked</small></div>
                       <strong>14</strong><span>verified memories</span>
                       <ul><li>6 facts</li><li>3 artifacts</li><li>5 episodes</li></ul>
-                      <button onClick={() => setPanel("search")}>Search all deal memory →</button>
+                      <button onClick={() => setPanel("search")}>Search all deal memory</button>
                     </div>
                   </div>
                 )}
@@ -631,11 +642,11 @@ export default function Home() {
                 {pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).map((deal) => (
                   <button className="data-row" role="row" key={deal.name} onClick={() => openActivity(`${deal.name} · Deal record`)}>
                     <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong><small>{deal.sector}</small></span></span>
-                    <span><em className={`stage-${deal.stage.toLowerCase().replace(" ", "-")}`}>{deal.stage}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><strong>{deal.next}</strong></span><span>{deal.amount}</span><span className="potential-cell">{deal.factors} <i>→</i></span>
+                    <span><em className={`stage-${deal.stage.toLowerCase().replace(" ", "-")}`}>{deal.stage}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><strong>{deal.next}</strong></span><span>{deal.amount}</span><span className="potential-cell">{deal.factors}</span>
                   </button>
                 ))}
               </div>
-              <div className="view-footnote"><span>Pipeline policy</span><p>Every stage change retains its owner, timestamp, decision rationale, and linked source artifacts.</p><button onClick={() => { setDrawerContext("Pipeline activity log"); setPanel("activity"); }}>View activity log →</button></div>
+              <div className="view-footnote"><span>Pipeline policy</span><p>Every stage change retains its owner, timestamp, decision rationale, and linked source artifacts.</p><button onClick={() => { setDrawerContext("Pipeline activity log"); setPanel("activity"); }}>View activity log</button></div>
             </section>
           )}
 
@@ -643,7 +654,7 @@ export default function Home() {
             <section className="workspace-view" aria-labelledby="signals-title">
               <div className="view-heading">
                 <div><h1 id="signals-title">Market signals</h1><p>Verified events prioritized by relevance to invested, interested, active, watched, and passed companies.</p></div>
-                <button className="primary-button view-action" onClick={() => { setView("overview"); runScan(); }}>Run analysis <span>→</span></button>
+                <button className="primary-button view-action" onClick={() => { setView("overview"); runScan(); }}>Run analysis</button>
               </div>
 
               <div className="view-health-row">
@@ -665,7 +676,7 @@ export default function Home() {
                 {marketSignals.filter((signal) => signalFilter === "All" || signal.category === signalFilter).map((signal, index) => (
                   <button className={`data-row ${signal.tone}`} role="row" key={signal.title} onClick={index === 0 ? openAsteria : () => { setDrawerContext(signal.title); setPanel("sources"); } }>
                     <span><i className="row-dot" /><span><strong>{signal.title}</strong><small>{signal.category}</small></span></span>
-                    <span><em>{signal.scope}</em></span><span>{signal.deals}</span><span className={signal.confidence === "High" ? "high-copy" : ""}>{signal.confidence}</span><span>{signal.sources}</span><span>{signal.time} <i>→</i></span>
+                    <span><em>{signal.scope}</em></span><span>{signal.deals}</span><span className={signal.confidence === "High" ? "high-copy" : ""}>{signal.confidence}</span><span>{signal.sources}</span><span>{signal.time}</span>
                   </button>
                 ))}
               </div>
@@ -683,7 +694,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {batchReview === "complete" && <div className="batch-review-banner complete"><span>✓</span><div><strong>{batchCompanies}-company re-evaluation complete</strong><small>Only the selected companies were analyzed.</small></div><button onClick={() => { setView("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review analysis →</button></div>}
+              {batchReview === "complete" && <div className="batch-review-banner complete"><span>✓</span><div><strong>{batchCompanies}-company re-evaluation complete</strong><small>Only the selected companies were analyzed.</small></div><button onClick={() => { setView("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review analysis</button></div>}
 
               <section className="memory-kpis">
                 <article><span>COMPANIES</span><strong>8</strong><small>Invested · interested · active · passed</small></article>
@@ -696,8 +707,8 @@ export default function Home() {
                 <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Status</span><span>Owner</span><span>Last touch</span><span>Captured history</span></div>
                 {filteredWorkspaceDeals.map((deal) => (
                   <button className={`data-row ${deal.alert !== "—" ? "has-new-evidence" : ""}`} role="row" key={deal.name} onClick={deal.name === "Asteria Bio" ? openAsteria : () => { setSearchQuery(deal.name); setPanel("search"); }}>
-                    <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong>{deal.alert !== "—" && <em className="new-evidence-badge">New evidence</em>}<small>{deal.sector}</small></span></span>
-                    <span>{deal.stage}</span><span><em>{deal.status}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><i className="coverage-track"><b style={{ width: `${deal.coverage}%` }} /></i>{deal.memories} memories</span>
+                    <span><span><strong>{deal.name}</strong>{deal.alert !== "—" && <em className="new-evidence-badge">New evidence</em>}<small>{deal.sector}</small></span></span>
+                    <span>{deal.stage}</span><span><em>{deal.status}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span>{deal.memories} memories</span>
                   </button>
                 ))}
               </div>
@@ -708,7 +719,7 @@ export default function Home() {
             <section className="workspace-view" aria-labelledby="reports-title">
               <div className="view-heading">
                 <div><h1 id="reports-title">Reports & IC briefs</h1><p>Evidence-backed outputs ready for partner review, committee discussion, and follow-up.</p></div>
-                <button className="primary-button view-action" onClick={() => setPanel("brief")}>New IC brief <span>→</span></button>
+                <button className="primary-button view-action" onClick={() => setPanel("brief")}>New IC brief</button>
               </div>
 
               <div className="report-feature">
@@ -717,7 +728,7 @@ export default function Home() {
                   <h2>Asteria Bio deserves partner review.</h2>
                   <p>A regulatory change directly addresses the uncertainty behind the November pass. Includes current traction, deal economics, fund fit, and three remaining diligence risks.</p>
                   <div><span>Revisit condition matched</span><span>6 sources</span><span>3 open risks</span></div>
-                  <button className="primary-button" onClick={() => setPanel("brief")}>Open partner brief <span>→</span></button>
+                  <button className="primary-button" onClick={() => setPanel("brief")}>Open partner brief</button>
                 </div>
               </div>
 
@@ -729,7 +740,7 @@ export default function Home() {
                   ["Weekly market digest · Jul 20", "Market digest", "31 events", "Sent", "Jul 20", "System"],
                   ["Arcspan Energy · Diligence update", "Deal brief", "18 memories", "Draft", "Jul 18", "KM"],
                   ["Deal memory integrity · Jul", "Data quality", "188 memories", "Sent", "Jul 15", "JL"],
-                ].map((report, index) => <button className="data-row" key={report[0]} onClick={index === 0 ? () => setPanel("brief") : () => openActivity(report[0])}>{report.map((value, itemIndex) => <span key={`${value}-${itemIndex}`} className={itemIndex === 3 && value === "Ready" ? "high-copy" : ""}>{itemIndex === 0 ? <strong>{value}</strong> : value}{itemIndex === 5 && <i>→</i>}</span>)}</button>)}
+                ].map((report, index) => <button className="data-row" key={report[0]} onClick={index === 0 ? () => setPanel("brief") : () => openActivity(report[0])}>{report.map((value, itemIndex) => <span key={`${value}-${itemIndex}`} className={itemIndex === 3 && value === "Ready" ? "high-copy" : ""}>{itemIndex === 0 ? <strong>{value}</strong> : value}</span>)}</button>)}
               </div>
             </section>
           )}
@@ -763,13 +774,12 @@ export default function Home() {
                         <span className="result-monogram">{deal.name.charAt(0)}</span>
                         <span><strong>{deal.name}</strong><small>{deal.meta} · {deal.memories} memories</small></span>
                         <em className={deal.tone}>{deal.status}</em>
-                        <i>→</i>
                       </button>
                     </div>
                   ))}
                   {searchResults.length === 0 && <div className="no-results"><strong>No related companies found</strong><small>Try a broader industry, component, concern, or thesis keyword.</small></div>}
                 </div>
-                {searchResults.length > 0 && <button className="batch-review-button" disabled={!selectedCompanies.length || !xtraceEnabled} onClick={startBatchReassessment}><span>↻</span><span><strong>{!xtraceEnabled ? "Turn on XTrace to re-evaluate" : selectedCompanies.length ? `Re-evaluate ${selectedCompanies.length} selected ${selectedCompanies.length === 1 ? "company" : "companies"}` : "Select companies to re-evaluate"}</strong><small>Analyze only the selected companies and their stored memories</small></span><i>→</i></button>}
+                {searchResults.length > 0 && <button className="batch-review-button" disabled={!selectedCompanies.length || !xtraceEnabled} onClick={startBatchReassessment}><span>↻</span><span><strong>{!xtraceEnabled ? "Turn on XTrace to re-evaluate" : selectedCompanies.length ? `Re-evaluate ${selectedCompanies.length} selected ${selectedCompanies.length === 1 ? "company" : "companies"}` : "Select companies to re-evaluate"}</strong><small>Analyze only the selected companies and their stored memories</small></span></button>}
                 <p className="search-footnote">{searchResults.length} companies found · All statuses included</p>
               </>
             ) : panel === "help" ? (
@@ -778,9 +788,9 @@ export default function Home() {
                 <h2 id="drawer-title">What would you like to do?</h2>
                 <p className="drawer-lede">Jump directly into the core workflows. Keyboard search is available anywhere with ⌘K.</p>
                 <div className="action-list">
-                  <button onClick={() => { setPanel(null); navigateProduct("pipeline"); }}><strong>Review the deal pipeline</strong><small>Filter opportunities by stage and open a company record.</small><i>→</i></button>
-                  <button onClick={() => setPanel("search")}><strong>Search Deal Memory</strong><small>Find companies by name, industry, component, or thesis.</small><i>→</i></button>
-                  <button onClick={() => { setPanel(null); setView("overview"); runScan(); }}><strong>Run a global analysis</strong><small>Compare all eight companies with the latest verified signals.</small><i>→</i></button>
+                  <button onClick={() => { setPanel(null); navigateProduct("pipeline"); }}><strong>Review the deal pipeline</strong><small>Filter opportunities by stage and open a company record.</small></button>
+                  <button onClick={() => setPanel("search")}><strong>Search Deal Memory</strong><small>Find companies by name, industry, component, or thesis.</small></button>
+                  <button onClick={() => { setPanel(null); setView("overview"); runScan(); }}><strong>Run a global analysis</strong><small>Compare all eight companies with the latest verified signals.</small></button>
                 </div>
               </>
             ) : panel === "notifications" ? (
@@ -788,7 +798,7 @@ export default function Home() {
                 <p className="drawer-overline">NOTIFICATIONS / {reviewed ? "00" : "01"} UNREAD</p>
                 <h2 id="drawer-title">Partner review queue</h2>
                 <p className="drawer-lede">Only material decision changes and assigned diligence items appear here.</p>
-                <div className="notification-card"><span>{reviewed ? "READ" : "NEW"}</span><div><strong>Asteria Bio · Belief revised</strong><p>XTrace connected the documented FDA revisit condition to new primary-source evidence.</p><small>2h ago · Assigned to KM</small></div><button onClick={openAsteria}>Review →</button></div>
+                <div className="notification-card"><span>{reviewed ? "READ" : "NEW"}</span><div><strong>Asteria Bio · Belief revised</strong><p>XTrace connected the documented FDA revisit condition to new primary-source evidence.</p><small>2h ago · Assigned to KM</small></div><button onClick={openAsteria}>Review</button></div>
                 <button className="drawer-secondary" onClick={() => { setReviewed(true); setPanel(null); notify("ALL NOTIFICATIONS MARKED READ"); }}>Mark all as read</button>
               </>
             ) : panel === "sources" ? (
@@ -797,10 +807,10 @@ export default function Home() {
                 <h2 id="drawer-title">{drawerContext || "Verified source ledger"}</h2>
                 <p className="drawer-lede">Every public fact retains publisher, publication date, retrieval time, and its original URL.</p>
                 <div className="source-ledger">
-                  <a href="https://www.federalregister.gov/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>Federal Register</strong><small>Regulatory notice · retrieved Jul 21, 2026</small><i>↗</i></a>
-                  <a href="https://www.fda.gov/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>U.S. Food & Drug Administration</strong><small>Program guidance · retrieved Jul 21, 2026</small><i>↗</i></a>
-                  <a href="https://www.sec.gov/edgar/search/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>SEC EDGAR</strong><small>Company filings · synced Jul 21, 2026</small><i>↗</i></a>
-                  <button onClick={() => { setPanel("activity"); setDrawerContext("Internal source lineage"); }}><span>INTERNAL</span><strong>Founder deck + CRM record</strong><small>Permissioned fund memory · verified Jul 15, 2026</small><i>→</i></button>
+                  <a href="https://www.federalregister.gov/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>Federal Register</strong><small>Regulatory notice · retrieved Jul 21, 2026</small></a>
+                  <a href="https://www.fda.gov/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>U.S. Food & Drug Administration</strong><small>Program guidance · retrieved Jul 21, 2026</small></a>
+                  <a href="https://www.sec.gov/edgar/search/" target="_blank" rel="noreferrer"><span>PRIMARY</span><strong>SEC EDGAR</strong><small>Company filings · synced Jul 21, 2026</small></a>
+                  <button onClick={() => { setPanel("activity"); setDrawerContext("Internal source lineage"); }}><span>INTERNAL</span><strong>Founder deck + CRM record</strong><small>Permissioned fund memory · verified Jul 15, 2026</small></button>
                 </div>
               </>
             ) : panel === "activity" ? (
@@ -825,7 +835,7 @@ export default function Home() {
                   <label><span>Sector</span><input required placeholder="e.g. Climate software" /></label>
                   <label><span>Stage</span><select defaultValue="Seed"><option>Pre-seed</option><option>Seed</option><option>Series A</option><option>Series B</option></select></label>
                   <label><span>Owner</span><select defaultValue="KM"><option>KM</option><option>JL</option><option>AP</option></select></label>
-                  <button className="drawer-primary" type="submit">Create company record →</button>
+                  <button className="drawer-primary" type="submit">Create company record</button>
                 </form>
               </>
             ) : panel === "evidence" ? (
@@ -856,7 +866,7 @@ export default function Home() {
                   <span>EVIDENCE ASSESSMENT</span>
                   <p>The event does not guarantee approval. It removes the precise regulatory uncertainty documented in the original pass decision, making a fresh diligence call actionable.</p>
                 </div>
-                <button className="drawer-primary" onClick={() => setPanel("brief")}>Turn evidence into partner brief →</button>
+                <button className="drawer-primary" onClick={() => setPanel("brief")}>Turn evidence into partner brief</button>
               </>
             ) : (
               <>
@@ -878,7 +888,7 @@ export default function Home() {
                 <button className="drawer-primary send" onClick={() => {
                   setPanel(null);
                   notify("PARTNER BRIEF SENT · EVIDENCE ATTACHED");
-                }}>Send to investment committee <span>→</span></button>
+                }}>Send to investment committee</button>
                 <p className="demo-disclaimer">Demo interaction · no external email is sent from this website.</p>
               </>
             )}
