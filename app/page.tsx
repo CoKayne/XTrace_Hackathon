@@ -7,21 +7,15 @@ type Panel = "evidence" | "brief" | "search" | "help" | "notifications" | "sourc
 type DetailTab = "overview" | "traction" | "deal" | "risks" | "history";
 type AppView = "overview" | "pipeline" | "signals" | "deals" | "reports";
 
-const scanCopy = [
-  "Acquiring verified market signals",
-  "Sweeping 188 decision memories",
-  "Testing 12 documented revisit conditions",
-];
-
 const dealDirectory = [
   { name: "Asteria Bio", meta: "AI diagnostics · Series A", status: "Passed · revisit", tone: "signal", memories: 14, tags: ["healthcare", "diagnostics", "ai", "regulatory"] },
-  { name: "Northstar Robotics", meta: "Automotive automation · Seed", status: "Watching", tone: "neutral", memories: 31, tags: ["automotive", "汽車", "manufacturing", "robotics", "chassis"] },
-  { name: "Arcspan Energy", meta: "Grid & battery software · Series B", status: "Evaluating", tone: "neutral", memories: 18, tags: ["energy", "battery", "電池", "electric vehicle", "ev", "automotive"] },
+  { name: "Northstar Robotics", meta: "Automotive automation · Seed", status: "Watching", tone: "neutral", memories: 31, tags: ["automotive", "manufacturing", "robotics", "chassis"] },
+  { name: "Arcspan Energy", meta: "Grid & battery software · Series B", status: "Evaluating", tone: "neutral", memories: 18, tags: ["energy", "battery", "electric vehicle", "ev", "automotive"] },
   { name: "Harbor AI", meta: "Security infrastructure · Seed", status: "Passed", tone: "neutral", memories: 22, tags: ["security", "infrastructure", "ai"] },
   { name: "Cinder Systems", meta: "Developer tools · Series A", status: "Invested", tone: "invested", memories: 47, tags: ["developer tools", "software", "infrastructure"] },
-  { name: "Torque Materials", meta: "EV battery materials · Series A", status: "Interested", tone: "interested", memories: 19, tags: ["automotive", "汽車", "electric vehicle", "ev", "battery", "電池", "materials"] },
-  { name: "VectorForge", meta: "Lightweight vehicle chassis · Seed", status: "Interested", tone: "interested", memories: 11, tags: ["automotive", "汽車", "chassis", "車架", "manufacturing", "materials"] },
-  { name: "CombustionX", meta: "Next-gen powertrain · Series B", status: "Passed", tone: "neutral", memories: 26, tags: ["automotive", "汽車", "engine", "引擎", "powertrain", "mobility"] },
+  { name: "Torque Materials", meta: "EV battery materials · Series A", status: "Interested", tone: "interested", memories: 19, tags: ["automotive", "electric vehicle", "ev", "battery", "materials"] },
+  { name: "VectorForge", meta: "Lightweight vehicle chassis · Seed", status: "Interested", tone: "interested", memories: 11, tags: ["automotive", "chassis", "manufacturing", "materials"] },
+  { name: "CombustionX", meta: "Next-gen powertrain · Series B", status: "Passed", tone: "neutral", memories: 26, tags: ["automotive", "engine", "powertrain", "mobility"] },
 ];
 
 const detailTabs: Array<{ id: DetailTab; label: string; count?: string }> = [
@@ -66,9 +60,9 @@ function matchesDealSearch(deal: (typeof dealDirectory)[number], rawQuery: strin
   if (directText.includes(query)) return true;
 
   const semanticGroups = [
-    { aliases: ["automotive", "car", "cars", "vehicle", "vehicles", "mobility", "汽車", "汽車業", "車用", "電動車"], concepts: ["automotive", "汽車", "engine", "引擎", "chassis", "車架", "battery", "電池", "ev", "electric vehicle", "mobility", "powertrain"] },
-    { aliases: ["healthcare", "health", "醫療", "生技"], concepts: ["healthcare", "diagnostics", "clinical", "hospital", "biotech"] },
-    { aliases: ["enterprise software", "software", "saas", "軟體"], concepts: ["software", "developer tools", "infrastructure", "security", "ai"] },
+    { aliases: ["automotive", "car", "cars", "vehicle", "vehicles", "mobility"], concepts: ["automotive", "engine", "chassis", "battery", "ev", "electric vehicle", "mobility", "powertrain"] },
+    { aliases: ["healthcare", "health", "biotech"], concepts: ["healthcare", "diagnostics", "clinical", "hospital", "biotech"] },
+    { aliases: ["enterprise software", "software", "saas"], concepts: ["software", "developer tools", "infrastructure", "security", "ai"] },
   ];
   const group = semanticGroups.find(({ aliases }) => aliases.some((alias) => query.includes(alias) || alias.includes(query)));
   return group ? group.concepts.some((concept) => directText.includes(concept)) : directText.split(/\s+/).some((term) => term.startsWith(query));
@@ -76,13 +70,13 @@ function matchesDealSearch(deal: (typeof dealDirectory)[number], rawQuery: strin
 
 export default function Home() {
   const [view, setView] = useState<AppView>("overview");
-  const [scanState, setScanState] = useState<ScanState>("matched");
-  const [scanStep, setScanStep] = useState(3);
+  const [scanState, setScanState] = useState<ScanState>("idle");
+  const [scanStep, setScanStep] = useState(0);
   const [panel, setPanel] = useState<Panel>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [tasks, setTasks] = useState([false, false, false]);
-  const [reviewed, setReviewed] = useState(false);
+  const [reviewed, setReviewed] = useState(true);
   const [signalFilter, setSignalFilter] = useState("All");
   const [pipelineFilter, setPipelineFilter] = useState("All");
   const [dealFilter, setDealFilter] = useState("All");
@@ -90,6 +84,9 @@ export default function Home() {
   const [analysisCompanies, setAnalysisCompanies] = useState<string[]>(dealDirectory.map((deal) => deal.name));
   const [analysisMode, setAnalysisMode] = useState<"global" | "selected">("global");
   const [inAgenda, setInAgenda] = useState(false);
+  const [xtraceEnabled, setXtraceEnabled] = useState(true);
+  const [scanUsesXTrace, setScanUsesXTrace] = useState(true);
+  const [outreachApproved, setOutreachApproved] = useState(false);
   const [drawerContext, setDrawerContext] = useState("");
   const [batchReview, setBatchReview] = useState<"idle" | "running" | "complete">("idle");
   const [batchCompanies, setBatchCompanies] = useState(0);
@@ -98,6 +95,19 @@ export default function Home() {
   const searchResults = dealDirectory.filter((deal) => matchesDealSearch(deal, searchQuery));
   const filteredWorkspaceDeals = workspaceDeals.filter((deal) => dealFilter === "All" || deal.status === dealFilter);
   const analysisMemoryCount = analysisMode === "global" ? 188 : dealDirectory.filter((deal) => analysisCompanies.includes(deal.name)).reduce((sum, deal) => sum + deal.memories, 0);
+  const analysisSteps = scanUsesXTrace ? [
+    { title: "Agent initiated.", detail: "Monitoring verified sources and fund memory." },
+    { title: "Scanning last 24h market signals…", detail: "Found: FDA pilots accelerated review for AI-enabled diagnostics." },
+    { title: "Querying XTrace memory for impacted deals…", detail: `${analysisMemoryCount} source-linked memories across ${analysisCompanies.length} ${analysisCompanies.length === 1 ? "company" : "companies"}.` },
+    { title: "Conflict detected: Asteria Bio", detail: "Passed because ‘FDA pathway unclear’ — the documented revisit condition now changed." },
+    { title: "Synthesizing belief revision…", detail: "Preparing evidence chain and recommended next move." },
+  ] : [
+    { title: "Agent initiated.", detail: "Monitoring verified public sources." },
+    { title: "Scanning last 24h market signals…", detail: "Found: FDA pilots accelerated review for AI-enabled diagnostics." },
+    { title: "XTrace memory query skipped.", detail: "Decision memory is turned off for this scan." },
+    { title: "Market signal stored.", detail: "No historical deal decision was compared." },
+    { title: "Scan complete.", detail: "Turn on XTrace to identify impacted companies and revised beliefs." },
+  ];
 
   const clearTimers = () => {
     timers.current.forEach((timer) => window.clearTimeout(timer));
@@ -118,10 +128,12 @@ export default function Home() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  function runScan(companies?: string[]) {
+  function runScan(companies?: string[], forceXTrace?: boolean) {
     if (scanState === "scanning") return;
     clearTimers();
+    const usingXTrace = forceXTrace ?? xtraceEnabled;
     const targets = companies?.length ? companies : dealDirectory.map((deal) => deal.name);
+    setScanUsesXTrace(usingXTrace);
     setAnalysisCompanies(targets);
     setAnalysisMode(companies?.length ? "selected" : "global");
     if (companies?.length) {
@@ -135,15 +147,15 @@ export default function Home() {
     setScanStep(0);
     setScanState("scanning");
 
-    timers.current.push(
-      window.setTimeout(() => setScanStep(1), 980),
-      window.setTimeout(() => setScanStep(2), 2100),
-      window.setTimeout(() => {
-        setScanStep(3);
-        setScanState("matched");
-        if (companies?.length) setBatchReview("complete");
-      }, 3400),
-    );
+    [650, 1350, 2150, 2950].forEach((delay, index) => {
+      timers.current.push(window.setTimeout(() => setScanStep(index + 1), delay));
+    });
+    timers.current.push(window.setTimeout(() => {
+      setScanStep(5);
+      setScanState("matched");
+      setReviewed(!usingXTrace);
+      if (companies?.length && usingXTrace) setBatchReview("complete");
+    }, 3900));
   }
 
   function replay() {
@@ -160,9 +172,25 @@ export default function Home() {
   }
 
   function startBatchReassessment() {
-    if (!selectedCompanies.length) return;
+    if (!selectedCompanies.length || !xtraceEnabled) {
+      if (!xtraceEnabled) notify("TURN ON XTRACE TO RE-EVALUATE DEAL MEMORY");
+      return;
+    }
     setView("overview");
     runScan(selectedCompanies);
+  }
+
+  function toggleXTrace() {
+    if (scanState === "scanning") return;
+    const next = !xtraceEnabled;
+    clearTimers();
+    setXtraceEnabled(next);
+    setScanUsesXTrace(next);
+    setScanState("idle");
+    setScanStep(0);
+    setBatchReview("idle");
+    setView("overview");
+    notify(next ? "XTRACE ON · DECISION MEMORY CONNECTED" : "XTRACE OFF · MARKET-ONLY MODE");
   }
 
   function toggleSelectedCompany(name: string) {
@@ -209,8 +237,11 @@ export default function Home() {
 
   function openAsteria() {
     clearTimers();
-    setScanStep(3);
+    setScanStep(5);
     setScanState("matched");
+    setXtraceEnabled(true);
+    setScanUsesXTrace(true);
+    setReviewed(false);
     setAnalysisMode("global");
     setAnalysisCompanies(dealDirectory.map((deal) => deal.name));
     setBatchReview("idle");
@@ -224,9 +255,9 @@ export default function Home() {
       <aside className="rail" aria-label="Primary navigation">
         <button className="brand-lockup" aria-label="VSee overview" onClick={() => navigateProduct("overview")}>
           <span className="brand-mark"><i><b>VS</b></i></span>
-          <span className="brand-copy"><strong>VSee</strong><small>Investment workspace</small></span>
+          <span className="brand-copy"><strong>VSee</strong><small>Decision intelligence</small></span>
         </button>
-        <p className="nav-section-label">WORKSPACE</p>
+        <p className="nav-section-label">DEALS</p>
         <nav className="rail-nav" aria-label="Product areas">
           <button className={`rail-item ${view === "overview" ? "active" : ""}`} onClick={() => navigateProduct("overview")}><span>⌂</span><b>Overview</b>{!reviewed && <em>1</em>}</button>
           <button className={`rail-item ${view === "pipeline" ? "active" : ""}`} onClick={() => navigateProduct("pipeline")}><span>▤</span><b>Deal pipeline</b><small>6</small></button>
@@ -242,53 +273,37 @@ export default function Home() {
             <span className="system-dot" />
             <span><strong>Sources healthy</strong><small>3 of 4 connected</small></span>
           </button>
-          <div className="workspace-user"><span className="avatar">KM</span><span><strong>Kayne M.</strong><small>Partner · Sample workspace</small></span></div>
+          <div className="workspace-user"><span className="avatar">KM</span><span><strong>Kayne M.</strong><small>Partner · Fund II</small></span></div>
         </div>
       </aside>
 
       <div className="workspace">
         <header className="topbar">
-          <div className="workspace-crumb"><strong>North Ridge Ventures</strong><span>/</span><small>Fund II</small></div>
-          <span className="demo-label">SAMPLE WORKSPACE</span>
           <div className="top-actions">
             <button className="memory-search" onClick={() => setPanel("search")} aria-label="Search deal memory">
               <span>⌕</span> Search companies, decisions, or concerns <kbd>⌘ K</kbd>
             </button>
+            <button className={`xtrace-toggle ${xtraceEnabled ? "on" : "off"}`} role="switch" aria-checked={xtraceEnabled} aria-label={`Turn XTrace ${xtraceEnabled ? "off" : "on"}`} onClick={toggleXTrace} disabled={scanState === "scanning"}>
+              <span><small>XTRACE</small><strong>{xtraceEnabled ? "ON" : "OFF"}</strong></span><i><b /></i>
+            </button>
             <button className="utility-button" onClick={() => setPanel("help")} aria-label="Help">?</button>
-            <button className="utility-button notification-button" onClick={() => setPanel("notifications")} aria-label="Notifications">○<i /></button>
+            <button className="utility-button notification-button" onClick={() => setPanel("notifications")} aria-label="Notifications">○{!reviewed && <i />}</button>
             <button className={`scan-button ${scanState === "scanning" ? "scanning" : ""}`} onClick={() => { setView("overview"); runScan(); }} disabled={scanState === "scanning"}>
               <span className="button-dot" />
-              {scanState === "scanning" ? "Analyzing…" : "+ New analysis"}
+              {scanState === "scanning" ? "Agent running…" : "Wake Agent & Scan Market"}
             </button>
           </div>
         </header>
 
         <main className="product-main">
           {view === "overview" && <>
-          <section className="product-heading" aria-labelledby="hero-title">
-            <div>
-              <p className="eyebrow">FUND II · OPERATING OVERVIEW</p>
-              <h1 id="hero-title">Good morning, Kayne.</h1>
-              <p className="subline">1 decision change needs review. 2 diligence items are due.</p>
-            </div>
-            <div className="heading-actions">
-              <span>WEDNESDAY · JUL 22, 2026</span>
-            </div>
-          </section>
-
-          <section className="kpi-grid" aria-label="Workspace health">
-            <article><span>ACTIVE PIPELINE</span><strong>$29M</strong><small>6 opportunities</small></article>
-            <article><span>IC AGENDA</span><strong>1</strong><small>Arcspan Energy</small></article>
-            <article><span>PARTNER REVIEW</span><strong className="signal">{reviewed ? "0" : "1"}</strong><small>{reviewed ? "All caught up" : "Decision delta"}</small></article>
-          </section>
-
           <section className={`signal-zone ${scanState}`} aria-live="polite">
             <div className="signal-meta">
               <span className="signal-kicker">
                 <i />
-                {scanState === "matched" ? "DECISION DELTA DETECTED" : scanState === "scanning" ? "ANALYZING DECISION MEMORY" : "READY TO COMPARE"}
+                {scanState === "matched" ? (scanUsesXTrace ? "BELIEF REVISED" : "MARKET SIGNAL FOUND") : scanState === "scanning" ? "AGENT RUNNING" : "XTRACE AGENT READY"}
               </span>
-              <span>JUL 21, 2026 · 14:32 PT</span>
+              <span>LIVE · LAST 24 HOURS</span>
             </div>
 
             {scanState !== "matched" ? (
@@ -300,30 +315,26 @@ export default function Home() {
                   </div>
 
                   <div className="thinking-prompt">
-                    <span>ANALYSIS REQUEST</span>
-                    <p>{analysisMode === "selected" ? `Re-evaluate ${analysisCompanies.length} selected companies using every new verified signal.` : "Compare every new verified market signal with the fund’s complete decision memory."}</p>
+                    <span>AGENT MISSION</span>
+                    <p>{scanUsesXTrace ? (analysisMode === "selected" ? `Re-evaluate ${analysisCompanies.length} selected companies using every new verified signal.` : "Scan the market, query XTrace memory, and surface beliefs that should change.") : "Scan verified market sources without querying historical deal memory."}</p>
                   </div>
 
                   {scanState === "idle" ? (
                     <div className="thinking-idle">
-                      <p className="scan-overline">188 INVESTMENT MEMORIES READY</p>
-                      <h2>Find the decision<br />the market just changed.</h2>
-                      <p>Eight companies, 188 source-linked memories, and 12 documented revisit conditions are ready for analysis.</p>
-                      <button className="stage-cta" onClick={() => runScan()}>Begin analysis <span>→</span></button>
+                      <p className="scan-overline">{scanUsesXTrace ? "XTRACE ON · 188 MEMORIES CONNECTED" : "XTRACE OFF · MARKET-ONLY MODE"}</p>
+                      <h2>Wake the agent.<br />Find the belief that changed.</h2>
+                      <p>{scanUsesXTrace ? "The agent will connect live market signals to the reasons behind past investment decisions." : "The agent will find market changes, but it cannot identify which past investment beliefs they invalidate."}</p>
+                      <button className="stage-cta" onClick={() => runScan()}>Wake Agent & Scan Market <span>→</span></button>
                     </div>
                   ) : (
                     <div className="thinking-body" aria-label="Live analysis trace">
-                      <div className="thinking-summary"><span className="thinking-loader"><i /><i /><i /></span><strong>{scanCopy[Math.min(scanStep, 2)]}</strong><small>Working across source lineage and investment memory</small></div>
+                      <div className="thinking-summary"><span className="thinking-loader"><i /><i /><i /></span><strong>{analysisSteps[Math.min(scanStep, analysisSteps.length - 1)].title}</strong><small>{scanUsesXTrace ? "Market intelligence + XTrace decision memory" : "Market intelligence only · XTrace off"}</small></div>
                       <div className="thinking-trace">
-                        {[
-                          { title: "Searching verified market sources", detail: "Federal Register · FDA · SEC EDGAR · configured RSS", result: "6 current sources retrieved" },
-                          { title: `Reading ${analysisMemoryCount} decision memories`, detail: `${analysisCompanies.length} ${analysisCompanies.length === 1 ? "company" : "companies"} · facts · artifacts · partner episodes`, result: `${analysisMemoryCount} memories loaded with lineage` },
-                          { title: "Testing documented revisit conditions", detail: "Regulatory change · commercial traction · valuation · market timing", result: analysisMode === "selected" && !analysisCompanies.some((name) => ["Asteria Bio", "Arcspan Energy"].includes(name)) ? "No material decision change found" : "1 decision delta requires partner review" },
-                        ].map((item, index) => {
+                        {analysisSteps.map((item, index) => {
                           const status = index < scanStep ? "complete" : index === scanStep ? "current" : "pending";
-                          return <div className={`trace-step ${status}`} key={item.title}>
+                          return <div className={`trace-step ${status} ${index === 3 && scanUsesXTrace ? "conflict" : ""}`} key={item.title}>
                             <span className="trace-status">{status === "complete" ? "✓" : status === "current" ? <i /> : `0${index + 1}`}</span>
-                            <div><strong>{item.title}</strong><p>{item.detail}</p>{status === "complete" && <small>{item.result}</small>}</div>
+                            <div><strong><b>›</b> {item.title}</strong><p>{item.detail}</p></div>
                           </div>;
                         })}
                       </div>
@@ -331,6 +342,15 @@ export default function Home() {
                   )}
                 </div>
               </div>
+            ) : !scanUsesXTrace ? (
+              <article className="market-only-card">
+                <div className="market-only-head"><span>✓</span><div><p>MARKET SCAN COMPLETE</p><h2>FDA review policy changed.</h2><small>Federal Register · FDA · detected 2h ago</small></div></div>
+                <div className="market-only-body">
+                  <section><span>VERIFIED MARKET SIGNAL</span><h3>FDA pilots accelerated review for AI-enabled diagnostics</h3><p>One material regulatory event was captured and added to the signal ledger.</p><button className="secondary-button" onClick={() => { setDrawerContext("FDA accelerated review signal"); setPanel("sources"); }}>Inspect source</button></section>
+                  <aside><span>XTRACE OFF</span><strong>Impacted deal: unknown</strong><p>No decision memories were queried, so the agent cannot identify which prior belief should be revisited.</p></aside>
+                </div>
+                <div className="market-only-action"><div><strong>See what XTrace changes</strong><small>Connect the same signal to 188 source-linked investment memories.</small></div><button className="primary-button" onClick={() => { setXtraceEnabled(true); runScan(undefined, true); }}>Turn on XTrace & re-run <span>→</span></button></div>
+              </article>
             ) : analysisMode === "selected" ? (
               <article className="batch-match-card">
                 <div className="batch-result-head">
@@ -339,7 +359,7 @@ export default function Home() {
                   <button onClick={() => { setSearchQuery(""); setPanel("search"); }}>Change selection</button>
                 </div>
                 <div className="batch-result-summary">
-                  <article><span>REVISIT CONDITIONS MET</span><strong>{analysisCompanies.some((name) => ["Asteria Bio", "Arcspan Energy"].includes(name)) ? "1" : "0"}</strong><small>Requires partner review</small></article>
+                  <article><span>BELIEFS REVISED</span><strong>{analysisCompanies.some((name) => ["Asteria Bio", "Arcspan Energy"].includes(name)) ? "1" : "0"}</strong><small>Requires partner review</small></article>
                   <article><span>NEW SUPPORTING FACTORS</span><strong>{Math.min(analysisCompanies.length + 1, 5)}</strong><small>Across selected companies</small></article>
                   <article><span>NO MATERIAL CHANGE</span><strong>{Math.max(analysisCompanies.length - 1, 0)}</strong><small>Thesis remains unchanged</small></article>
                 </div>
@@ -362,7 +382,7 @@ export default function Home() {
                     <p>AI-assisted diagnostics · Series A</p>
                   </div>
                   <span className="status-chip">PASSED · 8 MONTHS AGO</span>
-                  <span className="condition-match">Condition matched <i /></span>
+                  <span className="condition-match">Belief revised <i /></span>
                 </div>
 
                 <div className="compare-grid">
@@ -375,7 +395,7 @@ export default function Home() {
                     <dl>
                       <div>
                         <dt>Decision reason</dt>
-                        <dd>FDA pathway unclear</dd>
+                        <dd><span className="belief-conflict-old">FDA pathway unclear</span></dd>
                       </div>
                       <div>
                         <dt>Revisit when</dt>
@@ -389,7 +409,7 @@ export default function Home() {
 
                   <div className="causal-bridge" aria-hidden="true">
                     <span className="bridge-line" />
-                    <span className="bridge-node">MATCH</span>
+                    <span className="bridge-node">REVISED</span>
                   </div>
 
                   <section className="compare-side now-side">
@@ -397,12 +417,12 @@ export default function Home() {
                       <span>NOW / MARKET EVIDENCE</span>
                       <span>DETECTED 2H AGO</span>
                     </div>
-                    <h3>FDA pilots accelerated review for AI-enabled diagnostics</h3>
+                    <h3><span className="belief-conflict-new">FDA pilots accelerated review for AI-enabled diagnostics</span></h3>
                     <div className="confidence-row">
                       <div className="confidence-ring"><span>High</span></div>
                       <div>
-                        <strong>Revisit condition matched</strong>
-                        <p>Exact condition, relevant sector, and primary-source evidence are all present.</p>
+                        <strong>Old belief contradicted by new evidence</strong>
+                        <p>XTrace connected the original blocker to a verified regulatory change.</p>
                       </div>
                     </div>
                     <button className="evidence-pill live-evidence" onClick={() => setPanel("evidence")}>
@@ -411,28 +431,26 @@ export default function Home() {
                   </section>
                 </div>
 
-                <div className="recommendation-row">
-                  <div>
-                    <span>RECOMMENDED NEXT MOVE</span>
-                    <p>Book a 30-minute re-evaluation with the original deal team.</p>
+                <div className="outreach-panel">
+                  <div className="outreach-label"><span>RECOMMENDED NEXT MOVE</span><strong>Re-open Asteria with the original deal team.</strong></div>
+                  <div className="outreach-draft">
+                    <div className="outreach-meta"><span>TO</span><strong>Asteria deal team</strong><span>SUBJECT</span><strong>Re-open Asteria Bio · FDA condition changed</strong></div>
+                    <p>Team — the FDA uncertainty behind our November pass has materially changed. XTrace matched the new accelerated-review pilot to our documented revisit condition. I recommend a 30-minute re-evaluation this week to review traction, remaining clinical risk, and round dynamics.</p>
                   </div>
-                  <div className="recommendation-actions">
-                    <button className="secondary-button" onClick={() => setPanel("evidence")}>Inspect evidence</button>
-                    <button className={`review-button ${reviewed ? "reviewed" : ""}`} onClick={() => { setReviewed(!reviewed); notify(reviewed ? "ALERT RETURNED TO REVIEW QUEUE" : "ALERT MARKED REVIEWED · AUDIT LOG UPDATED"); }}>{reviewed ? "✓ Reviewed" : "Mark reviewed"}</button>
-                    <button className="primary-button" onClick={() => setPanel("brief")}>Prepare partner brief <span>→</span></button>
-                  </div>
+                  <div className="outreach-actions"><button className="secondary-button" onClick={() => setPanel("evidence")}>Inspect evidence</button><button className={`primary-button ${outreachApproved ? "approved" : ""}`} onClick={() => { setOutreachApproved(true); setReviewed(true); notify("OUTREACH APPROVED · AUDIT LOG UPDATED"); }}>{outreachApproved ? "✓ Outreach approved" : "Approve outreach"}<span>→</span></button></div>
                 </div>
               </article>
             )}
 
           </section>
 
-          {scanState === "matched" && analysisMode === "global" && (
+          {scanState === "matched" && scanUsesXTrace && analysisMode === "global" && (
             <section className="deal-intelligence" id="deal-intelligence" aria-labelledby="deal-room-title">
               <div className="section-heading">
                 <div>
-                  <p className="eyebrow">PARTNER DECISION ROOM</p>
-                  <h2 id="deal-room-title">Asteria Bio · decision-ready view</h2>
+                  <p className="eyebrow">COMPANY INTELLIGENCE</p>
+                  <h2 id="deal-room-title">Asteria Bio · the full decision context</h2>
+                  <p className="section-intro">Decision memory, live evidence, traction, terms, risks, and history—connected in one company record.</p>
                 </div>
                 <div className="freshness">
                   <span className="system-dot" />
@@ -443,7 +461,7 @@ export default function Home() {
               <div className="company-context">
                 <div className="context-company">
                   <span className="company-monogram">A</span>
-                  <div><strong>Asteria Bio</strong><small>AI-assisted diagnostics · San Francisco</small></div>
+                  <div><span className="company-intro-eyebrow">XTRACE COMPANY BRIEF</span><strong>Asteria Bio</strong><small>AI-assisted diagnostics · San Francisco</small><span className="company-capability-tags"><i>Decision memory</i><i>Live signals</i><i>Source lineage</i></span></div>
                 </div>
                 <div className="context-stat"><span>STAGE</span><strong>Series A</strong></div>
                 <div className="context-stat"><span>RAISING</span><strong>$12M</strong></div>
@@ -576,7 +594,7 @@ export default function Home() {
                   <div className="history-layout">
                     <div className="timeline">
                       {[
-                        ["JUL 21, 2026", "Decision delta detected", "Market signal matched the team’s documented revisit condition.", "live"],
+                        ["JUL 21, 2026", "Belief revised", "XTrace connected a market signal to the team’s documented revisit condition.", "live"],
                         ["NOV 18, 2025", "Investment committee passed", "Regulatory pathway was the decisive unresolved risk.", ""],
                         ["NOV 12, 2025", "Partner meeting", "Team interest was strong; pricing and FDA path remained open.", ""],
                         ["OCT 29, 2025", "Founder introduction", "Inbound from Meridian Health CEO; initial product demo completed.", ""],
@@ -613,7 +631,7 @@ export default function Home() {
               <div className="data-table pipeline-table" role="table" aria-label="Deal pipeline">
                 <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Owner</span><span>Last activity</span><span>Next action</span><span>Target check</span><span>Potential factors</span></div>
                 {pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).map((deal) => (
-                  <button className="data-row" role="row" key={deal.name} onClick={() => openActivity(`${deal.name} · Deal workspace`)}>
+                  <button className="data-row" role="row" key={deal.name} onClick={() => openActivity(`${deal.name} · Deal record`)}>
                     <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong><small>{deal.sector}</small></span></span>
                     <span><em className={`stage-${deal.stage.toLowerCase().replace(" ", "-")}`}>{deal.stage}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><strong>{deal.next}</strong></span><span>{deal.amount}</span><span className="potential-cell">{deal.factors} <i>→</i></span>
                   </button>
@@ -696,7 +714,7 @@ export default function Home() {
 
               <div className="report-feature">
                 <div className="report-feature-copy">
-                  <span className="new-badge">NEW · DECISION DELTA</span>
+                  <span className="new-badge">NEW · BELIEF REVISED</span>
                   <h2>Asteria Bio deserves partner review.</h2>
                   <p>A regulatory change directly addresses the uncertainty behind the November pass. Includes current traction, deal economics, fund fit, and three remaining diligence risks.</p>
                   <div><span>Revisit condition matched</span><span>6 sources</span><span>3 open risks</span></div>
@@ -708,7 +726,7 @@ export default function Home() {
               <div className="data-table report-table">
                 <div className="data-row table-head"><span>Report</span><span>Type</span><span>Coverage</span><span>Status</span><span>Created</span><span>Owner</span></div>
                 {[
-                  ["Asteria Bio · Decision delta", "IC brief", "6 sources", "Ready", "Today, 14:34", "KM"],
+                  ["Asteria Bio · Belief revision", "IC brief", "6 sources", "Ready", "Today, 14:34", "KM"],
                   ["Weekly market digest · Jul 20", "Market digest", "31 events", "Sent", "Jul 20", "System"],
                   ["Arcspan Energy · Diligence update", "Deal brief", "18 memories", "Draft", "Jul 18", "KM"],
                   ["Deal memory integrity · Jul", "Data quality", "188 memories", "Sent", "Jul 15", "JL"],
@@ -732,11 +750,11 @@ export default function Home() {
                 <p className="drawer-lede">Search by company, industry, value-chain component, concern, or thesis. Results include invested, interested, active, watched, and passed companies.</p>
                 <label className="search-field">
                   <span>⌕</span>
-                  <input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Try “汽車業”, “automotive”, or “healthcare”" />
+                  <input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Try “automotive industry”, “healthcare”, or “developer tools”" />
                   <kbd>ESC</kbd>
                 </label>
-                <div className="search-suggestions"><span>TRY</span><button onClick={() => setSearchQuery("汽車業")}>汽車業</button><button onClick={() => setSearchQuery("healthcare")}>Healthcare</button><button onClick={() => setSearchQuery("developer tools")}>Developer tools</button></div>
-                {searchQuery && <div className="semantic-scope"><span>RELATED INDUSTRY SCOPE</span><p>{searchQuery.toLowerCase().includes("汽車") || searchQuery.toLowerCase().includes("auto") ? "Automotive · engines · chassis · batteries · EV infrastructure · manufacturing automation" : "Company descriptions, industry tags, interaction summaries, decisions, and source-linked memories"}</p></div>}
+                <div className="search-suggestions"><span>TRY</span><button onClick={() => setSearchQuery("automotive industry")}>Automotive industry</button><button onClick={() => setSearchQuery("healthcare")}>Healthcare</button><button onClick={() => setSearchQuery("developer tools")}>Developer tools</button></div>
+                {searchQuery && <div className="semantic-scope"><span>RELATED INDUSTRY SCOPE</span><p>{searchQuery.toLowerCase().includes("auto") ? "Automotive · engines · chassis · batteries · EV infrastructure · manufacturing automation" : "Company descriptions, industry tags, interaction summaries, decisions, and source-linked memories"}</p></div>}
                 {searchResults.length > 0 && <div className="search-selection-toolbar"><span>{selectedCompanies.filter((name) => searchResults.some((deal) => deal.name === name)).length} selected</span><button onClick={() => { const names = searchResults.map((deal) => deal.name); const allSelected = names.every((name) => selectedCompanies.includes(name)); setSelectedCompanies(allSelected ? selectedCompanies.filter((name) => !names.includes(name)) : Array.from(new Set([...selectedCompanies, ...names]))); }}>{searchResults.every((deal) => selectedCompanies.includes(deal.name)) ? "Clear results" : "Select all results"}</button></div>}
                 <div className="deal-results">
                   {searchResults.map((deal) => (
@@ -752,7 +770,7 @@ export default function Home() {
                   ))}
                   {searchResults.length === 0 && <div className="no-results"><strong>No related companies found</strong><small>Try a broader industry, component, concern, or thesis keyword.</small></div>}
                 </div>
-                {searchResults.length > 0 && <button className="batch-review-button" disabled={!selectedCompanies.length} onClick={startBatchReassessment}><span>↻</span><span><strong>{selectedCompanies.length ? `Re-evaluate ${selectedCompanies.length} selected ${selectedCompanies.length === 1 ? "company" : "companies"}` : "Select companies to re-evaluate"}</strong><small>Analyze only the selected companies and their stored memories</small></span><i>→</i></button>}
+                {searchResults.length > 0 && <button className="batch-review-button" disabled={!selectedCompanies.length || !xtraceEnabled} onClick={startBatchReassessment}><span>↻</span><span><strong>{!xtraceEnabled ? "Turn on XTrace to re-evaluate" : selectedCompanies.length ? `Re-evaluate ${selectedCompanies.length} selected ${selectedCompanies.length === 1 ? "company" : "companies"}` : "Select companies to re-evaluate"}</strong><small>Analyze only the selected companies and their stored memories</small></span><i>→</i></button>}
                 <p className="search-footnote">{searchResults.length} companies found · All statuses included</p>
               </>
             ) : panel === "help" ? (
@@ -761,17 +779,17 @@ export default function Home() {
                 <h2 id="drawer-title">What would you like to do?</h2>
                 <p className="drawer-lede">Jump directly into the core workflows. Keyboard search is available anywhere with ⌘K.</p>
                 <div className="action-list">
-                  <button onClick={() => { setPanel(null); navigateProduct("pipeline"); }}><strong>Review the deal pipeline</strong><small>Filter opportunities by stage and open a company workspace.</small><i>→</i></button>
+                  <button onClick={() => { setPanel(null); navigateProduct("pipeline"); }}><strong>Review the deal pipeline</strong><small>Filter opportunities by stage and open a company record.</small><i>→</i></button>
                   <button onClick={() => setPanel("search")}><strong>Search Deal Memory</strong><small>Find companies by name, industry, component, or thesis.</small><i>→</i></button>
                   <button onClick={() => { setPanel(null); setView("overview"); runScan(); }}><strong>Run a global analysis</strong><small>Compare all eight companies with the latest verified signals.</small><i>→</i></button>
                 </div>
               </>
             ) : panel === "notifications" ? (
               <>
-                <p className="drawer-overline">NOTIFICATIONS / 01 UNREAD</p>
+                <p className="drawer-overline">NOTIFICATIONS / {reviewed ? "00" : "01"} UNREAD</p>
                 <h2 id="drawer-title">Partner review queue</h2>
                 <p className="drawer-lede">Only material decision changes and assigned diligence items appear here.</p>
-                <div className="notification-card"><span>NEW</span><div><strong>Asteria Bio · Decision delta</strong><p>The documented FDA revisit condition is now supported by new primary-source evidence.</p><small>2h ago · Assigned to KM</small></div><button onClick={openAsteria}>Review →</button></div>
+                <div className="notification-card"><span>{reviewed ? "READ" : "NEW"}</span><div><strong>Asteria Bio · Belief revised</strong><p>XTrace connected the documented FDA revisit condition to new primary-source evidence.</p><small>2h ago · Assigned to KM</small></div><button onClick={openAsteria}>Review →</button></div>
                 <button className="drawer-secondary" onClick={() => { setReviewed(true); setPanel(null); notify("ALL NOTIFICATIONS MARKED READ"); }}>Mark all as read</button>
               </>
             ) : panel === "sources" ? (
@@ -789,7 +807,7 @@ export default function Home() {
             ) : panel === "activity" ? (
               <>
                 <p className="drawer-overline">ACTIVITY & LINEAGE</p>
-                <h2 id="drawer-title">{drawerContext || "Workspace activity"}</h2>
+                <h2 id="drawer-title">{drawerContext || "Activity history"}</h2>
                 <p className="drawer-lede">A complete, timestamped record of changes, sources, ownership, and decisions.</p>
                 <div className="activity-timeline">
                   <article><span>14:34</span><div><strong>Evidence refreshed</strong><p>Public sources and stored company memories synchronized.</p></div></article>
@@ -801,14 +819,14 @@ export default function Home() {
             ) : panel === "newDeal" ? (
               <>
                 <p className="drawer-overline">NEW COMPANY</p>
-                <h2 id="drawer-title">Create a deal workspace</h2>
+                <h2 id="drawer-title">Create a deal record</h2>
                 <p className="drawer-lede">Start with the canonical company record. Memories and source lineage can be attached after creation.</p>
                 <form className="new-deal-form" onSubmit={(event) => { event.preventDefault(); setPanel(null); notify("NEW COMPANY ADDED TO PIPELINE · STAGE: NEW"); }}>
                   <label><span>Company name</span><input required placeholder="Company name" /></label>
                   <label><span>Sector</span><input required placeholder="e.g. Climate software" /></label>
                   <label><span>Stage</span><select defaultValue="Seed"><option>Pre-seed</option><option>Seed</option><option>Series A</option><option>Series B</option></select></label>
                   <label><span>Owner</span><select defaultValue="KM"><option>KM</option><option>JL</option><option>AP</option></select></label>
-                  <button className="drawer-primary" type="submit">Create company workspace →</button>
+                  <button className="drawer-primary" type="submit">Create company record →</button>
                 </form>
               </>
             ) : panel === "evidence" ? (
@@ -844,11 +862,11 @@ export default function Home() {
             ) : (
               <>
                 <p className="drawer-overline">PARTNER BRIEF / READY</p>
-                <h2 id="drawer-title">Asteria Bio deserves partner review.</h2>
+                <h2 id="drawer-title">Asteria Bio · belief revised.</h2>
                 <p className="drawer-lede">A decision-ready brief, grounded in one historical memory and one verified market signal.</p>
                 <div className="brief-card">
                   <div className="brief-meta"><span>TO</span><strong>Investment Committee</strong></div>
-                  <div className="brief-meta"><span>SUBJECT</span><strong>Decision delta detected · Asteria Bio</strong></div>
+                <div className="brief-meta"><span>SUBJECT</span><strong>Belief revised · Asteria Bio</strong></div>
                   <div className="brief-body">
                     <p><strong>What changed</strong><br />A new accelerated review pilot directly addresses the FDA-pathway uncertainty behind our November pass.</p>
                     <p><strong>Why now</strong><br />The revisit condition recorded by the deal team is materially satisfied by current primary-source evidence.</p>

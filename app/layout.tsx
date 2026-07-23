@@ -4,17 +4,17 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://second-look-vc-demo.duankayne.chatgpt.site"),
   title: "VSee — VC Decision Intelligence",
-  description: "Turn live market shifts into evidence-backed reasons to revisit past investment decisions.",
+  description: "XTrace connects live market shifts to the beliefs behind past investment decisions.",
   openGraph: {
     title: "VSee — VC Decision Intelligence",
-    description: "The market changed. Your old decisions should, too.",
-    images: [{ url: "/og.png", width: 1536, height: 1024, alt: "VSee connects an old investment decision to a new market signal." }],
+    description: "The market changed. XTrace revises the belief.",
+    images: [{ url: "/og.png", width: 1536, height: 1024, alt: "VSee XTrace connects an old investment belief to new market evidence." }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "VSee — VC Decision Intelligence",
-    description: "The market changed. Your old decisions should, too.",
+    description: "The market changed. XTrace revises the belief.",
     images: ["/og.png"],
   },
 };
