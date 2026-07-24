@@ -2,6 +2,7 @@
 
 Date: 2026-07-24
 Status: current source of truth for the two-week public Hackathon demo
+Revision: internal VC report drafting and `mmk_` single-key XTrace authentication
 
 ## 1. Product outcome
 
@@ -22,8 +23,8 @@ The core workflow is:
 4. recall historical Deals that overlap with those events;
 5. keep only medium/high-confidence matches and rank at most five;
 6. always produce a market summary, even when there are no matches;
-7. let the investor inspect citations, send the real report email, and query
-   stored data through Chat.
+7. let the investor inspect citations, prepare and copy an internal report
+   draft, and query stored data through Chat.
 
 ## 2. Confirmed scope
 
@@ -38,14 +39,16 @@ The core workflow is:
   operating-system file picker in this demo.
 - Supabase PostgreSQL as the durable application source of truth.
 - A separately running, PostgreSQL-backed worker for long-running scans.
-- XTrace Memory Manager for long-term Deal-memory ingest and recall.
+- XTrace Memory Manager for long-term Deal-memory ingest and recall through
+  the current `mmk_` single-key authentication flow.
 - Anthropic Messages API for evidence-constrained reasoning.
 - A real, manual public-market scan over the latest 14 days.
 - Event-first matching against all Deal states: `screening`, `watchlist`,
   `evaluating`, `passed`, and `invested`.
 - A market summary for every truthful completed/partial report.
 - Medium- and high-confidence opportunities only, ranked to Top 5.
-- Real VC report delivery through Resend to configured recipients.
+- A copy-ready internal investment-intelligence report draft for the fund's
+  Partner or GP, generated inside the browser without sending email.
 - Chat that answers from already stored Deal, source, market-event, report, and
   resolved XTrace memory data only.
 - Permanently labeled synthetic VC decision records for the demo.
@@ -59,9 +62,12 @@ The core workflow is:
 - Automatic company-progress diligence after a market match.
 - Founder outreach generation or delivery.
 - Autonomous investment decisions or automatic founder follow-up.
-- Chat browsing the Web, starting a scan, sending email, or mutating Deal data.
+- Chat browsing the Web, starting a scan, generating a draft, or mutating Deal
+  data.
 - Multi-user login, access-control UI, billing, or organization administration.
-- Fabricated news, company progress, citations, or delivery state.
+- Fabricated news, company progress, or citations.
+- Email-provider integration, recipient selection, founder-address extraction,
+  and persisted delivery state.
 
 ## 3. Data truth and corpus policy
 
@@ -127,13 +133,12 @@ flowchart LR
     CORPUS["2. Private Corpus & Deal Normalization"]
     MEMORY["3. XTrace Memory Bridge"]
     MARKET["4. 14-day Market Intelligence"]
-    REASON["5. Matching, Reports, Email & Chat"]
+    REASON["5. Matching, Reports, Drafts & Chat"]
     DB[("Supabase PostgreSQL")]
     STORAGE[("Private Supabase Storage")]
     XT["XTrace Memory Manager"]
     CLAUDE["Anthropic Messages API"]
     SOURCES["Public sources"]
-    RESEND["Resend"]
     WORKER["Durable worker"]
 
     UI --> DB
@@ -152,7 +157,6 @@ flowchart LR
     REASON --> MEMORY
     REASON --> CLAUDE
     REASON --> DB
-    REASON --> RESEND
 ```
 
 The browser is not a trusted data client. It calls Web App API routes only.
@@ -184,9 +188,9 @@ or agents can work in parallel using contract fixtures.
 - Overview, Deals, Sources/Import, Market, Reports, Runs, Chat, Settings;
 - import preview followed by explicit company/Deal confirmation;
 - Run creation, polling, stage display, warnings, and XTrace mode selection;
-- report inspection, citation links, and explicit report-email send;
+- report inspection, citation links, and explicit copy-ready report drafting;
 - health checks that distinguish Web, PostgreSQL, worker, XTrace, Anthropic,
-  market providers, Storage, and Resend readiness.
+  market providers, and Storage readiness.
 
 **Rules**
 
@@ -197,7 +201,11 @@ or agents can work in parallel using contract fixtures.
 - The XTrace control reflects configured capability and the selected run mode;
   it must not claim XTrace was used when recall failed.
 - UI source links include the document page where available.
-- Public mutations are rate-limited; report delivery is recipient-allowlisted.
+- Public mutations are rate-limited.
+- The latest report exposes **Draft this report**. It opens an accessible
+  email-composer-style dialog without a `To` field.
+- Drafting is a browser-local presentation action. It does not call an email
+  provider, mutate the report, or create delivery state.
 
 **Consumes**
 
@@ -233,7 +241,8 @@ or agents can work in parallel using contract fixtures.
 
 - server-side XTrace client;
 - asynchronous ingest submission and job polling;
-- request throttling below the account's 30 requests/minute limit;
+- a conservative default throttle of 30 requests/minute, below the demo
+  account's visible 120 requests/minute limit;
 - stable per-Deal conversation IDs;
 - local lineage from XTrace job/memory IDs to Deal/source/fixture IDs;
 - evidence-resolved Deal recall.
@@ -242,6 +251,10 @@ or agents can work in parallel using contract fixtures.
 
 - One curated memory bundle per eligible Deal, not one request per page.
 - API keys never enter browser JavaScript.
+- The demo uses the current `mmk_` API-key format. Requests authenticate with
+  `Authorization: Bearer <key>` and do not require `X-Org-Id`.
+- `XTRACE_ORG_ID` is not a required setting for the `mmk_` flow. Legacy
+  `xtk_` authentication is outside this demo's supported configuration.
 - Raw XTrace text cannot become a citation. Each returned memory must resolve to
   local source IDs or labeled fixture IDs before Module 5 may use it.
 - Candidate Deal IDs scope every recall.
@@ -289,7 +302,7 @@ interface MemoryContext {
 
 `MarketScanResult { events, providerResults, marketSummary, warnings }`.
 
-### Module 5 — Matching, Reports, Email, and Chat
+### Module 5 — Matching, Reports, Drafts, and Chat
 
 **Owns**
 
@@ -298,7 +311,7 @@ interface MemoryContext {
 - Anthropic structured assessment;
 - claim-level source validation;
 - confidence filtering and Top 5 ranking;
-- persistent reports and Resend delivery;
+- persistent reports and a browser-local internal-report draft builder;
 - existing-data-only Chat with claim-level citations.
 
 **Matching gates**
@@ -313,13 +326,31 @@ interface MemoryContext {
 6. Keep only `medium` or `high` confidence and rank at most five.
 7. Persist the report even when no opportunity survives.
 
-**Email**
+**Internal VC report draft**
 
-- Only the configured default/allowed recipient can receive a report.
-- A report is sent once unless an explicit retry policy allows another attempt.
-- Provider response ID and delivery status are persisted.
-- The email contains the market summary, ranked opportunities, and source/deep
-  links to the Web App; it is not founder outreach.
+- The report-level action is labeled **Draft this report**.
+- It opens a modal that resembles an email composer while preserving the
+  existing dark/lime visual system.
+- The modal has no `To`, `From`, `CC`, `BCC`, attachment, or `Send` control.
+- It contains an editable `Subject` and editable plain-text `Report body`.
+- The default subject is
+  `VSee · Deals worth a second look — YYYY-MM-DD`.
+- The body is addressed conceptually to the fund's internal Partner or GP. It
+  contains the 14-day market summary followed by at most five ranked
+  opportunities.
+- Each opportunity includes company, confidence/score, why now, previous
+  context, positive and negative implications, suggested next step, and cited
+  source titles plus absolute URLs. A zero-match report still contains the
+  truthful market summary and says that no medium/high-confidence overlap
+  survived.
+- Actions are **Copy body**, **Copy full draft**, and **Close**. The full draft
+  contains the subject followed by the body; it does not invent a recipient.
+- Clipboard success is announced accessibly. If clipboard access fails, the
+  dialog keeps the editable text visible and asks the user to select and copy
+  it manually.
+- The draft is built from report data already loaded in the browser. There is
+  no draft API, provider call, database write, recipient lookup, founder
+  outreach, or XTrace email-address recall.
 
 **Chat**
 
@@ -405,6 +436,11 @@ interface OpportunityReportItem {
   sources: SourceRef[];
   demoFixtureIds: string[];
 }
+
+interface ReportDraft {
+  subject: string;
+  bodyText: string;
+}
 ```
 
 ## 7. HTTP surface
@@ -422,7 +458,6 @@ GET    /api/runs
 GET    /api/runs/:id
 GET    /api/market/events
 GET    /api/reports
-POST   /api/reports/:id/email
 POST   /api/chat
 GET    /api/settings/health
 GET    /api/documents/:id/access
@@ -463,7 +498,8 @@ fallbacks only.
 - XTrace ON failure is visible and never invokes structured matching silently.
 - Invalid Anthropic output is rejected or repaired within a bounded attempt.
 - Missing citations remove the claim or match.
-- Email failure does not erase a completed report.
+- Clipboard failure never changes or erases a completed report; the user can
+  manually select the visible draft.
 - Chat returns insufficient evidence instead of unsupported prose.
 - UI status comes from persisted state, not optimistic labels.
 
@@ -481,6 +517,27 @@ fallbacks only.
 - XTrace ON demonstrates real recall or a visible partial failure; OFF is an
   explicit structured mode.
 - Chat uses stored evidence only and supports each answer claim.
-- A real report email reaches only a configured recipient.
+- **Draft this report** opens an internal Partner/GP draft with no recipient
+  and no send control.
+- The draft includes a subject, truthful report body, ranked opportunities,
+  source links, and copy actions.
+- Drafting performs no network request, provider call, report mutation, or
+  delivery-state persistence.
+- A configured `mmk_` key authenticates XTrace without `XTRACE_ORG_ID`; the key
+  remains server-side.
 - No secret or service-role database access appears in the browser.
 - The existing frontend remains recognizably intact and usable on mobile.
+
+## 11. Draft and authentication test requirements
+
+- Unit tests cover the plain-text draft builder for a normal Top 5 report and
+  a truthful zero-match report.
+- Draft tests assert that all source titles and absolute URLs are preserved and
+  that no `To:` or `Send` content is generated.
+- UI tests cover opening and closing the dialog, editable subject/body fields,
+  clipboard success feedback, and manual-copy fallback.
+- Source and static checks reject `EMAIL THIS REPORT`, `EMAIL SENT`, `Resend`,
+  `RESEND_API_KEY`, and the removed report-email endpoint.
+- XTrace client tests verify that `mmk_` configuration sends an Authorization
+  header without `X-Org-Id`, while keeping the key out of errors and browser
+  payloads.
