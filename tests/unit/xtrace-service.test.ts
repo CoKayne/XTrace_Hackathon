@@ -188,6 +188,56 @@ test("serializes provenance before persisting an async ingest job", async () => 
   assert.deepEqual(persisted, [{ dealId: "deal_1", jobId: "job_1", status: "pending", memoryIds: [] }]);
 });
 
+test("records demo-only bundle memory lineage as demo fixture provenance", async () => {
+  const lineage = createMemoryXTraceLineageRepository();
+  const service = createXTraceService({
+    ingest: async () => ({
+      id: "job_demo",
+      status: "succeeded",
+      result: {
+        memories_created: [{
+          id: "mem_demo",
+          type: "fact",
+          text: "Synthetic workflow adoption context.",
+        }],
+      },
+    }),
+  } as never, {
+    workspaceId: "workspace_demo",
+    lineageRepository: lineage,
+  });
+
+  await service.ingestDealMemory({
+    dealId: "deal_demo",
+    companyName: "Synthetic Workflow Co",
+    status: "passed",
+    facts: [{
+      text: "Synthetic Workflow Co builds enterprise workflow software.",
+      sources: [{
+        id: "source_demo",
+        provenance: "demo_fixture",
+        title: "Synthetic workflow fixture",
+        excerpt: "Synthetic Workflow Co builds enterprise workflow software.",
+      }],
+    }],
+    interactions: [{
+      id: "fixture_demo",
+      occurredAt: "2026-07-01T00:00:00.000Z",
+      summary: "Passed because adoption was early.",
+      concerns: [],
+      revisitConditions: ["Enterprise workflow adoption increases."],
+      provenance: "demo_fixture",
+      label: DEMO_FIXTURE_LABEL,
+    }],
+  });
+
+  const resolved = await lineage.resolve({
+    memoryId: "mem_demo",
+    workspaceId: "workspace_demo",
+  });
+  assert.equal(resolved?.provenance, "demo_fixture");
+});
+
 test("reuses an equivalent non-failed XTrace ingest instead of creating a duplicate", async () => {
   let ingestCalls = 0;
   const lineage = createMemoryXTraceLineageRepository();
@@ -351,6 +401,7 @@ test("persists memory lineage and resolves it without parsing extracted text", a
 
   assert.equal(searches, 1);
   assert.equal(result[0].dealId, "deal_1");
+  assert.equal(result[0].provenance, "source_document");
   assert.deepEqual(result[0].sourceIds, ["source_1"]);
   assert.deepEqual(result[0].fixtureIds, ["fixture_1"]);
 });

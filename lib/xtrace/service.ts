@@ -146,7 +146,7 @@ export function createXTraceService(
         dealId: bundle.dealId,
         sourceIds,
         fixtureIds,
-        provenance: sourceIds.length ? "source_document" : "demo_fixture",
+        provenance: bundleProvenance(bundle),
         status: record.status,
       });
       if (isTerminal(record.status)) {
@@ -330,6 +330,18 @@ function serializeBundle(bundle: DealMemoryBundle): string {
     ...facts,
     ...interactions,
   ].join("\n");
+}
+
+function bundleProvenance(bundle: DealMemoryBundle): Provenance {
+  const sourceProvenances = bundle.facts.flatMap((fact) =>
+    fact.sources.map((source) => source.provenance)
+  );
+  if (sourceProvenances.includes("source_document")) return "source_document";
+  if (sourceProvenances.includes("public_web")) return "public_web";
+  if (sourceProvenances.includes("demo_fixture") || bundle.interactions.length > 0) {
+    return "demo_fixture";
+  }
+  return "model_inference";
 }
 
 function recallFingerprint(input: RecallDealContextInput): string {

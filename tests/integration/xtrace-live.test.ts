@@ -6,13 +6,13 @@ import { DEMO_FIXTURE_LABEL } from "../../lib/contracts/domain";
 import { getXTraceClient } from "../../lib/xtrace/client";
 import { createXTraceService } from "../../lib/xtrace/service";
 
-test("XTrace live memory bridge", { skip: process.env.XTRACE_LIVE_TEST !== "1", timeout: 120_000 }, async (context) => {
-  const client = getXTraceClient();
-  const createdMemoryIds: string[] = [];
-  context.after(async () => {
-    await Promise.all(createdMemoryIds.map((memoryId) => client.deleteMemory(memoryId)));
-  });
+const LIVE_POLL_ATTEMPTS = 17;
 
+test("XTrace live memory bridge", { skip: process.env.XTRACE_LIVE_TEST !== "1", timeout: 180_000 }, async (context) => {
+  const client = getXTraceClient();
+  const createdMemoryIds = new Set<string>();
+  const submittedJob: { id?: string } = {};
+  let completedMemoryIdsKnown = false;
   const workspaceId = "demo";
   const companyName = `Northstar Loom ${Date.now()}`;
   const dealId = `xtrace-live-${companyName.toLowerCase().replaceAll(" ", "-")}`;
@@ -21,6 +21,27 @@ test("XTrace live memory bridge", { skip: process.env.XTRACE_LIVE_TEST !== "1", 
     workspaceId,
     lineageRepository: createMemoryXTraceLineageRepository(),
   });
+  context.after(async () => {
+    try {
+      if (submittedJob.id && !completedMemoryIdsKnown) {
+        const completed = await service.pollIngestJob(submittedJob.id, {
+          dealId,
+          maxAttempts: LIVE_POLL_ATTEMPTS,
+        });
+        for (const memoryId of completed.memoryIds) createdMemoryIds.add(memoryId);
+        completedMemoryIdsKnown = true;
+      }
+      const deletions = await Promise.allSettled(
+        [...createdMemoryIds].map((memoryId) => client.deleteMemory(memoryId)),
+      );
+      if (deletions.some((result) => result.status === "rejected")) {
+        throw new Error("delete failed");
+      }
+    } catch {
+      throw new Error("XTrace live cleanup failed");
+    }
+  });
+
   const submitted = await service.ingestDealMemory({
     dealId,
     companyName,
@@ -44,17 +65,39 @@ test("XTrace live memory bridge", { skip: process.env.XTRACE_LIVE_TEST !== "1", 
       label: DEMO_FIXTURE_LABEL,
     }],
   });
-  const completed = submitted.status === "pending" || submitted.status === "running"
-    ? await service.pollIngestJob(submitted.jobId, { dealId, maxAttempts: 16 })
-    : submitted;
-  createdMemoryIds.push(...completed.memoryIds);
+  submittedJob.id = submitted.jobId;
+  for (const memoryId of submitted.memoryIds) createdMemoryIds.add(memoryId);
+  completedMemoryIdsKnown = submitted.status === "succeeded" || submitted.status === "failed";
 
-  assert.equal(completed.status, "succeeded");
+  let completed = submitted;
+  if (!completedMemoryIdsKnown) {
+    try {
+      completed = await service.pollIngestJob(submittedJob.id, {
+        dealId,
+        maxAttempts: LIVE_POLL_ATTEMPTS,
+      });
+    } catch {
+      throw new Error("XTrace live ingest polling failed");
+    }
+    for (const memoryId of completed.memoryIds) createdMemoryIds.add(memoryId);
+    completedMemoryIdsKnown = true;
+  }
+
+  assert.equal(completed.status, "succeeded", "XTrace live ingest did not succeed");
   const recalled = await service.recallDealContext({
     workspaceId,
     query: `${companyName} enterprise workflow adoption`,
     candidateDealIds: [dealId],
     limit: 5,
   });
-  assert.ok(recalled.length > 0);
+  const completedMemoryIds = new Set(completed.memoryIds);
+  const recalledLineage = recalled.find((memory) =>
+    memory.dealId === dealId && completedMemoryIds.has(memory.memoryId)
+  );
+  assert.ok(recalledLineage, "XTrace live recall did not resolve completed memory lineage");
+  assert.equal(
+    recalledLineage.provenance,
+    "demo_fixture",
+    "XTrace live recall did not preserve synthetic provenance",
+  );
 });
