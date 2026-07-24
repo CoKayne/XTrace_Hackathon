@@ -29,6 +29,12 @@ const WORKER_HEALTH_FILE = workerHealthFilePath();
 const POLL_INTERVAL_MS = 2_000;
 const HEARTBEAT_INTERVAL_MS = 15_000;
 
+interface WorkerIterationDependencies {
+  runNext?: () => Promise<boolean>;
+  sleepImpl?: (milliseconds: number) => Promise<void>;
+  onError?: (message: string) => void;
+}
+
 export async function runNextQueuedScan(): Promise<boolean> {
   const runs = createRunsRepository(getDataClient());
   await runs.touchWorkerHeartbeat(WORKER_ID);
@@ -112,11 +118,28 @@ export async function runNextQueuedScan(): Promise<boolean> {
   return true;
 }
 
+export async function runWorkerIteration(
+  dependencies: WorkerIterationDependencies = {},
+): Promise<void> {
+  const runNext = dependencies.runNext ?? runNextQueuedScan;
+  const sleepImpl = dependencies.sleepImpl ?? sleep;
+  try {
+    const handled = await runNext();
+    if (!handled) await sleepImpl(POLL_INTERVAL_MS);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const onError = dependencies.onError
+      ?? ((detail: string) =>
+        console.error(`[${WORKER_ID}] worker loop failed: ${detail}`));
+    onError(message);
+    await sleepImpl(POLL_INTERVAL_MS);
+  }
+}
+
 async function main(): Promise<void> {
   console.log(`[${WORKER_ID}] VSee scan worker started`);
   for (;;) {
-    const handled = await runNextQueuedScan();
-    if (!handled) await sleep(POLL_INTERVAL_MS);
+    await runWorkerIteration();
   }
 }
 
