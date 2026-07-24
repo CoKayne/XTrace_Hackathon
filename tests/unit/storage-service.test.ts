@@ -8,6 +8,7 @@ import {
   createMemoryPrivateObjectStorage,
   createPrivateDocumentAccess,
   createSupabaseDemoDataStore,
+  createSupabasePrivateObjectStorage,
 } from "../../lib/storage/service";
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
 import { DEMO_FIXTURE_LABEL } from "../../lib/contracts/domain";
@@ -63,6 +64,48 @@ test("memory storage upserts stable records and private objects without duplicat
 
   assert.equal(data.inspect().workspaces.length, 1);
   assert.equal(objects.inspect().length, 1);
+});
+
+test("Supabase storage uploads when a missing object is reported as HTTP 400 with nested 404", async () => {
+  const methods: string[] = [];
+  const objects = createSupabasePrivateObjectStorage({
+    url: "https://database.example.test",
+    serviceRoleKey: "test-service-role",
+    async fetchImpl(_input, init) {
+      methods.push(init?.method ?? "GET");
+      if (init?.method === "POST") {
+        return new Response(null, { status: 200 });
+      }
+      return Response.json(
+        { statusCode: "404", error: "not_found", message: "Object not found" },
+        { status: 400 },
+      );
+    },
+  });
+
+  const result = await objects.ensurePrivateObject({
+    key: "private/demo/file.pdf",
+    bytes: new Uint8Array([1, 2, 3]),
+    contentType: "application/pdf",
+  });
+
+  assert.equal(result.created, true);
+  assert.deepEqual(methods, ["GET", "POST"]);
+});
+
+test("Supabase storage reads a nested HTTP 400/404 response as a missing object", async () => {
+  const objects = createSupabasePrivateObjectStorage({
+    url: "https://database.example.test",
+    serviceRoleKey: "test-service-role",
+    async fetchImpl() {
+      return Response.json(
+        { statusCode: "404", error: "not_found", message: "Object not found" },
+        { status: 400 },
+      );
+    },
+  });
+
+  assert.equal(await objects.readPrivateObject("private/demo/missing.pdf"), null);
 });
 
 test("PostgreSQL storage reads durable workspace-document confirmations", async () => {

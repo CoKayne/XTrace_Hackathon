@@ -342,7 +342,7 @@ export function createSupabasePrivateObjectStorage(options: {
         }
         return { value: { key: input.key }, created: false };
       }
-      if (existing.status !== 404) {
+      if (!(await isStorageObjectMissing(existing))) {
         throw await storageHttpError("check", existing);
       }
       const response = await fetchImpl(objectUrl, {
@@ -363,7 +363,7 @@ export function createSupabasePrivateObjectStorage(options: {
         headers,
         cache: "no-store",
       });
-      if (response.status === 404) return null;
+      if (await isStorageObjectMissing(response)) return null;
       if (!response.ok) throw await storageHttpError("read", response);
       return new Uint8Array(await response.arrayBuffer());
     },
@@ -726,6 +726,17 @@ function fromBase64Url(value: string): Uint8Array {
 
 function encodeObjectPath(value: string): string {
   return value.split("/").map(encodeURIComponent).join("/");
+}
+
+async function isStorageObjectMissing(response: Response): Promise<boolean> {
+  if (response.status === 404) return true;
+  if (response.status !== 400) return false;
+  try {
+    const body = await response.clone().json() as Record<string, unknown>;
+    return Number(body.statusCode) === 404 && body.error === "not_found";
+  } catch {
+    return false;
+  }
 }
 
 async function storageHttpError(operation: string, response: Response): Promise<Error> {
