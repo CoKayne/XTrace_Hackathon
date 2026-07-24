@@ -144,9 +144,18 @@ function deterministicCompletion(prompt: string) {
     evidence: Array<{ text: string; sourceIds: string[] }>;
   };
   const normalizedQuestion = parsed.question.trim().toLocaleLowerCase();
+  const questionTokens = evidenceQueryTokens(parsed.question);
   const evidence = parsed.evidence.find((item) =>
     item.text.toLocaleLowerCase().includes(normalizedQuestion)
-  ) ?? parsed.evidence[0];
+  ) ?? parsed.evidence
+    .map((item) => ({
+      item,
+      score: questionTokens.filter((token) =>
+        evidenceQueryTokens(`${item.text} ${item.sourceIds.join(" ")}`)
+          .includes(token)
+      ).length,
+    }))
+    .sort((left, right) => right.score - left.score)[0]?.item;
   return JSON.stringify({
     claims: evidence ? [{
       text: evidence.text,
