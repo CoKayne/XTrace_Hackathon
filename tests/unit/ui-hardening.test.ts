@@ -12,6 +12,7 @@ import { createDefaultDemoDataStore } from "../../lib/storage/service";
 const pagePath = new URL("../../app/page.tsx", import.meta.url);
 const cssPath = new URL("../../app/vsee.css", import.meta.url);
 const dialogPath = new URL("../../app/report-draft-dialog.tsx", import.meta.url);
+const scanProgressPath = new URL("../../app/scan-progress.tsx", import.meta.url);
 const environmentPath = new URL("../../.env.example", import.meta.url);
 const migrationPath = new URL("../../drizzle/0000_vsee_postgres.sql", import.meta.url);
 const cleanupMigrationPath = new URL(
@@ -148,6 +149,33 @@ test("dashboard supports report deep links, page anchors, and a two-row mobile n
   assert.match(page, /#page=\$\{source\.page\}/);
   assert.match(page, /No Deals match/i);
   assert.match(css, /grid-template-columns:repeat\(4,1fr\)/);
+});
+
+test("scans stay in the investor workflow and open the durable report", async () => {
+  const [page, progress] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(scanProgressPath, "utf8"),
+  ]);
+  const runScanBody = page.slice(
+    page.indexOf("async function runScan()"),
+    page.indexOf("function selectDocuments"),
+  );
+
+  assert.match(page, /WAKE AGENT & SCAN MARKET/);
+  assert.match(page, /setActiveRunId/);
+  assert.match(page, /\/api\/reports\?runId=/);
+  assert.doesNotMatch(runScanBody, /navigate\("runs"\)/);
+  for (const label of [
+    "Scanning the last 14 days of public evidence",
+    "Normalizing and ranking market events",
+    "Recalling XTrace investment memory",
+    "Comparing evidence across 19 companies",
+    "Generating company intelligence report",
+    "Report ready",
+    "The scan could not produce a report",
+  ]) {
+    assert.match(progress, new RegExp(label));
+  }
 });
 
 test("Deals render the complete labeled synthetic decision context", async () => {

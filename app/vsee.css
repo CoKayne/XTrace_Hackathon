@@ -49,6 +49,28 @@
 .vsee-status,.vsee-run-state,.vsee-confidence,.vsee-health article>b{font-size:9px}
 @media(max-width:680px){.vsee-rail nav button>span{font-size:9px}}
 
+.vsee-scan-progress{position:fixed;inset:0;z-index:50;padding:24px;background:rgba(0,0,0,.78);backdrop-filter:blur(7px);display:grid;place-items:center}
+.vsee-scan-progress-card{width:min(780px,100%);max-height:calc(100vh - 48px);overflow:auto;border:1px solid #465047;background:#0b0e0c;box-shadow:0 28px 90px rgba(0,0,0,.72)}
+.vsee-scan-progress-card>header{min-height:128px;padding:22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.vsee-scan-progress-card h2{margin:9px 0 7px;font:400 31px/1.08 var(--serif)}
+.vsee-scan-progress-card header p{max-width:600px;margin:0;color:#7e8882;font-size:10px;line-height:1.6}
+.vsee-scan-progress-card header button{width:38px;height:38px;flex:0 0 auto;border:1px solid var(--line);background:transparent;color:#9ba49e;cursor:pointer;font-size:22px}
+.vsee-scan-progress-card ol{margin:0;padding:0;list-style:none}
+.vsee-scan-progress-card li{min-height:72px;padding:12px 22px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:38px 1fr;gap:14px;align-items:center}
+.vsee-scan-progress-card li>span{width:31px;height:31px;border:1px solid #333c36;display:grid;place-items:center;color:#6d7771;font:700 8px var(--mono)}
+.vsee-scan-progress-card li>div{display:grid;gap:6px}
+.vsee-scan-progress-card li strong{font:500 12px var(--serif)}
+.vsee-scan-progress-card li small{color:#66706a;font:600 8px var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.vsee-scan-progress-card li.active{background:rgba(199,255,74,.045)}
+.vsee-scan-progress-card li.active>span,.vsee-scan-progress-card li.complete>span{border-color:rgba(199,255,74,.42);color:var(--lime)}
+.vsee-scan-progress-card li.active small,.vsee-scan-progress-card li.complete small{color:var(--lime)}
+.vsee-scan-progress-card li.failed>span{border-color:#9a5d4d;color:#d98e78}
+.vsee-scan-progress-card li.failed small{color:#d98e78}
+.vsee-scan-warnings{padding:16px 22px;border-top:1px solid rgba(229,148,106,.28);color:#d7a66e}
+.vsee-scan-warnings strong{font:700 8px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.vsee-scan-warnings p{margin:8px 0 0;font-size:9px;line-height:1.55}
+@media(max-width:680px){.vsee-scan-progress{padding:0;align-items:end}.vsee-scan-progress-card{width:100%;max-height:calc(100dvh - 12px);border-width:1px 0 0}.vsee-scan-progress-card>header{padding:18px}.vsee-scan-progress-card h2{font-size:26px}.vsee-scan-progress-card li{padding:11px 18px}}
+
 .vsee-draft-dialog{width:min(760px,calc(100vw - 36px));max-height:calc(100vh - 40px);padding:0;border:1px solid #465047;background:#0b0e0c;color:var(--text);box-shadow:0 28px 90px rgba(0,0,0,.7)}
 .vsee-draft-dialog::backdrop{background:rgba(0,0,0,.78);backdrop-filter:blur(5px)}
 .vsee-draft-composer{max-height:inherit;display:grid;grid-template-rows:auto minmax(0,1fr) auto}

@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ReportDraftDialog } from "./report-draft-dialog";
+import { ScanProgress } from "./scan-progress";
 import {
   buildInternalReportDraft,
   type InternalReportDraft,
@@ -118,9 +119,11 @@ interface Opportunity {
 
 interface Report {
   id: string;
+  runId?: string;
   createdAt: string;
   marketSummary: string;
   opportunities: Opportunity[];
+  priorityDealId?: string | null;
 }
 
 interface Health {
@@ -215,6 +218,9 @@ export default function Home() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
+  const [activeRun, setActiveRun] = useState<Run | null>(null);
+  const [scanProgressOpen, setScanProgressOpen] = useState(false);
 
   const load = useCallback(async () => {
     const [model, runRows, marketRows, reportRows, healthState] =
@@ -275,6 +281,76 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, [runs, load]);
 
+  useEffect(() => {
+    if (!activeRunId) return;
+    let cancelled = false;
+    let timer: number | undefined;
+
+    const poll = async () => {
+      try {
+        const run = await api<Run>(`/api/runs/${encodeURIComponent(activeRunId)}`);
+        if (cancelled) return;
+        setActiveRun(run);
+        setRuns((current) => [
+          run,
+          ...current.filter((item) => item.id !== run.id),
+        ]);
+
+        if (run.status === "completed" || run.status === "partial") {
+          const reportRows = await api<Report[]>(
+            `/api/reports?runId=${encodeURIComponent(run.id)}`,
+          );
+          if (cancelled) return;
+          const report = reportRows[0];
+          if (!report) {
+            setError("The scan finished, but its durable report could not be loaded.");
+            return;
+          }
+          setReports((current) => [
+            report,
+            ...current.filter((item) => item.id !== report.id),
+          ]);
+          setFocusedReportId(report.id);
+          setView("reports");
+          setScanProgressOpen(false);
+          setActiveRunId(null);
+          const url = new URL(window.location.href);
+          url.searchParams.set("view", "reports");
+          url.searchParams.set("report", report.id);
+          window.history.replaceState(
+            {},
+            "",
+            `${url.pathname}${url.search}${url.hash}`,
+          );
+          setNotice(report.priorityDealId
+            ? "Scan complete. The highest-priority company analysis is ready."
+            : "Scan complete. No investment belief changed at medium or high confidence; the full report is ready.");
+          return;
+        }
+
+        if (run.status === "failed") {
+          setActiveRunId(null);
+          setError("The scan could not produce a report. Review the warning details in System activity.");
+          return;
+        }
+
+        timer = window.setTimeout(poll, 2_000);
+      } catch (pollError) {
+        if (cancelled) return;
+        setError(pollError instanceof Error
+          ? pollError.message
+          : "Could not read durable scan progress");
+        timer = window.setTimeout(poll, 4_000);
+      }
+    };
+
+    void poll();
+    return () => {
+      cancelled = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [activeRunId]);
+
   const filteredDeals = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
     if (!normalized) return overview?.deals ?? [];
@@ -328,8 +404,10 @@ export default function Home() {
         body: JSON.stringify({ xtraceEnabled }),
       });
       setRuns((current) => [run, ...current.filter((item) => item.id !== run.id)]);
-      setNotice(`14-day scan ${run.status}. You can leave this page while the worker runs.`);
-      navigate("runs");
+      setActiveRunId(run.id);
+      setActiveRun(run);
+      setScanProgressOpen(true);
+      setNotice(`14-day scan ${run.status}. Progress is durable while the worker runs.`);
     } catch (scanError) {
       setError(scanError instanceof Error ? scanError.message : "Could not start scan");
     } finally {
@@ -508,7 +586,7 @@ export default function Home() {
               aria-label={scanReady ? "Run a 14-day market scan" : "Scan unavailable until required integrations are ready"}
               title={scanReady ? undefined : "PostgreSQL, worker, Anthropic, and the selected memory mode must be ready"}
             >
-              {busy === "scan" ? "QUEUING…" : "RUN 14-DAY SCAN"} <span>→</span>
+              {busy === "scan" ? "QUEUING…" : "WAKE AGENT & SCAN MARKET"} <span>→</span>
             </button>
           </div>
         </header>
@@ -577,6 +655,12 @@ export default function Home() {
         draft={reportDraft}
         onClose={() => setReportDraft(null)}
       />
+      {scanProgressOpen && activeRun && (
+        <ScanProgress
+          run={activeRun}
+          onClose={() => setScanProgressOpen(false)}
+        />
+      )}
     </main>
   );
 }
