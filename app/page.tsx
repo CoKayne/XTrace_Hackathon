@@ -646,7 +646,6 @@ export default function Home() {
                   </button>
                 ))}
               </div>
-              <div className="view-footnote"><span>Pipeline policy</span><p>Every stage change retains its owner, timestamp, decision rationale, and linked source artifacts.</p><button onClick={() => { setDrawerContext("Pipeline activity log"); setPanel("activity"); }}>View activity log</button></div>
             </section>
           )}
 
