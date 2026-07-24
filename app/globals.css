@@ -2246,6 +2246,51 @@ button.data-row:hover {
   font-weight: 720;
 }
 
+.view-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.unified-deals-table .data-row {
+  grid-template-columns: minmax(260px, 1.55fr) 0.68fr 0.72fr 0.38fr minmax(150px, 1fr) 0.58fr 0.78fr;
+  column-gap: 12px;
+}
+
+.unified-deals-table .data-row.has-new-evidence {
+  background: #edf7f5;
+  box-shadow: inset 4px 0 var(--accent);
+}
+
+.unified-deals-table .data-row.has-new-evidence:hover {
+  background: #e5f3f0;
+}
+
+.unified-deals-table .data-row > span:first-child > span {
+  grid-template-columns: max-content max-content;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+}
+
+.unified-deals-table .data-row > span:first-child small {
+  grid-column: 1 / -1;
+}
+
+.unified-deals-table .data-row > span:nth-child(5),
+.memory-cell {
+  display: grid;
+  gap: 5px;
+}
+
+.unified-deals-table .data-row > span:nth-child(5) small,
+.memory-cell small {
+  text-transform: none;
+}
+
+.memory-cell strong {
+  color: var(--accent-dark);
+}
+
 .action-list button,
 .source-ledger a,
 .source-ledger button,
@@ -2265,6 +2310,14 @@ button.data-row:hover {
 @media (max-width: 900px) {
   .product-main {
     padding: 34px 26px 54px;
+  }
+
+  .unified-deals-table {
+    overflow-x: auto;
+  }
+
+  .unified-deals-table .data-row {
+    min-width: 980px;
   }
 
   .history-layout {
@@ -2307,6 +2360,10 @@ button.data-row:hover {
   .view-heading {
     gap: 18px;
     padding-bottom: 20px;
+  }
+
+  .view-actions {
+    justify-content: flex-start;
   }
 
   .pipeline-summary,

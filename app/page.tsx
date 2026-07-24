@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 type ScanState = "idle" | "scanning" | "matched";
 type Panel = "evidence" | "brief" | "search" | "help" | "notifications" | "sources" | "activity" | "newDeal" | null;
 type DetailTab = "overview" | "traction" | "deal" | "risks" | "history";
-type AppView = "overview" | "pipeline" | "signals" | "deals" | "reports";
+type AppView = "overview" | "pipeline" | "signals" | "reports";
 
 const dealDirectory = [
   { name: "Asteria Bio", meta: "AI diagnostics · Series A", status: "Passed · revisit", tone: "signal", memories: 14, tags: ["healthcare", "diagnostics", "ai", "regulatory"] },
@@ -34,23 +34,14 @@ const marketSignals = [
 ];
 
 const workspaceDeals = [
-  { name: "Asteria Bio", sector: "AI diagnostics", stage: "Series A", status: "Passed", owner: "KM", last: "8 mo", memories: "14", coverage: 96, alert: "1 new" },
-  { name: "Torque Materials", sector: "EV battery materials", stage: "Series A", status: "Interested", owner: "KM", last: "12d", memories: "19", coverage: 94, alert: "—" },
-  { name: "Northstar Robotics", sector: "Industrial automation", stage: "Seed", status: "Watching", owner: "JL", last: "42d", memories: "31", coverage: 100, alert: "—" },
-  { name: "VectorForge", sector: "Vehicle chassis", stage: "Seed", status: "Interested", owner: "AP", last: "18d", memories: "11", coverage: 91, alert: "—" },
-  { name: "Arcspan Energy", sector: "Grid software", stage: "Series B", status: "Evaluating", owner: "KM", last: "5d", memories: "18", coverage: 92, alert: "—" },
-  { name: "Harbor AI", sector: "Security infrastructure", stage: "Seed", status: "Passed", owner: "AP", last: "4 mo", memories: "22", coverage: 88, alert: "—" },
-  { name: "Cinder Systems", sector: "Developer tools", stage: "Series A", status: "Invested", owner: "JL", last: "8d", memories: "47", coverage: 100, alert: "—" },
-  { name: "CombustionX", sector: "Next-gen powertrain", stage: "Series B", status: "Passed", owner: "AP", last: "3 mo", memories: "26", coverage: 97, alert: "—" },
-];
-
-const pipelineDeals = [
-  { name: "Arcspan Energy", sector: "Grid software", stage: "IC", owner: "KM", last: "Today", next: "Partner references", amount: "$8.0M", factors: "4 positive" },
-  { name: "Northstar Robotics", sector: "Industrial automation", stage: "Diligence", owner: "JL", last: "Yesterday", next: "Technical deep dive", amount: "$4.5M", factors: "3 positive" },
-  { name: "Morrow Health", sector: "Care operations", stage: "First meeting", owner: "AP", last: "Jul 20", next: "Founder follow-up", amount: "$3.0M", factors: "2 positive" },
-  { name: "Cobalt Security", sector: "Identity infrastructure", stage: "New", owner: "JL", last: "Jul 19", next: "Triage inbound", amount: "$2.5M", factors: "Not assessed" },
-  { name: "Fathom Materials", sector: "Advanced materials", stage: "Diligence", owner: "KM", last: "Jul 18", next: "Customer calls", amount: "$6.0M", factors: "3 positive" },
-  { name: "Cinder Systems", sector: "Developer tools", stage: "Closing", owner: "JL", last: "Jul 17", next: "Finalize allocation", amount: "$5.0M", factors: "5 positive" },
+  { name: "Asteria Bio", sector: "AI diagnostics", round: "Series A", workflow: "Revisit", status: "Passed", owner: "KM", last: "8 mo", next: "Partner review", amount: "$3.0M", memories: "14", coverage: 96, alert: "1 new" },
+  { name: "Torque Materials", sector: "EV battery materials", round: "Series A", workflow: "Diligence", status: "Interested", owner: "KM", last: "12d", next: "Validate supply plan", amount: "$4.0M", memories: "19", coverage: 94, alert: "—" },
+  { name: "Northstar Robotics", sector: "Industrial automation", round: "Seed", workflow: "Diligence", status: "Watching", owner: "JL", last: "42d", next: "Technical deep dive", amount: "$4.5M", memories: "31", coverage: 100, alert: "—" },
+  { name: "VectorForge", sector: "Vehicle chassis", round: "Seed", workflow: "First meeting", status: "Interested", owner: "AP", last: "18d", next: "Materials validation", amount: "$2.5M", memories: "11", coverage: 91, alert: "—" },
+  { name: "Arcspan Energy", sector: "Grid software", round: "Series B", workflow: "IC", status: "Evaluating", owner: "KM", last: "5d", next: "Partner references", amount: "$8.0M", memories: "18", coverage: 92, alert: "—" },
+  { name: "Harbor AI", sector: "Security infrastructure", round: "Seed", workflow: "Archived", status: "Passed", owner: "AP", last: "4 mo", next: "Revisit on traction", amount: "$2.0M", memories: "22", coverage: 88, alert: "—" },
+  { name: "Cinder Systems", sector: "Developer tools", round: "Series A", workflow: "Closing", status: "Invested", owner: "JL", last: "8d", next: "Portfolio onboarding", amount: "$5.0M", memories: "47", coverage: 100, alert: "—" },
+  { name: "CombustionX", sector: "Next-gen powertrain", round: "Series B", workflow: "Archived", status: "Passed", owner: "AP", last: "3 mo", next: "Monitor policy", amount: "$6.0M", memories: "26", coverage: 97, alert: "—" },
 ];
 
 function matchesDealSearch(deal: (typeof dealDirectory)[number], rawQuery: string) {
@@ -78,7 +69,6 @@ export default function Home() {
   const [tasks, setTasks] = useState([false, false, false]);
   const [reviewed, setReviewed] = useState(true);
   const [signalFilter, setSignalFilter] = useState("All");
-  const [pipelineFilter, setPipelineFilter] = useState("All");
   const [dealFilter, setDealFilter] = useState("All");
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [analysisCompanies, setAnalysisCompanies] = useState<string[]>(dealDirectory.map((deal) => deal.name));
@@ -94,6 +84,7 @@ export default function Home() {
   const timers = useRef<number[]>([]);
   const searchResults = dealDirectory.filter((deal) => matchesDealSearch(deal, searchQuery));
   const filteredWorkspaceDeals = workspaceDeals.filter((deal) => dealFilter === "All" || deal.status === dealFilter);
+  const filteredMemoryCount = filteredWorkspaceDeals.reduce((sum, deal) => sum + Number(deal.memories), 0);
   const analysisMemoryCount = analysisMode === "global" ? 188 : dealDirectory.filter((deal) => analysisCompanies.includes(deal.name)).reduce((sum, deal) => sum + deal.memories, 0);
   const analysisSteps = scanUsesXTrace ? [
     { title: "Agent initiated.", detail: "Monitoring verified sources and fund memory." },
@@ -263,12 +254,11 @@ export default function Home() {
         <p className="nav-section-label">DEALS</p>
         <nav className="rail-nav" aria-label="Product areas">
           <button className={`rail-item ${view === "overview" ? "active" : ""}`} onClick={() => navigateProduct("overview")}><span>⌂</span><b>Overview</b>{!reviewed && <em>1</em>}</button>
-          <button className={`rail-item ${view === "pipeline" ? "active" : ""}`} onClick={() => navigateProduct("pipeline")}><span>▤</span><b>Deal pipeline</b><small>6</small></button>
+          <button className={`rail-item ${view === "pipeline" ? "active" : ""}`} onClick={() => navigateProduct("pipeline")}><span>▤</span><b>Deals</b><small>8</small></button>
         </nav>
         <p className="nav-section-label intelligence-label">INTELLIGENCE</p>
         <nav className="rail-nav" aria-label="Intelligence areas">
           <button className={`rail-item ${view === "signals" ? "active" : ""}`} onClick={() => navigateProduct("signals")}><span>◉</span><b>Market signals</b></button>
-          <button className={`rail-item ${view === "deals" ? "active" : ""}`} onClick={() => navigateProduct("deals")}><span>□</span><b>Deal memory</b></button>
           <button className={`rail-item ${view === "reports" ? "active" : ""}`} onClick={() => navigateProduct("reports")}><span>≡</span><b>Reports & briefs</b></button>
         </nav>
         <div className="rail-footer">
@@ -381,7 +371,7 @@ export default function Home() {
                     return <button key={name} onClick={() => { setSearchQuery(name); setPanel("search"); }}><span className="result-monogram">{name.charAt(0)}</span><span><strong>{name}</strong><small>{deal?.meta} · {deal?.memories} memories checked</small></span><em className={changed ? "changed" : "stable"}>{changed ? "New evidence" : "No material change"}</em></button>;
                   })}
                 </div>
-                <div className="batch-result-actions"><button className="secondary-button" onClick={() => { setSearchQuery(""); setPanel("search"); }}>Re-evaluate another set</button><button className="primary-button" onClick={() => navigateProduct("deals")}>Open Deal Memory</button></div>
+                <div className="batch-result-actions"><button className="secondary-button" onClick={() => { setSearchQuery(""); setPanel("search"); }}>Re-evaluate another set</button><button className="primary-button" onClick={() => navigateProduct("pipeline")}>Open Deals</button></div>
               </article>
             ) : (
               <article className="match-card">
@@ -647,20 +637,26 @@ export default function Home() {
           {view === "pipeline" && (
             <section className="workspace-view" aria-labelledby="pipeline-title">
               <div className="view-heading">
-                <div><h1 id="pipeline-title">Deal pipeline</h1><p>Track every opportunity from first touch through investment committee and close.</p></div>
-                <button className="primary-button view-action" onClick={() => setPanel("newDeal")}>+ Add company</button>
+                <div><h1 id="pipeline-title">Deals</h1><p>Pipeline status, decision memory, and new evidence—connected in one company record.</p></div>
+                <div className="view-actions">
+                  <button className="secondary-button view-action" onClick={exportMemoryCoverage}>Export CSV</button>
+                  <button className="secondary-button view-action" onClick={() => setPanel("search")}>Search deals</button>
+                  <button className="primary-button view-action" onClick={() => setPanel("newDeal")}>+ Add company</button>
+                </div>
               </div>
 
+              {batchReview === "complete" && <div className="batch-review-banner complete"><span>✓</span><div><strong>{batchCompanies}-company re-evaluation complete</strong><small>Only the selected companies were analyzed.</small></div><button onClick={() => { setView("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review analysis</button></div>}
+
               <div className="table-toolbar">
-                <div className="filter-group">{["All", "New", "First meeting", "Diligence", "IC", "Closing"].map((filter) => <button key={filter} className={pipelineFilter === filter ? "active" : ""} onClick={() => setPipelineFilter(filter)}>{filter}</button>)}</div>
-                <span>{pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).length} visible · Updated 12 min ago</span>
+                <div className="filter-group">{["All", "Evaluating", "Interested", "Watching", "Invested", "Passed"].map((filter) => <button key={filter} className={dealFilter === filter ? "active" : ""} onClick={() => setDealFilter(filter)}>{filter === "All" ? "All deals" : filter}</button>)}</div>
+                <span>{filteredWorkspaceDeals.length} companies · {filteredMemoryCount} source-linked memories</span>
               </div>
-              <div className="data-table pipeline-table" role="table" aria-label="Deal pipeline">
-                <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Owner</span><span>Last activity</span><span>Next action</span><span>Target check</span><span>Potential factors</span></div>
-                {pipelineDeals.filter((deal) => pipelineFilter === "All" || deal.stage === pipelineFilter).map((deal) => (
-                  <button className="data-row" role="row" key={deal.name} onClick={() => openActivity(`${deal.name} · Deal record`)}>
-                    <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong><small>{deal.sector}</small></span></span>
-                    <span><em className={`stage-${deal.stage.toLowerCase().replace(" ", "-")}`}>{deal.stage}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span><strong>{deal.next}</strong></span><span>{deal.amount}</span><span className="potential-cell">{deal.factors}</span>
+              <div className="data-table unified-deals-table" role="table" aria-label="Deals workspace">
+                <div className="data-row table-head" role="row"><span>Company</span><span>Workflow</span><span>Status</span><span>Owner</span><span>Next action</span><span>Target check</span><span>Decision memory</span></div>
+                {filteredWorkspaceDeals.map((deal) => (
+                  <button className={`data-row ${deal.alert !== "—" ? "has-new-evidence" : ""}`} role="row" key={deal.name} onClick={deal.name === "Asteria Bio" ? openAsteria : () => openActivity(`${deal.name} · Deal record`)}>
+                    <span><span className="result-monogram">{deal.name.charAt(0)}</span><span><strong>{deal.name}</strong>{deal.alert !== "—" && <em className="new-evidence-badge">New evidence</em>}<small>{deal.sector} · {deal.round}</small></span></span>
+                    <span><em>{deal.workflow}</em></span><span><em>{deal.status}</em></span><span>{deal.owner}</span><span><strong>{deal.next}</strong><small>Last touch {deal.last}</small></span><span>{deal.amount}</span><span className="memory-cell"><strong>{deal.memories} memories</strong><small>{deal.coverage}% captured</small></span>
                   </button>
                 ))}
               </div>
@@ -698,37 +694,6 @@ export default function Home() {
                 ))}
               </div>
 
-            </section>
-          )}
-
-          {view === "deals" && (
-            <section className="workspace-view" aria-labelledby="deals-title">
-              <div className="view-heading">
-                <div><h1 id="deals-title">Deal memory</h1><p>Fuzzy-search every invested, interested, active, watched, and passed company stored in fund memory.</p></div>
-                <div className="view-actions">
-                  <button className="secondary-button view-action" onClick={exportMemoryCoverage}>Export CSV</button>
-                  <button className="secondary-button view-action" onClick={() => setPanel("search")}>Fuzzy-search companies</button>
-                </div>
-              </div>
-
-              {batchReview === "complete" && <div className="batch-review-banner complete"><span>✓</span><div><strong>{batchCompanies}-company re-evaluation complete</strong><small>Only the selected companies were analyzed.</small></div><button onClick={() => { setView("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review analysis</button></div>}
-
-              <section className="memory-kpis">
-                <article><span>COMPANIES</span><strong>8</strong><small>Invested · interested · active · passed</small></article>
-                <article><span>VERIFIED MEMORIES</span><strong>188</strong><small>71 facts · 42 artifacts · 75 episodes</small></article>
-                <article><span>MEMORY COMPLETENESS</span><strong>96%</strong><small>Deal interactions captured</small></article>
-              </section>
-
-              <div className="table-toolbar"><div className="filter-group">{["All", "Invested", "Interested", "Evaluating", "Watching", "Passed"].map((filter) => <button key={filter} className={dealFilter === filter ? "active" : ""} onClick={() => setDealFilter(filter)}>{filter === "All" ? "All companies" : filter}</button>)}</div><span>{filteredWorkspaceDeals.length} companies · Sorted by last interaction</span></div>
-              <div className="data-table deal-table" role="table" aria-label="Deal memory directory">
-                <div className="data-row table-head" role="row"><span>Company</span><span>Stage</span><span>Status</span><span>Owner</span><span>Last touch</span><span>Captured history</span></div>
-                {filteredWorkspaceDeals.map((deal) => (
-                  <button className={`data-row ${deal.alert !== "—" ? "has-new-evidence" : ""}`} role="row" key={deal.name} onClick={deal.name === "Asteria Bio" ? openAsteria : () => { setSearchQuery(deal.name); setPanel("search"); }}>
-                    <span><span><strong>{deal.name}</strong>{deal.alert !== "—" && <em className="new-evidence-badge">New evidence</em>}<small>{deal.sector}</small></span></span>
-                    <span>{deal.stage}</span><span><em>{deal.status}</em></span><span>{deal.owner}</span><span>{deal.last}</span><span>{deal.memories} memories</span>
-                  </button>
-                ))}
-              </div>
             </section>
           )}
 
@@ -805,7 +770,7 @@ export default function Home() {
                 <h2 id="drawer-title">What would you like to do?</h2>
                 <p className="drawer-lede">Jump directly into the core workflows. Keyboard search is available anywhere with ⌘K.</p>
                 <div className="action-list">
-                  <button onClick={() => { setPanel(null); navigateProduct("pipeline"); }}><strong>Review the deal pipeline</strong><small>Filter opportunities by stage and open a company record.</small></button>
+                  <button onClick={() => { setPanel(null); navigateProduct("pipeline"); }}><strong>Review deals</strong><small>See workflow, status, decision memory, and new evidence in one place.</small></button>
                   <button onClick={() => setPanel("search")}><strong>Search Deal Memory</strong><small>Find companies by name, industry, component, or thesis.</small></button>
                   <button onClick={() => { setPanel(null); setView("overview"); runScan(); }}><strong>Run a global analysis</strong><small>Compare all eight companies with the latest verified signals.</small></button>
                 </div>
