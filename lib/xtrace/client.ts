@@ -125,6 +125,7 @@ export function createXTraceClient(options: {
   const fetchImpl = options.fetch ?? fetch;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "User-Agent": "VSee-VC-Deal-Intelligence/0.1",
   };
   if (options.apiKey.startsWith("mmk_")) {
     headers["x-api-key"] = options.apiKey;
@@ -149,12 +150,6 @@ export function createXTraceClient(options: {
 
     const payload = await response.json().catch(() => undefined) as unknown;
     if (!response.ok) {
-      console.error("[xtrace-debug] non-OK", {
-        status: response.status,
-        contentType: response.headers.get("content-type"),
-        apiKeyLength: options.apiKey.length,
-        apiKeyKind: options.apiKey.startsWith("mmk_") ? "mmk" : "legacy",
-      });
       const error = isRecord(payload) && isRecord(payload.error) ? payload.error : undefined;
       const message = typeof error?.message === "string"
         ? error.message

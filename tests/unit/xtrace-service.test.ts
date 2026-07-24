@@ -96,6 +96,7 @@ test("mmk XTrace requests use x-api-key and omit legacy auth headers", async () 
   assert.equal(headers.get("x-api-key"), "mmk_test");
   assert.equal(headers.get("authorization"), null);
   assert.equal(headers.get("x-org-id"), null);
+  assert.equal(headers.get("user-agent"), "VSee-VC-Deal-Intelligence/0.1");
 });
 
 test("XTrace search rejects a successful HTTP response with a malformed provider envelope", async () => {
