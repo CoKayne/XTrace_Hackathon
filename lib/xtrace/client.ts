@@ -124,9 +124,13 @@ export function createXTraceClient(options: {
   const baseUrl = (options.baseUrl ?? XTRACE_API_BASE_URL).replace(/\/$/, "");
   const fetchImpl = options.fetch ?? fetch;
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${options.apiKey}`,
     "Content-Type": "application/json",
   };
+  if (options.apiKey.startsWith("mmk_")) {
+    headers["x-api-key"] = options.apiKey;
+  } else {
+    headers.Authorization = `Bearer ${options.apiKey}`;
+  }
   if (!options.apiKey.startsWith("mmk_") && options.orgId?.trim()) {
     headers["X-Org-Id"] = options.orgId.trim();
   }
@@ -139,13 +143,18 @@ export function createXTraceClient(options: {
         headers: { ...headers, ...init.headers },
         signal: init.signal ?? AbortSignal.timeout(30_000),
       });
-    } catch (error) {
-      console.error("[xtrace-debug] outbound request failed", error);
+    } catch {
       throw new XTraceHttpError(0, true, "XTrace request could not be completed");
     }
 
     const payload = await response.json().catch(() => undefined) as unknown;
     if (!response.ok) {
+      console.error("[xtrace-debug] non-OK", {
+        status: response.status,
+        contentType: response.headers.get("content-type"),
+        apiKeyLength: options.apiKey.length,
+        apiKeyKind: options.apiKey.startsWith("mmk_") ? "mmk" : "legacy",
+      });
       const error = isRecord(payload) && isRecord(payload.error) ? payload.error : undefined;
       const message = typeof error?.message === "string"
         ? error.message

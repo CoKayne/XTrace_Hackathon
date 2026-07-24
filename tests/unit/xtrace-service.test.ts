@@ -75,7 +75,7 @@ test("XTrace HTTP client keeps wait out of the memory request body", async () =>
   });
 });
 
-test("mmk XTrace requests omit the organization header even when a stale org ID exists", async () => {
+test("mmk XTrace requests use x-api-key and omit legacy auth headers", async () => {
   let headers = new Headers();
   const client = createXTraceClient({
     apiKey: "mmk_test",
@@ -93,7 +93,8 @@ test("mmk XTrace requests omit the organization header even when a stale org ID 
     limit: 1,
   });
 
-  assert.equal(headers.get("authorization"), "Bearer mmk_test");
+  assert.equal(headers.get("x-api-key"), "mmk_test");
+  assert.equal(headers.get("authorization"), null);
   assert.equal(headers.get("x-org-id"), null);
 });
 
