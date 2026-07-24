@@ -35,7 +35,6 @@ export function createClaudeClient(options: {
         body: JSON.stringify({
           model,
           max_tokens: input.maxTokens ?? 3_000,
-          temperature: 0,
           system: input.system,
           messages: input.messages,
         }),

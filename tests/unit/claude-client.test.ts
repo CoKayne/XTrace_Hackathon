@@ -25,6 +25,7 @@ test("Claude client defaults to Opus 4.8", async () => {
     });
 
     assert.equal(requestBody?.model, "claude-opus-4-8");
+    assert.equal("temperature" in (requestBody ?? {}), false);
   } finally {
     if (previousModel === undefined) delete process.env.ANTHROPIC_MODEL;
     else process.env.ANTHROPIC_MODEL = previousModel;
