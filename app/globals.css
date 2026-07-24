@@ -1618,7 +1618,8 @@ select {
   color: var(--text-strong);
   font-family: var(--sans);
   font-weight: 780;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.028em;
+  word-spacing: 0.06em;
 }
 
 .workspace-view .view-heading h1 {
@@ -1689,13 +1690,19 @@ select {
 
 .thinking-idle h2 {
   font-size: clamp(36px, 4vw, 54px);
-  line-height: 1.02;
+  line-height: 1.07;
 }
 
 .stage-cta {
+  min-height: 42px;
+  padding: 0 18px;
   border-radius: 9px;
   background: var(--accent);
+  color: #fff;
   box-shadow: 0 5px 14px rgba(8, 118, 107, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--sans);
   font-weight: 720;
   letter-spacing: -0.01em;
@@ -1736,7 +1743,8 @@ select {
   font-family: var(--sans);
   font-size: 22px;
   font-weight: 760;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.015em;
+  word-spacing: 0.04em;
 }
 
 .company-row p,
@@ -1977,7 +1985,7 @@ select {
 
 .table-toolbar {
   min-height: 66px;
-  padding: 0 4px;
+  padding: 0;
   border-bottom: 0;
 }
 
@@ -2054,6 +2062,17 @@ button.data-row:hover {
   font-weight: 800;
 }
 
+.deal-table .data-row > span:first-child > span {
+  grid-template-columns: max-content max-content;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+}
+
+.deal-table .data-row > span:first-child small {
+  grid-column: 1 / -1;
+}
+
 .report-feature {
   min-height: 250px;
   padding: 34px;
@@ -2127,7 +2146,17 @@ button.data-row:hover {
 }
 
 @media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workspace {
+    width: 100%;
+    min-width: 0;
+  }
+
   .topbar {
+    width: 100%;
     padding: 0 16px;
   }
 
@@ -2156,8 +2185,19 @@ button.data-row:hover {
   }
 
   .scan-stage {
+    width: 100%;
     padding: 10px;
     border-radius: 13px;
+  }
+
+  .thinking-idle h2 {
+    font-size: 34px;
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+  }
+
+  .stage-cta {
+    width: 100%;
   }
 
   .match-card,
