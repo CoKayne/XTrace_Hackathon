@@ -90,6 +90,45 @@ test("a claimed run fails before market work when durable product-input confirma
   assert.equal((await runs.get(run.id))?.status, "failed");
 });
 
+test("a failed stage persists its exact error in the durable run warnings", async () => {
+  const runs = createRunsRepository(createMemoryDataClient());
+  await runs.create({
+    workspaceId: "workspace_demo",
+    mode: "structured",
+    windowDays: 14,
+  });
+  const run = await runs.claimNext("test-worker");
+  assert.ok(run);
+
+  await assert.rejects(
+    processClaimedRun(run, {
+      runs,
+      intelligence: createTestIntelligenceRepository(),
+      bundles: buildPreloadedDealMemoryBundles(),
+      importGate: READY_IMPORT_GATE,
+      market: {
+        async scanMarketWindow() {
+          throw new Error("FTC feed returned HTML");
+        },
+      },
+      reasoner: {
+        async reason() {
+          throw new Error("Matching must not start after a market failure.");
+        },
+      },
+    }),
+    /FTC feed returned HTML/,
+  );
+
+  const failed = await runs.get(run.id);
+  assert.equal(failed?.status, "failed");
+  assert.equal(failed?.currentStage, "market_scan");
+  assert.deepEqual(
+    failed?.warnings,
+    ["market_scan failed: FTC feed returned HTML"],
+  );
+});
+
 test("a claimed run persists market evidence, an always-present summary, and ranked matches", async () => {
   const runs = createRunsRepository(createMemoryDataClient());
   const queued = await runs.create({

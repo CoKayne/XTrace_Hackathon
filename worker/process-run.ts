@@ -57,18 +57,29 @@ export async function processClaimedRun(
   const warnings: string[] = [];
   const workerId = claimedRun.workerId;
   if (!workerId) throw new Error(`Run ${claimedRun.id} has no owning worker`);
-  const updateStage = (
+  let activeStage = claimedRun.currentStage ?? "worker_setup";
+  let activeStageStatus:
+    | "running"
+    | "skipped"
+    | "completed"
+    | "failed"
+    | undefined;
+  const updateStage = async (
     name: string,
     status: "running" | "skipped" | "completed" | "failed",
     warning?: string,
-  ) => stage(
-    dependencies.runs,
-    claimedRun.id,
-    workerId,
-    name,
-    status,
-    warning,
-  );
+  ) => {
+    activeStage = name;
+    activeStageStatus = status;
+    return stage(
+      dependencies.runs,
+      claimedRun.id,
+      workerId,
+      name,
+      status,
+      warning,
+    );
+  };
 
   try {
     await updateStage("import_confirmation", "running");
@@ -269,6 +280,21 @@ export async function processClaimedRun(
     });
     return { run: finalRun, report: storedReport };
   } catch (error) {
+    if (activeStageStatus !== "failed") {
+      const detail = (error instanceof Error ? error.message : String(error))
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 800) || "Unknown scan error";
+      try {
+        await updateStage(
+          activeStage,
+          "failed",
+          `${activeStage} failed: ${detail}`,
+        );
+      } catch {
+        // Preserve the original stage failure even if diagnostics cannot be written.
+      }
+    }
     await dependencies.runs.finish({
       runId: claimedRun.id,
       status: "failed",
