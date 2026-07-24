@@ -1,6 +1,7 @@
 import type {
   IntelligenceReportRecord,
 } from "../../db/repositories/intelligence";
+import { sanitizeReportOpportunities } from "./next-step-policy";
 
 export function toPublicReport(report: IntelligenceReportRecord) {
   return {
@@ -9,6 +10,6 @@ export function toPublicReport(report: IntelligenceReportRecord) {
     runId: report.runId,
     createdAt: report.createdAt,
     marketSummary: report.marketSummary,
-    opportunities: report.opportunities,
+    opportunities: sanitizeReportOpportunities(report.opportunities),
   };
 }

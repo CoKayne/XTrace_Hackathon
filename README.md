@@ -77,10 +77,11 @@ server-only values. Do not expose service keys through `NEXT_PUBLIC_*`.
 
 Apply [`drizzle/0000_vsee_postgres.sql`](drizzle/0000_vsee_postgres.sql), then
 apply [`drizzle/0001_remove_report_delivery.sql`](drizzle/0001_remove_report_delivery.sql),
-then [`drizzle/0002_durable_decision_lineage.sql`](drizzle/0002_durable_decision_lineage.sql)
+then [`drizzle/0002_durable_decision_lineage.sql`](drizzle/0002_durable_decision_lineage.sql),
+then [`drizzle/0003_sanitize_report_next_steps.sql`](drizzle/0003_sanitize_report_next_steps.sql)
 to the Supabase PostgreSQL database before seeding the fixed corpus. Operators
 upgrading a database that already has `0000` and `0001` applied may apply
-`0002` alone.
+`0002` and `0003` in order.
 
 ```bash
 npm install

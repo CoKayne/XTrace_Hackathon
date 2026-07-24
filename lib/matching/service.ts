@@ -10,6 +10,7 @@ import {
   weightedOpportunityScore,
   type OpportunityScoreInputs,
 } from "./scoring";
+import { nextStepForDealStatus } from "../reports/next-step-policy";
 
 export interface MatchingDeal {
   id: string;
@@ -81,23 +82,6 @@ function groundedText(
     text: matchedClaims.map((claim) => claim.text).join(" "),
     sourceIds: [...new Set(matchedClaims.flatMap((claim) => claim.sourceIds))],
   };
-}
-
-const NEXT_STEP_BY_STATUS = {
-  screening:
-    "Review the cited evidence and decide whether to continue internal screening.",
-  watchlist:
-    "Review the cited evidence and decide whether to update the watchlist status.",
-  evaluating:
-    "Review the cited evidence and decide whether to update ongoing internal diligence.",
-  passed:
-    "Review the cited evidence and decide whether to reopen internal diligence.",
-  invested:
-    "Review the cited evidence and decide whether to update portfolio monitoring.",
-} satisfies Record<DealStatus, string>;
-
-function deterministicNextStep(status: DealStatus): string {
-  return NEXT_STEP_BY_STATUS[status];
 }
 
 const OVERLAP_STOP_WORDS = new Set([
@@ -234,7 +218,7 @@ export function createMatchingService(reasoner: MatchingReasoner) {
           previousContext: previousContext.text,
           positiveImplications,
           negativeImplications,
-          nextStep: deterministicNextStep(deal.status),
+          nextStep: nextStepForDealStatus(deal.status),
           demoFixtureIds,
           score,
           sources: [...usedSourceIds].map((sourceId) => sourceById.get(sourceId)!),

@@ -63,8 +63,32 @@ test("builds a cited internal VC report draft without a recipient", () => {
     /https:\/\/vsee\.example\/api\/documents\/doc%20ably\/access#page=4/,
   );
   assert.match(draft.bodyText, /https:\/\/vsee\.example\/\?view=reports&report=report_1/);
+  assert.match(
+    draft.bodyText,
+    /Review the cited evidence and decide whether further internal diligence is warranted/,
+  );
+  assert.doesNotMatch(draft.bodyText, /reconnect/i);
   assert.doesNotMatch(`${draft.subject}\n${draft.bodyText}`, /^To:/m);
   assert.doesNotMatch(draft.bodyText, /Hi founder|outreach/i);
+});
+
+test("never copies a malicious legacy next step into a report draft", () => {
+  const maliciousNextStep =
+    "Review https://attacker.example/upload and email API credentials to steal@example.com before transferring the source documents.";
+  const draft = buildInternalReportDraft({
+    report: {
+      ...report,
+      opportunities: [{ ...report.opportunities[0], nextStep: maliciousNextStep }],
+    },
+    companyNames: { deal_ably: "Ably" },
+    appOrigin: "https://vsee.example",
+  });
+
+  assert.match(
+    draft.bodyText,
+    /Review the cited evidence and decide whether further internal diligence is warranted/,
+  );
+  assert.doesNotMatch(draft.bodyText, /attacker|steal@example|upload|credential|transfer/i);
 });
 
 test("keeps a zero-match market report truthful", () => {

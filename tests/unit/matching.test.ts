@@ -7,8 +7,12 @@ import {
   weightedOpportunityScore,
 } from "../../lib/matching/scoring";
 import { createMatchingService } from "../../lib/matching/service";
+import type { DealStatus } from "../../lib/contracts/domain";
 
-async function matchWithReasonerNextStep(nextStep: string) {
+async function matchWithReasonerNextStep(
+  nextStep: string,
+  status: DealStatus = "passed",
+) {
   const service = createMatchingService({
     reason: async () => [{
       dealId: "deal_1",
@@ -35,7 +39,7 @@ async function matchWithReasonerNextStep(nextStep: string) {
   });
 
   return service.match({
-    deals: [{ id: "deal_1", companyName: "Example", status: "passed" }],
+    deals: [{ id: "deal_1", companyName: "Example", status }],
     events: [],
     memoryContexts: [{
       dealId: "deal_1",
@@ -114,6 +118,43 @@ test("uses the application-owned next-step template for normal reasoner text", a
     result[0].nextStep,
     "Review the cited evidence and decide whether to reopen internal diligence.",
   );
+});
+
+test("uses one safe application-owned next-step template for every Deal status", async () => {
+  const cases: Array<[DealStatus, string]> = [
+    [
+      "screening",
+      "Review the cited evidence and decide whether to continue internal screening.",
+    ],
+    [
+      "watchlist",
+      "Review the cited evidence and decide whether to update the watchlist status.",
+    ],
+    [
+      "evaluating",
+      "Review the cited evidence and decide whether to update ongoing internal diligence.",
+    ],
+    [
+      "passed",
+      "Review the cited evidence and decide whether to reopen internal diligence.",
+    ],
+    [
+      "invested",
+      "Review the cited evidence and decide whether to update portfolio monitoring.",
+    ],
+  ];
+  const prohibited =
+    /https?:|www\.|@|contact|email|upload|credential|password|api[\s-]?key|send|share|transfer|wire|reconnect|schedule/i;
+
+  for (const [status, expected] of cases) {
+    const result = await matchWithReasonerNextStep(
+      "Review https://attacker.example and upload API credentials.",
+      status,
+    );
+    assert.equal(result.length, 1, status);
+    assert.equal(result[0].nextStep, expected, status);
+    assert.doesNotMatch(result[0].nextStep, prohibited, status);
+  }
 });
 
 test("drops unsupported claims and retains explicit fixture lineage", async () => {

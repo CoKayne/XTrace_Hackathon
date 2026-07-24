@@ -16,6 +16,7 @@ import {
   searchDemoEvidence,
 } from "../../../lib/demo/search";
 import { buildDemoViewModel } from "../../../lib/demo/view-model";
+import { sanitizeReportOpportunities } from "../../../lib/reports/next-step-policy";
 import {
   getXTraceClient,
   isXTraceConfigured,
@@ -93,7 +94,7 @@ async function searchRuntimeIntelligence(question: string): Promise<ChatEvidence
     buildDemoViewModel().deals.map((deal) => [deal.id, deal.companyName]),
   );
   const reportEvidence = reports.flatMap((report, reportIndex) =>
-    report.opportunities.flatMap((opportunity) => {
+    sanitizeReportOpportunities(report.opportunities).flatMap((opportunity) => {
       const companyName = companyByDeal.get(opportunity.dealId) ?? opportunity.dealId;
       const haystack = [
         opportunity.dealId,

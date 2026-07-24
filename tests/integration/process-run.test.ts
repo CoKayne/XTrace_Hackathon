@@ -12,6 +12,12 @@ const READY_IMPORT_GATE = {
   async assertReady() {},
 };
 
+function createTestIntelligenceRepository() {
+  return createMemoryIntelligenceRepository({
+    now: () => new Date("2026-07-24T12:00:00.000Z"),
+  });
+}
+
 function marketEvent(index: number): NormalizedMarketEvent {
   const hour = String(index).padStart(2, "0");
   return {
@@ -55,7 +61,7 @@ test("a claimed run fails before market work when durable product-input confirma
   await assert.rejects(
     processClaimedRun(run, {
       runs,
-      intelligence: createMemoryIntelligenceRepository(),
+      intelligence: createTestIntelligenceRepository(),
       bundles: buildPreloadedDealMemoryBundles(),
       importGate: {
         async assertReady(workspaceId) {
@@ -93,7 +99,7 @@ test("a claimed run persists market evidence, an always-present summary, and ran
   });
   const run = await runs.claimNext("test-worker");
   assert.equal(run?.id, queued.id);
-  const intelligence = createMemoryIntelligenceRepository();
+  const intelligence = createTestIntelligenceRepository();
 
   const result = await processClaimedRun(run!, {
     runs,
@@ -191,7 +197,7 @@ test("persists a generic public item but excludes it from downstream analysis wi
   });
   const run = await runs.claimNext("test-worker");
   assert.ok(run);
-  const intelligence = createMemoryIntelligenceRepository();
+  const intelligence = createTestIntelligenceRepository();
   let downstreamEventCount = -1;
 
   const result = await processClaimedRun(run, {
@@ -275,7 +281,7 @@ test("XTrace recall failure never falls back to structured memory and marks the 
 
   const result = await processClaimedRun(run, {
     runs,
-    intelligence: createMemoryIntelligenceRepository(),
+    intelligence: createTestIntelligenceRepository(),
     bundles: buildPreloadedDealMemoryBundles(),
     importGate: READY_IMPORT_GATE,
     market: {
@@ -364,7 +370,7 @@ test("polls pending XTrace ingest jobs before recall", async () => {
 
   const result = await processClaimedRun(run, {
     runs,
-    intelligence: createMemoryIntelligenceRepository(),
+    intelligence: createTestIntelligenceRepository(),
     bundles: buildPreloadedDealMemoryBundles(),
     importGate: READY_IMPORT_GATE,
     market: {
@@ -451,7 +457,7 @@ test("bounds market evidence before XTrace and Claude while preserving all event
   });
   const run = await runs.claimNext("test-worker");
   assert.ok(run);
-  const intelligence = createMemoryIntelligenceRepository();
+  const intelligence = createTestIntelligenceRepository();
   const fetchedEvents = Array.from({ length: 23 }, (_, index) =>
     marketEvent(index)
   );

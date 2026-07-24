@@ -1,6 +1,7 @@
 import type { OpportunityReportItem } from "../../lib/contracts/domain";
 import { withinPublicationWindow } from "../../lib/market/dedupe";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
+import { sanitizeReportOpportunities } from "../../lib/reports/next-step-policy";
 
 const DEFAULT_WORKSPACE_ID = "workspace_demo";
 const MARKET_EVENT_WINDOW_DAYS = 14;
@@ -29,8 +30,7 @@ export interface IntelligenceRepository {
   listReports(workspaceId: string): Promise<IntelligenceReportRecord[]>;
 }
 
-function currentMarketWindow(now: () => Date) {
-  const to = now();
+function marketWindowAt(to: Date) {
   if (!Number.isFinite(to.getTime())) {
     throw new TypeError("Market event reads require a valid current time.");
   }
@@ -39,6 +39,29 @@ function currentMarketWindow(now: () => Date) {
       to.getTime() - MARKET_EVENT_WINDOW_DAYS * 24 * 60 * 60 * 1_000,
     ),
     to,
+  };
+}
+
+function currentMarketWindow(now: () => Date) {
+  return marketWindowAt(now());
+}
+
+export function buildMarketEventsReadPath(input: {
+  workspaceId: string;
+  now: Date;
+}): string {
+  const window = marketWindowAt(input.now);
+  return `/market_events?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+    + `&published_at=gte.${encodeURIComponent(window.from.toISOString())}`
+    + `&published_at=lte.${encodeURIComponent(window.to.toISOString())}`
+    + "&select=payload&order=published_at.desc";
+}
+
+function safeReport(report: IntelligenceReportRecord): IntelligenceReportRecord {
+  const cloned = structuredClone(report);
+  return {
+    ...cloned,
+    opportunities: sanitizeReportOpportunities(cloned.opportunities),
   };
 }
 
@@ -73,22 +96,22 @@ export function createMemoryIntelligenceRepository(
     },
     async saveReport(report) {
       reports.set(report.id, structuredClone(report));
-      return structuredClone(report);
+      return safeReport(report);
     },
     async getReport(reportId) {
       const report = reports.get(reportId);
-      return report ? structuredClone(report) : null;
+      return report ? safeReport(report) : null;
     },
     async listReports(workspaceId) {
       return [...reports.values()]
         .filter((report) => report.workspaceId === workspaceId)
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-        .map((report) => structuredClone(report));
+        .map(safeReport);
     },
   };
 }
 
-export function createSupabaseIntelligenceRepository(options: {
+function createSupabaseIntelligenceRepository(options: {
   url: string;
   serviceRoleKey: string;
   fetchImpl?: typeof fetch;
@@ -116,14 +139,14 @@ export function createSupabaseIntelligenceRepository(options: {
     return response.json();
   }
   function toReport(row: Record<string, unknown>): IntelligenceReportRecord {
-    return {
+    return safeReport({
       id: String(row.id),
       workspaceId: String(row.workspace_id),
       runId: String(row.run_id),
       createdAt: String(row.created_at),
       marketSummary: String(row.market_summary),
       opportunities: (row.opportunities ?? []) as OpportunityReportItem[],
-    };
+    });
   }
   return {
     async saveMarketEvents(items, workspaceId = DEFAULT_WORKSPACE_ID) {
@@ -140,12 +163,8 @@ export function createSupabaseIntelligenceRepository(options: {
       });
     },
     async listMarketEvents(workspaceId) {
-      const window = currentMarketWindow(now);
       const rows = await request(
-        `/market_events?workspace_id=eq.${encodeURIComponent(workspaceId)}`
-          + `&published_at=gte.${encodeURIComponent(window.from.toISOString())}`
-          + `&published_at=lte.${encodeURIComponent(window.to.toISOString())}`
-          + "&select=payload&order=published_at.desc",
+        buildMarketEventsReadPath({ workspaceId, now: now() }),
       ) as Array<{ payload: NormalizedMarketEvent }>;
       return rows.map((row) => row.payload);
     },

@@ -2,6 +2,7 @@ import type {
   OpportunityReportItem,
   SourceRef,
 } from "../contracts/domain";
+import { sanitizeReportNextStep } from "./next-step-policy";
 
 export interface InternalReportDraft {
   subject: string;
@@ -73,7 +74,7 @@ function formatOpportunity(
   lines.push(
     "",
     "Suggested next step:",
-    opportunity.nextStep,
+    sanitizeReportNextStep(opportunity.nextStep),
     "",
     "Sources:",
     ...opportunity.sources.map((source) => formatSource(source, origin)),

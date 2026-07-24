@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import * as intelligenceRepositoryModule from "../../db/repositories/intelligence";
+import {
+  buildMarketEventsReadPath,
+  createMemoryIntelligenceRepository,
+} from "../../db/repositories/intelligence";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
-
-const { createMemoryIntelligenceRepository } = intelligenceRepositoryModule;
 
 function event(
   id: string,
@@ -67,41 +68,14 @@ test("market event reads use an inclusive latest-fourteen-day publication window
   );
 });
 
-test("Supabase market event reads bound publication time in the repository query", async () => {
-  const createSupabaseIntelligenceRepository = (
-    intelligenceRepositoryModule as unknown as {
-      createSupabaseIntelligenceRepository?: (options: {
-        url: string;
-        serviceRoleKey: string;
-        fetchImpl: typeof fetch;
-        now: () => Date;
-      }) => {
-        listMarketEvents(workspaceId: string): Promise<NormalizedMarketEvent[]>;
-      };
-    }
-  ).createSupabaseIntelligenceRepository;
-  assert.ok(
-    createSupabaseIntelligenceRepository,
-    "Supabase repository factory must be available for boundary verification",
+test("Supabase market event query bounds publication time at the repository seam", () => {
+  const requestedUrl = new URL(
+    buildMarketEventsReadPath({
+      workspaceId: "workspace_demo",
+      now: new Date("2026-07-24T12:00:00.000Z"),
+    }),
+    "https://project.supabase.co",
   );
-
-  let requestedUrl: URL | undefined;
-  const repository = createSupabaseIntelligenceRepository({
-    url: "https://project.supabase.co",
-    serviceRoleKey: "test-service-role-key",
-    now: () => new Date("2026-07-24T12:00:00.000Z"),
-    fetchImpl: (async (input) => {
-      requestedUrl = new URL(String(input));
-      return new Response("[]", {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      });
-    }) as typeof fetch,
-  });
-
-  await repository.listMarketEvents("workspace_demo");
-
-  assert.ok(requestedUrl);
   assert.deepEqual(requestedUrl.searchParams.getAll("published_at"), [
     "gte.2026-07-10T12:00:00.000Z",
     "lte.2026-07-24T12:00:00.000Z",
@@ -153,4 +127,48 @@ test("public reports contain intelligence only and no delivery state", async () 
     "runId",
     "workspaceId",
   ]);
+});
+
+test("every report repository egress sanitizes a malicious legacy next step", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  const maliciousNextStep =
+    "Review https://attacker.example/upload and email API credentials to steal@example.com before transferring the source documents.";
+  const report = {
+    id: "report_legacy_malicious",
+    workspaceId: "workspace_demo",
+    runId: "run_legacy_malicious",
+    createdAt: "2026-07-23T12:00:00.000Z",
+    marketSummary: "Summary.",
+    opportunities: [{
+      rank: 1,
+      dealId: "deal_ably",
+      confidence: "medium" as const,
+      score: 0.72,
+      whyNow: "Infrastructure activity increased.",
+      previousContext: "The fund previously passed.",
+      implications: { positive: [], negative: [] },
+      nextStep: maliciousNextStep,
+      sources: [{
+        id: "source_legacy",
+        provenance: "public_web" as const,
+        title: "Legacy source",
+        url: "https://example.com/source",
+        excerpt: "Infrastructure activity increased.",
+      }],
+      demoFixtureIds: [],
+    }],
+  };
+
+  const saved = await repository.saveReport(report);
+  const fetched = await repository.getReport(report.id);
+  const listed = await repository.listReports(report.workspaceId);
+
+  for (const result of [saved, fetched, listed[0]]) {
+    assert.ok(result);
+    assert.equal(
+      result.opportunities[0].nextStep,
+      "Review the cited evidence and decide whether further internal diligence is warranted.",
+    );
+    assert.doesNotMatch(result.opportunities[0].nextStep, /https?:|@|upload|credential|transfer/i);
+  }
 });
