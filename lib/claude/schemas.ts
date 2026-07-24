@@ -20,9 +20,12 @@ export const ClaudeReasonedMatchSchema = z.object({
 
 export const ClaudeReasonedMatchesSchema = z.array(ClaudeReasonedMatchSchema);
 
-export const ClaudeChatAnswerSchema = z.object({
-  answer: z.string().min(1),
-  citedSourceIds: z.array(z.string()),
-  insufficientEvidence: z.boolean(),
+export const ClaudeChatClaimSchema = z.object({
+  text: z.string().min(1),
+  sourceIds: z.array(z.string()).min(1),
 });
 
+export const ClaudeChatAnswerSchema = z.object({
+  claims: z.array(ClaudeChatClaimSchema),
+  insufficientEvidence: z.boolean(),
+});

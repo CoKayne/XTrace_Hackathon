@@ -1,0 +1,49 @@
+import { getDataClient } from "../../../../db/client";
+import { createRunsRepository } from "../../../../db/repositories/runs";
+import { jsonOk } from "../../../../lib/api/response";
+import { getProductInputReadiness } from "../../../../lib/corpus/import-readiness";
+import { readMarketProviderConfiguration } from "../../../../lib/market/config";
+import { createDefaultDemoDataStore } from "../../../../lib/storage/service";
+
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  const market = readMarketProviderConfiguration();
+  const corpus = await getProductInputReadiness(
+    createDefaultDemoDataStore(),
+    "workspace_demo",
+  );
+  const postgres = Boolean(
+    process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+  let worker = false;
+  if (postgres) {
+    try {
+      worker = await createRunsRepository(getDataClient()).isWorkerHealthy();
+    } catch {
+      worker = false;
+    }
+  }
+
+  return jsonOk({
+    postgres,
+    worker,
+    xtrace: Boolean(process.env.XTRACE_API_KEY && process.env.XTRACE_ORG_ID),
+    anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
+    storage: Boolean(
+      postgres &&
+      process.env.SUPABASE_STORAGE_BUCKET &&
+      process.env.DOCUMENT_URL_SIGNING_SECRET &&
+      process.env.DOCUMENT_URL_SIGNING_SECRET.length >= 32
+    ),
+    email: Boolean(
+      process.env.RESEND_API_KEY &&
+      process.env.REPORT_FROM_EMAIL &&
+      process.env.REPORT_TO_EMAIL
+    ),
+    corpusReady: corpus.ready,
+    corpusConfirmedCount: corpus.confirmedCount,
+    corpusRequiredCount: corpus.requiredCount,
+    marketProviders: market.configuredProviderCount,
+  });
+}

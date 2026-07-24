@@ -1,4 +1,4 @@
-import type { DealStatus } from "../contracts/domain";
+import { DEMO_FIXTURE_LABEL, type DealStatus } from "../contracts/domain";
 
 export interface DemoFixture {
   id: string;
@@ -7,14 +7,12 @@ export interface DemoFixture {
   companyName: string;
   occurredAt: string;
   provenance: "demo_fixture";
-  label: "Synthetic VC decision record created for the hackathon demo";
+  label: typeof DEMO_FIXTURE_LABEL;
   status: DealStatus;
   concerns: string[];
   revisitConditions: string[];
   meetingSummary: string;
 }
-
-const DEMO_FIXTURE_LABEL = "Synthetic VC decision record created for the hackathon demo" as const;
 
 // These are intentionally internal decision records. They do not assert company,
 // customer, funding, product, or regulatory facts beyond the supplied documents.
@@ -75,4 +73,8 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
 
 export function getDemoFixtureForDocument(documentId: string): DemoFixture | undefined {
   return DEMO_FIXTURES.find((fixture) => fixture.documentId === documentId);
+}
+
+export function getDemoFixtureForDeal(dealId: string): DemoFixture | undefined {
+  return DEMO_FIXTURES.find((fixture) => fixture.dealId === dealId);
 }

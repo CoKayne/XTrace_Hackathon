@@ -1,0 +1,129 @@
+import { hostname } from "node:os";
+
+import { getDataClient } from "../db/client";
+import { getIntelligenceRepository } from "../db/repositories/intelligence";
+import { createRunsRepository } from "../db/repositories/runs";
+import { getXTraceLineageRepository } from "../db/repositories/xtrace-lineage";
+import { createClaudeClient } from "../lib/claude/client";
+import { buildPreloadedDealMemoryBundles } from "../lib/corpus/service";
+import { createClaudeMatchingReasoner } from "../lib/matching/claude-reasoner";
+import { createProductInputGate } from "../lib/corpus/import-readiness";
+import { readMarketProviderConfiguration } from "../lib/market/config";
+import { createDefaultMarketProviders } from "../lib/market/providers";
+import { createMarketService } from "../lib/market/service";
+import { getXTraceClient } from "../lib/xtrace/client";
+import { createXTraceService } from "../lib/xtrace/service";
+import { createDefaultDemoDataStore } from "../lib/storage/service";
+import {
+  workerHealthFilePath,
+  writeWorkerHealthMarker,
+} from "./health";
+import { processClaimedRun } from "./process-run";
+
+const WORKER_ID = process.env.WORKER_ID?.trim()
+  || `worker-${hostname()}-${process.pid}`;
+const WORKER_HEALTH_FILE = workerHealthFilePath();
+const POLL_INTERVAL_MS = 2_000;
+const HEARTBEAT_INTERVAL_MS = 15_000;
+
+export async function runNextQueuedScan(): Promise<boolean> {
+  const runs = createRunsRepository(getDataClient());
+  await runs.touchWorkerHeartbeat(WORKER_ID);
+  await writeWorkerHealthMarker(WORKER_HEALTH_FILE);
+  const claimed = await runs.claimNext(WORKER_ID);
+  if (!claimed) return false;
+
+  const heartbeat = setInterval(() => {
+    void Promise.all([
+      runs.touchWorkerHeartbeat(WORKER_ID),
+      runs.renewLease(claimed.id, WORKER_ID),
+    ]).then(async ([, leaseRenewed]) => {
+      if (!leaseRenewed) {
+        throw new Error(`Worker no longer owns scan ${claimed.id}`);
+      }
+      await writeWorkerHealthMarker(WORKER_HEALTH_FILE);
+    }).catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[${WORKER_ID}] heartbeat failed: ${message}`);
+    });
+  }, HEARTBEAT_INTERVAL_MS);
+  heartbeat.unref();
+
+  try {
+    const marketConfiguration = readMarketProviderConfiguration();
+    const providers = createDefaultMarketProviders(
+      marketConfiguration.options,
+      marketConfiguration.runtime,
+    );
+    const intelligence = getIntelligenceRepository();
+    const lineage = getXTraceLineageRepository();
+    const xtraceService = process.env.XTRACE_API_KEY && process.env.XTRACE_ORG_ID
+      ? createXTraceService(getXTraceClient(), {
+          workspaceId: claimed.workspaceId,
+          lineageRepository: lineage,
+        })
+      : undefined;
+    const xtrace = xtraceService
+      ? {
+          listOpenIngestJobs: (workspaceId: string) =>
+            lineage.listOpenJobs(workspaceId),
+          pollIngestJob: (
+            jobId: string,
+            options: { dealId: string },
+          ) => xtraceService.pollIngestJob(jobId, options),
+          recallDealContext: (
+            input: Parameters<typeof xtraceService.recallDealContext>[0],
+          ) => xtraceService.recallDealContext(input),
+        }
+      : undefined;
+    await processClaimedRun(claimed, {
+      runs,
+      intelligence,
+      bundles: buildPreloadedDealMemoryBundles(),
+      importGate: createProductInputGate(createDefaultDemoDataStore()),
+      market: createMarketService({ providers }),
+      reasoner: createClaudeMatchingReasoner(createClaudeClient()),
+      xtrace,
+    });
+  } catch (error) {
+    const current = await runs.get(claimed.id);
+    if (current?.status === "running" && current.workerId === WORKER_ID) {
+      await runs.finish({
+        runId: claimed.id,
+        status: "failed",
+        workerId: WORKER_ID,
+      });
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${WORKER_ID}] scan ${claimed.id} failed: ${message}`);
+  } finally {
+    clearInterval(heartbeat);
+    try {
+      await runs.touchWorkerHeartbeat(WORKER_ID);
+      await writeWorkerHealthMarker(WORKER_HEALTH_FILE);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[${WORKER_ID}] final heartbeat failed: ${message}`);
+    }
+  }
+  return true;
+}
+
+async function main(): Promise<void> {
+  console.log(`[${WORKER_ID}] VSee scan worker started`);
+  for (;;) {
+    const handled = await runNextQueuedScan();
+    if (!handled) await sleep(POLL_INTERVAL_MS);
+  }
+}
+
+function sleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+if (import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

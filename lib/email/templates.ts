@@ -5,6 +5,7 @@ interface ReportEmailOpportunity {
   confidence: "medium" | "high";
   whyNow: string;
   previousContext: string;
+  implications: { positive: string[]; negative: string[] };
   nextStep: string;
   sources: SourceRef[];
 }
@@ -29,16 +30,27 @@ export function renderReportEmail(input: ReportEmailInput) {
   const opportunities = input.opportunities.map((opportunity, index) => {
     const sources = opportunity.sources.map((source) => {
       const title = escapeHtml(source.title);
+      const href = source.url && source.page
+        ? `${source.url}#page=${source.page}`
+        : source.url;
       return source.url
-        ? `<li><a href="${escapeHtml(source.url)}">${title}</a></li>`
+        ? `<li><a href="${escapeHtml(href!)}">${title}</a></li>`
         : `<li>${title}</li>`;
     }).join("");
+    const positive = opportunity.implications.positive
+      .map((item) => `<li>${escapeHtml(item)}</li>`)
+      .join("");
+    const negative = opportunity.implications.negative
+      .map((item) => `<li>${escapeHtml(item)}</li>`)
+      .join("");
     return `
       <section style="border-top:1px solid #dedede;padding:20px 0">
         <p style="margin:0 0 6px;color:#6b6b6b;font-size:12px">#${index + 1} · ${opportunity.confidence.toUpperCase()} CONFIDENCE</p>
         <h2 style="margin:0 0 12px">${escapeHtml(opportunity.companyName)}</h2>
         <p><strong>Why now:</strong> ${escapeHtml(opportunity.whyNow)}</p>
         <p><strong>Previous context:</strong> ${escapeHtml(opportunity.previousContext)}</p>
+        ${positive ? `<p><strong>Potential positive effects</strong></p><ul>${positive}</ul>` : ""}
+        ${negative ? `<p><strong>Potential negative effects</strong></p><ul>${negative}</ul>` : ""}
         <p><strong>Next step:</strong> ${escapeHtml(opportunity.nextStep)}</p>
         <p><strong>Sources</strong></p>
         <ul>${sources}</ul>
@@ -70,4 +82,3 @@ export function renderOutreachEmail(input: {
     <p style="color:#777;font-size:12px">Regarding ${escapeHtml(input.companyName)}</p>
   </body></html>`;
 }
-

@@ -12,6 +12,8 @@ export const DealStatusSchema = z.preprocess(
   z.enum(["screening", "watchlist", "evaluating", "passed", "invested"]),
 );
 
+export const DEMO_FIXTURE_LABEL = "Synthetic VC decision record created for the hackathon demo" as const;
+
 export const RunStatusSchema = z.enum([
   "queued",
   "running",
@@ -44,6 +46,7 @@ export const DealInteractionSchema = z.object({
   concerns: z.array(z.string()),
   revisitConditions: z.array(z.string()),
   provenance: z.literal("demo_fixture"),
+  label: z.literal(DEMO_FIXTURE_LABEL),
 });
 
 export const DealMemoryBundleSchema = z.object({
@@ -93,4 +96,3 @@ export type DealInteraction = z.infer<typeof DealInteractionSchema>;
 export type DealMemoryBundle = z.infer<typeof DealMemoryBundleSchema>;
 export type MarketEvent = z.infer<typeof MarketEventSchema>;
 export type OpportunityReportItem = z.infer<typeof OpportunityReportItemSchema>;
-

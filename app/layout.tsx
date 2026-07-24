@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./vsee.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://second-look-vc-demo.duankayne.chatgpt.site"),

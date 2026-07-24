@@ -14,7 +14,9 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "tsc --noEmit",
     "worker": "tsx worker/runner.ts",
-    "db:generate": "drizzle-kit generate"
+    "worker:health": "node --import tsx worker/health.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:seed": "node --import tsx scripts/seed-demo.ts"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

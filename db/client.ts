@@ -16,6 +16,7 @@ export interface RunRecord {
   createdAt: string;
   startedAt: string | null;
   completedAt: string | null;
+  leaseExpiresAt: string | null;
 }
 
 export interface RunStageRecord {
@@ -38,17 +39,18 @@ export interface DataClient {
   findActiveRun(input: CreateRunRow): Promise<RunRecord | null>;
   insertRun(input: CreateRunRow): Promise<RunRecord>;
   claimNextRun(workerId: string): Promise<RunRecord | null>;
+  renewRunLease(runId: string, workerId: string): Promise<boolean>;
   updateRun(runId: string, patch: Partial<RunRecord>): Promise<RunRecord>;
   getRun(runId: string): Promise<RunRecord | null>;
   listRuns(workspaceId: string): Promise<RunRecord[]>;
   insertRunStage(input: Omit<RunStageRecord, "id">): Promise<RunStageRecord>;
+  touchWorkerHeartbeat(workerId: string): Promise<void>;
+  isWorkerHealthy(maxAgeMs: number): Promise<boolean>;
 }
 
-function nowIso() {
-  return new Date().toISOString();
-}
+const DEFAULT_LEASE_DURATION_MS = 120_000;
 
-function makeRun(input: CreateRunRow): RunRecord {
+function makeRun(input: CreateRunRow, now: Date): RunRecord {
   return {
     id: crypto.randomUUID(),
     workspaceId: input.workspaceId,
@@ -59,15 +61,22 @@ function makeRun(input: CreateRunRow): RunRecord {
     warningCount: 0,
     warnings: [],
     workerId: null,
-    createdAt: nowIso(),
+    createdAt: now.toISOString(),
     startedAt: null,
     completedAt: null,
+    leaseExpiresAt: null,
   };
 }
 
-export function createMemoryDataClient(): DataClient {
+export function createMemoryDataClient(options: {
+  now?: () => Date;
+  leaseDurationMs?: number;
+} = {}): DataClient {
   const runs = new Map<string, RunRecord>();
   const stages: RunStageRecord[] = [];
+  const workerHeartbeats = new Map<string, string>();
+  const now = options.now ?? (() => new Date());
+  const leaseDurationMs = options.leaseDurationMs ?? DEFAULT_LEASE_DURATION_MS;
 
   return {
     async findActiveRun(input) {
@@ -79,19 +88,39 @@ export function createMemoryDataClient(): DataClient {
       ) ?? null;
     },
     async insertRun(input) {
-      const run = makeRun(input);
+      const run = makeRun(input, now());
       runs.set(run.id, run);
       return structuredClone(run);
     },
     async claimNextRun(workerId) {
+      const claimedAt = now();
+      for (const candidate of runs.values()) {
+        if (
+          candidate.status === "running"
+          && candidate.leaseExpiresAt
+          && new Date(candidate.leaseExpiresAt).getTime() <= claimedAt.getTime()
+        ) {
+          candidate.status = "queued";
+          candidate.workerId = null;
+          candidate.startedAt = null;
+          candidate.leaseExpiresAt = null;
+        }
+      }
       const run = [...runs.values()]
         .filter((candidate) => candidate.status === "queued")
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
       if (!run) return null;
       run.status = "running";
       run.workerId = workerId;
-      run.startedAt = nowIso();
+      run.startedAt = claimedAt.toISOString();
+      run.leaseExpiresAt = new Date(claimedAt.getTime() + leaseDurationMs).toISOString();
       return structuredClone(run);
+    },
+    async renewRunLease(runId, workerId) {
+      const run = runs.get(runId);
+      if (!run || run.status !== "running" || run.workerId !== workerId) return false;
+      run.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
+      return true;
     },
     async updateRun(runId, patch) {
       const run = runs.get(runId);
@@ -114,6 +143,15 @@ export function createMemoryDataClient(): DataClient {
       const stage = { ...structuredClone(input), id: crypto.randomUUID() };
       stages.push(stage);
       return structuredClone(stage);
+    },
+    async touchWorkerHeartbeat(workerId) {
+      workerHeartbeats.set(workerId, now().toISOString());
+    },
+    async isWorkerHealthy(maxAgeMs) {
+      const latest = [...workerHeartbeats.values()]
+        .map((heartbeat) => new Date(heartbeat).getTime())
+        .sort((left, right) => right - left)[0];
+      return latest !== undefined && now().getTime() - latest <= maxAgeMs;
     },
   };
 }
@@ -138,6 +176,7 @@ function toRunRecord(row: Record<string, unknown>): RunRecord {
     createdAt: String(row.created_at),
     startedAt: row.started_at ? String(row.started_at) : null,
     completedAt: row.completed_at ? String(row.completed_at) : null,
+    leaseExpiresAt: row.lease_expires_at ? String(row.lease_expires_at) : null,
   };
 }
 
@@ -196,6 +235,19 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
       }) as Record<string, unknown>[];
       return rows[0] ? toRunRecord(rows[0]) : null;
     },
+    async renewRunLease(runId, workerId) {
+      const rows = await request(
+        `/scan_runs?id=eq.${encodeURIComponent(runId)}&worker_id=eq.${encodeURIComponent(workerId)}&status=eq.running`,
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            lease_expires_at: new Date(Date.now() + DEFAULT_LEASE_DURATION_MS).toISOString(),
+          }),
+        },
+      ) as Record<string, unknown>[];
+      return rows.length > 0;
+    },
     async updateRun(runId, patch) {
       const body: Record<string, unknown> = {};
       if (patch.status !== undefined) body.status = patch.status;
@@ -205,6 +257,7 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
       if (patch.workerId !== undefined) body.worker_id = patch.workerId;
       if (patch.startedAt !== undefined) body.started_at = patch.startedAt;
       if (patch.completedAt !== undefined) body.completed_at = patch.completedAt;
+      if (patch.leaseExpiresAt !== undefined) body.lease_expires_at = patch.leaseExpiresAt;
       const rows = await request(`/scan_runs?id=eq.${encodeURIComponent(runId)}`, {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
@@ -245,6 +298,21 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
         completedAt: row.completed_at ? String(row.completed_at) : null,
       };
     },
+    async touchWorkerHeartbeat(workerId) {
+      await request("/worker_heartbeats?on_conflict=worker_id", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({
+          worker_id: workerId,
+          last_seen_at: new Date().toISOString(),
+        }),
+      });
+    },
+    async isWorkerHealthy(maxAgeMs) {
+      const rows = await request("/worker_heartbeats?select=last_seen_at&order=last_seen_at.desc&limit=1") as Record<string, unknown>[];
+      if (!rows[0]?.last_seen_at) return false;
+      return Date.now() - new Date(String(rows[0].last_seen_at)).getTime() <= maxAgeMs;
+    },
   };
 }
 
@@ -259,4 +327,3 @@ export function getDataClient(): DataClient {
     : createMemoryDataClient();
   return singleton;
 }
-

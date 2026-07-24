@@ -2,6 +2,7 @@ export interface EmailMessage {
   to: string;
   subject: string;
   html: string;
+  idempotencyKey: string;
 }
 
 export interface EmailDelivery {
@@ -25,8 +26,14 @@ export function createEmailService(options: {
         headers: {
           authorization: `Bearer ${apiKey}`,
           "content-type": "application/json",
+          "idempotency-key": message.idempotencyKey,
         },
-        body: JSON.stringify({ from, ...message }),
+        body: JSON.stringify({
+          from,
+          to: message.to,
+          subject: message.subject,
+          html: message.html,
+        }),
         signal: AbortSignal.timeout(20_000),
       });
       if (!response.ok) {
@@ -38,4 +45,3 @@ export function createEmailService(options: {
     },
   };
 }
-

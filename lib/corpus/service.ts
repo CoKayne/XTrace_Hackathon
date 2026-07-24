@@ -1,12 +1,23 @@
 import { DealMemoryBundleSchema, type DealMemoryBundle } from "../contracts/domain";
-import { getDemoFixtureForDocument } from "./fixtures";
-import { getPreloadedDocument } from "./manifest";
+import { getDemoEvidenceForDeal } from "./evidence";
+import {
+  getDemoFixtureForDeal,
+  type DemoFixture,
+} from "./fixtures";
+import {
+  getPreloadedDocument,
+  listDocumentDeals,
+  listPreloadedDocuments,
+  type PreloadedDeal,
+  type PreloadedDocument,
+} from "./manifest";
 
 export interface ImportPreviewItem {
   documentId: string;
   title: string;
-  classification: "deal_document" | "market_report" | "reference";
+  classification: "deal_document" | "market_report";
   company?: string;
+  deals: Array<{ dealId: string; companyName: string; page?: number }>;
   requiresDealConfirmation: boolean;
 }
 
@@ -19,11 +30,14 @@ export interface ConfirmImportInput {
 export interface CorpusPersistence {
   ensureWorkspaceDocument(input: { workspaceId: string; documentId: string }): Promise<{ documentId: string }>;
   ensureDeal(input: { workspaceId: string; dealId: string; companyName: string }): Promise<{ dealId: string }>;
-  ensureFixture(input: { workspaceId: string; fixtureId: string; dealId: string }): Promise<{ fixtureId: string }>;
-  createSignedReadUrl(input: { documentId: string; expiresInSeconds: number }): Promise<string>;
+  ensureFixture(input: { workspaceId: string; fixture: DemoFixture }): Promise<{ fixtureId: string }>;
+  createPrivateReadUrl(input: { documentId: string; expiresInSeconds: number }): Promise<string>;
 }
 
-export interface CorpusService extends CorpusPersistence {
+export interface CorpusService {
+  list(): readonly PreloadedDocument[];
+  previewImport(documentIds: string[]): ImportPreviewItem[];
+  confirmImport(input: ConfirmImportInput): Promise<ConfirmImportResult>;
   getSignedDocumentUrl(documentId: string): Promise<string>;
 }
 
@@ -40,33 +54,58 @@ export function previewImport(documentIds: string[]): ImportPreviewItem[] {
     if (!document) {
       throw new Error(`Unknown preloaded document: ${documentId}`);
     }
+    if (document.role === "reference") {
+      throw new Error(`Document ${documentId} is reference-only and cannot be imported.`);
+    }
 
     return {
       documentId: document.id,
       title: document.title,
       classification: document.role,
       company: document.company,
+      deals: listDocumentDeals(document).map((deal) => ({
+        dealId: deal.dealId,
+        companyName: deal.company,
+        page: deal.page,
+      })),
       requiresDealConfirmation: document.role === "deal_document",
     };
   });
 }
 
+export function buildPreloadedDealMemoryBundles(): DealMemoryBundle[] {
+  return listPreloadedDocuments()
+    .filter((document) => document.role === "deal_document")
+    .flatMap((document) =>
+      listDocumentDeals(document).flatMap((deal) => {
+        const bundle = createMemoryBundle(
+          document,
+          deal,
+          getDemoFixtureForDeal(deal.dealId),
+        );
+        return bundle ? [bundle] : [];
+      })
+    );
+}
+
 export function createCorpusService(persistence: CorpusPersistence): CorpusService {
   return {
-    ...persistence,
+    list: listPreloadedDocuments,
+    previewImport,
+    confirmImport: (input) => confirmImport(input, persistence),
     getSignedDocumentUrl: (documentId) => getSignedDocumentUrl(documentId, persistence),
   };
 }
 
 export async function getSignedDocumentUrl(
   documentId: string,
-  persistence: Pick<CorpusPersistence, "createSignedReadUrl">,
+  persistence: Pick<CorpusPersistence, "createPrivateReadUrl">,
 ): Promise<string> {
   if (!getPreloadedDocument(documentId)) {
     throw new Error(`Unknown preloaded document: ${documentId}`);
   }
 
-  return persistence.createSignedReadUrl({
+  return persistence.createPrivateReadUrl({
     documentId,
     expiresInSeconds: SIGNED_DOCUMENT_URL_TTL_SECONDS,
   });
@@ -76,74 +115,153 @@ export async function confirmImport(
   input: ConfirmImportInput,
   persistence: CorpusPersistence,
 ): Promise<ConfirmImportResult> {
-  if (!input.workspaceId) {
-    throw new Error("A workspace is required to confirm an import.");
-  }
-
-  const preview = previewImport(input.documentIds);
-  const confirmations = new Map(input.dealConfirmations.map((confirmation) => [confirmation.documentId, confirmation]));
+  const validated = validateConfirmImport(input);
   const memoryBundles: DealMemoryBundle[] = [];
 
-  for (const item of preview) {
-    await persistence.ensureWorkspaceDocument({ workspaceId: input.workspaceId, documentId: item.documentId });
-
-    if (!item.requiresDealConfirmation) {
-      continue;
-    }
-
-    const confirmation = confirmations.get(item.documentId);
-    if (!confirmation?.dealId || !item.company) {
-      throw new Error(`Document ${item.documentId} requires a confirmed Deal.`);
-    }
-
-    await persistence.ensureDeal({
-      workspaceId: input.workspaceId,
-      dealId: confirmation.dealId,
-      companyName: item.company,
+  for (const item of validated.items) {
+    await persistence.ensureWorkspaceDocument({
+      workspaceId: validated.workspaceId,
+      documentId: item.document.id,
     });
 
-    const fixture = getDemoFixtureForDocument(item.documentId);
-    if (!fixture || fixture.dealId !== confirmation.dealId) {
-      continue;
+    for (const confirmation of item.confirmations) {
+      const documentDeal = listDocumentDeals(item.document)
+        .find((deal) => deal.dealId === confirmation.dealId);
+      if (!documentDeal) continue;
+      await persistence.ensureDeal({
+        workspaceId: validated.workspaceId,
+        dealId: confirmation.dealId,
+        companyName: documentDeal.company,
+      });
+      const fixture = getDemoFixtureForDeal(confirmation.dealId);
+      if (fixture) {
+        await persistence.ensureFixture({
+          workspaceId: validated.workspaceId,
+          fixture,
+        });
+      }
+      const memoryBundle = createMemoryBundle(item.document, documentDeal, fixture);
+      if (memoryBundle) memoryBundles.push(memoryBundle);
     }
-
-    await persistence.ensureFixture({
-      workspaceId: input.workspaceId,
-      fixtureId: fixture.id,
-      dealId: fixture.dealId,
-    });
-    memoryBundles.push(createMemoryBundle(fixture, item.documentId, item.title));
   }
 
-  return { documentIds: [...input.documentIds], memoryBundles };
+  return {
+    documentIds: validated.items.map((item) => item.document.id),
+    memoryBundles,
+  };
+}
+
+function validateConfirmImport(input: ConfirmImportInput): {
+  workspaceId: string;
+  items: Array<{
+    document: PreloadedDocument;
+    confirmations: Array<{ documentId: string; dealId: string }>;
+  }>;
+} {
+  const workspaceId = input.workspaceId.trim();
+  if (!workspaceId) {
+    throw new Error("A workspace is required to confirm an import.");
+  }
+  if (input.documentIds.length === 0) {
+    throw new Error("At least one preloaded document is required.");
+  }
+
+  assertNoDuplicates(input.documentIds, "document id");
+  assertNoDuplicates(
+    input.dealConfirmations.map((confirmation) =>
+      `${confirmation.documentId}:${confirmation.dealId}`
+    ),
+    "Deal confirmation",
+  );
+  const preview = previewImport(input.documentIds);
+  const selectedIds = new Set(input.documentIds);
+
+  for (const confirmation of input.dealConfirmations) {
+    if (!selectedIds.has(confirmation.documentId)) {
+      throw new Error(`Deal confirmation supplied for unselected document ${confirmation.documentId}.`);
+    }
+  }
+
+  const items = preview.map((item) => {
+    const document = getPreloadedDocument(item.documentId)!;
+    const confirmations = input.dealConfirmations.filter(
+      (confirmation) => confirmation.documentId === item.documentId,
+    );
+
+    if (document.role === "market_report") {
+      if (confirmations.length) {
+        throw new Error(`Market report ${document.id} cannot have a Deal confirmation.`);
+      }
+      return { document, confirmations: [] };
+    }
+
+    const expectedDealIds = listDocumentDeals(document).map((deal) => deal.dealId);
+    const confirmedDealIds = confirmations.map((confirmation) => confirmation.dealId);
+    const unknownDealIds = confirmedDealIds.filter(
+      (dealId) => !expectedDealIds.includes(dealId),
+    );
+    if (unknownDealIds.length) {
+      throw new Error(
+        `Document ${document.id} contains no Deal ${unknownDealIds[0]}.`,
+      );
+    }
+    const missingDealIds = expectedDealIds.filter(
+      (dealId) => !confirmedDealIds.includes(dealId),
+    );
+    if (missingDealIds.length) {
+      throw new Error(
+        `Document ${document.id} requires confirmation for Deal ${missingDealIds[0]}.`,
+      );
+    }
+    return { document, confirmations };
+  });
+
+  return { workspaceId, items };
 }
 
 function createMemoryBundle(
-  fixture: NonNullable<ReturnType<typeof getDemoFixtureForDocument>>,
-  documentId: string,
-  title: string,
-): DealMemoryBundle {
+  document: PreloadedDocument,
+  deal: PreloadedDeal,
+  fixture?: DemoFixture,
+): DealMemoryBundle | undefined {
+  const evidence = getDemoEvidenceForDeal(deal.dealId);
+  if (!evidence) return undefined;
+
   return DealMemoryBundleSchema.parse({
-    dealId: fixture.dealId,
-    companyName: fixture.companyName,
-    status: fixture.status,
+    dealId: deal.dealId,
+    companyName: deal.company,
+    status: fixture?.status ?? "screening",
     facts: [{
-      text: `This Deal is linked to the supplied ${title}.`,
+      text: evidence.fact,
       sources: [{
-        id: `source_${documentId}`,
-        provenance: "source_document",
-        title,
-        documentId,
-        excerpt: "Included in the fixed demo corpus.",
+        id: evidence.id,
+        provenance: evidence.provenance,
+        title: document.title,
+        documentId: document.id,
+        page: evidence.page,
+        excerpt: evidence.excerpt,
       }],
     }],
-    interactions: [{
-      id: fixture.id,
-      occurredAt: fixture.occurredAt,
-      summary: fixture.meetingSummary,
-      concerns: fixture.concerns,
-      revisitConditions: fixture.revisitConditions,
-      provenance: fixture.provenance,
-    }],
+    interactions: fixture
+      ? [{
+          id: fixture.id,
+          occurredAt: fixture.occurredAt,
+          summary: fixture.meetingSummary,
+          concerns: fixture.concerns,
+          revisitConditions: fixture.revisitConditions,
+          provenance: fixture.provenance,
+          label: fixture.label,
+        }]
+      : [],
   });
+}
+
+function assertNoDuplicates(values: readonly string[], label: string): void {
+  const seen = new Set<string>();
+  for (const value of values) {
+    if (seen.has(value)) {
+      throw new Error(`Duplicate ${label}: ${value}`);
+    }
+    seen.add(value);
+  }
 }

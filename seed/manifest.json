@@ -9,7 +9,27 @@
     { "id": "doc_acin", "filename": "Acin-Pitch-Deck.pdf", "title": "Acin Pitch Deck", "role": "deal_document", "company": "Acin", "dealId": "deal_acin", "checksum": "29eb7a5b6d58632f7118e696e3b58259ab9471ae2b0921b471aeb2deb43aa988", "byteSize": 361738 },
     { "id": "doc_acquco", "filename": "Acquco-Pitch-Deck.pdf", "title": "Acquco Pitch Deck", "role": "deal_document", "company": "Acquco", "dealId": "deal_acquco", "checksum": "39e4bdef030541dacd57f545943f27b6e179b891684bd1dbe88119e871b11a8e", "byteSize": 200260 },
     { "id": "doc_ada_health", "filename": "Ada-Health-Pitch-Deck.pdf", "title": "Ada Health Pitch Deck", "role": "deal_document", "company": "Ada Health", "dealId": "deal_ada_health", "checksum": "e2e0d053252c2f4e2d9c4e066457baf5ff3cea9320a1f208e305628a19d92d6a", "byteSize": 212385 },
-    { "id": "doc_intertwin_ai", "filename": "Pitch-combined-InterTwin-AI.pdf", "title": "Pitch-combined / InterTwin AI", "role": "deal_document", "company": "InterTwin AI", "dealId": "deal_intertwin_ai", "checksum": "8d70a43a869658105c104fcb711f3323032f07819267e54e474833e185c2e979", "byteSize": 8391810 },
+    {
+      "id": "doc_pitch_combined",
+      "filename": "Pitch-combined-InterTwin-AI.pdf",
+      "title": "Combined Startup One-Pagers",
+      "role": "deal_document",
+      "deals": [
+        { "company": "InterTwin.ai", "dealId": "deal_intertwin_ai", "page": 1 },
+        { "company": "UniKudo", "dealId": "deal_unikudo", "page": 2 },
+        { "company": "Mirror", "dealId": "deal_mirror", "page": 3 },
+        { "company": "CouPro", "dealId": "deal_coupro", "page": 4 },
+        { "company": "IndieShow", "dealId": "deal_indieshow", "page": 5 },
+        { "company": "HuMetric", "dealId": "deal_humetric", "page": 6 },
+        { "company": "Alpha Builders", "dealId": "deal_alpha_builders", "page": 7 },
+        { "company": "INNFormNest", "dealId": "deal_innformnest", "page": 8 },
+        { "company": "SilverMemory", "dealId": "deal_silvermemory", "page": 9 },
+        { "company": "Kanesh", "dealId": "deal_kanesh", "page": 10 },
+        { "company": "Fellowtrip", "dealId": "deal_fellowtrip", "page": 11 }
+      ],
+      "checksum": "8d70a43a869658105c104fcb711f3323032f07819267e54e474833e185c2e979",
+      "byteSize": 8391810
+    },
     { "id": "report_venture_outlook_2026", "filename": "2026-US-Venture-Capital-Outlook-Midyear-Update.pdf", "title": "2026 US Venture Capital Outlook — Midyear Update", "role": "market_report", "checksum": "a817f4352e539fb54aa1b58d9f2fb2721900a09636cda7806e54654d14f164cb", "byteSize": 693350 },
     { "id": "report_ai_vc_trends_q1_2026", "filename": "Q1-2026-AI-VC-Trends.pdf", "title": "Q1 2026 AI VC Trends", "role": "market_report", "checksum": "087566845aaf80aa63fc434413d18d597c59a65b9f92416ea767999b8d24391f", "byteSize": 4204110 },
     { "id": "report_robotics_physical_ai_q1_2026", "filename": "Q1-2026-Robotics-and-Physical-AI-VC-Trends.pdf", "title": "Q1 2026 Robotics and Physical AI VC Trends", "role": "market_report", "checksum": "3f082b87dc1e8ae2616bdf684d9b7396b2d1d2984714ada5ae5f1b846d1490b5", "byteSize": 2243486 },

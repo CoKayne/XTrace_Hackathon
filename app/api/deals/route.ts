@@ -1,0 +1,23 @@
+import { jsonOk } from "../../../lib/api/response";
+import { buildDemoViewModel } from "../../../lib/demo/view-model";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const query = url.searchParams.get("q")?.trim().toLocaleLowerCase() ?? "";
+  const status = url.searchParams.get("status")?.trim() ?? "";
+  const deals = buildDemoViewModel().deals.filter((deal) => {
+    if (status && deal.status !== status) return false;
+    if (!query) return true;
+    return [
+      deal.companyName,
+      deal.status,
+      deal.sourceTitle,
+      deal.fixture?.meetingSummary,
+      ...(deal.fixture?.concerns ?? []),
+      ...(deal.fixture?.revisitConditions ?? []),
+    ].join(" ").toLocaleLowerCase().includes(query);
+  });
+  return jsonOk(deals);
+}

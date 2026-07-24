@@ -17,12 +17,12 @@ export function createClaudeClient(options: {
   fetchImpl?: typeof fetch;
 } = {}): ClaudeClient {
   const apiKey = options.apiKey ?? process.env.ANTHROPIC_API_KEY;
-  const model = options.model ?? process.env.ANTHROPIC_MODEL;
+  const model = options.model ?? process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
   const fetchImpl = options.fetchImpl ?? fetch;
 
   return {
     async complete(input) {
-      if (!apiKey || !model) {
+      if (!apiKey) {
         throw new Error("Anthropic is not configured");
       }
       const response = await fetchImpl("https://api.anthropic.com/v1/messages", {
@@ -53,4 +53,3 @@ export function createClaudeClient(options: {
     },
   };
 }
-

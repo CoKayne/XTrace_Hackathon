@@ -27,6 +27,7 @@ export const ApiErrorSchema = z.object({
       "VALIDATION_ERROR",
       "NOT_FOUND",
       "CONFLICT",
+      "RATE_LIMITED",
       "INTEGRATION_UNAVAILABLE",
     ]),
     message: z.string().min(1),
