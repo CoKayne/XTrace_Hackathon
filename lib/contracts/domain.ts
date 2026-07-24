@@ -43,6 +43,7 @@ export const DealInteractionSchema = z.object({
   id: z.string().min(1),
   occurredAt: z.string().datetime(),
   summary: z.string().min(1),
+  decisionReason: z.string().min(1),
   concerns: z.array(z.string()),
   revisitConditions: z.array(z.string()),
   provenance: z.literal("demo_fixture"),

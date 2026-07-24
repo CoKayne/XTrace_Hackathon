@@ -52,6 +52,7 @@ function allDemoSources() {
       excerpt: [
         deal.fixture.label,
         deal.fixture.meetingSummary,
+        `Decision reason: ${deal.fixture.decisionReason}`,
         `Concerns: ${deal.fixture.concerns.join(" ") || "None recorded."}`,
         `Revisit conditions: ${deal.fixture.revisitConditions.join(" ") || "None recorded."}`,
       ].join(". "),
@@ -142,7 +143,10 @@ function deterministicCompletion(prompt: string) {
     question: string;
     evidence: Array<{ text: string; sourceIds: string[] }>;
   };
-  const evidence = parsed.evidence[0];
+  const normalizedQuestion = parsed.question.trim().toLocaleLowerCase();
+  const evidence = parsed.evidence.find((item) =>
+    item.text.toLocaleLowerCase().includes(normalizedQuestion)
+  ) ?? parsed.evidence[0];
   return JSON.stringify({
     claims: evidence ? [{
       text: evidence.text,

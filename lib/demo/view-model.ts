@@ -26,7 +26,7 @@ export interface DemoDealView {
   sourceUrl: string;
   fixture?: Pick<
     DemoFixture,
-    "id" | "label" | "provenance" | "meetingSummary" | "concerns" | "revisitConditions"
+    "id" | "label" | "provenance" | "meetingSummary" | "decisionReason" | "concerns" | "revisitConditions"
   >;
 }
 
@@ -81,6 +81,7 @@ export function buildDemoViewModel(now = new Date()): DemoViewModel {
               label: fixture.label,
               provenance: fixture.provenance,
               meetingSummary: fixture.meetingSummary,
+              decisionReason: fixture.decisionReason,
               concerns: fixture.concerns,
               revisitConditions: fixture.revisitConditions,
             }

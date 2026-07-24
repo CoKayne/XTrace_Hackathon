@@ -86,14 +86,38 @@ test("manifest validation rejects malformed fields, duplicate keys, and role-cou
 });
 
 test("every synthetic record is permanently labeled and every selected deal has real page evidence", () => {
-  assert.ok(DEMO_FIXTURES.length >= 3);
+  const manifestDealIds = listPreloadedDocuments()
+    .filter((document) => document.role === "deal_document")
+    .flatMap((document) => listDocumentDeals(document).map((deal) => deal.dealId));
+
+  assert.equal(DEMO_FIXTURES.length, 19);
+  assert.equal(new Set(DEMO_FIXTURES.map((fixture) => fixture.dealId)).size, 19);
+  assert.deepEqual(
+    new Set(DEMO_FIXTURES.map((fixture) => fixture.dealId)),
+    new Set(manifestDealIds),
+  );
   assert.ok(DEMO_FIXTURES.every((fixture) => fixture.provenance === "demo_fixture"));
   assert.ok(DEMO_FIXTURES.every(
     (fixture) => fixture.label === "Synthetic VC decision record created for the hackathon demo",
   ));
-  assert.ok(DEMO_DEAL_EVIDENCE.length >= DEMO_FIXTURES.length);
+  assert.equal(DEMO_DEAL_EVIDENCE.length, DEMO_FIXTURES.length);
 
   for (const fixture of DEMO_FIXTURES) {
+    assert.ok(fixture.decisionReason.trim(), `missing decision reason for ${fixture.dealId}`);
+    assert.ok(fixture.concerns.length > 0, `missing concerns for ${fixture.dealId}`);
+    assert.ok(
+      fixture.concerns.every((concern) => concern.trim()),
+      `blank concern for ${fixture.dealId}`,
+    );
+    assert.ok(
+      fixture.revisitConditions.length > 0,
+      `missing revisit conditions for ${fixture.dealId}`,
+    );
+    assert.ok(
+      fixture.revisitConditions.every((condition) => condition.trim()),
+      `blank revisit condition for ${fixture.dealId}`,
+    );
+    assert.ok(fixture.meetingSummary.trim(), `missing meeting summary for ${fixture.dealId}`);
     const evidence = DEMO_DEAL_EVIDENCE.find((item) => item.dealId === fixture.dealId);
     assert.ok(evidence, `missing evidence for ${fixture.dealId}`);
     assert.equal(evidence.provenance, "source_document");
@@ -224,7 +248,7 @@ test("confirmation persists the complete labeled fixture and emits page-backed e
   assert.match(result.memoryBundles[0].facts[0].sources[0].excerpt, /unified, AI powered logistics platform/i);
 });
 
-test("confirmation creates source-backed memory for a Deal without a synthetic decision fixture", async () => {
+test("confirmation creates source-backed memory and synthetic decision context for 100Plus", async () => {
   const document = listPreloadedDocuments().find((item) => item.id === "doc_100plus");
   assert.ok(document);
 
@@ -236,8 +260,13 @@ test("confirmation creates source-backed memory for a Deal without a synthetic d
 
   assert.equal(result.memoryBundles.length, 1);
   assert.equal(result.memoryBundles[0].dealId, "deal_100plus");
-  assert.equal(result.memoryBundles[0].status, "screening");
-  assert.deepEqual(result.memoryBundles[0].interactions, []);
+  assert.equal(result.memoryBundles[0].status, "evaluating");
+  assert.equal(result.memoryBundles[0].interactions.length, 1);
+  assert.match(
+    result.memoryBundles[0].interactions[0].decisionReason,
+    /remote patient monitoring/i,
+  );
+  assert.equal(result.memoryBundles[0].interactions[0].provenance, "demo_fixture");
   assert.equal(result.memoryBundles[0].facts[0].sources[0].page, 1);
 });
 

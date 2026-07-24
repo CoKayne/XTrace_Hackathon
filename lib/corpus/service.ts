@@ -247,6 +247,7 @@ function createMemoryBundle(
           id: fixture.id,
           occurredAt: fixture.occurredAt,
           summary: fixture.meetingSummary,
+          decisionReason: fixture.decisionReason,
           concerns: fixture.concerns,
           revisitConditions: fixture.revisitConditions,
           provenance: fixture.provenance,

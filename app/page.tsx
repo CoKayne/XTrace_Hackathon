@@ -7,6 +7,7 @@ import {
   buildInternalReportDraft,
   type InternalReportDraft,
 } from "../lib/reports/draft";
+import { decisionReasonLabel } from "../lib/demo/decision-label";
 
 type View =
   | "overview"
@@ -25,6 +26,7 @@ interface DemoFixture {
   label: string;
   provenance: "demo_fixture";
   meetingSummary: string;
+  decisionReason: string;
   concerns: string[];
   revisitConditions: string[];
 }
@@ -273,7 +275,15 @@ export default function Home() {
     const normalized = query.trim().toLocaleLowerCase();
     if (!normalized) return overview?.deals ?? [];
     return (overview?.deals ?? []).filter((deal) =>
-      [deal.companyName, deal.status, deal.sourceTitle, deal.fixture?.meetingSummary]
+      [
+        deal.companyName,
+        deal.status,
+        deal.sourceTitle,
+        deal.fixture?.meetingSummary,
+        deal.fixture?.decisionReason,
+        ...(deal.fixture?.concerns ?? []),
+        ...(deal.fixture?.revisitConditions ?? []),
+      ]
         .join(" ")
         .toLocaleLowerCase()
         .includes(normalized)
@@ -694,8 +704,25 @@ function DealsView({ deals, query, onQuery }: { deals: Deal[]; query: string; on
             <div className="vsee-context">
               {deal.fixture ? (
                 <>
-                  <b>DEMO FIXTURE</b>
-                  <span>{deal.fixture.meetingSummary}</span>
+                  <b>{deal.fixture.label}</b>
+                  <dl className="vsee-context-grid">
+                    <div>
+                      <dt>{decisionReasonLabel(deal.status)}</dt>
+                      <dd>{deal.fixture.decisionReason}</dd>
+                    </div>
+                    <div>
+                      <dt>Partner concern</dt>
+                      <dd>{deal.fixture.concerns.join(" · ")}</dd>
+                    </div>
+                    <div>
+                      <dt>Revisit condition</dt>
+                      <dd>{deal.fixture.revisitConditions.join(" · ")}</dd>
+                    </div>
+                    <div>
+                      <dt>Previous meeting summary</dt>
+                      <dd>{deal.fixture.meetingSummary}</dd>
+                    </div>
+                  </dl>
                 </>
               ) : (
                 <><b>SOURCE ONLY</b><span>No synthetic decision record attached.</span></>

@@ -33,6 +33,7 @@ const bundle = {
     id: "fixture_1",
     occurredAt: "2026-07-01T00:00:00.000Z",
     summary: "Passed until the regulatory path changes.",
+    decisionReason: "The synthetic team passed pending a clearer regulatory path.",
     concerns: ["FDA uncertainty"],
     revisitConditions: ["Accelerated review pilot"],
     provenance: "demo_fixture" as const,
@@ -185,6 +186,7 @@ test("serializes provenance before persisting an async ingest job", async () => 
   assert.match(message, /\[source_document\]/);
   assert.match(message, /\[demo_fixture\]/);
   assert.match(message, /label=Synthetic VC decision record created for the hackathon demo/);
+  assert.match(message, /decision_reason=The synthetic team passed pending a clearer regulatory path/);
   assert.deepEqual(persisted, [{ dealId: "deal_1", jobId: "job_1", status: "pending", memoryIds: [] }]);
 });
 
@@ -224,6 +226,7 @@ test("records demo-only bundle memory lineage as demo fixture provenance", async
       id: "fixture_demo",
       occurredAt: "2026-07-01T00:00:00.000Z",
       summary: "Passed because adoption was early.",
+      decisionReason: "The synthetic team passed pending stronger adoption evidence.",
       concerns: [],
       revisitConditions: ["Enterprise workflow adoption increases."],
       provenance: "demo_fixture",

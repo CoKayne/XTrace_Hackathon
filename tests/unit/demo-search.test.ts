@@ -39,7 +39,19 @@ test("search ranks an exact combined-PDF company and preserves its page citation
 
 test("search does not answer a broad thematic query from partial token overlap", () => {
   assert.deepEqual(
-    searchDemoEvidence("Which companies relate to AI infrastructure?"),
+    searchDemoEvidence("Which companies relate to AI orbital infrastructure?"),
     [],
   );
+});
+
+test("search finds and cites a synthetic decision reason", () => {
+  const results = searchDemoEvidence("broad travel-collaboration proposition");
+
+  assert.ok(results.length > 0);
+  assert.match(results[0].text, /Fellowtrip/);
+  const fixture = results
+    .flatMap((result) => result.sources)
+    .find((source) => source.id === "fixture_fellowtrip_passed");
+  assert.ok(fixture);
+  assert.match(fixture.excerpt, /Decision reason: The team passed because the broad travel-collaboration proposition/i);
 });

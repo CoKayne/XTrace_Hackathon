@@ -147,6 +147,17 @@ test("dashboard supports report deep links, page anchors, and a two-row mobile n
   assert.match(css, /grid-template-columns:repeat\(4,1fr\)/);
 });
 
+test("Deals render the complete labeled synthetic decision context", async () => {
+  const page = await readFile(pagePath, "utf8");
+
+  assert.match(page, /decisionReasonLabel\(deal\.status\)/);
+  assert.match(page, /\{deal\.fixture\.label\}/);
+  assert.match(page, /deal\.fixture\.decisionReason/);
+  assert.match(page, /Partner concern/);
+  assert.match(page, /Revisit condition/);
+  assert.match(page, /Previous meeting summary/);
+});
+
 test("reports open an editable internal draft dialog without sending email", async () => {
   const [page, dialog, css] = await Promise.all([
     readFile(pagePath, "utf8"),

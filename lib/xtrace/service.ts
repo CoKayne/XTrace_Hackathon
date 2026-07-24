@@ -323,7 +323,7 @@ function serializeBundle(bundle: DealMemoryBundle): string {
     `[${source.provenance}] source_id=${source.id}; title=${source.title}; excerpt=${source.excerpt}; fact=${fact.text}`,
   ));
   const interactions = bundle.interactions.map((interaction) =>
-    `[demo_fixture] fixture_id=${interaction.id}; label=${interaction.label}; occurred_at=${interaction.occurredAt}; summary=${interaction.summary}; concerns=${interaction.concerns.join(" | ")}; revisit_conditions=${interaction.revisitConditions.join(" | ")}`,
+    `[demo_fixture] fixture_id=${interaction.id}; label=${interaction.label}; occurred_at=${interaction.occurredAt}; summary=${interaction.summary}; decision_reason=${interaction.decisionReason}; concerns=${interaction.concerns.join(" | ")}; revisit_conditions=${interaction.revisitConditions.join(" | ")}`,
   );
   return [
     `Deal ${bundle.companyName} (deal_id=${bundle.dealId}; status=${bundle.status})`,

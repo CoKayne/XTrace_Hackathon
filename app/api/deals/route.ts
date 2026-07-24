@@ -15,6 +15,7 @@ export async function GET(request: Request) {
       deal.status,
       deal.sourceTitle,
       deal.fixture?.meetingSummary,
+      deal.fixture?.decisionReason,
       ...(deal.fixture?.concerns ?? []),
       ...(deal.fixture?.revisitConditions ?? []),
     ].join(" ").toLocaleLowerCase().includes(query);

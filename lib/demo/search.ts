@@ -70,6 +70,7 @@ function fixtureSource(deal: ReturnType<typeof buildDemoViewModel>["deals"][numb
     excerpt: [
       deal.fixture.label,
       deal.fixture.meetingSummary,
+      `Decision reason: ${deal.fixture.decisionReason}`,
       `Concerns: ${deal.fixture.concerns.join(" ") || "None recorded."}`,
       `Revisit conditions: ${deal.fixture.revisitConditions.join(" ") || "None recorded."}`,
     ].join(". "),
@@ -89,6 +90,7 @@ export function searchDemoEvidence(question: string): ChatEvidence[] {
       deal.sourceTitle,
       source.excerpt,
       deal.fixture?.meetingSummary,
+      deal.fixture?.decisionReason,
       ...(deal.fixture?.concerns ?? []),
       ...(deal.fixture?.revisitConditions ?? []),
     ].join(" ");
@@ -105,6 +107,7 @@ export function searchDemoEvidence(question: string): ChatEvidence[] {
     const fixtureContext = deal.fixture
       ? [
           `Synthetic decision state: ${deal.status}.`,
+          `Decision reason: ${deal.fixture.decisionReason}.`,
           deal.fixture.meetingSummary,
           `Concerns: ${deal.fixture.concerns.join(" ")}`,
           `Revisit conditions: ${deal.fixture.revisitConditions.join(" ")}`,

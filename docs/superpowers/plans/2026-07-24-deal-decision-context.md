@@ -32,7 +32,7 @@
 - Modify: `tests/unit/matching-reasoner.test.ts`
 - Modify: `tests/unit/xtrace-service.test.ts`
 
-- [ ] **Step 1: Strengthen corpus tests before production code**
+- [x] **Step 1: Strengthen corpus tests before production code**
 
 Update the synthetic-record test to require:
 
@@ -57,7 +57,7 @@ for (const fixture of DEMO_FIXTURES) {
 
 Update the demo view-model test to require `fixtureDeals === 19` and a non-empty `decisionReason` for every Deal.
 
-- [ ] **Step 2: Run the focused tests and confirm they fail**
+- [x] **Step 2: Run the focused tests and confirm they fail**
 
 Run:
 
@@ -67,7 +67,7 @@ npm test -- tests/unit/corpus.test.ts tests/unit/demo-view-model.test.ts
 
 Expected: failure because there are only four fixtures and `decisionReason` does not exist.
 
-- [ ] **Step 3: Add the required shared field**
+- [x] **Step 3: Add the required shared field**
 
 Add `decisionReason: z.string().min(1)` to `DealInteractionSchema`.
 
@@ -75,13 +75,13 @@ Add `decisionReason: string` to `DemoFixture`.
 
 Add `decisionReason` to every inline `DealInteraction` test object so TypeScript and schema validation remain explicit.
 
-- [ ] **Step 4: Add deterministic company-specific fixtures for all 19 Deals**
+- [x] **Step 4: Add deterministic company-specific fixtures for all 19 Deals**
 
 Keep the existing four statuses and use the approved status distribution for the remaining fifteen. Every fixture must have a unique ID, deterministic timestamp, source-supported company proposition, concise synthetic decision reason, one or more Partner concerns, one or more revisit conditions, and a previous-meeting summary.
 
 Use only facts present in `lib/corpus/evidence.ts`. Phrase unsupported business judgments as internal questions or evidence thresholds.
 
-- [ ] **Step 5: Map the field into memory bundles and view models**
+- [x] **Step 5: Map the field into memory bundles and view models**
 
 In `createMemoryBundle`, add:
 
@@ -91,7 +91,7 @@ decisionReason: fixture.decisionReason,
 
 Add `"decisionReason"` to the fixture `Pick` in `DemoDealView` and include it in `buildDemoViewModel`.
 
-- [ ] **Step 6: Run focused tests**
+- [x] **Step 6: Run focused tests**
 
 Run:
 
@@ -102,7 +102,7 @@ npm run typecheck
 
 Expected: all pass.
 
-- [ ] **Step 7: Commit this batch**
+- [x] **Step 7: Commit this batch**
 
 ```bash
 git add lib/contracts/domain.ts lib/corpus/fixtures.ts lib/corpus/service.ts lib/demo/view-model.ts tests/unit/corpus.test.ts tests/unit/demo-view-model.test.ts tests/integration/xtrace-live.test.ts tests/unit/matching-reasoner.test.ts tests/unit/xtrace-service.test.ts
@@ -124,7 +124,7 @@ git commit -m "feat: complete synthetic deal decision context"
 - Modify: `lib/matching/context.ts`
 - Modify: `lib/xtrace/service.ts`
 
-- [ ] **Step 1: Add failing propagation tests**
+- [x] **Step 1: Add failing propagation tests**
 
 Add assertions that:
 
@@ -133,7 +133,7 @@ Add assertions that:
 - structured matching context contains `decision_reason`;
 - serialized XTrace content contains `decision_reason=`.
 
-- [ ] **Step 2: Run the focused tests and confirm they fail**
+- [x] **Step 2: Run the focused tests and confirm they fail**
 
 Run:
 
@@ -143,7 +143,7 @@ npm test -- tests/unit/demo-search.test.ts tests/unit/matching-reasoner.test.ts 
 
 Expected: new assertions fail because the field is not yet propagated.
 
-- [ ] **Step 3: Add the field to Deal filtering and search context**
+- [x] **Step 3: Add the field to Deal filtering and search context**
 
 Add `deal.fixture?.decisionReason` to the Deal API search haystack.
 
@@ -151,7 +151,7 @@ Add a `Decision reason: ${fixture.decisionReason}` line to synthetic source exce
 
 Add the same source-excerpt field in `app/api/chat/route.ts`.
 
-- [ ] **Step 4: Add the field to matching and XTrace serialization**
+- [x] **Step 4: Add the field to matching and XTrace serialization**
 
 In matching context, emit:
 
@@ -169,7 +169,7 @@ decision_reason=...
 
 while preserving the existing uncommitted provenance fix in `lib/xtrace/service.ts`.
 
-- [ ] **Step 5: Run focused tests**
+- [x] **Step 5: Run focused tests**
 
 Run:
 
@@ -180,7 +180,7 @@ npm run typecheck
 
 Expected: all pass.
 
-- [ ] **Step 6: Commit this batch without unrelated files**
+- [x] **Step 6: Commit this batch without unrelated files**
 
 Stage only the relevant hunks. Do not stage the Opus model changes or unrelated XTrace provenance changes.
 
@@ -201,7 +201,7 @@ git commit -m "feat: propagate deal decision reasons"
 - Modify: `app/page.tsx`
 - Modify: `app/vsee.css`
 
-- [ ] **Step 1: Write a failing status-label test**
+- [x] **Step 1: Write a failing status-label test**
 
 Create a test for:
 
@@ -213,7 +213,7 @@ decisionReasonLabel("watchlist") === "Decision reason"
 decisionReasonLabel("evaluating") === "Decision reason"
 ```
 
-- [ ] **Step 2: Run the focused test and confirm it fails**
+- [x] **Step 2: Run the focused test and confirm it fails**
 
 Run:
 
@@ -223,11 +223,11 @@ npm test -- tests/unit/decision-label.test.ts
 
 Expected: module-not-found failure.
 
-- [ ] **Step 3: Implement the status-sensitive label helper**
+- [x] **Step 3: Implement the status-sensitive label helper**
 
 Create `decisionReasonLabel(status: DealStatus): string` with the exact labels from the approved design.
 
-- [ ] **Step 4: Render all four context components**
+- [x] **Step 4: Render all four context components**
 
 Extend the local UI fixture type with `decisionReason`.
 
@@ -240,7 +240,7 @@ Keep the existing synthetic fixture label visible and render:
 
 Keep the existing visual language and Deal layout; only add compact internal-context styling.
 
-- [ ] **Step 5: Run UI and type verification**
+- [x] **Step 5: Run UI and type verification**
 
 Run:
 
@@ -252,7 +252,7 @@ npm run build
 
 Expected: all pass.
 
-- [ ] **Step 6: Commit this batch**
+- [x] **Step 6: Commit this batch**
 
 ```bash
 git add lib/demo/decision-label.ts tests/unit/decision-label.test.ts app/page.tsx app/vsee.css
@@ -269,7 +269,7 @@ git commit -m "feat: show complete VC decision context"
 - Inspect: `docs/**/*.md`
 - Modify only if an existing count or behavior statement is now incorrect.
 
-- [ ] **Step 1: Search for stale four-fixture language**
+- [x] **Step 1: Search for stale four-fixture language**
 
 Run:
 
@@ -279,7 +279,7 @@ rg -n "four fixtures|4 fixtures|four labeled|4 labeled|fixtureDeals|labeled VC d
 
 Correct only statements that describe the implemented fixture count.
 
-- [ ] **Step 2: Run the full verification suite**
+- [x] **Step 2: Run the full verification suite**
 
 Run:
 
@@ -293,7 +293,7 @@ git diff --check
 
 Expected: all commands exit successfully.
 
-- [ ] **Step 3: Review the final diff**
+- [x] **Step 3: Review the final diff**
 
 Confirm:
 
@@ -303,7 +303,7 @@ Confirm:
 - unrelated dirty files and hunks were not committed;
 - no API keys or local credentials appear in the diff.
 
-- [ ] **Step 4: Commit any verification-only documentation correction**
+- [x] **Step 4: Commit any verification-only documentation correction**
 
 If documentation required correction:
 

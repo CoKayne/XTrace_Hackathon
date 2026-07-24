@@ -20,6 +20,7 @@ export function buildStructuredMemoryContexts(
       ...bundle.interactions.map((interaction) => [
         `${interaction.label}.`,
         `Summary: ${interaction.summary}`,
+        `Decision reason: ${interaction.decisionReason}`,
         `Concerns: ${interaction.concerns.join(" ") || "None recorded."}`,
         `Revisit conditions: ${interaction.revisitConditions.join(" ") || "None recorded."}`,
       ].join(" ")),
@@ -44,6 +45,7 @@ export function buildMatchingSources(
         excerpt: [
           interaction.label,
           interaction.summary,
+          `Decision reason: ${interaction.decisionReason}`,
           `Concerns: ${interaction.concerns.join(" ") || "None recorded."}`,
           `Revisit conditions: ${interaction.revisitConditions.join(" ") || "None recorded."}`,
         ].join(". "),

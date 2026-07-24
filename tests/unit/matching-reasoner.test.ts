@@ -27,6 +27,7 @@ const bundle: DealMemoryBundle = {
     id: "fixture_ably",
     occurredAt: "2026-07-01T00:00:00.000Z",
     summary: "Synthetic pass note.",
+    decisionReason: "The synthetic team passed pending stronger adoption evidence.",
     concerns: ["Timing"],
     revisitConditions: ["Relevant market change"],
     provenance: "demo_fixture",
@@ -60,6 +61,7 @@ test("structured matching context preserves source and synthetic-fixture lineage
   assert.deepEqual(contexts[0].sourceIds, ["deal_source"]);
   assert.deepEqual(contexts[0].fixtureIds, ["fixture_ably"]);
   assert.match(contexts[0].text, /Synthetic VC decision record/i);
+  assert.match(contexts[0].text, /Decision reason: The synthetic team passed pending stronger adoption evidence/i);
 
   const sources = buildMatchingSources([bundle], [event]);
   assert.deepEqual(sources.map((source) => source.id).sort(), [
@@ -67,6 +69,10 @@ test("structured matching context preserves source and synthetic-fixture lineage
     "fixture_ably",
     "market_source",
   ]);
+  assert.match(
+    sources.find((source) => source.id === "fixture_ably")?.excerpt ?? "",
+    /Decision reason: The synthetic team passed pending stronger adoption evidence/i,
+  );
 });
 
 test("Claude matching reasoner parses JSON and rejects Deals outside the candidate set", async () => {
