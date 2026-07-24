@@ -37,11 +37,6 @@ export async function GET() {
       process.env.DOCUMENT_URL_SIGNING_SECRET &&
       process.env.DOCUMENT_URL_SIGNING_SECRET.length >= 32
     ),
-    email: Boolean(
-      process.env.RESEND_API_KEY &&
-      process.env.REPORT_FROM_EMAIL &&
-      process.env.REPORT_TO_EMAIL
-    ),
     corpusReady: corpus.ready,
     corpusConfirmedCount: corpus.confirmedCount,
     corpusRequiredCount: corpus.requiredCount,

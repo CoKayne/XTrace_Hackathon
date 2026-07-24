@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { createMemoryIntelligenceRepository } from "../../db/repositories/intelligence";
@@ -71,47 +70,23 @@ test("reports are stored newest first", async () => {
   );
 });
 
-test("only one caller can claim report delivery", async () => {
-  let now = new Date("2026-07-23T12:00:00.000Z");
-  const repository = createMemoryIntelligenceRepository({
-    now: () => now,
-    deliveryLeaseMs: 5 * 60_000,
-  });
-  await repository.saveReport({
-    id: "report_once",
+test("public reports contain intelligence only and no delivery state", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  const report = await repository.saveReport({
+    id: "report_plain",
     workspaceId: "workspace_demo",
-    runId: "run_once",
+    runId: "run_plain",
     createdAt: "2026-07-23T12:00:00.000Z",
     marketSummary: "Summary.",
     opportunities: [],
   });
 
-  const [first, second] = await Promise.all([
-    repository.claimReportDelivery("report_once", "partner@example.com"),
-    repository.claimReportDelivery("report_once", "partner@example.com"),
+  assert.deepEqual(Object.keys(report).sort(), [
+    "createdAt",
+    "id",
+    "marketSummary",
+    "opportunities",
+    "runId",
+    "workspaceId",
   ]);
-
-  assert.equal(first?.delivery?.status, "pending");
-  assert.equal(second, null);
-  assert.equal(
-    first?.delivery?.claimedAt,
-    "2026-07-23T12:00:00.000Z",
-  );
-
-  now = new Date("2026-07-23T12:05:00.001Z");
-  const reclaimed = await repository.claimReportDelivery(
-    "report_once",
-    "partner@example.com",
-  );
-  assert.equal(reclaimed?.delivery?.status, "pending");
-  assert.equal(reclaimed?.delivery?.claimedAt, now.toISOString());
-});
-
-test("PostgreSQL delivery claims include a recoverable pending lease", async () => {
-  const migration = await readFile(
-    new URL("../../drizzle/0000_vsee_postgres.sql", import.meta.url),
-    "utf8",
-  );
-  assert.match(migration, /'claimedAt',\s*now\(\)/);
-  assert.match(migration, /interval '5 minutes'/);
 });

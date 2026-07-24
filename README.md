@@ -17,7 +17,8 @@ investor a cited reason to perform a second look.
 5. The background worker normalizes and deduplicates public evidence, recalls
    relevant Deal context, asks Claude to match the two sides, and retains only
    the Top 5 medium/high-confidence results.
-6. Persist an intelligence report and optionally deliver it through Resend.
+6. Persist an intelligence report, then use **Draft this report** to prepare
+   and copy an editable browser-local subject and message without sending it.
 7. Use Chat to query only data already stored in VSee; Chat never browses or
    mutates Deal state.
 
@@ -29,7 +30,6 @@ investor a cited reason to perform a second look.
 - Background work: durable PostgreSQL queue plus `npm run worker`
 - Memory: XTrace Memory Manager
 - Reasoning: Anthropic Messages API
-- Email: Resend
 - Market sources: Federal Register, FDA, SEC, FTC, TechCrunch venture,
   configured official/stable RSS feeds, and optional authorized Crunchbase API
 
@@ -69,8 +69,7 @@ Requirements:
 
 - Node.js 22.13 or newer
 - a Supabase project and private Storage bucket
-- server-side XTrace and Anthropic credentials
-- Resend credentials and a configured report recipient
+- a server-side `XTRACE_API_KEY` and Anthropic credentials
 - optional authorized Crunchbase credentials
 
 Copy `.env.example` to a local ignored environment file and configure the
@@ -91,8 +90,8 @@ npm run dev
 npm run worker
 ```
 
-The worker and Web App must receive the same Supabase, XTrace, Anthropic,
-market-source, and email environment variables.
+The worker and Web App must receive the same Supabase, XTrace, Anthropic, and
+market-source environment variables.
 
 ### Production worker container
 
@@ -108,10 +107,11 @@ docker run --rm --name vsee-worker --env-file .env.worker vsee-worker
 
 The minimum production variables are `SUPABASE_URL`,
 `SUPABASE_SERVICE_ROLE_KEY`, and `ANTHROPIC_API_KEY`. XTrace-mode scans also
-require `XTRACE_API_KEY` and `XTRACE_ORG_ID`. Market-feed and email variables
-remain optional according to the features being demonstrated. Set a unique
-`WORKER_ID` when running more than one replica; otherwise the runtime derives
-one from the container hostname and process ID.
+require `XTRACE_API_KEY`; current `mmk_` keys do not require
+`XTRACE_ORG_ID`. Market-feed variables remain optional according to the
+features being demonstrated. Set a unique `WORKER_ID` when running more than
+one replica; otherwise the runtime derives one from the container hostname and
+process ID.
 
 The process writes a non-secret liveness marker only after its PostgreSQL
 heartbeat succeeds. Docker checks that marker every 30 seconds:
@@ -146,14 +146,14 @@ job. This prevents a Web-only deployment from accumulating stranded scans.
 ## Security model
 
 The browser never receives the Supabase service-role key, XTrace key,
-Anthropic key, Resend key, or private object-storage credentials. All database
-tables use row-level security with no browser-facing policies; only server-side
-code using the Supabase service role may read or mutate them. Source files stay
-in a private bucket and are opened through short-lived signed URLs.
+Anthropic key, or private object-storage credentials. All database tables use
+row-level security with no browser-facing policies; only server-side code
+using the Supabase service role may read or mutate them. Source files stay in
+a private bucket and are opened through short-lived signed URLs.
 
 Because this is a public single-workspace demo, POST endpoints must also retain
-their server-side rate limits and configured email-recipient allowlist. Public
-access to the Web App is not public access to PostgreSQL or Storage.
+their server-side rate limits. Public access to the Web App is not public
+access to PostgreSQL or Storage.
 
 ## Market-source configuration
 

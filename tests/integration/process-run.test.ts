@@ -84,7 +84,7 @@ test("a claimed run fails before market work when durable product-input confirma
   assert.equal((await runs.get(run.id))?.status, "failed");
 });
 
-test("a claimed run persists market evidence, an always-present summary, ranked matches, and email", async () => {
+test("a claimed run persists market evidence, an always-present summary, and ranked matches", async () => {
   const runs = createRunsRepository(createMemoryDataClient());
   const queued = await runs.create({
     workspaceId: "workspace_demo",
@@ -179,7 +179,6 @@ test("a claimed run persists market evidence, an always-present summary, ranked 
   assert.equal(result.run.status, "completed", JSON.stringify(result.run.warnings));
   assert.match(result.report.marketSummary, /1 source-backed market event/i);
   assert.equal(result.report.opportunities.length, 1);
-  assert.equal(result.report.delivery, undefined);
   assert.equal((await intelligence.listMarketEvents("workspace_demo")).length, 1);
 });
 

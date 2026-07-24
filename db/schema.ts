@@ -94,7 +94,6 @@ export const intelligenceReports = pgTable("intelligence_reports", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   marketSummary: text("market_summary").notNull(),
   opportunities: jsonb("opportunities").notNull().default([]),
-  delivery: jsonb("delivery"),
 });
 
 export const xtraceIngestJobs = pgTable("xtrace_ingest_jobs", {

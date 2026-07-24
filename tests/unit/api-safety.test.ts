@@ -2,20 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  isAllowedReportRecipient,
   rateLimitRequest,
   takePublicRequest,
 } from "../../lib/api/safety";
-
-test("public report delivery is restricted to configured recipient addresses", () => {
-  const environment = {
-    REPORT_TO_EMAIL: "partner@example.com",
-    REPORT_ALLOWED_RECIPIENTS: "judge@example.com, reviewer@example.com",
-  };
-  assert.equal(isAllowedReportRecipient("PARTNER@example.com", environment), true);
-  assert.equal(isAllowedReportRecipient("judge@example.com", environment), true);
-  assert.equal(isAllowedReportRecipient("attacker@example.com", environment), false);
-});
 
 test("public request limiter rejects calls beyond the scoped window", () => {
   let current = 1_000;

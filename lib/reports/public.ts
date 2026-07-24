@@ -10,11 +10,5 @@ export function toPublicReport(report: IntelligenceReportRecord) {
     createdAt: report.createdAt,
     marketSummary: report.marketSummary,
     opportunities: report.opportunities,
-    delivery: report.delivery
-      ? {
-          status: report.delivery.status,
-          sentAt: report.delivery.sentAt,
-        }
-      : undefined,
   };
 }

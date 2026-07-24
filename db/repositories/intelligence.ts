@@ -3,15 +3,6 @@ import type { NormalizedMarketEvent } from "../../lib/market/types";
 
 const DEFAULT_WORKSPACE_ID = "workspace_demo";
 
-export interface ReportDeliveryRecord {
-  status: "pending" | "sent" | "failed";
-  recipient?: string;
-  claimedAt?: string;
-  providerMessageId?: string;
-  sentAt?: string;
-  error?: string;
-}
-
 export interface IntelligenceReportRecord {
   id: string;
   workspaceId: string;
@@ -19,7 +10,6 @@ export interface IntelligenceReportRecord {
   createdAt: string;
   marketSummary: string;
   opportunities: OpportunityReportItem[];
-  delivery?: ReportDeliveryRecord;
 }
 
 export interface IntelligenceRepository {
@@ -31,24 +21,11 @@ export interface IntelligenceRepository {
   saveReport(report: IntelligenceReportRecord): Promise<IntelligenceReportRecord>;
   getReport(reportId: string): Promise<IntelligenceReportRecord | null>;
   listReports(workspaceId: string): Promise<IntelligenceReportRecord[]>;
-  claimReportDelivery(
-    reportId: string,
-    recipient: string,
-  ): Promise<IntelligenceReportRecord | null>;
-  updateReportDelivery(
-    reportId: string,
-    delivery: ReportDeliveryRecord,
-  ): Promise<IntelligenceReportRecord>;
 }
 
-export function createMemoryIntelligenceRepository(options: {
-  now?: () => Date;
-  deliveryLeaseMs?: number;
-} = {}): IntelligenceRepository {
+export function createMemoryIntelligenceRepository(): IntelligenceRepository {
   const events = new Map<string, { workspaceId: string; event: NormalizedMarketEvent }>();
   const reports = new Map<string, IntelligenceReportRecord>();
-  const now = options.now ?? (() => new Date());
-  const deliveryLeaseMs = options.deliveryLeaseMs ?? 5 * 60_000;
   return {
     async saveMarketEvents(items, workspaceId = DEFAULT_WORKSPACE_ID) {
       for (const event of items) {
@@ -77,39 +54,6 @@ export function createMemoryIntelligenceRepository(options: {
         .filter((report) => report.workspaceId === workspaceId)
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
         .map((report) => structuredClone(report));
-    },
-    async claimReportDelivery(reportId, recipient) {
-      const report = reports.get(reportId);
-      if (!report) throw new Error(`Report ${reportId} was not found`);
-      if (report.delivery?.status === "sent") {
-        return null;
-      }
-      if (report.delivery?.status === "pending") {
-        const claimedAt = Date.parse(report.delivery.claimedAt ?? "");
-        if (
-          Number.isFinite(claimedAt)
-          && now().getTime() - claimedAt <= deliveryLeaseMs
-        ) {
-          return null;
-        }
-      }
-      const next = {
-        ...report,
-        delivery: {
-          status: "pending" as const,
-          recipient,
-          claimedAt: now().toISOString(),
-        },
-      };
-      reports.set(reportId, next);
-      return structuredClone(next);
-    },
-    async updateReportDelivery(reportId, delivery) {
-      const report = reports.get(reportId);
-      if (!report) throw new Error(`Report ${reportId} was not found`);
-      const next = { ...report, delivery: structuredClone(delivery) };
-      reports.set(reportId, next);
-      return structuredClone(next);
     },
   };
 }
@@ -147,7 +91,6 @@ function createSupabaseIntelligenceRepository(options: {
       createdAt: String(row.created_at),
       marketSummary: String(row.market_summary),
       opportunities: (row.opportunities ?? []) as OpportunityReportItem[],
-      delivery: row.delivery as ReportDeliveryRecord | undefined,
     };
   }
   return {
@@ -181,7 +124,6 @@ function createSupabaseIntelligenceRepository(options: {
           created_at: report.createdAt,
           market_summary: report.marketSummary,
           opportunities: report.opportunities,
-          delivery: report.delivery ?? null,
         }),
       }) as Record<string, unknown>[];
       return toReport(rows[0]);
@@ -197,28 +139,6 @@ function createSupabaseIntelligenceRepository(options: {
         `/intelligence_reports?workspace_id=eq.${encodeURIComponent(workspaceId)}&order=created_at.desc`,
       ) as Record<string, unknown>[];
       return rows.map(toReport);
-    },
-    async claimReportDelivery(reportId, recipient) {
-      const rows = await request("/rpc/claim_report_delivery", {
-        method: "POST",
-        body: JSON.stringify({
-          p_report_id: reportId,
-          p_recipient: recipient,
-        }),
-      }) as Record<string, unknown>[];
-      return rows[0] ? toReport(rows[0]) : null;
-    },
-    async updateReportDelivery(reportId, delivery) {
-      const rows = await request(
-        `/intelligence_reports?id=eq.${encodeURIComponent(reportId)}`,
-        {
-          method: "PATCH",
-          headers: { Prefer: "return=representation" },
-          body: JSON.stringify({ delivery }),
-        },
-      ) as Record<string, unknown>[];
-      if (!rows[0]) throw new Error(`Report ${reportId} was not found`);
-      return toReport(rows[0]);
     },
   };
 }

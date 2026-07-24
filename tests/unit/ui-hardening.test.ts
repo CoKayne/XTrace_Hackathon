@@ -9,6 +9,32 @@ import { createDefaultDemoDataStore } from "../../lib/storage/service";
 const pagePath = new URL("../../app/page.tsx", import.meta.url);
 const cssPath = new URL("../../app/vsee.css", import.meta.url);
 const dialogPath = new URL("../../app/report-draft-dialog.tsx", import.meta.url);
+const environmentPath = new URL("../../.env.example", import.meta.url);
+const migrationPath = new URL("../../drizzle/0000_vsee_postgres.sql", import.meta.url);
+const obsoleteEmailConfigurationPattern = new RegExp([
+  ["RE", "SEND_API_KEY"].join(""),
+  ["REPORT", "_FROM_EMAIL"].join(""),
+  ["REPORT", "_TO_EMAIL"].join(""),
+  ["REPORT", "_ALLOWED_RECIPIENTS"].join(""),
+].join("|"));
+const obsoleteReportDeliverySqlPattern = new RegExp(
+  `${["claim", "report", "delivery"].join("_")}|\\bdelivery\\s+jsonb\\b`,
+);
+const obsoleteEmailButtonPattern = new RegExp([
+  ["EMAIL", "THIS", "REPORT"].join(" "),
+  ["EMAIL", "SENT"].join(" "),
+  "SENDING…",
+].join("|"));
+
+test("the demo has no email-provider or report-delivery configuration", async () => {
+  const [environment, migration] = await Promise.all([
+    readFile(environmentPath, "utf8"),
+    readFile(migrationPath, "utf8"),
+  ]);
+
+  assert.doesNotMatch(environment, obsoleteEmailConfigurationPattern);
+  assert.doesNotMatch(migration, obsoleteReportDeliverySqlPattern);
+});
 
 test("health response exposes worker readiness independently from PostgreSQL configuration", async () => {
   const previousUrl = process.env.SUPABASE_URL;
@@ -121,7 +147,7 @@ test("reports open an editable internal draft dialog without sending email", asy
   assert.match(dialog, /aria-live="polite"/);
   assert.doesNotMatch(dialog, />To</);
   assert.doesNotMatch(page, /\/api\/reports\/\$\{latestReport\.id\}\/email/);
-  assert.doesNotMatch(page, /EMAIL THIS REPORT|EMAIL SENT|SENDING…/);
+  assert.doesNotMatch(page, obsoleteEmailButtonPattern);
   assert.match(css, /\.vsee-draft-dialog::backdrop/);
   assert.match(css, new RegExp("@media\\(max-width:680px\\).*\\.vsee-draft-dialog", "s"));
 });

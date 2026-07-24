@@ -111,16 +111,3 @@ async function digestClientIdentifier(value: string): Promise<string> {
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
 }
-
-export function isAllowedReportRecipient(
-  recipient: string,
-  environment: Environment = process.env,
-): boolean {
-  const allowed = [
-    environment.REPORT_TO_EMAIL,
-    ...(environment.REPORT_ALLOWED_RECIPIENTS?.split(",") ?? []),
-  ]
-    .map((value) => value?.trim().toLocaleLowerCase())
-    .filter((value): value is string => Boolean(value));
-  return allowed.includes(recipient.trim().toLocaleLowerCase());
-}

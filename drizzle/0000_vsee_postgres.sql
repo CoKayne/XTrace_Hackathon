@@ -256,8 +256,7 @@ create table if not exists intelligence_reports (
   run_id uuid not null references scan_runs(id) on delete cascade,
   created_at timestamptz not null default now(),
   market_summary text not null,
-  opportunities jsonb not null default '[]'::jsonb,
-  delivery jsonb
+  opportunities jsonb not null default '[]'::jsonb
 );
 
 create index if not exists intelligence_reports_workspace_created
@@ -265,33 +264,6 @@ create index if not exists intelligence_reports_workspace_created
 
 create unique index if not exists intelligence_reports_one_per_run
   on intelligence_reports (workspace_id, run_id);
-
-create or replace function public.claim_report_delivery(
-  p_report_id text,
-  p_recipient text
-)
-returns setof public.intelligence_reports
-language sql
-security definer
-set search_path = pg_catalog, pg_temp
-as $$
-  update public.intelligence_reports
-  set delivery = jsonb_build_object(
-    'status', 'pending',
-    'recipient', p_recipient,
-    'claimedAt', now()
-  )
-  where id = p_report_id
-    and coalesce(delivery ->> 'status', '') <> 'sent'
-    and (
-      coalesce(delivery ->> 'status', '') <> 'pending'
-      or coalesce(
-        (delivery ->> 'claimedAt')::timestamptz,
-        '-infinity'::timestamptz
-      ) <= now() - interval '5 minutes'
-    )
-  returning *;
-$$;
 
 create table if not exists xtrace_ingest_jobs (
   job_id text primary key,
@@ -390,7 +362,6 @@ begin
 
   revoke all on function public.claim_next_scan_run(text) from public;
   revoke all on function public.take_public_request(text, text, integer, integer) from public;
-  revoke all on function public.claim_report_delivery(text, text) from public;
 
   for restricted_role in
     select rolname
@@ -405,17 +376,12 @@ begin
       'revoke all on function public.take_public_request(text, text, integer, integer) from %I',
       restricted_role
     );
-    execute format(
-      'revoke all on function public.claim_report_delivery(text, text) from %I',
-      restricted_role
-    );
   end loop;
 
   if exists (select 1 from pg_roles where rolname = 'service_role') then
     grant usage on schema public to service_role;
     grant execute on function public.claim_next_scan_run(text) to service_role;
     grant execute on function public.take_public_request(text, text, integer, integer) to service_role;
-    grant execute on function public.claim_report_delivery(text, text) to service_role;
   end if;
 end;
 $$;
