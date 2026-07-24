@@ -60,6 +60,15 @@ export function createGroundedChatService(dependencies: GroundedChatDependencies
       const memoryEvidence = recall.status === "available"
         ? normalizeEvidence(recall.evidence)
         : [];
+      if (input.xtraceEnabled && memoryEvidence.length === 0) {
+        return {
+          answer: "XTrace recall is currently unavailable, so the local-only answer was withheld to avoid presenting incomplete memory as complete.",
+          citations: [],
+          usedXTrace: false,
+          memoryStatus: "unavailable",
+          insufficientEvidence: true,
+        };
+      }
       const memoryStatus: ChatMemoryStatus = recall.status;
       const evidence = [...localEvidence, ...memoryEvidence];
       if (evidence.length === 0) {
@@ -120,7 +129,7 @@ export function createGroundedChatService(dependencies: GroundedChatDependencies
         claim.sourceIds.every((sourceId) => {
           if (!sources.has(sourceId)) return false;
           return (evidenceTextBySource.get(sourceId) ?? [])
-            .some((evidenceText) => evidenceText.includes(claim.text));
+            .some((evidenceText) => evidenceText === claim.text);
         })
       );
       const citationIds = [...new Set(

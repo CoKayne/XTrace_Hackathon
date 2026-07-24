@@ -16,7 +16,7 @@ export function buildPersistedReportEvidence(input: {
   const normalizedQuestion = input.question.toLocaleLowerCase();
 
   return input.reports.flatMap((report, reportIndex) =>
-    sanitizeReportOpportunities(report.opportunities).flatMap((opportunity) => {
+    sanitizeReportOpportunities(report.opportunities).flatMap((opportunity, opportunityIndex) => {
       const companyName =
         input.companyByDeal.get(opportunity.dealId) ?? opportunity.dealId;
       const haystack = [
@@ -55,9 +55,9 @@ export function buildPersistedReportEvidence(input: {
       const conclusionEvidence = fields.map((field) => ({
         text: field.text,
         sources: [{
-          id: `report:${report.id}:opportunity:${opportunity.dealId}:${field.key}`,
+          id: `report:${report.id}:opportunity:${reportIndex}:${opportunityIndex}:${opportunity.dealId}:${field.key}`,
           provenance: "model_inference" as const,
-          title: `Persisted report ${field.label} · ${companyName} · ${report.id}`,
+          title: `Persisted report ${field.label} · ${companyName} · ${report.id} · opportunity ${opportunityIndex + 1}`,
           excerpt: field.text,
         }],
       }));

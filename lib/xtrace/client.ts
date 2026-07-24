@@ -54,7 +54,7 @@ export type XTraceSearchResult = {
 };
 
 export type XTraceSearchResponse = {
-  success?: boolean;
+  success: true;
   data: XTraceSearchResult[];
   context?: string;
   count?: number;
@@ -186,17 +186,14 @@ export function getXTraceClient(): XTraceClient {
 }
 
 function normalizeSearchResponse(response: unknown): XTraceSearchResponse {
-  if (!isRecord(response)) return { data: [] };
-  const rows = Array.isArray(response.data)
-    ? response.data
-    : Array.isArray(response.results)
-      ? response.results
-      : [];
+  if (!isRecord(response) || response.success !== true || !Array.isArray(response.data)) {
+    throw new XTraceHttpError(200, false, "XTrace search response was invalid");
+  }
   return {
-    success: typeof response.success === "boolean" ? response.success : undefined,
+    success: true,
     context: typeof response.context === "string" ? response.context : undefined,
     count: typeof response.count === "number" ? response.count : undefined,
-    data: rows.flatMap(normalizeSearchResult),
+    data: response.data.flatMap(normalizeSearchResult),
   };
 }
 

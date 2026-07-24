@@ -6,6 +6,7 @@ import { DEMO_FIXTURE_LABEL } from "../../lib/contracts/domain";
 import {
   createXTraceClient,
   isXTraceConfigured,
+  XTraceHttpError,
 } from "../../lib/xtrace/client";
 import {
   createPersistentXTraceRateLimiter,
@@ -81,7 +82,7 @@ test("mmk XTrace requests omit the organization header even when a stale org ID 
     orgId: "stale_org",
     fetch: async (_url, init) => {
       headers = new Headers(init?.headers);
-      return Response.json({ data: [] });
+      return Response.json({ success: true, data: [] });
     },
   });
 
@@ -94,6 +95,40 @@ test("mmk XTrace requests omit the organization header even when a stale org ID 
 
   assert.equal(headers.get("authorization"), "Bearer mmk_test");
   assert.equal(headers.get("x-org-id"), null);
+});
+
+test("XTrace search rejects a successful HTTP response with a malformed provider envelope", async () => {
+  const client = createXTraceClient({
+    apiKey: "mmk_test",
+    fetch: async () => new Response("not JSON", { status: 200 }),
+  });
+
+  await assert.rejects(
+    client.search({
+      query: "health",
+      user_id: "workspace:demo",
+      mode: "retrieve",
+      limit: 1,
+    }),
+    XTraceHttpError,
+  );
+});
+
+test("XTrace search rejects a successful HTTP response that reports success false", async () => {
+  const client = createXTraceClient({
+    apiKey: "mmk_test",
+    fetch: async () => Response.json({ success: false, data: [] }),
+  });
+
+  await assert.rejects(
+    client.search({
+      query: "health",
+      user_id: "workspace:demo",
+      mode: "retrieve",
+      limit: 1,
+    }),
+    XTraceHttpError,
+  );
 });
 
 test("XTrace configuration accepts mmk without an organization ID", () => {
@@ -134,6 +169,7 @@ test("distributed XTrace limiter coordinates through PostgreSQL before proceedin
 test("resolves recalled memory to local Deal and evidence IDs", async () => {
   const client = {
     search: async () => ({
+      success: true,
       data: [{ id: "mem_1", text: "Passed until regulation changes", score: 0.91 }],
     }),
   };
@@ -162,6 +198,24 @@ test("resolves recalled memory to local Deal and evidence IDs", async () => {
     sourceIds: ["source_1"],
     fixtureIds: [],
   });
+});
+
+test("fails closed when a search client reports an unsuccessful provider envelope", async () => {
+  const service = createXTraceService({
+    search: async () => ({ success: false, data: [] }),
+  } as never, {
+    resolveMemory: async () => null,
+  });
+
+  await assert.rejects(
+    service.recallDealContext({
+      workspaceId: "demo",
+      query: "Which deals were blocked by regulation?",
+      candidateDealIds: ["deal_1"],
+      limit: 5,
+    }),
+    XTraceUnavailableError,
+  );
 });
 
 test("serializes provenance before persisting an async ingest job", async () => {
@@ -494,6 +548,7 @@ test("persists memory lineage and resolves it without parsing extracted text", a
     search: async () => {
       searches += 1;
       return {
+        success: true,
         data: [{
           id: "mem_1",
           text: "XTrace rewrote this fact and omitted every client token.",
@@ -534,7 +589,7 @@ test("uses one workspace namespace for default ingest and recall", async () => {
     },
     search: async (input: { user_id: string }) => {
       searchUser = input.user_id;
-      return { data: [] };
+      return { success: true, data: [] };
     },
   } as never, {
     workspaceId: "workspace_demo",
@@ -564,7 +619,7 @@ test("a shared limiter throttles calls across multiple service instances", async
     2,
     60_000,
   );
-  const client = { search: async () => ({ data: [] }) };
+  const client = { search: async () => ({ success: true as const, data: [] }) };
   const first = createXTraceService(client as never, { limiter });
   const second = createXTraceService(client as never, { limiter });
   const input = {
@@ -587,10 +642,13 @@ test("caches recalls by query fingerprint and excludes memories outside the cand
   const service = createXTraceService({
     search: async () => {
       searchCalls += 1;
-      return { data: [
-        { id: "mem_1", text: "Relevant", score: 0.91 },
-        { id: "mem_2", text: "Not a candidate", score: 0.8 },
-      ] };
+      return {
+        success: true,
+        data: [
+          { id: "mem_1", text: "Relevant", score: 0.91 },
+          { id: "mem_2", text: "Not a candidate", score: 0.8 },
+        ],
+      };
     },
   } as never, {
     resolveMemory: async () => {

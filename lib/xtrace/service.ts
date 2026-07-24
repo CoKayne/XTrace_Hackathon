@@ -224,6 +224,9 @@ export function createXTraceService(
           limit: Math.max(1, Math.min(input.limit, 100)),
         });
       });
+      if (response.success !== true) {
+        throw new XTraceUnavailableError(false, "XTrace search response was invalid");
+      }
       const allowedDealIds = new Set(input.candidateDealIds);
       const contexts: MemoryContext[] = [];
       for (const memory of response.data) {

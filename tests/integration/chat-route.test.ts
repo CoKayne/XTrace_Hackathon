@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 import test from "node:test";
 
 import { POST } from "../../app/api/chat/route";
@@ -153,9 +154,9 @@ test("Chat API answers the latest report recommendation from persisted report li
       assert.equal(payload.data.memoryStatus, "disabled");
       assert.equal(payload.data.answer, item.answer);
       assert.deepEqual(payload.data.citations, [{
-        id: `report:report_chat_latest:opportunity:deal_7bridges:${item.field}`,
+        id: `report:report_chat_latest:opportunity:0:0:deal_7bridges:${item.field}`,
         provenance: "model_inference",
-        title: `Persisted report ${item.label} · 7bridges · report_chat_latest`,
+        title: `Persisted report ${item.label} · 7bridges · report_chat_latest · opportunity 1`,
         excerpt: item.answer,
       }]);
     }
@@ -201,6 +202,106 @@ test("Chat API visibly withholds a local-only answer when configured XTrace reca
     assert.match(payload.data.answer, /local-only answer.*withheld/i);
     assert.doesNotMatch(payload.data.answer, /AI powered logistics platform/i);
   } finally {
+    if (previousApiKey === undefined) delete process.env.XTRACE_API_KEY;
+    else process.env.XTRACE_API_KEY = previousApiKey;
+    if (previousBaseUrl === undefined) delete process.env.XTRACE_API_BASE_URL;
+    else process.env.XTRACE_API_BASE_URL = previousBaseUrl;
+    if (previousAnthropicApiKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = previousAnthropicApiKey;
+  }
+});
+
+test("Chat API withholds local evidence when enabled XTrace recall resolves no evidence", async () => {
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify({ success: true, data: [] }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+
+  const previousApiKey = process.env.XTRACE_API_KEY;
+  const previousBaseUrl = process.env.XTRACE_API_BASE_URL;
+  const previousAnthropicApiKey = process.env.ANTHROPIC_API_KEY;
+  process.env.XTRACE_API_KEY = "mmk_test";
+  process.env.XTRACE_API_BASE_URL = `http://127.0.0.1:${address.port}`;
+  delete process.env.ANTHROPIC_API_KEY;
+
+  try {
+    const response = await POST(new Request("http://localhost/api/chat", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-forwarded-for": "198.51.100.81",
+      },
+      body: JSON.stringify({
+        question: "Why did we mark 7bridges as passed?",
+        xtraceEnabled: true,
+      }),
+    }));
+
+    assert.equal(response.status, 200);
+    const payload = await response.json() as {
+      data: {
+        answer: string;
+        citations: Array<{ id: string }>;
+        memoryStatus: string;
+        insufficientEvidence: boolean;
+      };
+    };
+    assert.equal(payload.data.memoryStatus, "unavailable");
+    assert.equal(payload.data.insufficientEvidence, true);
+    assert.deepEqual(payload.data.citations, []);
+    assert.match(payload.data.answer, /local-only answer.*withheld/i);
+  } finally {
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    if (previousApiKey === undefined) delete process.env.XTRACE_API_KEY;
+    else process.env.XTRACE_API_KEY = previousApiKey;
+    if (previousBaseUrl === undefined) delete process.env.XTRACE_API_BASE_URL;
+    else process.env.XTRACE_API_BASE_URL = previousBaseUrl;
+    if (previousAnthropicApiKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = previousAnthropicApiKey;
+  }
+});
+
+test("Chat API withholds local evidence when XTrace returns success false", async () => {
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify({ success: false, data: [] }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+
+  const previousApiKey = process.env.XTRACE_API_KEY;
+  const previousBaseUrl = process.env.XTRACE_API_BASE_URL;
+  const previousAnthropicApiKey = process.env.ANTHROPIC_API_KEY;
+  process.env.XTRACE_API_KEY = "mmk_test";
+  process.env.XTRACE_API_BASE_URL = `http://127.0.0.1:${address.port}`;
+  delete process.env.ANTHROPIC_API_KEY;
+
+  try {
+    const response = await POST(new Request("http://localhost/api/chat", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-forwarded-for": "198.51.100.82",
+      },
+      body: JSON.stringify({
+        question: "Why did we mark 7bridges as passed?",
+        xtraceEnabled: true,
+      }),
+    }));
+
+    const payload = await response.json() as {
+      data: { answer: string; citations: Array<{ id: string }>; memoryStatus: string };
+    };
+    assert.equal(response.status, 200);
+    assert.equal(payload.data.memoryStatus, "unavailable");
+    assert.deepEqual(payload.data.citations, []);
+    assert.match(payload.data.answer, /local-only answer.*withheld/i);
+  } finally {
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     if (previousApiKey === undefined) delete process.env.XTRACE_API_KEY;
     else process.env.XTRACE_API_KEY = previousApiKey;
     if (previousBaseUrl === undefined) delete process.env.XTRACE_API_BASE_URL;
