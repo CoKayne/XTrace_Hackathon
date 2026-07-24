@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   buildMarketEventsReadPath,
   createMemoryIntelligenceRepository,
+  type IntelligenceReportRecord,
 } from "../../db/repositories/intelligence";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 
@@ -170,5 +171,31 @@ test("every report repository egress sanitizes a malicious legacy next step", as
       "Review the cited evidence and decide whether further internal diligence is warranted.",
     );
     assert.doesNotMatch(result.opportunities[0].nextStep, /https?:|@|upload|credential|transfer/i);
+  }
+});
+
+test("report repository reads normalize malformed durable opportunity shapes", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  const malformedValues: unknown[] = [
+    {},
+    42,
+    null,
+    [null, "legacy", 42, {}, { rank: 0 }],
+  ];
+
+  for (const [index, opportunities] of malformedValues.entries()) {
+    const report = {
+      id: `report_malformed_${index}`,
+      workspaceId: "workspace_demo",
+      runId: `run_malformed_${index}`,
+      createdAt: "2026-07-23T12:00:00.000Z",
+      marketSummary: "Summary.",
+      opportunities,
+    } as unknown as IntelligenceReportRecord;
+    await repository.saveReport(report);
+
+    const fetched = await repository.getReport(report.id);
+    assert.ok(fetched);
+    assert.deepEqual(fetched.opportunities, [], report.id);
   }
 });

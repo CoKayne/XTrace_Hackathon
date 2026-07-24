@@ -145,7 +145,7 @@ function createSupabaseIntelligenceRepository(options: {
       runId: String(row.run_id),
       createdAt: String(row.created_at),
       marketSummary: String(row.market_summary),
-      opportunities: (row.opportunities ?? []) as OpportunityReportItem[],
+      opportunities: sanitizeReportOpportunities(row.opportunities),
     });
   }
   return {

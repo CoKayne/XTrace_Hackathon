@@ -6,6 +6,7 @@ import {
   type ChatEvidence,
   type MemoryRecallOutcome,
 } from "../../../lib/chat/service";
+import { buildPersistedReportEvidence } from "../../../lib/chat/report-evidence";
 import { createClaudeClient } from "../../../lib/claude/client";
 import { ChatRequestSchema } from "../../../lib/contracts/http";
 import type { SourceRef } from "../../../lib/contracts/domain";
@@ -16,7 +17,6 @@ import {
   searchDemoEvidence,
 } from "../../../lib/demo/search";
 import { buildDemoViewModel } from "../../../lib/demo/view-model";
-import { sanitizeReportOpportunities } from "../../../lib/reports/next-step-policy";
 import {
   getXTraceClient,
   isXTraceConfigured,
@@ -93,59 +93,11 @@ async function searchRuntimeIntelligence(question: string): Promise<ChatEvidence
   const companyByDeal = new Map(
     buildDemoViewModel().deals.map((deal) => [deal.id, deal.companyName]),
   );
-  const reportEvidence = reports.flatMap((report, reportIndex) =>
-    sanitizeReportOpportunities(report.opportunities).flatMap((opportunity) => {
-      const companyName = companyByDeal.get(opportunity.dealId) ?? opportunity.dealId;
-      const haystack = [
-        opportunity.dealId,
-        companyName,
-        opportunity.whyNow,
-        opportunity.previousContext,
-        opportunity.nextStep,
-        "report recommendation recommend recommended previous context next step",
-        reportIndex === 0 ? "latest" : "",
-      ].join(" ").toLocaleLowerCase();
-      const searchableTokens = new Set(evidenceQueryTokens(haystack));
-      if (!tokens.every((token) => searchableTokens.has(token))) return [];
-      const fields = [
-        {
-          key: "why-now",
-          label: "why now",
-          text: opportunity.whyNow,
-        },
-        {
-          key: "previous-context",
-          label: "previous context",
-          text: opportunity.previousContext,
-        },
-        {
-          key: "recommendation",
-          label: "recommendation",
-          text: opportunity.nextStep,
-        },
-      ];
-      const normalizedQuestion = question.toLocaleLowerCase();
-      if (/\b(recommend|recommended|recommendation|next\s+step)\b/.test(normalizedQuestion)) {
-        fields.unshift(fields.pop()!);
-      } else if (/\b(previous|history|context)\b/.test(normalizedQuestion)) {
-        fields.unshift(fields.splice(1, 1)[0]);
-      }
-      const conclusionEvidence = fields.map((field) => ({
-        text: field.text,
-        sources: [{
-          id: `report:${report.id}:opportunity:${opportunity.dealId}:${field.key}`,
-          provenance: "model_inference" as const,
-          title: `Persisted report ${field.label} · ${companyName} · ${report.id}`,
-          excerpt: field.text,
-        }],
-      }));
-      const supportingEvidence = opportunity.sources.map((source) => ({
-        text: source.excerpt,
-        sources: [source],
-      }));
-      return [...conclusionEvidence, ...supportingEvidence];
-    })
-  );
+  const reportEvidence = buildPersistedReportEvidence({
+    question,
+    reports,
+    companyByDeal,
+  });
   return [...eventEvidence, ...reportEvidence].slice(0, 12);
 }
 

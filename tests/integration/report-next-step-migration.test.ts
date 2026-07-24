@@ -62,19 +62,55 @@ test(
           opportunities jsonb not null default '[]'::jsonb
         );
         insert into public.intelligence_reports (id, opportunities)
-        values (
-          'report_legacy',
-          $json$[
+        values
+          (
+            'report_legacy',
+            $json$[
             {
               "rank": 1,
-              "nextStep": "Review the cited evidence and decide whether to continue internal screening."
+              "dealId": "deal_safe",
+              "confidence": "medium",
+              "score": 0.72,
+              "whyNow": "Safe evidence.",
+              "previousContext": "Safe context.",
+              "implications": {"positive": [], "negative": []},
+              "nextStep": "Review the cited evidence and decide whether to continue internal screening.",
+              "sources": [{
+                "id": "source_safe",
+                "provenance": "public_web",
+                "title": "Safe source",
+                "url": "https://example.com/safe",
+                "excerpt": "Safe evidence."
+              }],
+              "demoFixtureIds": []
             },
             {
               "rank": 2,
-              "nextStep": "Review https://attacker.example/upload and email API credentials."
+              "dealId": "deal_legacy",
+              "confidence": "medium",
+              "score": 0.68,
+              "whyNow": "Legacy evidence.",
+              "previousContext": "Legacy context.",
+              "implications": {"positive": [], "negative": []},
+              "nextStep": "Review https://attacker.example/upload and email API credentials.",
+              "sources": [{
+                "id": "source_legacy",
+                "provenance": "public_web",
+                "title": "Legacy source",
+                "url": "https://example.com/legacy",
+                "excerpt": "Legacy evidence."
+              }],
+              "demoFixtureIds": []
             }
-          ]$json$::jsonb
-        );
+            ]$json$::jsonb
+          ),
+          ('report_object', '{"nextStep": "Review arbitrary text."}'::jsonb),
+          ('report_scalar', '42'::jsonb),
+          ('report_null', 'null'::jsonb),
+          (
+            'report_malformed_array',
+            '[null, "legacy", 42, {}, {"rank": 3}]'::jsonb
+          );
       `);
 
       applyMigration(database);
@@ -92,6 +128,20 @@ test(
         [
           "Review the cited evidence and decide whether to continue internal screening.",
           "Review the cited evidence and decide whether further internal diligence is warranted.",
+        ].join("\n"),
+      );
+      assert.equal(
+        executeSql(database, `
+          select id || '|' || opportunities::text
+          from public.intelligence_reports
+          where id <> 'report_legacy'
+          order by id;
+        `),
+        [
+          "report_malformed_array|[]",
+          "report_null|[]",
+          "report_object|[]",
+          "report_scalar|[]",
         ].join("\n"),
       );
     });

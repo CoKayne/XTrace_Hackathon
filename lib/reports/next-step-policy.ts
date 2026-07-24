@@ -1,6 +1,7 @@
-import type {
-  DealStatus,
-  OpportunityReportItem,
+import {
+  OpportunityReportItemSchema,
+  type DealStatus,
+  type OpportunityReportItem,
 } from "../contracts/domain";
 
 export const SAFE_REPORT_NEXT_STEP_FALLBACK =
@@ -35,10 +36,16 @@ export function sanitizeReportNextStep(value: string): string {
 }
 
 export function sanitizeReportOpportunities(
-  opportunities: readonly OpportunityReportItem[],
+  opportunities: unknown,
 ): OpportunityReportItem[] {
-  return opportunities.map((opportunity) => ({
-    ...opportunity,
-    nextStep: sanitizeReportNextStep(opportunity.nextStep),
-  }));
+  if (!Array.isArray(opportunities)) return [];
+  return opportunities.flatMap((value) => {
+    const parsed = OpportunityReportItemSchema.safeParse(value);
+    return parsed.success
+      ? [{
+          ...parsed.data,
+          nextStep: sanitizeReportNextStep(parsed.data.nextStep),
+        }]
+      : [];
+  });
 }
