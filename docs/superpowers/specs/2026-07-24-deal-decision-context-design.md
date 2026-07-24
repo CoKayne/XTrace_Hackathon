@@ -1,6 +1,6 @@
 # Deal Decision Context Completion Design
 
-**Date:** 2026-07-24  
+**Date:** 2026-07-24
 **Scope:** Complete synthetic VC decision context for all 19 fixed-corpus Deals.
 
 ## Objective

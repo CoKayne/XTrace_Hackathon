@@ -36,4 +36,3 @@ export function rankQualifiedMatches<T extends { score: number }>(matches: T[]) 
     .sort((a, b) => b.score - a.score)
     .slice(0, 5) as Array<T & { confidence: Exclude<OpportunityConfidence, "low"> }>;
 }
-
