@@ -264,20 +264,43 @@ test("paginates Federal Register results instead of silently truncating", async 
   assert.equal(new URL(calls[1].url).searchParams.get("page"), "2");
 });
 
+test("covers an eleven-page Federal Register window within the bounded limit", async () => {
+  const calls: FetchCall[] = [];
+  const provider = createFederalRegisterProvider({
+    fetch: recordingFetch(
+      Array.from({ length: 11 }, (_, index) => Response.json({
+        count: 11,
+        results: [{
+          ...RECORDED_FEDERAL_REGISTER_JSON.results[0],
+          document_number: `2026-${String(index + 1).padStart(5, "0")}`,
+          title: `Federal Register notice ${index + 1}`,
+        }],
+      })),
+      calls,
+    ),
+  });
+
+  const items = await provider.fetch(WINDOW);
+
+  assert.equal(items.length, 11);
+  assert.equal(calls.length, 11);
+  assert.equal(new URL(calls[10].url).searchParams.get("page"), "11");
+});
+
 test("reports a bounded pagination error instead of returning a truncated result", async () => {
   const calls: FetchCall[] = [];
   const provider = createFederalRegisterProvider({
     fetch: recordingFetch(
-      Array.from({ length: 10 }, () => Response.json({
-        count: 11,
+      Array.from({ length: 20 }, () => Response.json({
+        count: 21,
         results: RECORDED_FEDERAL_REGISTER_JSON.results,
       })),
       calls,
     ),
   });
 
-  await assert.rejects(provider.fetch(WINDOW), /bounded 10-page scan limit/i);
-  assert.equal(calls.length, 10);
+  await assert.rejects(provider.fetch(WINDOW), /bounded 20-page scan limit/i);
+  assert.equal(calls.length, 20);
 });
 
 test("retries transient provider failures at most three times", async () => {
@@ -487,6 +510,24 @@ test("registers required public providers and gates Crunchbase on its API key", 
     crunchbaseApiKey: "authorized-test-key",
   }).map((provider) => provider.id);
   assert.ok(withKeyIds.includes("crunchbase"));
+});
+
+test("the default FTC provider uses the current official RSS endpoint", async () => {
+  const calls: FetchCall[] = [];
+  const providers = createDefaultMarketProviders({}, {
+    fetch: recordingFetch([
+      new Response(RECORDED_COMPANY_RSS, {
+        status: 200,
+        headers: { "content-type": "application/rss+xml" },
+      }),
+    ], calls),
+  });
+  const ftc = providers.find((provider) => provider.id === "ftc-press-releases");
+  assert.ok(ftc);
+
+  await ftc.fetch(WINDOW);
+
+  assert.equal(calls[0].url, "https://www.ftc.gov/feeds/press-release.xml");
 });
 
 test("runs a fourteen-day scan from recorded providers and preserves scoped failures", async () => {

@@ -8,7 +8,7 @@ import type {
 
 export const REQUEST_TIMEOUT_MS = 10_000;
 export const MAX_FETCH_ATTEMPTS = 3;
-export const MAX_PROVIDER_PAGES = 10;
+export const MAX_PROVIDER_PAGES = 20;
 const PROVIDER_PAGE_SIZE = 100;
 export const MARKET_USER_AGENT =
   "XTrace Market Intelligence/1.0 (public evidence collection)";
@@ -20,7 +20,7 @@ export const FDA_PRESS_RELEASES_RSS_URL =
 export const SEC_PRESS_RELEASES_RSS_URL =
   "https://www.sec.gov/news/pressreleases.rss";
 export const FTC_PRESS_RELEASES_RSS_URL =
-  "https://www.ftc.gov/news-events/news/press-releases/rss";
+  "https://www.ftc.gov/feeds/press-release.xml";
 export const TECHCRUNCH_VENTURE_RSS_URL =
   "https://techcrunch.com/category/venture/feed/";
 export const CRUNCHBASE_FUNDING_SEARCH_URL =

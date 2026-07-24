@@ -6,6 +6,36 @@ import type {
 
 type Environment = Record<string, string | undefined>;
 
+const DEFAULT_OFFICIAL_ANNOUNCEMENT_FEEDS: RssMarketProviderConfig[] = [
+  {
+    id: "sequoia-official",
+    name: "Sequoia Capital official insights",
+    url: "https://www.sequoiacap.com/feed/",
+    publisher: "Sequoia Capital",
+    eventType: "funding",
+    confidence: "medium",
+  },
+  {
+    id: "lightspeed-official",
+    name: "Lightspeed official insights",
+    url: "https://www.lightspeedhq.com/feed/",
+    publisher: "Lightspeed",
+    eventType: "funding",
+    confidence: "medium",
+  },
+];
+
+const DEFAULT_STABLE_PUBLISHER_FEEDS: RssMarketProviderConfig[] = [
+  {
+    id: "a16z-news",
+    name: "a16z News",
+    url: "https://www.a16z.news/feed",
+    publisher: "Andreessen Horowitz",
+    eventType: "trend",
+    confidence: "medium",
+  },
+];
+
 export interface MarketProviderConfiguration {
   options: DefaultMarketProviderOptions;
   runtime: ProviderRuntime;
@@ -18,10 +48,12 @@ export function readMarketProviderConfiguration(
   const officialAnnouncementFeeds = parseFeeds(
     environment.MARKET_OFFICIAL_FEEDS_JSON,
     "MARKET_OFFICIAL_FEEDS_JSON",
+    DEFAULT_OFFICIAL_ANNOUNCEMENT_FEEDS,
   );
   const stablePublisherFeeds = parseFeeds(
     environment.MARKET_PUBLISHER_FEEDS_JSON,
     "MARKET_PUBLISHER_FEEDS_JSON",
+    DEFAULT_STABLE_PUBLISHER_FEEDS,
   );
   const crunchbaseApiKey = environment.CRUNCHBASE_API_KEY?.trim() || undefined;
 
@@ -45,8 +77,9 @@ export function readMarketProviderConfiguration(
 function parseFeeds(
   value: string | undefined,
   label: string,
+  defaults: RssMarketProviderConfig[],
 ): RssMarketProviderConfig[] {
-  if (!value?.trim()) return [];
+  if (!value?.trim()) return defaults.map((feed) => ({ ...feed }));
   try {
     const parsed = JSON.parse(value) as unknown;
     if (!Array.isArray(parsed)) throw new Error("must be a JSON array");
