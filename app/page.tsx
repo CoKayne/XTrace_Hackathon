@@ -9,6 +9,36 @@ type AppView = "overview" | "pipeline" | "signals";
 
 const outreachSubject = "Re-open Asteria Bio · FDA condition changed";
 const outreachBody = "Team — the FDA uncertainty behind our November pass has materially changed. XTrace matched the new accelerated-review pilot to our documented revisit condition. I recommend a 30-minute re-evaluation this week to review traction, remaining clinical risk, and round dynamics.";
+const decisionDocuments = [
+  {
+    code: "IC",
+    title: "Investment committee memo",
+    meta: "Nov 18, 2025 · 6 cited excerpts",
+    lineage: "Pages 6–7 · Owner KM · Final IC version",
+    excerpt: "The team remains positive on the product and founder quality. The regulatory pathway for AI-assisted diagnostics is not sufficiently clear to underwrite this round.",
+  },
+  {
+    code: "PM",
+    title: "Partner meeting notes",
+    meta: "Nov 12, 2025 · 4 cited excerpts",
+    lineage: "Partner meeting · Owner JL · CRM-synced",
+    excerpt: "Strong founder-market fit and early clinical demand. Pricing can be revisited; the FDA path remains the gating issue.",
+  },
+  {
+    code: "FD",
+    title: "Founder deck · v4",
+    meta: "Oct 29, 2025 · 3 cited pages",
+    lineage: "Pages 18–21 · Uploaded by KM · Verified",
+    excerpt: "Retrospective validation covers two health systems. A prospective multi-site study is planned, but the accelerated-review route is not yet confirmed.",
+  },
+  {
+    code: "CRM",
+    title: "CRM decision log",
+    meta: "Oct–Nov 2025 · 1 decision record",
+    lineage: "Decision entry · Owner KM · Confirmed Nov 18",
+    excerpt: "PASS. Re-open when accelerated review expands to AI-assisted diagnostics.",
+  },
+];
 
 const dealDirectory = [
   { name: "Asteria Bio", meta: "AI diagnostics · Series A", status: "Passed · revisit", tone: "signal", memories: 14, tags: ["healthcare", "diagnostics", "ai", "regulatory"] },
@@ -642,14 +672,9 @@ export default function Home() {
                       </div>
                       <div className="evidence-doc-heading"><span>DETAILED EVIDENCE</span><small>4 linked documents</small></div>
                       <div className="memory-documents">
-                        {[
-                          ["IC", "Investment committee memo", "Nov 18, 2025 · 6 cited excerpts"],
-                          ["PM", "Partner meeting notes", "Nov 12, 2025 · 4 cited excerpts"],
-                          ["FD", "Founder deck · v4", "Oct 29, 2025 · 3 cited pages"],
-                          ["CRM", "CRM decision log", "Oct–Nov 2025 · Owner KM"],
-                        ].map(([type, title, detail]) => (
-                          <button key={title} onClick={() => setPanel("evidence")}>
-                            <span>{type}</span><span><strong>{title}</strong><small>{detail}</small></span>
+                        {decisionDocuments.map((document) => (
+                          <button key={document.title} onClick={() => setPanel("evidence")}>
+                            <span>{document.code}</span><span><strong>{document.title}</strong><small>{document.meta}</small></span>
                           </button>
                         ))}
                       </div>
@@ -821,28 +846,36 @@ export default function Home() {
               </>
             ) : (
               <>
-                <p className="drawer-overline">EVIDENCE CHAIN / 02 SOURCES</p>
-                <h2 id="drawer-title">Why this decision changed</h2>
-                <p className="drawer-lede">VSee found a direct semantic match between the condition recorded by your deal team and a new regulatory signal.</p>
-                <div className="evidence-chain">
-                  <div className="chain-item">
-                    <span className="chain-number">01</span>
-                    <div>
-                      <p>VSEE DECISION MEMORY</p>
-                      <blockquote>“Re-open when accelerated review expands to AI-assisted diagnostics.”</blockquote>
-                      <small>#fact_7A21 · Confirmed Nov 18, 2025 · Exact lineage</small>
-                    </div>
-                  </div>
-                  <div className="chain-connector"><span>REVISIT CONDITION MATCHED</span></div>
-                  <div className="chain-item live">
-                    <span className="chain-number">02</span>
-                    <div>
-                      <p>ILLUSTRATIVE MARKET SIGNAL</p>
-                      <blockquote>Accelerated review pilot expands eligibility to qualifying AI-enabled diagnostic tools.</blockquote>
-                      <small>Federal Register snapshot · Observed 2h ago · Demo source</small>
-                    </div>
-                  </div>
+                <p className="drawer-overline">DECISION MEMORY / 04 INTERNAL DOCS + 01 MARKET SOURCE</p>
+                <h2 id="drawer-title">Docs behind the decision.</h2>
+                <p className="drawer-lede">The decision memory is a source-linked synthesis. Expand any document to inspect the exact excerpt and lineage used by XTrace.</p>
+                <div className="decision-memory-evidence">
+                  <span>SYNTHESIZED DECISION MEMORY</span>
+                  <strong>Pass — regulatory timing made the opportunity uninvestable.</strong>
+                  <p>Product quality and founder conviction remained positive. The unclear FDA pathway was the consistent blocker across the fund’s documentation.</p>
+                  <small>#decision_ASTERIA_2025_11 · Confirmed Nov 18, 2025</small>
                 </div>
+                <div className="evidence-document-heading"><span>SUPPORTING DEAL DOCUMENTS</span><small>14 cited excerpts</small></div>
+                <div className="evidence-documents">
+                  {decisionDocuments.map((document, index) => (
+                    <details key={document.title} open={index === 0}>
+                      <summary>
+                        <span>{document.code}</span>
+                        <span><strong>{document.title}</strong><small>{document.meta}</small></span>
+                        <i />
+                      </summary>
+                      <div>
+                        <blockquote>“{document.excerpt}”</blockquote>
+                        <small>{document.lineage}</small>
+                      </div>
+                    </details>
+                  ))}
+                </div>
+                <div className="evidence-document-heading"><span>NEW MARKET SOURCE</span><small>Detected 2h ago</small></div>
+                <a className="market-source-document" href="https://www.federalregister.gov/" target="_blank" rel="noreferrer">
+                  <span>FR</span>
+                  <span><strong>Federal Register · Accelerated review pilot</strong><small>Primary source · Retrieved Jul 21, 2026</small><p>Eligibility expands to qualifying AI-enabled diagnostic tools, directly addressing the recorded revisit condition.</p></span>
+                </a>
                 <div className="model-note">
                   <span>EVIDENCE ASSESSMENT</span>
                   <p>The event does not guarantee approval. It removes the precise regulatory uncertainty documented in the original pass decision, making a fresh diligence call actionable.</p>
