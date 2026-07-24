@@ -49,6 +49,91 @@
 .vsee-status,.vsee-run-state,.vsee-confidence,.vsee-health article>b{font-size:9px}
 @media(max-width:680px){.vsee-rail nav button>span{font-size:9px}}
 
+.vsee-intelligence-report{overflow:hidden}
+.vsee-intelligence-report-header{padding:18px 20px!important;align-items:flex-start!important}
+.vsee-intelligence-report-header h2{margin:7px 0 5px;font:400 28px var(--serif)}
+.vsee-report-coverage{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--line)}
+.vsee-report-coverage>div{min-height:86px;padding:15px;border-right:1px solid var(--line);display:grid;align-content:center;gap:7px}
+.vsee-report-coverage>div:last-child{border-right:0}
+.vsee-report-coverage strong{font:400 24px var(--serif)}
+.vsee-report-coverage span{color:#6f7973;font:700 7px/1.35 var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.vsee-no-belief-change{padding:34px 24px;border-bottom:1px solid var(--line);background:linear-gradient(105deg,rgba(199,255,74,.04),transparent)}
+.vsee-no-belief-change>span,.vsee-company-analysis-list>header>div>span,.vsee-priority-grid>section>span,.vsee-next-move>span{color:var(--lime);font:700 7px var(--mono);letter-spacing:.13em}
+.vsee-no-belief-change h2{margin:9px 0 7px;font:400 29px var(--serif)}
+.vsee-no-belief-change p{max-width:750px;margin:0;color:#7d8781;font-size:10px;line-height:1.65}
+.vsee-priority-result{border-bottom:1px solid var(--line);background:linear-gradient(145deg,rgba(199,255,74,.055),rgba(8,11,9,.85) 58%)}
+.vsee-priority-result>header{min-height:105px;padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:22px}
+.vsee-priority-result>header h2{margin:8px 0 0;font:400 36px var(--serif)}
+.vsee-analysis-badges{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end}
+.vsee-analysis-badges>span,.vsee-analysis-outcome{padding:6px 8px;border:1px solid #3a433d;color:#a6afa9;font:700 7px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.vsee-analysis-badges .belief_revised,.vsee-analysis-outcome.belief_revised{border-color:rgba(199,255,74,.42);color:var(--lime)}
+.vsee-analysis-badges .monitor,.vsee-analysis-outcome.monitor{border-color:#736240;color:#d7a66e}
+.vsee-analysis-badges .analysis_unavailable,.vsee-analysis-outcome.analysis_unavailable{border-color:#8b5146;color:#d98e78}
+.vsee-priority-grid{display:grid;grid-template-columns:minmax(0,1fr) 190px minmax(0,1fr)}
+.vsee-priority-grid>section{min-height:310px;padding:24px;border-right:1px solid var(--line)}
+.vsee-priority-grid>section:last-child{border-right:0}
+.vsee-priority-grid h3{margin:10px 0 20px;font:400 22px var(--serif)}
+.vsee-priority-grid dl{margin:0 0 14px;display:grid;gap:5px}
+.vsee-priority-grid dt{color:#7d8781;font:700 7px var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.vsee-priority-grid dd,.vsee-priority-grid>section>p{margin:0;color:#b4bcb7;font-size:10px;line-height:1.6}
+.vsee-priority-grid ul{margin:17px 0 0;padding:0;list-style:none}
+.vsee-priority-grid li{padding:11px 0;border-top:1px solid var(--line);display:grid;gap:5px}
+.vsee-priority-grid li strong{font:500 10px var(--serif)}
+.vsee-priority-grid li small{color:#737d77;font:600 7px var(--mono)}
+.vsee-priority-grid .vsee-belief-shift{display:grid;place-items:center;align-content:center;text-align:center;background:rgba(199,255,74,.025)}
+.vsee-belief-shift>span{color:var(--lime)!important;font-size:8px!important}
+.vsee-belief-shift>strong{margin:16px 0;color:var(--lime);font:400 34px var(--serif)}
+.vsee-belief-shift>p{font-size:9px!important}
+.vsee-belief-shift>small{margin-top:18px;color:#707a74;font:600 7px var(--mono)}
+.vsee-next-move{margin:0;padding:20px 24px;border-top:1px solid var(--line);display:grid;grid-template-columns:170px 1fr;gap:16px;align-items:center}
+.vsee-next-move p{margin:0;color:#d3dad5;font:400 15px/1.5 var(--serif)}
+.vsee-priority-result>footer{min-height:68px;padding:12px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.vsee-priority-result>footer button{min-height:38px;padding:0 12px;border:1px solid #3b443e;background:#0c0f0d;color:#a1aaa4;cursor:pointer;font:700 8px var(--mono);letter-spacing:.07em}
+.vsee-priority-result>footer button.primary{border-color:var(--lime);background:var(--lime);color:#080b09}
+.vsee-company-analysis-list>header{padding:23px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
+.vsee-company-analysis-list>header h2{margin:8px 0 0;font:400 25px var(--serif)}
+.vsee-analysis-filters{display:flex;gap:8px}
+.vsee-analysis-filters label{display:grid;gap:5px}
+.vsee-analysis-filters label>span{color:#6d7771;font:700 6px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.vsee-analysis-filters select{height:35px;min-width:125px;padding:0 28px 0 9px;border:1px solid #333b36;border-radius:0;background:#0b0e0c;color:#aab2ad;font:600 8px var(--mono)}
+.vsee-company-analysis-rows>button{width:100%;min-height:91px;padding:13px 20px;border:0;border-bottom:1px solid var(--line);background:rgba(9,12,10,.6);color:inherit;text-align:left;cursor:pointer;display:grid;grid-template-columns:minmax(165px,.7fr) 125px 90px minmax(220px,1.3fr) 85px;gap:14px;align-items:center}
+.vsee-company-analysis-rows>button:hover,.vsee-company-analysis-rows>button:focus-visible{background:rgba(199,255,74,.045);outline:1px solid rgba(199,255,74,.48);outline-offset:-1px}
+.vsee-company-analysis-rows>button>div{display:grid;gap:5px}
+.vsee-company-analysis-rows>button>div strong{font:400 18px var(--serif)}
+.vsee-company-analysis-rows>button>div small,.vsee-company-analysis-rows>button>span:not(.vsee-analysis-outcome){color:#717b75;font:600 7px var(--mono);text-transform:uppercase}
+.vsee-company-analysis-rows>button>p{margin:0;color:#7c8680;font-size:9px;line-height:1.5}
+.vsee-company-analysis-rows>button>b{color:var(--lime);font:700 7px var(--mono);text-align:right}
+.vsee-analysis-filter-empty{margin:0;padding:35px;color:#77817b;text-align:center;font-size:10px}
+.vsee-company-brief{position:fixed;inset:0;z-index:55;padding:24px;background:rgba(0,0,0,.8);backdrop-filter:blur(7px);display:grid;place-items:center}
+.vsee-company-brief-card{width:min(1040px,100%);max-height:calc(100vh - 48px);overflow:hidden;border:1px solid #465047;background:#0b0e0c;box-shadow:0 28px 90px rgba(0,0,0,.74);display:grid;grid-template-rows:auto auto minmax(0,1fr)}
+.vsee-company-brief-card>header{min-height:108px;padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between}
+.vsee-company-brief-card>header h2{margin:8px 0 4px;font:400 34px var(--serif)}
+.vsee-company-brief-card>header p{margin:0;color:#7d8781;font:600 8px var(--mono);text-transform:uppercase}
+.vsee-company-brief-card>header button{width:38px;height:38px;border:1px solid var(--line);background:transparent;color:#9ba49e;cursor:pointer;font-size:22px}
+.vsee-company-brief-card>nav{display:flex;overflow-x:auto;border-bottom:1px solid var(--line)}
+.vsee-company-brief-card>nav button{min-width:max-content;height:49px;padding:0 16px;border:0;border-right:1px solid var(--line);background:#090c0a;color:#737d77;cursor:pointer;font:700 8px var(--mono);letter-spacing:.07em}
+.vsee-company-brief-card>nav button.active{background:rgba(199,255,74,.06);color:var(--lime)}
+.vsee-company-brief-body{padding:24px;overflow:auto}
+.vsee-evidence-fields{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.vsee-evidence-fields>article,.vsee-brief-risks>article,.vsee-decision-history>article,.vsee-source-lineage>article{padding:18px;border:1px solid var(--line);background:#090c0a}
+.vsee-evidence-fields>article>span,.vsee-brief-risks>article>span,.vsee-source-lineage>article>span{color:#77817b;font:700 7px var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.vsee-evidence-fields>article>strong{margin-top:10px;display:block;font:400 18px/1.4 var(--serif)}
+.vsee-evidence-fields footer,.vsee-brief-risks footer,.vsee-decision-history footer{margin-top:13px;display:flex;flex-wrap:wrap;gap:10px}
+.vsee-evidence-fields a,.vsee-brief-risks a,.vsee-decision-history a,.vsee-source-lineage a{color:#a4ada7;text-decoration:none;font:600 8px var(--mono)}
+.vsee-brief-risks,.vsee-decision-history,.vsee-source-lineage{display:grid;gap:12px}
+.vsee-brief-risks h3,.vsee-decision-history h3,.vsee-source-lineage h3{margin:9px 0 7px;font:400 21px var(--serif)}
+.vsee-brief-risks p,.vsee-decision-history p,.vsee-source-lineage p{margin:0;color:#8a948e;font-size:10px;line-height:1.65}
+.vsee-brief-risks article>strong{margin-top:16px;display:block;color:#c6cec9;font:700 7px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.vsee-decision-history time{color:var(--lime);font:700 7px var(--mono)}
+.vsee-source-lineage a{margin-top:15px;display:inline-block}
+.vsee-unavailable{margin:0;padding:28px;border:1px solid var(--line);color:#7f8983;text-align:center;font:600 10px var(--mono)}
+.vsee-system-activity{margin-top:32px;padding-top:29px;border-top:1px solid var(--line)}
+.vsee-system-activity>header h2{margin:8px 0 5px;font:400 27px var(--serif)}
+.vsee-system-activity>header p{margin:0;color:#747e78;font-size:9px}
+.vsee-runs-compact .vsee-run-list{margin-top:18px}
+@media(max-width:1040px){.vsee-report-coverage{grid-template-columns:repeat(3,1fr)}.vsee-priority-grid{grid-template-columns:1fr}.vsee-priority-grid>section{min-height:auto;border-right:0;border-bottom:1px solid var(--line)}.vsee-priority-grid .vsee-belief-shift{min-height:190px}.vsee-company-analysis-list>header{align-items:flex-start;flex-direction:column}.vsee-analysis-filters{width:100%;overflow-x:auto}.vsee-company-analysis-rows>button{grid-template-columns:minmax(170px,1fr) 130px 90px 85px}.vsee-company-analysis-rows>button>p{grid-column:1/-1}.vsee-company-analysis-rows>button>b{grid-column:4;grid-row:1}}
+@media(max-width:680px){.vsee-report-coverage{grid-template-columns:repeat(2,1fr)}.vsee-priority-result>header{align-items:flex-start;flex-direction:column}.vsee-analysis-badges{justify-content:flex-start}.vsee-next-move{grid-template-columns:1fr}.vsee-priority-result>footer{display:grid;grid-template-columns:1fr}.vsee-priority-result>footer button{min-height:44px}.vsee-analysis-filters{display:grid;grid-template-columns:1fr}.vsee-analysis-filters label,.vsee-analysis-filters select{width:100%}.vsee-company-analysis-rows>button{grid-template-columns:1fr 1fr}.vsee-company-analysis-rows>button>p{grid-column:1/-1}.vsee-company-analysis-rows>button>b{grid-column:2;grid-row:auto}.vsee-company-brief{padding:0;align-items:end}.vsee-company-brief-card{width:100%;max-height:calc(100dvh - 12px);border-width:1px 0 0}.vsee-company-brief-card>header{padding:18px}.vsee-company-brief-body{padding:16px}.vsee-evidence-fields{grid-template-columns:1fr}}
+
 .vsee-scan-progress{position:fixed;inset:0;z-index:50;padding:24px;background:rgba(0,0,0,.78);backdrop-filter:blur(7px);display:grid;place-items:center}
 .vsee-scan-progress-card{width:min(780px,100%);max-height:calc(100vh - 48px);overflow:auto;border:1px solid #465047;background:#0b0e0c;box-shadow:0 28px 90px rgba(0,0,0,.72)}
 .vsee-scan-progress-card>header{min-height:128px;padding:22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:24px}

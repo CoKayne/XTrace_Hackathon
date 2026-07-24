@@ -13,6 +13,10 @@ const pagePath = new URL("../../app/page.tsx", import.meta.url);
 const cssPath = new URL("../../app/vsee.css", import.meta.url);
 const dialogPath = new URL("../../app/report-draft-dialog.tsx", import.meta.url);
 const scanProgressPath = new URL("../../app/scan-progress.tsx", import.meta.url);
+const companyIntelligencePath = new URL(
+  "../../app/company-intelligence.tsx",
+  import.meta.url,
+);
 const environmentPath = new URL("../../.env.example", import.meta.url);
 const migrationPath = new URL("../../drizzle/0000_vsee_postgres.sql", import.meta.url);
 const cleanupMigrationPath = new URL(
@@ -176,6 +180,32 @@ test("scans stay in the investor workflow and open the durable report", async ()
   ]) {
     assert.match(progress, new RegExp(label));
   }
+});
+
+test("reports render the complete company intelligence hierarchy", async () => {
+  const [page, companyIntelligence] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(companyIntelligencePath, "utf8"),
+  ]);
+
+  for (const label of [
+    "THEN / INVESTMENT MEMORY",
+    "NOW / MARKET EVIDENCE",
+    "RECOMMENDED NEXT MOVE",
+    "IC Snapshot",
+    "Traction",
+    "Deal Terms",
+    "Risks",
+    "Decision History",
+    "Source Lineage",
+    "Not available in current evidence",
+  ]) {
+    assert.match(companyIntelligence, new RegExp(label.replace("/", "\\/")));
+  }
+  assert.doesNotMatch(page, /\{ view: "runs", label: "Runs"/);
+  assert.match(page, /System activity/);
+  assert.match(page, /priorityDealId/);
+  assert.match(page, /CompanyIntelligenceReport/);
 });
 
 test("Deals render the complete labeled synthetic decision context", async () => {

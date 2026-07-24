@@ -5,6 +5,10 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { ReportDraftDialog } from "./report-draft-dialog";
 import { ScanProgress } from "./scan-progress";
 import {
+  CompanyIntelligenceReport,
+  type IntelligenceReportView,
+} from "./company-intelligence";
+import {
   buildInternalReportDraft,
   type InternalReportDraft,
 } from "../lib/reports/draft";
@@ -17,7 +21,6 @@ type View =
   | "import"
   | "market"
   | "reports"
-  | "runs"
   | "chat"
   | "settings";
 
@@ -104,27 +107,7 @@ interface MarketEvent {
   sources: Source[];
 }
 
-interface Opportunity {
-  rank: number;
-  dealId: string;
-  confidence: "medium" | "high";
-  score: number;
-  whyNow: string;
-  previousContext: string;
-  implications: { positive: string[]; negative: string[] };
-  nextStep: string;
-  sources: Source[];
-  demoFixtureIds: string[];
-}
-
-interface Report {
-  id: string;
-  runId?: string;
-  createdAt: string;
-  marketSummary: string;
-  opportunities: Opportunity[];
-  priorityDealId?: string | null;
-}
+type Report = IntelligenceReportView;
 
 interface Health {
   postgres: boolean;
@@ -160,7 +143,6 @@ const nav: Array<{ view: View; label: string; icon: string }> = [
   { view: "import", label: "Sources", icon: "↥" },
   { view: "market", label: "Market", icon: "◉" },
   { view: "reports", label: "Reports", icon: "◇" },
-  { view: "runs", label: "Runs", icon: "↻" },
   { view: "chat", label: "Chat", icon: "⌘" },
   { view: "settings", label: "Settings", icon: "⚙" },
 ];
@@ -280,6 +262,20 @@ export default function Home() {
     const timer = window.setInterval(() => void load(), 2_500);
     return () => window.clearInterval(timer);
   }, [runs, load]);
+
+  useEffect(() => {
+    if (activeRunId) return;
+    const durableRun = runs.find(
+      (run) => run.status === "queued" || run.status === "running",
+    );
+    if (!durableRun) return;
+    const timer = window.setTimeout(() => {
+      setActiveRunId(durableRun.id);
+      setActiveRun(durableRun);
+      setScanProgressOpen(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [activeRunId, runs]);
 
   useEffect(() => {
     if (!activeRunId) return;
@@ -636,7 +632,6 @@ export default function Home() {
                 focusedReportId={focusedReportId}
               />
             )}
-            {view === "runs" && <RunsView runs={runs} />}
             {view === "chat" && (
               <ChatView
                 messages={chatMessages}
@@ -647,7 +642,7 @@ export default function Home() {
                 xtraceEnabled={xtraceEnabled}
               />
             )}
-            {view === "settings" && <SettingsView health={health} />}
+            {view === "settings" && <SettingsView health={health} runs={runs} />}
           </>
         )}
       </section>
@@ -732,7 +727,7 @@ function OverviewView({
               ? "Use XTrace to recover source-backed facts and labeled internal decision context."
               : "Use the confirmed structured Deal context; XTrace is not active for this run."],
             ["03", "Match", "Claude connects changed conditions to the Deals that may be affected."],
-            ["04", "Act", "Rank a cited Top 5 and prepare a copy-ready internal brief for the investor."],
+            ["04", "Act", "Analyze all 19 companies, rank supported belief revisions, and preserve the full report."],
           ].map(([number, title, copy]) => (
             <div className="vsee-workflow-row" key={number}>
               <b>{number}</b><strong>{title}</strong><p>{copy}</p>
@@ -1004,7 +999,17 @@ function ReportsView({
   return (
     <div className="vsee-content">
       <SectionTitle eyebrow="DECISION BRIEF" title="Cited reasons for a second look." copy="Only medium- and high-confidence matches enter the Top 5. A recommendation is never proof that a company has improved; it is a reason for the investor to follow up." />
-      {!reports.length ? <Empty title="No intelligence report yet" copy="Complete a scan to generate the first evidence-linked report." /> : reports.map((report, reportIndex) => (
+      {!reports.length ? (
+        <Empty title="No intelligence report yet" copy="Complete a scan to generate the first evidence-linked report." />
+      ) : reports.map((report, reportIndex) => report.companyAnalyses.length ? (
+        <CompanyIntelligenceReport
+          report={report}
+          focused={focusedReportId === report.id}
+          allowDraft={reportIndex === 0}
+          onDraft={onDraft}
+          key={report.id}
+        />
+      ) : (
         <article
           className={`vsee-report ${focusedReportId === report.id ? "focused" : ""}`}
           id={`report-${report.id}`}
@@ -1012,7 +1017,7 @@ function ReportsView({
           key={report.id}
         >
           <header>
-            <div><span>REPORT {shortDate(report.createdAt)}</span><p>{report.marketSummary}</p></div>
+            <div><span>LEGACY REPORT {shortDate(report.createdAt)}</span><p>{report.marketSummary}</p></div>
             {reportIndex === 0 && (
               <button onClick={() => onDraft(report)}>DRAFT THIS REPORT →</button>
             )}
@@ -1035,18 +1040,26 @@ function ReportsView({
                 <footer>{item.sources.map((source) => <SourceLink source={source} key={source.id} />)}</footer>
               </div>
             </section>
-          )) : <Empty title="No medium-confidence matches" copy="The market summary is retained, but the evidence did not justify surfacing a Deal." />}
+          )) : <Empty title="No legacy opportunities" copy="This older report did not contain company-level analyses." />}
         </article>
       ))}
     </div>
   );
 }
 
-function RunsView({ runs }: { runs: Run[] }) {
+function RunsView({
+  runs,
+  compact = false,
+}: {
+  runs: Run[];
+  compact?: boolean;
+}) {
   return (
-    <div className="vsee-content">
-      <SectionTitle eyebrow="BACKGROUND WORKER" title="Every scan has a durable state." copy="Queued and running scans persist in PostgreSQL, so refreshing or closing the browser does not erase progress." />
-      {!runs.length ? <Empty title="No runs yet" copy="Use Run 14-day scan to create the first job." /> : (
+    <div className={compact ? "vsee-runs-compact" : "vsee-content"}>
+      {!compact && (
+        <SectionTitle eyebrow="BACKGROUND WORKER" title="Every scan has a durable state." copy="Queued and running scans persist in PostgreSQL, so refreshing or closing the browser does not erase progress." />
+      )}
+      {!runs.length ? <Empty title="No runs yet" copy="Use Wake agent & scan market to create the first job." /> : (
         <div className="vsee-run-list">
           {runs.map((run) => (
             <article key={run.id}>
@@ -1115,7 +1128,13 @@ export function ChatView({
   );
 }
 
-function SettingsView({ health }: { health: Health | null }) {
+function SettingsView({
+  health,
+  runs,
+}: {
+  health: Health | null;
+  runs: Run[];
+}) {
   const services: Array<[keyof Health, string, string]> = [
     ["postgres", "PostgreSQL", "Persistent application data and worker queue"],
     ["worker", "Background worker", "Durable market scan and report processing"],
@@ -1140,6 +1159,14 @@ function SettingsView({ health }: { health: Health | null }) {
           </article>
         ))}
       </div>
+      <section className="vsee-system-activity">
+        <header>
+          <span className="vsee-eyebrow">TECHNICAL DIAGNOSTICS</span>
+          <h2>System activity</h2>
+          <p>Durable run IDs, worker stages, and warnings are retained here for diagnostics.</p>
+        </header>
+        <RunsView runs={runs} compact />
+      </section>
     </div>
   );
 }
