@@ -5,26 +5,38 @@ import type {
   IntelligenceRepository,
 } from "../db/repositories/intelligence";
 import type { createRunsRepository } from "../db/repositories/runs";
-import type { DealMemoryBundle } from "../lib/contracts/domain";
+import {
+  OpportunityReportItemSchema,
+  type CompanyAnalysis,
+  type DealMemoryBundle,
+  type OpportunityReportItem,
+} from "../lib/contracts/domain";
 import type { ProductInputGate } from "../lib/corpus/import-readiness";
 import { DEMO_MARKET_REPORT_EVIDENCE } from "../lib/corpus/market-evidence";
 import {
   buildMatchingSources,
   buildStructuredMemoryContexts,
 } from "../lib/matching/context";
-import type { MatchingReasoner } from "../lib/matching/service";
+import type {
+  GroundedMatch,
+  MatchingMemoryContext,
+  MatchingReasoner,
+} from "../lib/matching/service";
 import { createMatchingService } from "../lib/matching/service";
 import {
   selectMarketEventsForAnalysis,
   type MarketEventSelection,
 } from "../lib/market/selection";
 import type { MarketService } from "../lib/market/service";
-import type { NormalizedMarketEvent } from "../lib/market/types";
 import type { MemoryContext } from "../lib/xtrace/service";
 import type { PersistedIngest } from "../lib/xtrace/service";
+import {
+  buildCompanyAnalyses,
+  countCompanyAnalyses,
+} from "../lib/reports/company-analysis";
+import { recallAllDealContexts } from "./recall-deal-contexts";
 
 type RunsRepository = ReturnType<typeof createRunsRepository>;
-const MAX_XTRACE_RECALL_QUERY_CHARACTERS = 4_000;
 
 export interface ProcessRunDependencies {
   runs: RunsRepository;
@@ -129,12 +141,12 @@ export async function processClaimedRun(
       companyName: bundle.companyName,
       status: bundle.status,
     }));
-    let matchingBundles = claimedRun.mode === "xtrace" ? [] : dependencies.bundles;
-    let deals = claimedRun.mode === "xtrace" ? [] : allDeals;
-    let memoryContexts = claimedRun.mode === "xtrace"
-      ? []
-      : buildStructuredMemoryContexts(dependencies.bundles);
-    if (claimedRun.mode === "xtrace" && analysisEvents.length > 0) {
+    let contextsByDeal = claimedRun.mode === "xtrace"
+      ? new Map<string, MemoryContext[]>()
+      : structuredContextsByDeal(dependencies.bundles);
+    const unavailableDealIds = new Set<string>();
+
+    if (claimedRun.mode === "xtrace") {
       await updateStage("memory_ingest_sync", "running");
       if (dependencies.xtrace) {
         let failedJobs = 0;
@@ -185,43 +197,30 @@ export async function processClaimedRun(
       }
 
       await updateStage("memory_recall", "running");
-      try {
-        if (!dependencies.xtrace) {
-          throw new Error("XTrace is not configured");
+      const recalled = await recallAllDealContexts({
+        workspaceId: claimedRun.workspaceId,
+        runId: claimedRun.id,
+        bundles: dependencies.bundles,
+        service: dependencies.xtrace,
+      });
+      contextsByDeal = recalled.contextsByDeal;
+      for (const failure of recalled.failures) {
+        unavailableDealIds.add(failure.dealId);
+      }
+      for (const bundle of dependencies.bundles) {
+        if ((contextsByDeal.get(bundle.dealId)?.length ?? 0) === 0) {
+          unavailableDealIds.add(bundle.dealId);
         }
-        const recalled = await dependencies.xtrace.recallDealContext({
-          workspaceId: claimedRun.workspaceId,
-          runId: claimedRun.id,
-          query: buildXTraceRecallQuery(analysisEvents),
-          candidateDealIds: allDeals.map((deal) => deal.id),
-          limit: 100,
-        });
-        if (recalled.length > 0) {
-          const recalledDealIds = new Set(recalled.map((memory) => memory.dealId));
-          matchingBundles = dependencies.bundles.filter((bundle) =>
-            recalledDealIds.has(bundle.dealId)
-          );
-          deals = matchingBundles.map((bundle) => ({
-            id: bundle.dealId,
-            companyName: bundle.companyName,
-            status: bundle.status,
-          }));
-          memoryContexts = recalled.map((memory) => ({
-            dealId: memory.dealId,
-            text: memory.text,
-            sourceIds: memory.sourceIds,
-            fixtureIds: memory.fixtureIds,
-          }));
-          await updateStage("memory_recall", "completed");
-        } else {
-          const warning = "XTrace returned no eligible memories; no historical Deal candidates were sent to matching.";
-          warnings.push(warning);
-          await updateStage("memory_recall", "completed", warning);
-        }
-      } catch (error) {
-        const warning = `XTrace recall was unavailable (${errorDetail(error)}); no historical Deal candidates were sent to matching.`;
+      }
+      if (unavailableDealIds.size > 0) {
+        const warning =
+          `XTrace recall was unavailable for ${unavailableDealIds.size} ${
+            unavailableDealIds.size === 1 ? "Deal" : "Deals"
+          }; those company analyses are marked unavailable.`;
         warnings.push(warning);
         await updateStage("memory_recall", "failed", warning);
+      } else {
+        await updateStage("memory_recall", "completed");
       }
     } else {
       await updateStage("memory_ingest_sync", "skipped");
@@ -229,27 +228,78 @@ export async function processClaimedRun(
     }
 
     await updateStage("opportunity_matching", "running");
+    const matchingBundles = dependencies.bundles.filter((bundle) =>
+      (contextsByDeal.get(bundle.dealId)?.length ?? 0) > 0
+    );
+    const deals = allDeals.filter((deal) =>
+      (contextsByDeal.get(deal.id)?.length ?? 0) > 0
+    );
+    const memoryContexts = matchingMemoryContexts(
+      matchingBundles,
+      contextsByDeal,
+    );
     const sources = buildMatchingSources(
       matchingBundles,
       analysisEvents,
       DEMO_MARKET_REPORT_EVIDENCE.map((evidence) => evidence.source),
     );
-    const opportunities = await createMatchingService(dependencies.reasoner).match({
-      deals,
-      events: analysisEvents,
-      memoryContexts,
-      sources,
-    });
-    await updateStage("opportunity_matching", "completed");
+    let groundedMatches: GroundedMatch[] = [];
+    try {
+      groundedMatches = await createMatchingService(dependencies.reasoner)
+        .analyze({
+          deals,
+          events: analysisEvents,
+          memoryContexts,
+          sources,
+        });
+      await updateStage("opportunity_matching", "completed");
+    } catch {
+      for (const deal of deals) unavailableDealIds.add(deal.id);
+      const warning =
+        "Company matching was unavailable; affected analyses are marked unavailable.";
+      warnings.push(warning);
+      await updateStage("opportunity_matching", "failed", warning);
+    }
 
     await updateStage("report", "running");
+    const createdAt = now().toISOString();
+    const companyAnalyses = buildCompanyAnalyses({
+      reportId: `report_${claimedRun.id}`,
+      runId: claimedRun.id,
+      createdAt,
+      bundles: dependencies.bundles,
+      contextsByDeal,
+      recallFailures: unavailableDealIds,
+      groundedMatches,
+    });
+    const counts = countCompanyAnalyses(companyAnalyses);
+    const opportunities = projectRecommendedOpportunities(companyAnalyses);
+    const priorityDealId = opportunities[0]?.dealId ?? null;
     const report: IntelligenceReportWrite = {
       id: `report_${claimedRun.id}`,
       workspaceId: claimedRun.workspaceId,
       runId: claimedRun.id,
-      createdAt: now().toISOString(),
+      createdAt,
       marketSummary: buildMarketSummary(market, marketSelection),
       opportunities,
+      analysisStatus: counts.analysisUnavailable > 0
+        ? "incomplete"
+        : "completed",
+      evidenceCoverage: {
+        acceptedPublicEvents: market.events.length,
+        excludedPublicItems: marketSelection.ineligibleCount,
+        truncatedPublicEvents: Math.max(
+          0,
+          marketSelection.eligibleCount - marketSelection.events.length,
+        ),
+        recalledDealCount: [...contextsByDeal.values()].filter(
+          (contexts) => contexts.length > 0,
+        ).length,
+        unavailableDealCount: counts.analysisUnavailable,
+      },
+      counts,
+      priorityDealId,
+      companyAnalyses,
     };
     const storedReport = await dependencies.intelligence.saveReport(report);
     await updateStage("report", "completed");
@@ -283,30 +333,71 @@ export async function processClaimedRun(
   }
 }
 
-function buildXTraceRecallQuery(
-  events: NormalizedMarketEvent[],
-  limit = MAX_XTRACE_RECALL_QUERY_CHARACTERS,
-): string {
-  if (!events.length) return "";
-  if (!Number.isInteger(limit) || limit <= 0) {
-    throw new TypeError("XTrace recall query limit must be a positive integer.");
-  }
+function structuredContextsByDeal(
+  bundles: DealMemoryBundle[],
+): Map<string, MemoryContext[]> {
+  const contexts = buildStructuredMemoryContexts(bundles);
+  return new Map(contexts.map((context) => [
+    context.dealId,
+    [{
+      ...context,
+      memoryId: `structured:${context.dealId}`,
+      memoryType: "structured",
+      score: 1,
+      provenance: "source_document" as const,
+    }],
+  ]));
+}
 
-  const lines = events.map((event) =>
-    `${event.title}. ${event.summary}`.replace(/\s+/g, " ").trim()
-  );
-  const fullQuery = lines.join("\n");
-  if (fullQuery.length <= limit) return fullQuery;
+function matchingMemoryContexts(
+  bundles: DealMemoryBundle[],
+  contextsByDeal: ReadonlyMap<string, MemoryContext[]>,
+): MatchingMemoryContext[] {
+  return bundles.flatMap((bundle) => {
+    const contexts = contextsByDeal.get(bundle.dealId) ?? [];
+    if (contexts.length === 0) return [];
+    return [{
+      dealId: bundle.dealId,
+      text: contexts
+        .slice(0, 3)
+        .map((context) => context.text.slice(0, 1_200))
+        .join("\n"),
+      sourceIds: uniqueStrings(
+        contexts.flatMap((context) => context.sourceIds),
+      ),
+      fixtureIds: uniqueStrings(
+        contexts.flatMap((context) => context.fixtureIds),
+      ),
+    }];
+  });
+}
 
-  const separatorCharacters = Math.min(lines.length - 1, limit);
-  const contentCharacters = limit - separatorCharacters;
-  const baseLineBudget = Math.floor(contentCharacters / lines.length);
-  let remainder = contentCharacters % lines.length;
-  return lines.map((line) => {
-    const lineBudget = baseLineBudget + (remainder > 0 ? 1 : 0);
-    if (remainder > 0) remainder -= 1;
-    return line.slice(0, lineBudget);
-  }).join("\n");
+function projectRecommendedOpportunities(
+  analyses: readonly CompanyAnalysis[],
+): OpportunityReportItem[] {
+  return analyses
+    .filter((analysis) =>
+      analysis.outcome === "belief_revised"
+      && analysis.confidence !== "low"
+    )
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 5)
+    .map((analysis, index) => OpportunityReportItemSchema.parse({
+      rank: index + 1,
+      dealId: analysis.dealId,
+      confidence: analysis.confidence,
+      score: analysis.score,
+      whyNow: analysis.marketEvidence.explanation,
+      previousContext: analysis.investmentMemory.decisionReason,
+      implications: analysis.implications,
+      nextStep: analysis.recommendedNextMove,
+      sources: analysis.sources,
+      demoFixtureIds: analysis.investmentMemory.fixtureIds,
+    }));
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values)];
 }
 
 function errorDetail(error: unknown): string {

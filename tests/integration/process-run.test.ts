@@ -139,11 +139,12 @@ test("a claimed run persists market evidence, an always-present summary, and ran
   const run = await runs.claimNext("test-worker");
   assert.equal(run?.id, queued.id);
   const intelligence = createTestIntelligenceRepository();
+  const bundles = buildPreloadedDealMemoryBundles();
 
   const result = await processClaimedRun(run!, {
     runs,
     intelligence,
-    bundles: buildPreloadedDealMemoryBundles(),
+    bundles,
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -224,6 +225,10 @@ test("a claimed run persists market evidence, an always-present summary, and ran
   assert.equal(result.run.status, "completed", JSON.stringify(result.run.warnings));
   assert.match(result.report.marketSummary, /1 source-backed market event/i);
   assert.equal(result.report.opportunities.length, 1);
+  assert.equal(result.report.companyAnalyses.length, 19);
+  assert.equal(result.report.counts.companyCount, 19);
+  assert.equal(result.report.counts.beliefRevised, 1);
+  assert.equal(result.report.priorityDealId, "deal_ably");
   assert.equal((await intelligence.listMarketEvents("workspace_demo")).length, 1);
 });
 
@@ -305,6 +310,9 @@ test("persists a generic public item but excludes it from downstream analysis wi
   );
   assert.equal(downstreamEventCount, 0);
   assert.equal(result.run.status, "completed");
+  assert.equal(result.report.companyAnalyses.length, 19);
+  assert.equal(result.report.counts.noMaterialChange, 19);
+  assert.equal(result.report.priorityDealId, null);
   assert.match(result.report.marketSummary, /1 item lacked a bounded market-change signal/i);
 });
 
@@ -391,9 +399,12 @@ test("XTrace recall failure never falls back to structured memory and marks the 
 
   assert.equal(result.run.status, "partial");
   assert.equal(result.report.opportunities.length, 0);
+  assert.equal(result.report.companyAnalyses.length, 19);
+  assert.equal(result.report.counts.analysisUnavailable, 19);
+  assert.equal(result.report.analysisStatus, "incomplete");
   assert.match(result.report.marketSummary, /1 source-backed market event/i);
   assert.ok(result.run.warnings.some((warning) =>
-    /XTrace recall was unavailable.*Request failed validation \(422\)/i.test(warning)
+    /XTrace recall was unavailable for 19 Deals/i.test(warning)
   ));
   assert.ok(result.run.warnings.every((warning) => !/structured fallback/i.test(warning)));
 });
@@ -484,9 +495,11 @@ test("polls pending XTrace ingest jobs before recall", async () => {
     now: () => new Date("2026-07-24T12:00:00.000Z"),
   });
 
-  assert.deepEqual(calls, ["poll:job_1:deal_ably", "recall"]);
+  assert.equal(calls[0], "poll:job_1:deal_ably");
+  assert.equal(calls.filter((call) => call === "recall").length, 19);
   assert.equal(result.run.status, "partial");
-  assert.ok(result.run.warnings.some((warning) => /no eligible memories/i.test(warning)));
+  assert.equal(result.report.counts.analysisUnavailable, 19);
+  assert.ok(result.run.warnings.some((warning) => /19 Deals/i.test(warning)));
 });
 
 test("bounds market evidence before XTrace and Claude while preserving all events", async () => {
@@ -499,19 +512,20 @@ test("bounds market evidence before XTrace and Claude while preserving all event
   const run = await runs.claimNext("test-worker");
   assert.ok(run);
   const intelligence = createTestIntelligenceRepository();
+  const bundles = buildPreloadedDealMemoryBundles();
   const fetchedEvents = Array.from({ length: 23 }, (_, index) =>
     marketEvent(index)
   );
   for (const event of fetchedEvents) {
     event.summary = `${event.summary} ${"market evidence ".repeat(100)}`;
   }
-  let recallQuery = "";
+  const recallQueries: string[] = [];
   let reasonerEventIds: string[] = [];
 
   const result = await processClaimedRun(run, {
     runs,
     intelligence,
-    bundles: buildPreloadedDealMemoryBundles(),
+    bundles,
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -542,16 +556,22 @@ test("bounds market evidence before XTrace and Claude while preserving all event
         throw new Error("No jobs expected");
       },
       async recallDealContext(input) {
-        recallQuery = input.query;
+        recallQueries.push(input.query);
+        const dealId = input.candidateDealIds[0];
+        const bundle = bundles.find((candidate) =>
+          candidate.dealId === dealId
+        )!;
         return [{
-          dealId: "deal_ably",
-          memoryId: "memory_ably",
+          dealId,
+          memoryId: `memory_${dealId}`,
           memoryType: "semantic",
-          text: "Ably is described in the supplied deck.",
+          text: `${bundle.companyName} is described in the supplied deck.`,
           score: 0.9,
           provenance: "source_document",
-          sourceIds: ["evidence_ably_page_5"],
-          fixtureIds: [],
+          sourceIds: bundle.facts.flatMap((fact) =>
+            fact.sources.map((source) => source.id)
+          ),
+          fixtureIds: bundle.interactions.map((interaction) => interaction.id),
         }];
       },
     },
@@ -568,10 +588,12 @@ test("bounds market evidence before XTrace and Claude while preserving all event
     reasonerEventIds,
     Array.from({ length: 20 }, (_, offset) => `market_${22 - offset}`),
   );
-  assert.ok(recallQuery.length <= 4_000, `Recall query was ${recallQuery.length} characters`);
-  assert.match(recallQuery, /startup 22/);
-  assert.match(recallQuery, /startup 3 closes/);
-  assert.doesNotMatch(recallQuery, /startup 2 closes/);
+  assert.equal(recallQueries.length, 19);
+  assert.ok(
+    recallQueries.every((query) => query.length <= 4_000),
+    "Every Deal recall query must stay within the XTrace limit",
+  );
+  assert.ok(recallQueries.some((query) => /Ably/i.test(query)));
   assert.equal(
     (await intelligence.listMarketEvents("workspace_demo")).length,
     fetchedEvents.length,
