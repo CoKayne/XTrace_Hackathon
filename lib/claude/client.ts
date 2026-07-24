@@ -17,7 +17,7 @@ export function createClaudeClient(options: {
   fetchImpl?: typeof fetch;
 } = {}): ClaudeClient {
   const apiKey = options.apiKey ?? process.env.ANTHROPIC_API_KEY;
-  const model = options.model ?? process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
+  const model = options.model ?? process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
   const fetchImpl = options.fetchImpl ?? fetch;
 
   return {
