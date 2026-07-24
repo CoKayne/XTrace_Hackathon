@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test from "node:test";
 
 import { DEMO_FIXTURE_LABEL } from "../../lib/contracts/domain";
@@ -246,10 +247,12 @@ test("records demo-only bundle memory lineage as demo fixture provenance", async
 
 test("reuses an equivalent non-failed XTrace ingest instead of creating a duplicate", async () => {
   let ingestCalls = 0;
+  let sentMessage = "";
   const lineage = createMemoryXTraceLineageRepository();
   const service = createXTraceService({
-    ingest: async () => {
+    ingest: async (input: { messages: Array<{ content: string }> }) => {
       ingestCalls += 1;
+      sentMessage = input.messages[0].content;
       return { id: `job_${ingestCalls}`, status: "pending" };
     },
   } as never, {
@@ -263,7 +266,10 @@ test("reuses an equivalent non-failed XTrace ingest instead of creating a duplic
   assert.equal(ingestCalls, 1);
   assert.deepEqual(second, first);
   const [storedJob] = await lineage.listOpenJobs("workspace_demo");
-  assert.match(storedJob.bundleFingerprint, /^[a-f0-9]{64}$/);
+  assert.equal(
+    storedJob.bundleFingerprint,
+    createHash("sha256").update(sentMessage, "utf8").digest("hex"),
+  );
   assert.equal(storedJob.serializerVersion, "deal-memory-v1");
 });
 

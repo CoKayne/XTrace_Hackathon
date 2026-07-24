@@ -113,6 +113,7 @@ test(
       `);
 
       applySql(database, durabilityMigrationPath);
+      applySql(database, durabilityMigrationPath);
 
       assert.equal(
         executeSql(database, `
