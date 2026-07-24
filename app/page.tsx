@@ -3,9 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 type ScanState = "idle" | "scanning" | "matched";
-type Panel = "evidence" | "brief" | "search" | "help" | "notifications" | "sources" | "activity" | "newDeal" | null;
+type Panel = "evidence" | "search" | "help" | "notifications" | "sources" | "activity" | "newDeal" | null;
 type DetailTab = "overview" | "traction" | "deal" | "risks" | "history";
-type AppView = "overview" | "pipeline" | "signals" | "reports";
+type AppView = "overview" | "pipeline" | "signals";
+
+const outreachSubject = "Re-open Asteria Bio · FDA condition changed";
+const outreachBody = "Team — the FDA uncertainty behind our November pass has materially changed. XTrace matched the new accelerated-review pilot to our documented revisit condition. I recommend a 30-minute re-evaluation this week to review traction, remaining clinical risk, and round dynamics.";
 
 const dealDirectory = [
   { name: "Asteria Bio", meta: "AI diagnostics · Series A", status: "Passed · revisit", tone: "signal", memories: 14, tags: ["healthcare", "diagnostics", "ai", "regulatory"] },
@@ -76,7 +79,7 @@ export default function Home() {
   const [inAgenda, setInAgenda] = useState(false);
   const [xtraceEnabled, setXtraceEnabled] = useState(true);
   const [scanUsesXTrace, setScanUsesXTrace] = useState(true);
-  const [outreachApproved, setOutreachApproved] = useState(false);
+  const [outreachCopied, setOutreachCopied] = useState(false);
   const [drawerContext, setDrawerContext] = useState("");
   const [batchReview, setBatchReview] = useState<"idle" | "running" | "complete">("idle");
   const [batchCompanies, setBatchCompanies] = useState(0);
@@ -163,6 +166,28 @@ export default function Home() {
   function notify(message: string) {
     setToast(message);
     timers.current.push(window.setTimeout(() => setToast(""), 3200));
+  }
+
+  async function copyOutreachEmail() {
+    try {
+      await navigator.clipboard.writeText(`Subject: ${outreachSubject}\n\n${outreachBody}`);
+      setOutreachCopied(true);
+      setReviewed(true);
+      notify("EMAIL TEMPLATE COPIED");
+    } catch {
+      notify("COPY FAILED · SELECT THE EMAIL TEXT MANUALLY");
+    }
+  }
+
+  function openOutreachEmail() {
+    window.location.href = `mailto:?subject=${encodeURIComponent(outreachSubject)}&body=${encodeURIComponent(outreachBody)}`;
+    setReviewed(true);
+    notify("EMAIL DRAFT OPENED");
+  }
+
+  function focusOutreach() {
+    setPanel(null);
+    window.setTimeout(() => document.querySelector(".outreach-panel")?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
   }
 
   function startBatchReassessment() {
@@ -259,7 +284,6 @@ export default function Home() {
         <p className="nav-section-label intelligence-label">INTELLIGENCE</p>
         <nav className="rail-nav" aria-label="Intelligence areas">
           <button className={`rail-item ${view === "signals" ? "active" : ""}`} onClick={() => navigateProduct("signals")}><span>◉</span><b>Market signals</b></button>
-          <button className={`rail-item ${view === "reports" ? "active" : ""}`} onClick={() => navigateProduct("reports")}><span>≡</span><b>Reports & briefs</b></button>
         </nav>
         <div className="rail-footer">
           <button className="source-health" onClick={() => navigateProduct("signals")}>
@@ -435,10 +459,14 @@ export default function Home() {
                 <div className="outreach-panel">
                   <div className="outreach-label"><span>RECOMMENDED NEXT MOVE</span><strong>Re-open Asteria with the original deal team.</strong></div>
                   <div className="outreach-draft">
-                    <div className="outreach-meta"><span>TO</span><strong>Asteria deal team</strong><span>SUBJECT</span><strong>Re-open Asteria Bio · FDA condition changed</strong></div>
-                    <p>Team — the FDA uncertainty behind our November pass has materially changed. XTrace matched the new accelerated-review pilot to our documented revisit condition. I recommend a 30-minute re-evaluation this week to review traction, remaining clinical risk, and round dynamics.</p>
+                    <div className="outreach-meta"><span>TO</span><strong>Asteria deal team</strong><span>SUBJECT</span><strong>{outreachSubject}</strong></div>
+                    <p>{outreachBody}</p>
                   </div>
-                  <div className="outreach-actions"><button className="secondary-button" onClick={() => setPanel("evidence")}>Inspect evidence</button><button className={`primary-button ${outreachApproved ? "approved" : ""}`} onClick={() => { setOutreachApproved(true); setReviewed(true); notify("OUTREACH APPROVED · AUDIT LOG UPDATED"); }}>{outreachApproved ? "✓ Outreach approved" : "Approve outreach"}</button></div>
+                  <div className="outreach-actions">
+                    <button className="secondary-button" onClick={() => setPanel("evidence")}>Inspect evidence</button>
+                    <button className={`secondary-button ${outreachCopied ? "approved" : ""}`} onClick={copyOutreachEmail}>{outreachCopied ? "✓ Email copied" : "Copy email"}</button>
+                    <button className="primary-button" onClick={openOutreachEmail}>Open in email</button>
+                  </div>
                 </div>
               </article>
             )}
@@ -585,7 +613,7 @@ export default function Home() {
                         }} className={tasks[index] ? "done" : ""}>{tasks[index] ? "✓ Added" : "+ Diligence"}</button>
                       </article>
                     ))}
-                    <div className="risk-summary"><strong>{tasks.filter(Boolean).length}/3</strong><span>Diligence questions added to the re-evaluation brief</span><button onClick={() => setPanel("brief")}>Review brief</button></div>
+                    <div className="risk-summary"><strong>{tasks.filter(Boolean).length}/3</strong><span>Diligence questions ready for the re-evaluation email</span><button onClick={focusOutreach}>Review email</button></div>
                   </div>
                 )}
 
@@ -697,35 +725,6 @@ export default function Home() {
             </section>
           )}
 
-          {view === "reports" && (
-            <section className="workspace-view" aria-labelledby="reports-title">
-              <div className="view-heading">
-                <div><h1 id="reports-title">Reports & IC briefs</h1><p>Evidence-backed outputs ready for partner review, committee discussion, and follow-up.</p></div>
-                <button className="primary-button view-action" onClick={() => setPanel("brief")}>New IC brief</button>
-              </div>
-
-              <div className="report-feature">
-                <div className="report-feature-copy">
-                  <span className="new-badge">NEW · BELIEF REVISED</span>
-                  <h2>Asteria Bio deserves partner review.</h2>
-                  <p>A regulatory change directly addresses the uncertainty behind the November pass. Includes current traction, deal economics, fund fit, and three remaining diligence risks.</p>
-                  <div><span>Revisit condition matched</span><span>6 sources</span><span>3 open risks</span></div>
-                  <button className="primary-button" onClick={() => setPanel("brief")}>Open partner brief</button>
-                </div>
-              </div>
-
-              <div className="reports-section-heading"><h2>Recent reports</h2><span>Showing 4 of 18</span></div>
-              <div className="data-table report-table">
-                <div className="data-row table-head"><span>Report</span><span>Type</span><span>Coverage</span><span>Status</span><span>Created</span><span>Owner</span></div>
-                {[
-                  ["Asteria Bio · Belief revision", "IC brief", "6 sources", "Ready", "Today, 14:34", "KM"],
-                  ["Weekly market digest · Jul 20", "Market digest", "31 events", "Sent", "Jul 20", "System"],
-                  ["Arcspan Energy · Diligence update", "Deal brief", "18 memories", "Draft", "Jul 18", "KM"],
-                  ["Deal memory integrity · Jul", "Data quality", "188 memories", "Sent", "Jul 15", "JL"],
-                ].map((report, index) => <button className="data-row" key={report[0]} onClick={index === 0 ? () => setPanel("brief") : () => openActivity(report[0])}>{report.map((value, itemIndex) => <span key={`${value}-${itemIndex}`} className={itemIndex === 3 && value === "Ready" ? "high-copy" : ""}>{itemIndex === 0 ? <strong>{value}</strong> : value}</span>)}</button>)}
-              </div>
-            </section>
-          )}
         </main>
       </div>
 
@@ -820,7 +819,7 @@ export default function Home() {
                   <button className="drawer-primary" type="submit">Create company record</button>
                 </form>
               </>
-            ) : panel === "evidence" ? (
+            ) : (
               <>
                 <p className="drawer-overline">EVIDENCE CHAIN / 02 SOURCES</p>
                 <h2 id="drawer-title">Why this decision changed</h2>
@@ -848,30 +847,7 @@ export default function Home() {
                   <span>EVIDENCE ASSESSMENT</span>
                   <p>The event does not guarantee approval. It removes the precise regulatory uncertainty documented in the original pass decision, making a fresh diligence call actionable.</p>
                 </div>
-                <button className="drawer-primary" onClick={() => setPanel("brief")}>Turn evidence into partner brief</button>
-              </>
-            ) : (
-              <>
-                <p className="drawer-overline">PARTNER BRIEF / READY</p>
-                <h2 id="drawer-title">Asteria Bio · belief revised.</h2>
-                <p className="drawer-lede">A decision-ready brief, grounded in one historical memory and one verified market signal.</p>
-                <div className="brief-card">
-                  <div className="brief-meta"><span>TO</span><strong>Investment Committee</strong></div>
-                <div className="brief-meta"><span>SUBJECT</span><strong>Belief revised · Asteria Bio</strong></div>
-                  <div className="brief-body">
-                    <p><strong>What changed</strong><br />A new accelerated review pilot directly addresses the FDA-pathway uncertainty behind our November pass.</p>
-                    <p><strong>Why now</strong><br />The revisit condition recorded by the deal team is materially satisfied by current primary-source evidence.</p>
-                    <div className="brief-facts"><span><small>ARR</small>$2.4M</span><span><small>QOQ GROWTH</small>+38%</span><span><small>PRE-MONEY</small>$48M</span><span><small>UPSIDE FACTORS</small>4 verified</span></div>
-                    <p><strong>Remaining risk</strong><br />Clinical evidence is still narrow and the round does not yet have a committed lead.</p>
-                    <p><strong>Recommended action</strong><br />Schedule a 30-minute re-evaluation with the original deal team this week.</p>
-                  </div>
-                  <div className="attachment-row"><span>6</span> sources and diligence questions attached</div>
-                </div>
-                <button className="drawer-primary send" onClick={() => {
-                  setPanel(null);
-                  notify("PARTNER BRIEF SENT · EVIDENCE ATTACHED");
-                }}>Send to investment committee</button>
-                <p className="demo-disclaimer">Demo interaction · no external email is sent from this website.</p>
+                <button className="drawer-primary" onClick={focusOutreach}>Use email template</button>
               </>
             )}
           </section>

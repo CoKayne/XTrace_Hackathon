@@ -1788,6 +1788,12 @@ select {
   box-shadow: var(--shadow-1);
 }
 
+.outreach-actions .secondary-button.approved {
+  border-color: #86bdb4;
+  background: #e2f2ef;
+  color: var(--accent-dark);
+}
+
 .deal-intelligence {
   margin-top: 52px;
 }
