@@ -7,6 +7,7 @@ import {
 import type { DealMemoryBundle, Provenance } from "../contracts/domain";
 import {
   XTraceHttpError,
+  isAcceptedXTraceSearchResponse,
   type XTraceClient,
   type XTraceJob,
   type XTraceSearchResult,
@@ -224,7 +225,7 @@ export function createXTraceService(
           limit: Math.max(1, Math.min(input.limit, 100)),
         });
       });
-      if (response.success !== true) {
+      if (!isAcceptedXTraceSearchResponse(response)) {
         throw new XTraceUnavailableError(false, "XTrace search response was invalid");
       }
       const allowedDealIds = new Set(input.candidateDealIds);

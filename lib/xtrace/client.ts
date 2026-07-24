@@ -54,11 +54,23 @@ export type XTraceSearchResult = {
 };
 
 export type XTraceSearchResponse = {
-  success: true;
+  success?: true;
+  object?: "search";
+  mode?: "retrieve" | "compose";
   data: XTraceSearchResult[];
   context?: string;
   count?: number;
 };
+
+export function isAcceptedXTraceSearchResponse(
+  response: XTraceSearchResponse,
+): boolean {
+  const envelope = response as { success?: unknown; object?: unknown; mode?: unknown };
+  if (envelope.success !== undefined && envelope.success !== true) return false;
+  return envelope.success === true
+    || (envelope.object === "search"
+      && (envelope.mode === "retrieve" || envelope.mode === "compose"));
+}
 
 export type XTraceClient = {
   ingest(input: XTraceIngestRequest, options?: { wait?: boolean }): Promise<XTraceJob>;
@@ -127,7 +139,8 @@ export function createXTraceClient(options: {
         headers: { ...headers, ...init.headers },
         signal: init.signal ?? AbortSignal.timeout(30_000),
       });
-    } catch {
+    } catch (error) {
+      console.error("[xtrace-debug] outbound request failed", error);
       throw new XTraceHttpError(0, true, "XTrace request could not be completed");
     }
 
@@ -186,11 +199,27 @@ export function getXTraceClient(): XTraceClient {
 }
 
 function normalizeSearchResponse(response: unknown): XTraceSearchResponse {
-  if (!isRecord(response) || response.success !== true || !Array.isArray(response.data)) {
+  if (!isRecord(response) || !Array.isArray(response.data) || response.success === false) {
+    throw new XTraceHttpError(200, false, "XTrace search response was invalid");
+  }
+  const legacyEnvelope = response.success === true;
+  const documentedEnvelope =
+    response.object === "search"
+    && (response.mode === "retrieve" || response.mode === "compose")
+    && (typeof response.context === "string" || response.context === null)
+    && isRecord(response.stage_timings)
+    && typeof response.context_selection_applied === "boolean";
+  if (!legacyEnvelope && !documentedEnvelope) {
     throw new XTraceHttpError(200, false, "XTrace search response was invalid");
   }
   return {
-    success: true,
+    ...(legacyEnvelope ? { success: true as const } : {}),
+    ...(documentedEnvelope
+      ? {
+          object: "search" as const,
+          mode: response.mode as "retrieve" | "compose",
+        }
+      : {}),
     context: typeof response.context === "string" ? response.context : undefined,
     count: typeof response.count === "number" ? response.count : undefined,
     data: response.data.flatMap(normalizeSearchResult),

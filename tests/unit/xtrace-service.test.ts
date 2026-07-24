@@ -131,6 +131,54 @@ test("XTrace search rejects a successful HTTP response that reports success fals
   );
 });
 
+test("XTrace search rejects success false even when the remaining fields resemble the documented envelope", async () => {
+  const client = createXTraceClient({
+    apiKey: "mmk_test",
+    fetch: async () => Response.json({
+      success: false,
+      object: "search",
+      mode: "retrieve",
+      data: [],
+      context: null,
+      stage_timings: {},
+      context_selection_applied: false,
+    }),
+  });
+
+  await assert.rejects(
+    client.search({
+      query: "health",
+      user_id: "workspace:demo",
+      mode: "retrieve",
+      limit: 1,
+    }),
+    XTraceHttpError,
+  );
+});
+
+test("XTrace search accepts the documented search envelope without a success field", async () => {
+  const client = createXTraceClient({
+    apiKey: "mmk_test",
+    fetch: async () => Response.json({
+      object: "search",
+      mode: "retrieve",
+      data: [],
+      context: null,
+      stage_timings: {},
+      context_selection_applied: false,
+    }),
+  });
+
+  const result = await client.search({
+    query: "health",
+    user_id: "workspace:demo",
+    mode: "retrieve",
+    limit: 1,
+  });
+
+  assert.deepEqual(result.data, []);
+});
+
 test("XTrace configuration accepts mmk without an organization ID", () => {
   assert.equal(isXTraceConfigured({ XTRACE_API_KEY: "mmk_test" }), true);
   assert.equal(isXTraceConfigured({
@@ -203,6 +251,24 @@ test("resolves recalled memory to local Deal and evidence IDs", async () => {
 test("fails closed when a search client reports an unsuccessful provider envelope", async () => {
   const service = createXTraceService({
     search: async () => ({ success: false, data: [] }),
+  } as never, {
+    resolveMemory: async () => null,
+  });
+
+  await assert.rejects(
+    service.recallDealContext({
+      workspaceId: "demo",
+      query: "Which deals were blocked by regulation?",
+      candidateDealIds: ["deal_1"],
+      limit: 5,
+    }),
+    XTraceUnavailableError,
+  );
+});
+
+test("fails closed when a search client omits both accepted envelope discriminants", async () => {
+  const service = createXTraceService({
+    search: async () => ({ data: [] }),
   } as never, {
     resolveMemory: async () => null,
   });
