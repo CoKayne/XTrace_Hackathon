@@ -1,0 +1,103 @@
+import type {
+  OpportunityReportItem,
+  SourceRef,
+} from "../contracts/domain";
+
+export interface InternalReportDraft {
+  subject: string;
+  bodyText: string;
+}
+
+export interface InternalReportDraftInput {
+  report: {
+    id: string;
+    createdAt: string;
+    marketSummary: string;
+    opportunities: OpportunityReportItem[];
+  };
+  companyNames: Readonly<Record<string, string>>;
+  appOrigin: string;
+}
+
+export function buildInternalReportDraft(
+  input: InternalReportDraftInput,
+): InternalReportDraft {
+  const origin = input.appOrigin.replace(/\/+$/, "");
+  const reportDate = input.report.createdAt.slice(0, 10);
+  const opportunities = input.report.opportunities.slice(0, 5);
+  const bodySections = opportunities.length
+    ? opportunities.map((opportunity) =>
+        formatOpportunity(opportunity, input.companyNames, origin)
+      )
+    : ["No medium- or high-confidence Deal overlap was found."];
+  const reportUrl =
+    `${origin}/?view=reports&report=${encodeURIComponent(input.report.id)}`;
+
+  return {
+    subject: `VSee · Deals worth a second look — ${reportDate}`,
+    bodyText: [
+      "VSEE · DEAL INTELLIGENCE",
+      "",
+      "14-DAY MARKET SUMMARY",
+      input.report.marketSummary,
+      "",
+      ...bodySections.flatMap((section) => [section, ""]),
+      "OPEN COMPLETE REPORT",
+      reportUrl,
+    ].join("\n").trim(),
+  };
+}
+
+export function buildFullDraftText(draft: InternalReportDraft): string {
+  return `Subject: ${draft.subject}\n\n${draft.bodyText}`;
+}
+
+function formatOpportunity(
+  opportunity: OpportunityReportItem,
+  companyNames: Readonly<Record<string, string>>,
+  origin: string,
+): string {
+  const companyName = companyNames[opportunity.dealId] ?? opportunity.dealId;
+  const lines = [
+    `#${opportunity.rank} · ${companyName.toUpperCase()} · ${opportunity.confidence.toUpperCase()} CONFIDENCE · ${Math.round(opportunity.score * 100)}%`,
+    "",
+    "Why now:",
+    opportunity.whyNow,
+    "",
+    "Previous context:",
+    opportunity.previousContext,
+  ];
+
+  appendList(lines, "Potential positive effects:", opportunity.implications.positive);
+  appendList(lines, "Potential negative effects:", opportunity.implications.negative);
+  lines.push(
+    "",
+    "Suggested next step:",
+    opportunity.nextStep,
+    "",
+    "Sources:",
+    ...opportunity.sources.map((source) => formatSource(source, origin)),
+  );
+  return lines.join("\n");
+}
+
+function appendList(lines: string[], heading: string, items: string[]): void {
+  if (!items.length) return;
+  lines.push("", heading, ...items.map((item) => `- ${item}`));
+}
+
+function formatSource(source: SourceRef, origin: string): string {
+  const url = resolveSourceUrl(source, origin);
+  return url ? `- ${source.title} — ${url}` : `- ${source.title}`;
+}
+
+function resolveSourceUrl(source: SourceRef, origin: string): string | undefined {
+  if (source.url) {
+    const url = new URL(source.url);
+    if (source.page && !url.hash) url.hash = `page=${source.page}`;
+    return url.toString();
+  }
+  if (!source.documentId) return undefined;
+  const page = source.page ? `#page=${source.page}` : "";
+  return `${origin}/api/documents/${encodeURIComponent(source.documentId)}/access${page}`;
+}
