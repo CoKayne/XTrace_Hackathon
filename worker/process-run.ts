@@ -1,6 +1,7 @@
 import type { RunRecord } from "../db/client";
 import type {
   IntelligenceReportRecord,
+  IntelligenceReportWrite,
   IntelligenceRepository,
 } from "../db/repositories/intelligence";
 import type { createRunsRepository } from "../db/repositories/runs";
@@ -242,7 +243,7 @@ export async function processClaimedRun(
     await updateStage("opportunity_matching", "completed");
 
     await updateStage("report", "running");
-    const report: IntelligenceReportRecord = {
+    const report: IntelligenceReportWrite = {
       id: `report_${claimedRun.id}`,
       workspaceId: claimedRun.workspaceId,
       runId: claimedRun.id,

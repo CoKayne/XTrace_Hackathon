@@ -4,9 +4,12 @@ import test from "node:test";
 import {
   buildMarketEventsReadPath,
   createMemoryIntelligenceRepository,
+  createSupabaseIntelligenceRepository,
   type IntelligenceReportRecord,
+  type IntelligenceReportWrite,
 } from "../../db/repositories/intelligence";
 import * as intelligenceRepositoryModule from "../../db/repositories/intelligence";
+import type { CompanyAnalysis } from "../../lib/contracts/domain";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 
 function event(
@@ -37,6 +40,108 @@ function event(
     contentChecksum: `checksum_${id}`,
     retrievedAt: "2026-07-23T12:00:00.000Z",
     providerId: "example",
+  };
+}
+
+function companyAnalysis(
+  index: number,
+  outcome: CompanyAnalysis["outcome"] = "no_material_change",
+): CompanyAnalysis {
+  const dealId = `deal_${String(index).padStart(2, "0")}`;
+  const source = {
+    id: `source_${dealId}`,
+    provenance: "source_document" as const,
+    title: `Company ${index} pitch deck`,
+    documentId: `document_${index}`,
+    page: 1,
+    excerpt: `Company ${index} source evidence.`,
+  };
+  return {
+    id: `analysis_${index}`,
+    reportId: "report_complete",
+    runId: "00000000-0000-4000-8000-000000000001",
+    dealId,
+    companyName: `Company ${index}`,
+    dealStatus: "passed",
+    outcome,
+    confidence: outcome === "belief_revised" ? "medium" : "low",
+    score: outcome === "belief_revised" ? 0.75 : 0.1,
+    verifiedSourceCount: 1,
+    investmentMemory: {
+      previousMeetingSummary: "The company was reviewed.",
+      decisionReason: "The fund passed at the prior review.",
+      concerns: [],
+      revisitConditions: [],
+      lastEvaluatedAt: "2026-01-01T12:00:00.000Z",
+      memoryIds: [`memory_${index}`],
+      sourceIds: [source.id],
+      fixtureIds: [],
+    },
+    marketEvidence: {
+      relationship: outcome === "belief_revised" ? "related" : "none",
+      explanation: outcome === "belief_revised"
+        ? "A source-backed market change may affect this company."
+        : "No material market evidence matched this company during the current 14-day scan.",
+      eventIds: [],
+      events: [],
+      sourceIds: outcome === "belief_revised" ? [source.id] : [],
+    },
+    implications: { positive: [], negative: [] },
+    recommendedNextMove: outcome === "belief_revised"
+      ? "Review the cited evidence and decide whether to reopen internal diligence."
+      : "No immediate follow-up recommended. Continue monitoring.",
+    companyBrief: {
+      icSnapshot: [{
+        label: "Company",
+        value: `Company ${index}`,
+        unavailableReason: null,
+        sourceIds: [source.id],
+      }],
+      traction: [],
+      dealTerms: [],
+      risks: [],
+      decisionHistory: [{
+        occurredAt: "2026-01-01T12:00:00.000Z",
+        title: "Previous review",
+        summary: "The fund passed at the prior review.",
+        sourceIds: [source.id],
+      }],
+      sourceLineage: [source],
+    },
+    sources: [source],
+    createdAt: "2026-07-24T12:00:00.000Z",
+  };
+}
+
+function completeReport(
+  companyAnalyses = Array.from({ length: 19 }, (_, index) =>
+    companyAnalysis(index + 1)
+  ),
+): IntelligenceReportRecord {
+  return {
+    id: "report_complete",
+    workspaceId: "workspace_demo",
+    runId: "00000000-0000-4000-8000-000000000001",
+    createdAt: "2026-07-24T12:00:00.000Z",
+    marketSummary: "No material changes.",
+    analysisStatus: "completed",
+    evidenceCoverage: {
+      acceptedPublicEvents: 0,
+      excludedPublicItems: 12,
+      truncatedPublicEvents: 0,
+      recalledDealCount: 19,
+      unavailableDealCount: 0,
+    },
+    counts: {
+      companyCount: 19,
+      beliefRevised: 0,
+      monitor: 0,
+      noMaterialChange: 19,
+      analysisUnavailable: 0,
+    },
+    priorityDealId: null,
+    opportunities: [],
+    companyAnalyses,
   };
 }
 
@@ -149,10 +254,15 @@ test("public reports contain intelligence only and no delivery state", async () 
   });
 
   assert.deepEqual(Object.keys(report).sort(), [
+    "analysisStatus",
+    "companyAnalyses",
+    "counts",
     "createdAt",
+    "evidenceCoverage",
     "id",
     "marketSummary",
     "opportunities",
+    "priorityDealId",
     "runId",
     "workspaceId",
   ]);
@@ -219,11 +329,118 @@ test("report repository reads normalize malformed durable opportunity shapes", a
       createdAt: "2026-07-23T12:00:00.000Z",
       marketSummary: "Summary.",
       opportunities,
-    } as unknown as IntelligenceReportRecord;
+    } as unknown as IntelligenceReportWrite;
     await repository.saveReport(report);
 
     const fetched = await repository.getReport(report.id);
     assert.ok(fetched);
     assert.deepEqual(fetched.opportunities, [], report.id);
   }
+});
+
+test("stores one report with exactly nineteen ordered company analyses", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  const report = completeReport();
+
+  await repository.saveReport(report);
+
+  const stored = await repository.getReport(report.id);
+  assert.equal(stored?.companyAnalyses.length, 19);
+  assert.equal(stored?.counts.noMaterialChange, 19);
+  assert.equal(
+    (await repository.getReportByRunId(report.runId))?.id,
+    report.id,
+  );
+  assert.deepEqual(
+    stored?.companyAnalyses.map((analysis) => analysis.dealId),
+    report.companyAnalyses.map((analysis) => analysis.dealId),
+  );
+});
+
+test("lists a Deal's analyses newest first", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  const older = completeReport();
+  const newerAnalysis = {
+    ...companyAnalysis(1, "belief_revised"),
+    id: "analysis_new",
+    reportId: "report_new",
+    runId: "00000000-0000-4000-8000-000000000002",
+    createdAt: "2026-07-25T12:00:00.000Z",
+  };
+  const newerAnalyses = [
+    newerAnalysis,
+    ...Array.from({ length: 18 }, (_, index) => ({
+      ...companyAnalysis(index + 2),
+      id: `analysis_new_${index + 2}`,
+      reportId: "report_new",
+      runId: newerAnalysis.runId,
+      createdAt: newerAnalysis.createdAt,
+    })),
+  ];
+
+  await repository.saveReport(older);
+  await repository.saveReport({
+    ...completeReport(newerAnalyses),
+    id: "report_new",
+    runId: newerAnalysis.runId,
+    createdAt: newerAnalysis.createdAt,
+    counts: {
+      companyCount: 19,
+      beliefRevised: 1,
+      monitor: 0,
+      noMaterialChange: 18,
+      analysisUnavailable: 0,
+    },
+    priorityDealId: newerAnalysis.dealId,
+  });
+
+  assert.deepEqual(
+    (
+      await repository.listDealAnalyses("workspace_demo", newerAnalysis.dealId)
+    ).map((analysis) => analysis.id),
+    ["analysis_new", "analysis_1"],
+  );
+});
+
+test("Supabase report writes use the atomic report RPC", async () => {
+  const requests: Array<{ url: string; init: RequestInit }> = [];
+  const report = completeReport();
+  const repository = createSupabaseIntelligenceRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input, init = {}) => {
+      requests.push({ url: String(input), init });
+      return Response.json([{
+        id: report.id,
+        workspace_id: report.workspaceId,
+        run_id: report.runId,
+        created_at: report.createdAt,
+        market_summary: report.marketSummary,
+        opportunities: [],
+        analysis_status: report.analysisStatus,
+        company_count: 19,
+        belief_revised_count: 0,
+        monitor_count: 0,
+        no_material_change_count: 19,
+        analysis_unavailable_count: 0,
+        priority_deal_id: null,
+        evidence_coverage: report.evidenceCoverage,
+      }]);
+    },
+  });
+
+  const stored = await repository.saveReport(report);
+
+  assert.equal(
+    requests[0].url,
+    "https://example.supabase.co/rest/v1/rpc/save_intelligence_report",
+  );
+  const body = JSON.parse(String(requests[0].init.body));
+  assert.equal(body.p_analyses.length, 19);
+  assert.equal(body.p_report.companyCount, 19);
+  assert.equal(stored.companyAnalyses.length, 19);
+  assert.equal(
+    JSON.stringify(stored).includes("test-service-role-key"),
+    false,
+  );
 });
