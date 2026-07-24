@@ -89,19 +89,35 @@ export class XTraceHttpError extends Error {
 
 type FetchLike = typeof fetch;
 
+type XTraceEnvironment = Partial<Pick<
+  NodeJS.ProcessEnv,
+  "XTRACE_API_KEY" | "XTRACE_ORG_ID"
+>>;
+
+export function isXTraceConfigured(
+  environment: XTraceEnvironment | NodeJS.ProcessEnv = process.env,
+): boolean {
+  const apiKey = environment.XTRACE_API_KEY?.trim();
+  if (!apiKey) return false;
+  return apiKey.startsWith("mmk_")
+    || Boolean(environment.XTRACE_ORG_ID?.trim());
+}
+
 export function createXTraceClient(options: {
   apiKey: string;
-  orgId: string;
+  orgId?: string;
   baseUrl?: string;
   fetch?: FetchLike;
 }): XTraceClient {
   const baseUrl = (options.baseUrl ?? XTRACE_API_BASE_URL).replace(/\/$/, "");
   const fetchImpl = options.fetch ?? fetch;
-  const headers = {
+  const headers: Record<string, string> = {
     Authorization: `Bearer ${options.apiKey}`,
-    "X-Org-Id": options.orgId,
     "Content-Type": "application/json",
   };
+  if (!options.apiKey.startsWith("mmk_") && options.orgId?.trim()) {
+    headers["X-Org-Id"] = options.orgId.trim();
+  }
 
   const request = async <T>(path: string, init: RequestInit): Promise<T> => {
     let response: Response;
@@ -157,13 +173,14 @@ export function getXTraceClient(): XTraceClient {
   if (typeof window !== "undefined") {
     throw new XTraceConfigurationError("XTrace client may only be created on the server");
   }
-  const apiKey = process.env.XTRACE_API_KEY;
-  const orgId = process.env.XTRACE_ORG_ID;
-  if (!apiKey || !orgId) throw new XTraceConfigurationError();
+  if (!isXTraceConfigured()) throw new XTraceConfigurationError();
 
+  const apiKey = process.env.XTRACE_API_KEY!.trim();
   return createXTraceClient({
     apiKey,
-    orgId,
+    orgId: apiKey.startsWith("mmk_")
+      ? undefined
+      : process.env.XTRACE_ORG_ID?.trim(),
     baseUrl: process.env.XTRACE_API_BASE_URL,
   });
 }

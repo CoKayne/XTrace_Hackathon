@@ -4,6 +4,7 @@ import { jsonOk } from "../../../../lib/api/response";
 import { getProductInputReadiness } from "../../../../lib/corpus/import-readiness";
 import { readMarketProviderConfiguration } from "../../../../lib/market/config";
 import { createDefaultDemoDataStore } from "../../../../lib/storage/service";
+import { isXTraceConfigured } from "../../../../lib/xtrace/client";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export async function GET() {
   return jsonOk({
     postgres,
     worker,
-    xtrace: Boolean(process.env.XTRACE_API_KEY && process.env.XTRACE_ORG_ID),
+    xtrace: isXTraceConfigured(),
     anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
     storage: Boolean(
       postgres &&

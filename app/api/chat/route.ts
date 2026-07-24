@@ -12,7 +12,10 @@ import {
   searchDemoEvidence,
 } from "../../../lib/demo/search";
 import { buildDemoViewModel } from "../../../lib/demo/view-model";
-import { getXTraceClient } from "../../../lib/xtrace/client";
+import {
+  getXTraceClient,
+  isXTraceConfigured,
+} from "../../../lib/xtrace/client";
 import { createXTraceService } from "../../../lib/xtrace/service";
 
 const WORKSPACE_ID = "workspace_demo";
@@ -106,7 +109,7 @@ async function searchRuntimeIntelligence(question: string): Promise<ChatEvidence
 }
 
 async function recallExistingMemory(question: string): Promise<ChatEvidence[]> {
-  if (!process.env.XTRACE_API_KEY || !process.env.XTRACE_ORG_ID) return [];
+  if (!isXTraceConfigured()) return [];
   const sourceById = allDemoSources();
   const deals = buildDemoViewModel().deals;
   const service = createXTraceService(getXTraceClient(), {

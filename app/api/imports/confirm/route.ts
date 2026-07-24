@@ -9,7 +9,10 @@ import {
   createDefaultDemoDataStore,
   createDefaultPrivateDocumentAccess,
 } from "../../../../lib/storage/service";
-import { getXTraceClient } from "../../../../lib/xtrace/client";
+import {
+  getXTraceClient,
+  isXTraceConfigured,
+} from "../../../../lib/xtrace/client";
 import { createXTraceService } from "../../../../lib/xtrace/service";
 
 const ConfirmRequestSchema = z.object({
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
       createDefaultPrivateDocumentAccess(),
     ));
     const result = await corpus.confirmImport(input);
-    const xtraceConfigured = Boolean(process.env.XTRACE_API_KEY && process.env.XTRACE_ORG_ID);
+    const xtraceConfigured = isXTraceConfigured();
     const xtraceResults = xtraceConfigured
       ? await Promise.allSettled(result.memoryBundles.map((bundle) =>
           createXTraceService(getXTraceClient(), {

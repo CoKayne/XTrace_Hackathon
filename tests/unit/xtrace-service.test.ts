@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { DEMO_FIXTURE_LABEL } from "../../lib/contracts/domain";
-import { createXTraceClient } from "../../lib/xtrace/client";
+import {
+  createXTraceClient,
+  isXTraceConfigured,
+} from "../../lib/xtrace/client";
 import {
   createPersistentXTraceRateLimiter,
   createXTraceRateLimiter,
@@ -64,6 +67,38 @@ test("XTrace HTTP client keeps wait out of the memory request body", async () =>
     conv_id: "deal:deal_1",
     app_id: "xtrace-vc-deal-intelligence",
   });
+});
+
+test("mmk XTrace requests omit the organization header even when a stale org ID exists", async () => {
+  let headers = new Headers();
+  const client = createXTraceClient({
+    apiKey: "mmk_test",
+    orgId: "stale_org",
+    fetch: async (_url, init) => {
+      headers = new Headers(init?.headers);
+      return Response.json({ data: [] });
+    },
+  });
+
+  await client.search({
+    query: "health",
+    user_id: "workspace:demo",
+    mode: "retrieve",
+    limit: 1,
+  });
+
+  assert.equal(headers.get("authorization"), "Bearer mmk_test");
+  assert.equal(headers.get("x-org-id"), null);
+});
+
+test("XTrace configuration accepts mmk without an organization ID", () => {
+  assert.equal(isXTraceConfigured({ XTRACE_API_KEY: "mmk_test" }), true);
+  assert.equal(isXTraceConfigured({
+    XTRACE_API_KEY: "legacy_test",
+    XTRACE_ORG_ID: "org_test",
+  }), true);
+  assert.equal(isXTraceConfigured({ XTRACE_API_KEY: "legacy_test" }), false);
+  assert.equal(isXTraceConfigured({}), false);
 });
 
 test("distributed XTrace limiter coordinates through PostgreSQL before proceeding", async () => {

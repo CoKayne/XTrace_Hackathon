@@ -10,6 +10,7 @@ import {
 import { rateLimitRequest } from "../../../lib/api/safety";
 import { getProductInputReadiness } from "../../../lib/corpus/import-readiness";
 import { createDefaultDemoDataStore } from "../../../lib/storage/service";
+import { isXTraceConfigured } from "../../../lib/xtrace/client";
 
 const WORKSPACE_ID = "workspace_demo";
 
@@ -77,10 +78,7 @@ export async function POST(request: Request) {
         true,
       );
     }
-    if (
-      parsed.xtraceEnabled &&
-      (!process.env.XTRACE_API_KEY || !process.env.XTRACE_ORG_ID)
-    ) {
+    if (parsed.xtraceEnabled && !isXTraceConfigured()) {
       return jsonError(
         "INTEGRATION_UNAVAILABLE",
         "XTrace is required for an XTrace-mode scan.",

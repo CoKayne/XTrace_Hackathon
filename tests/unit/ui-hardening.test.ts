@@ -32,6 +32,25 @@ test("health response exposes worker readiness independently from PostgreSQL con
   }
 });
 
+test("health reports XTrace configured for an mmk key without an organization ID", async () => {
+  const previousApiKey = process.env.XTRACE_API_KEY;
+  const previousOrgId = process.env.XTRACE_ORG_ID;
+  process.env.XTRACE_API_KEY = "mmk_test";
+  delete process.env.XTRACE_ORG_ID;
+
+  try {
+    const response = await getHealth();
+    const body = await response.json() as { data: { xtrace: boolean } };
+
+    assert.equal(body.data.xtrace, true);
+  } finally {
+    if (previousApiKey === undefined) delete process.env.XTRACE_API_KEY;
+    else process.env.XTRACE_API_KEY = previousApiKey;
+    if (previousOrgId === undefined) delete process.env.XTRACE_ORG_ID;
+    else process.env.XTRACE_ORG_ID = previousOrgId;
+  }
+});
+
 test("health derives corpus readiness from durable confirmation, not browser state", async () => {
   const store = createDefaultDemoDataStore();
   await store.resetDemoData();

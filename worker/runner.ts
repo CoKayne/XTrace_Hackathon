@@ -11,7 +11,10 @@ import { createProductInputGate } from "../lib/corpus/import-readiness";
 import { readMarketProviderConfiguration } from "../lib/market/config";
 import { createDefaultMarketProviders } from "../lib/market/providers";
 import { createMarketService } from "../lib/market/service";
-import { getXTraceClient } from "../lib/xtrace/client";
+import {
+  getXTraceClient,
+  isXTraceConfigured,
+} from "../lib/xtrace/client";
 import { createXTraceService } from "../lib/xtrace/service";
 import { createDefaultDemoDataStore } from "../lib/storage/service";
 import {
@@ -57,7 +60,7 @@ export async function runNextQueuedScan(): Promise<boolean> {
     );
     const intelligence = getIntelligenceRepository();
     const lineage = getXTraceLineageRepository();
-    const xtraceService = process.env.XTRACE_API_KEY && process.env.XTRACE_ORG_ID
+    const xtraceService = isXTraceConfigured()
       ? createXTraceService(getXTraceClient(), {
           workspaceId: claimed.workspaceId,
           lineageRepository: lineage,
