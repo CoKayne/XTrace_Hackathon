@@ -53,7 +53,7 @@ export function ReportDraftDialog({
       }}
       onClose={onClose}
     >
-      <form method="dialog" className="vsee-draft-composer">
+      <div className="vsee-draft-composer">
         <header>
           <div>
             <span>INTERNAL VC / GP BRIEF</span>
@@ -63,7 +63,7 @@ export function ReportDraftDialog({
             ×
           </button>
         </header>
-        <main>
+        <div className="vsee-draft-fields">
           <label>
             <span>Subject</span>
             <input
@@ -80,7 +80,7 @@ export function ReportDraftDialog({
               rows={20}
             />
           </label>
-        </main>
+        </div>
         <footer>
           <p aria-live="polite">{copyState}</p>
           <div>
@@ -100,7 +100,7 @@ export function ReportDraftDialog({
             <button type="button" onClick={onClose}>CLOSE</button>
           </div>
         </footer>
-      </form>
+      </div>
     </dialog>
   );
 }

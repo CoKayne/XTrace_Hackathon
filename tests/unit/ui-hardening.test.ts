@@ -125,3 +125,10 @@ test("reports open an editable internal draft dialog without sending email", asy
   assert.match(css, /\.vsee-draft-dialog::backdrop/);
   assert.match(css, new RegExp("@media\\(max-width:680px\\).*\\.vsee-draft-dialog", "s"));
 });
+
+test("report draft dialog has no implicit submit or nested main landmark", async () => {
+  const dialog = await readFile(dialogPath, "utf8");
+
+  assert.doesNotMatch(dialog, /<form\b[^>]*\bmethod=["']dialog["']/i);
+  assert.doesNotMatch(dialog, /<main\b/i);
+});
