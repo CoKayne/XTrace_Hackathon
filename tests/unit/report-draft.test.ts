@@ -5,6 +5,7 @@ import {
   buildFullDraftText,
   buildInternalReportDraft,
 } from "../../lib/reports/draft";
+import type { CompanyAnalysis } from "../../lib/contracts/domain";
 
 const report = {
   id: "report_1",
@@ -42,6 +43,69 @@ const report = {
     ],
     demoFixtureIds: ["fixture_1"],
   }],
+};
+
+const companyAnalysis: CompanyAnalysis = {
+  id: "analysis_ably",
+  reportId: report.id,
+  runId: "00000000-0000-4000-8000-000000000001",
+  dealId: "deal_ably",
+  companyName: "Ably",
+  dealStatus: "passed",
+  outcome: "belief_revised",
+  confidence: "high",
+  score: 0.87,
+  verifiedSourceCount: 2,
+  investmentMemory: {
+    previousMeetingSummary: "The fund reviewed Ably in an earlier meeting.",
+    decisionReason: "The fund passed because timing was early.",
+    concerns: ["Differentiation remained an open question."],
+    revisitConditions: ["Revisit when source-backed market demand increases."],
+    lastEvaluatedAt: "2026-01-10T12:00:00.000Z",
+    memoryIds: ["memory_ably"],
+    sourceIds: ["document_1"],
+    fixtureIds: ["fixture_1"],
+  },
+  marketEvidence: {
+    relationship: "satisfies",
+    explanation: "Infrastructure demand increased.",
+    eventIds: ["event_1"],
+    events: [{
+      id: "event_1",
+      title: "Funding announcement",
+      eventType: "funding",
+      publishedAt: "2026-07-23T12:00:00.000Z",
+      sourceIds: ["public_1"],
+    }],
+    sourceIds: ["public_1"],
+  },
+  implications: {
+    positive: ["The addressable market may expand."],
+    negative: ["Competition may increase."],
+  },
+  recommendedNextMove:
+    "Review the cited evidence and decide whether to reopen internal diligence.",
+  companyBrief: {
+    icSnapshot: [],
+    traction: [],
+    dealTerms: [],
+    risks: [{
+      severity: "medium",
+      title: "Differentiation",
+      detail: "Differentiation remained an open question.",
+      nextQuestion: "What evidence now establishes differentiation?",
+      sourceIds: ["document_1"],
+    }],
+    decisionHistory: [{
+      occurredAt: "2026-01-10T12:00:00.000Z",
+      title: "Passed",
+      summary: "The fund passed because timing was early.",
+      sourceIds: ["document_1"],
+    }],
+    sourceLineage: report.opportunities[0].sources,
+  },
+  sources: report.opportunities[0].sources,
+  createdAt: report.createdAt,
 };
 
 test("builds a cited internal VC report draft without a recipient", () => {
@@ -106,4 +170,36 @@ test("copies the full draft as subject followed by body", () => {
     buildFullDraftText({ subject: "Subject line", bodyText: "Message body" }),
     "Subject: Subject line\n\nMessage body",
   );
+});
+
+test("drafts from recommended CompanyAnalysis and includes Then, Now, risks, and sources", () => {
+  const draft = buildInternalReportDraft({
+    report: {
+      ...report,
+      opportunities: [],
+      companyAnalyses: [
+        companyAnalysis,
+        {
+          ...companyAnalysis,
+          id: "analysis_monitor",
+          dealId: "deal_monitor",
+          companyName: "Monitor Co",
+          outcome: "monitor",
+          confidence: "low",
+          score: 0.4,
+        },
+      ],
+    },
+    companyNames: { deal_ably: "Ably", deal_monitor: "Monitor Co" },
+    appOrigin: "https://vsee.example",
+  });
+
+  assert.match(draft.bodyText, /THEN \/ INVESTMENT MEMORY/);
+  assert.match(draft.bodyText, /The fund passed because timing was early/);
+  assert.match(draft.bodyText, /NOW \/ MARKET EVIDENCE/);
+  assert.match(draft.bodyText, /Infrastructure demand increased/);
+  assert.match(draft.bodyText, /REMAINING RISKS/);
+  assert.match(draft.bodyText, /Differentiation remained an open question/);
+  assert.match(draft.bodyText, /Funding announcement/);
+  assert.doesNotMatch(draft.bodyText, /Monitor Co/i);
 });

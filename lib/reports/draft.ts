@@ -1,4 +1,5 @@
 import type {
+  CompanyAnalysis,
   OpportunityReportItem,
   SourceRef,
 } from "../contracts/domain";
@@ -15,6 +16,7 @@ export interface InternalReportDraftInput {
     createdAt: string;
     marketSummary: string;
     opportunities: OpportunityReportItem[];
+    companyAnalyses?: CompanyAnalysis[];
   };
   companyNames: Readonly<Record<string, string>>;
   appOrigin: string;
@@ -25,8 +27,19 @@ export function buildInternalReportDraft(
 ): InternalReportDraft {
   const origin = input.appOrigin.replace(/\/+$/, "");
   const reportDate = input.report.createdAt.slice(0, 10);
+  const recommendedAnalyses = (input.report.companyAnalyses ?? [])
+    .filter((analysis) =>
+      analysis.outcome === "belief_revised"
+      && analysis.confidence !== "low"
+    )
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 5);
   const opportunities = input.report.opportunities.slice(0, 5);
-  const bodySections = opportunities.length
+  const bodySections = recommendedAnalyses.length > 0
+    ? recommendedAnalyses.map((analysis, index) =>
+        formatCompanyAnalysis(analysis, index, origin)
+      )
+    : opportunities.length
     ? opportunities.map((opportunity) =>
         formatOpportunity(opportunity, input.companyNames, origin)
       )
@@ -47,6 +60,47 @@ export function buildInternalReportDraft(
       reportUrl,
     ].join("\n").trim(),
   };
+}
+
+function formatCompanyAnalysis(
+  analysis: CompanyAnalysis,
+  index: number,
+  origin: string,
+): string {
+  const remainingRisks = unique([
+    ...analysis.investmentMemory.concerns,
+    ...analysis.companyBrief.risks.map((risk) => risk.detail),
+  ]);
+  const lines = [
+    `#${index + 1} · ${analysis.companyName.toUpperCase()} · ${analysis.confidence.toUpperCase()} CONFIDENCE · ${Math.round(analysis.score * 100)}%`,
+    "",
+    "THEN / INVESTMENT MEMORY",
+    `Previous meeting: ${analysis.investmentMemory.previousMeetingSummary}`,
+    `Decision reason: ${analysis.investmentMemory.decisionReason}`,
+  ];
+  appendList(lines, "Partner concerns:", analysis.investmentMemory.concerns);
+  appendList(
+    lines,
+    "Revisit conditions:",
+    analysis.investmentMemory.revisitConditions,
+  );
+  lines.push(
+    "",
+    "NOW / MARKET EVIDENCE",
+    analysis.marketEvidence.explanation,
+  );
+  appendList(lines, "Potential positive effects:", analysis.implications.positive);
+  appendList(lines, "Potential negative effects:", analysis.implications.negative);
+  appendList(lines, "REMAINING RISKS", remainingRisks);
+  lines.push(
+    "",
+    "RECOMMENDED NEXT MOVE",
+    sanitizeReportNextStep(analysis.recommendedNextMove),
+    "",
+    "Sources:",
+    ...analysis.sources.map((source) => formatSource(source, origin)),
+  );
+  return lines.join("\n");
 }
 
 export function buildFullDraftText(draft: InternalReportDraft): string {
@@ -101,4 +155,8 @@ function resolveSourceUrl(source: SourceRef, origin: string): string | undefined
   if (!source.documentId) return undefined;
   const page = source.page ? `#page=${source.page}` : "";
   return `${origin}/api/documents/${encodeURIComponent(source.documentId)}/access${page}`;
+}
+
+function unique(values: string[]): string[] {
+  return [...new Set(values)];
 }

@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { buildPersistedReportEvidence } from "../../lib/chat/report-evidence";
 import { createGroundedChatService } from "../../lib/chat/service";
+import type { CompanyAnalysis } from "../../lib/contracts/domain";
 
 test("raw malicious report input cannot steer Chat recommendation evidence", () => {
   const evidence = buildPersistedReportEvidence({
@@ -108,3 +109,99 @@ function opportunity(whyNow: string) {
     demoFixtureIds: [],
   };
 }
+
+function companyAnalysis(
+  outcome: CompanyAnalysis["outcome"] = "no_material_change",
+): CompanyAnalysis {
+  const source = {
+    id: "source_company_analysis",
+    provenance: "source_document" as const,
+    title: "7bridges pitch deck",
+    documentId: "doc_7bridges",
+    page: 4,
+    excerpt: "7bridges is a unified, AI powered logistics platform.",
+  };
+  return {
+    id: "analysis_company",
+    reportId: "report_company",
+    runId: "00000000-0000-4000-8000-000000000001",
+    dealId: "deal_7bridges",
+    companyName: "7bridges",
+    dealStatus: "passed",
+    outcome,
+    confidence: "low",
+    score: 0,
+    verifiedSourceCount: 1,
+    investmentMemory: {
+      previousMeetingSummary: "The fund reviewed the logistics proposition.",
+      decisionReason: "The fund passed pending repeatable adoption evidence.",
+      concerns: ["Repeatable adoption was not established."],
+      revisitConditions: ["Revisit when adoption evidence changes."],
+      lastEvaluatedAt: "2026-01-10T12:00:00.000Z",
+      memoryIds: ["memory_7bridges"],
+      sourceIds: [source.id],
+      fixtureIds: [],
+    },
+    marketEvidence: {
+      relationship: outcome === "analysis_unavailable"
+        ? "unavailable"
+        : "none",
+      explanation: outcome === "analysis_unavailable"
+        ? "Analysis unavailable because XTrace recall failed."
+        : "No material market evidence matched this company during the current 14-day scan.",
+      eventIds: [],
+      events: [],
+      sourceIds: [],
+    },
+    implications: { positive: [], negative: [] },
+    recommendedNextMove: outcome === "analysis_unavailable"
+      ? "Review system activity before relying on this company analysis."
+      : "No immediate follow-up recommended. Continue monitoring.",
+    companyBrief: {
+      icSnapshot: [],
+      traction: [],
+      dealTerms: [],
+      risks: [],
+      decisionHistory: [],
+      sourceLineage: [source],
+    },
+    sources: [source],
+    createdAt: "2026-07-24T12:00:00.000Z",
+  };
+}
+
+test("CompanyAnalysis evidence answers outcome, decision reason, market change, and next move", () => {
+  const questions = [
+    "What is the latest analysis outcome for 7bridges?",
+    "What is the latest decision reason for 7bridges?",
+    "Was there material market evidence for 7bridges?",
+    "What is the latest recommended next move for 7bridges?",
+  ];
+
+  for (const question of questions) {
+    const evidence = buildPersistedReportEvidence({
+      question,
+      companyByDeal: new Map([["deal_7bridges", "7bridges"]]),
+      reports: [{
+        id: "report_company",
+        opportunities: [],
+        companyAnalyses: [companyAnalysis()],
+      }],
+    });
+    assert.ok(evidence.length > 0, question);
+  }
+});
+
+test("does not expose an unavailable analysis as a company fact", () => {
+  const evidence = buildPersistedReportEvidence({
+    question: "What is the latest decision reason for 7bridges?",
+    companyByDeal: new Map([["deal_7bridges", "7bridges"]]),
+    reports: [{
+      id: "report_unavailable",
+      opportunities: [],
+      companyAnalyses: [companyAnalysis("analysis_unavailable")],
+    }],
+  });
+
+  assert.deepEqual(evidence, []);
+});
