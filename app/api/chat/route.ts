@@ -1,7 +1,11 @@
 import { errorResponse, jsonError, jsonOk } from "../../../lib/api/response";
 import { rateLimitRequest } from "../../../lib/api/safety";
 import { getIntelligenceRepository } from "../../../db/repositories/intelligence";
-import { createGroundedChatService, type ChatEvidence } from "../../../lib/chat/service";
+import {
+  createGroundedChatService,
+  type ChatEvidence,
+  type MemoryRecallOutcome,
+} from "../../../lib/chat/service";
 import { createClaudeClient } from "../../../lib/claude/client";
 import { ChatRequestSchema } from "../../../lib/contracts/http";
 import type { SourceRef } from "../../../lib/contracts/domain";
@@ -85,32 +89,67 @@ async function searchRuntimeIntelligence(question: string): Promise<ChatEvidence
       sources: event.sources,
     }];
   });
-  const reportEvidence = reports.flatMap((report) =>
+  const companyByDeal = new Map(
+    buildDemoViewModel().deals.map((deal) => [deal.id, deal.companyName]),
+  );
+  const reportEvidence = reports.flatMap((report, reportIndex) =>
     report.opportunities.flatMap((opportunity) => {
+      const companyName = companyByDeal.get(opportunity.dealId) ?? opportunity.dealId;
       const haystack = [
         opportunity.dealId,
+        companyName,
         opportunity.whyNow,
         opportunity.previousContext,
         opportunity.nextStep,
+        "report recommendation recommend recommended previous context next step",
+        reportIndex === 0 ? "latest" : "",
       ].join(" ").toLocaleLowerCase();
       const searchableTokens = new Set(evidenceQueryTokens(haystack));
       if (!tokens.every((token) => searchableTokens.has(token))) return [];
-      return [{
-        text: [
-          `Existing report ${report.id}.`,
-          opportunity.whyNow,
-          opportunity.previousContext,
-          opportunity.nextStep,
-        ].join(" "),
-        sources: opportunity.sources,
-      }];
+      const fields = [
+        {
+          key: "why-now",
+          label: "why now",
+          text: opportunity.whyNow,
+        },
+        {
+          key: "previous-context",
+          label: "previous context",
+          text: opportunity.previousContext,
+        },
+        {
+          key: "recommendation",
+          label: "recommendation",
+          text: opportunity.nextStep,
+        },
+      ];
+      const normalizedQuestion = question.toLocaleLowerCase();
+      if (/\b(recommend|recommended|recommendation|next\s+step)\b/.test(normalizedQuestion)) {
+        fields.unshift(fields.pop()!);
+      } else if (/\b(previous|history|context)\b/.test(normalizedQuestion)) {
+        fields.unshift(fields.splice(1, 1)[0]);
+      }
+      const conclusionEvidence = fields.map((field) => ({
+        text: field.text,
+        sources: [{
+          id: `report:${report.id}:opportunity:${opportunity.dealId}:${field.key}`,
+          provenance: "model_inference" as const,
+          title: `Persisted report ${field.label} · ${companyName} · ${report.id}`,
+          excerpt: field.text,
+        }],
+      }));
+      const supportingEvidence = opportunity.sources.map((source) => ({
+        text: source.excerpt,
+        sources: [source],
+      }));
+      return [...conclusionEvidence, ...supportingEvidence];
     })
   );
   return [...eventEvidence, ...reportEvidence].slice(0, 12);
 }
 
-async function recallExistingMemory(question: string): Promise<ChatEvidence[]> {
-  if (!isXTraceConfigured()) return [];
+async function recallExistingMemory(question: string): Promise<MemoryRecallOutcome> {
+  if (!isXTraceConfigured()) return { status: "unavailable" };
   const sourceById = allDemoSources();
   const deals = buildDemoViewModel().deals;
   const service = createXTraceService(getXTraceClient(), {
@@ -123,7 +162,7 @@ async function recallExistingMemory(question: string): Promise<ChatEvidence[]> {
       candidateDealIds: deals.map((deal) => deal.id),
       limit: 8,
     });
-    return contexts.flatMap((context) => {
+    const evidence = contexts.flatMap((context) => {
       const sources = [...context.sourceIds, ...context.fixtureIds].flatMap((sourceId) => {
         const source = sourceById.get(sourceId);
         return source ? [source] : [];
@@ -133,8 +172,9 @@ async function recallExistingMemory(question: string): Promise<ChatEvidence[]> {
         sources: [source],
       }));
     });
+    return { status: "available", evidence };
   } catch {
-    return [];
+    return { status: "unavailable" };
   }
 }
 

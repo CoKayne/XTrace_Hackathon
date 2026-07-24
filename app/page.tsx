@@ -8,6 +8,7 @@ import {
   type InternalReportDraft,
 } from "../lib/reports/draft";
 import { decisionReasonLabel } from "../lib/demo/decision-label";
+import type { ChatMemoryStatus } from "../lib/chat/service";
 
 type View =
   | "overview"
@@ -143,6 +144,13 @@ interface ImportPreviewItem {
   requiresDealConfirmation: boolean;
 }
 
+interface ChatMessage {
+  role: "user" | "assistant";
+  text: string;
+  citations?: Source[];
+  memoryStatus?: ChatMemoryStatus;
+}
+
 const nav: Array<{ view: View; label: string; icon: string }> = [
   { view: "overview", label: "Overview", icon: "⌂" },
   { view: "deals", label: "Deals", icon: "▤" },
@@ -203,11 +211,7 @@ export default function Home() {
   const [focusedReportId, setFocusedReportId] = useState<string | null>(null);
   const [reportDraft, setReportDraft] = useState<InternalReportDraft | null>(null);
   const [chatQuestion, setChatQuestion] = useState("");
-  const [chatMessages, setChatMessages] = useState<Array<{
-    role: "user" | "assistant";
-    text: string;
-    citations?: Source[];
-  }>>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -429,6 +433,7 @@ export default function Home() {
       const answer = await api<{
         answer: string;
         citations: Source[];
+        memoryStatus: ChatMemoryStatus;
         insufficientEvidence: boolean;
       }>("/api/chat", {
         method: "POST",
@@ -436,7 +441,12 @@ export default function Home() {
       });
       setChatMessages((current) => [
         ...current,
-        { role: "assistant", text: answer.answer, citations: answer.citations },
+        {
+          role: "assistant",
+          text: answer.answer,
+          citations: answer.citations,
+          memoryStatus: answer.memoryStatus,
+        },
       ]);
     } catch (chatError) {
       setError(chatError instanceof Error ? chatError.message : "Chat unavailable");
@@ -973,7 +983,7 @@ function RunsView({ runs }: { runs: Run[] }) {
   );
 }
 
-function ChatView({
+export function ChatView({
   messages,
   question,
   onQuestion,
@@ -981,7 +991,7 @@ function ChatView({
   busy,
   xtraceEnabled,
 }: {
-  messages: Array<{ role: "user" | "assistant"; text: string; citations?: Source[] }>;
+  messages: ChatMessage[];
   question: string;
   onQuestion(value: string): void;
   onSubmit(event: FormEvent): void;
@@ -996,6 +1006,11 @@ function ChatView({
         {messages.map((message, index) => (
           <article className={message.role} key={`${message.role}-${index}`}>
             <span>{message.role === "user" ? "YOU" : "VSEE"}</span>
+            {message.role === "assistant" && message.memoryStatus === "unavailable" && (
+              <strong className="vsee-chat-memory-warning" role="status">
+                XTRACE RECALL UNAVAILABLE · LOCAL-ONLY ANSWER WITHHELD
+              </strong>
+            )}
             <p>{message.text}</p>
             {!!message.citations?.length && <footer>{message.citations.map((source) => <SourceLink source={source} key={source.id} />)}</footer>}
           </article>

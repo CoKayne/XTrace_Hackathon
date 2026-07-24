@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { createElement, type ComponentType, type FormEvent } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import test from "node:test";
 
+import * as pageModule from "../../app/page";
 import { GET as getHealth } from "../../app/api/settings/health/route";
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
 import { createDefaultDemoDataStore } from "../../lib/storage/service";
@@ -185,4 +188,41 @@ test("report draft dialog has no implicit submit or nested main landmark", async
 
   assert.doesNotMatch(dialog, /<form\b[^>]*\bmethod=["']dialog["']/i);
   assert.doesNotMatch(dialog, /<main\b/i);
+});
+
+test("Chat renders an explicit warning when requested XTrace recall is unavailable", () => {
+  const ChatView = (
+    pageModule as unknown as {
+      ChatView?: ComponentType<{
+        messages: Array<{
+          role: "user" | "assistant";
+          text: string;
+          memoryStatus?: "disabled" | "available" | "unavailable";
+        }>;
+        question: string;
+        onQuestion(value: string): void;
+        onSubmit(event: FormEvent): void;
+        busy: boolean;
+        xtraceEnabled: boolean;
+      }>;
+    }
+  ).ChatView;
+  assert.ok(ChatView);
+
+  const html = renderToStaticMarkup(createElement(ChatView, {
+    messages: [{
+      role: "assistant",
+      text: "XTrace recall is currently unavailable.",
+      memoryStatus: "unavailable",
+    }],
+    question: "",
+    onQuestion() {},
+    onSubmit() {},
+    busy: false,
+    xtraceEnabled: true,
+  }));
+
+  assert.match(html, /role="status"/);
+  assert.match(html, /XTRACE RECALL UNAVAILABLE/i);
+  assert.match(html, /LOCAL-ONLY ANSWER WITHHELD/i);
 });

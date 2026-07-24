@@ -6,10 +6,17 @@ export interface ChatEvidence {
   sources: SourceRef[];
 }
 
+export type ChatMemoryStatus = "disabled" | "available" | "unavailable";
+
+export type MemoryRecallOutcome =
+  | { status: "available"; evidence: ChatEvidence[] }
+  | { status: "unavailable" };
+
 export interface ChatAnswer {
   answer: string;
   citations: SourceRef[];
   usedXTrace: boolean;
+  memoryStatus: ChatMemoryStatus;
   insufficientEvidence: boolean;
 }
 
@@ -21,7 +28,7 @@ interface GroundedChatDependencies {
   recallMemory(input: {
     workspaceId: string;
     question: string;
-  }): Promise<ChatEvidence[]>;
+  }): Promise<MemoryRecallOutcome>;
   complete(input: {
     system: string;
     prompt: string;
@@ -38,15 +45,29 @@ export function createGroundedChatService(dependencies: GroundedChatDependencies
       const localEvidence = normalizeEvidence(
         await dependencies.searchExistingData(input),
       );
-      const memoryEvidence = input.xtraceEnabled
-        ? normalizeEvidence(await dependencies.recallMemory(input))
+      const recall = input.xtraceEnabled
+        ? await dependencies.recallMemory(input)
+        : { status: "disabled" as const };
+      if (recall.status === "unavailable") {
+        return {
+          answer: "XTrace recall is currently unavailable, so the local-only answer was withheld to avoid presenting incomplete memory as complete.",
+          citations: [],
+          usedXTrace: false,
+          memoryStatus: "unavailable",
+          insufficientEvidence: true,
+        };
+      }
+      const memoryEvidence = recall.status === "available"
+        ? normalizeEvidence(recall.evidence)
         : [];
+      const memoryStatus: ChatMemoryStatus = recall.status;
       const evidence = [...localEvidence, ...memoryEvidence];
       if (evidence.length === 0) {
         return {
           answer: "The existing Deal memory and reports do not contain enough evidence to answer that question.",
           citations: [],
           usedXTrace: false,
+          memoryStatus,
           insufficientEvidence: true,
         };
       }
@@ -90,6 +111,7 @@ export function createGroundedChatService(dependencies: GroundedChatDependencies
           answer: "The model response could not be verified against the available evidence.",
           citations: [],
           usedXTrace: memoryEvidence.length > 0,
+          memoryStatus,
           insufficientEvidence: true,
         };
       }
@@ -113,6 +135,7 @@ export function createGroundedChatService(dependencies: GroundedChatDependencies
           answer: "The available context did not provide a verifiable claim.",
           citations: [],
           usedXTrace: memoryEvidence.length > 0,
+          memoryStatus,
           insufficientEvidence: true,
         };
       }
@@ -120,6 +143,7 @@ export function createGroundedChatService(dependencies: GroundedChatDependencies
         answer: supportedClaims.map((claim) => claim.text).join(" "),
         citations,
         usedXTrace: memoryEvidence.length > 0,
+        memoryStatus,
         insufficientEvidence: parsed.insufficientEvidence || supportedClaims.length === 0,
       };
     },
