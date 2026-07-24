@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createMemoryDataClient } from "../../db/client";
+import {
+  createMemoryDataClient,
+  createSupabaseDataClient,
+} from "../../db/client";
 import { createRunsRepository } from "../../db/repositories/runs";
 
 test("claims a queued run once and persists completion", async () => {
@@ -137,4 +140,14 @@ test("worker heartbeat reports freshness without treating stale workers as healt
 
   current = new Date("2026-07-24T12:00:31.000Z");
   assert.equal(await runs.isWorkerHealthy(30_000), false);
+});
+
+test("accepts successful empty Supabase heartbeat responses", async () => {
+  const runs = createRunsRepository(createSupabaseDataClient({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async () => new Response(null, { status: 201 }),
+  }));
+
+  await runs.touchWorkerHeartbeat("worker_1");
 });
