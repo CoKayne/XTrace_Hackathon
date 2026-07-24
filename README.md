@@ -75,8 +75,10 @@ Requirements:
 Copy `.env.example` to a local ignored environment file and configure the
 server-only values. Do not expose service keys through `NEXT_PUBLIC_*`.
 
-Apply [`drizzle/0000_vsee_postgres.sql`](drizzle/0000_vsee_postgres.sql) to the
-Supabase PostgreSQL database, then seed the fixed corpus:
+Apply [`drizzle/0000_vsee_postgres.sql`](drizzle/0000_vsee_postgres.sql), then
+apply [`drizzle/0001_remove_report_delivery.sql`](drizzle/0001_remove_report_delivery.sql)
+to the Supabase PostgreSQL database before seeding the fixed corpus. Operators
+upgrading a database that already has `0000` applied may apply `0001` alone.
 
 ```bash
 npm install
@@ -127,7 +129,9 @@ worker heartbeat.
 
 ### Worker runbook
 
-1. Apply the database migration and seed the corpus before starting the Worker.
+1. For a new database, apply `0000` followed by `0001`; for an existing
+   database with `0000` already applied, apply `0001` alone. Then seed the
+   corpus before starting the Worker.
 2. Start the Worker and wait for the container health status to become
    `healthy`.
 3. Confirm `/api/settings/health` reports both `postgres: true` and

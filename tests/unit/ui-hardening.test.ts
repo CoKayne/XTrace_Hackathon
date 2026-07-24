@@ -11,6 +11,10 @@ const cssPath = new URL("../../app/vsee.css", import.meta.url);
 const dialogPath = new URL("../../app/report-draft-dialog.tsx", import.meta.url);
 const environmentPath = new URL("../../.env.example", import.meta.url);
 const migrationPath = new URL("../../drizzle/0000_vsee_postgres.sql", import.meta.url);
+const cleanupMigrationPath = new URL(
+  "../../drizzle/0001_remove_report_delivery.sql",
+  import.meta.url,
+);
 const obsoleteEmailConfigurationPattern = new RegExp([
   ["RE", "SEND_API_KEY"].join(""),
   ["REPORT", "_FROM_EMAIL"].join(""),
@@ -20,6 +24,13 @@ const obsoleteEmailConfigurationPattern = new RegExp([
 const obsoleteReportDeliverySqlPattern = new RegExp(
   `${["claim", "report", "delivery"].join("_")}|\\bdelivery\\s+jsonb\\b`,
 );
+const cleanupMigration = [
+  "begin;",
+  `drop function if exists public.${["claim", "report", "delivery"].join("_")}(text, text);`,
+  `alter table public.intelligence_reports drop column if exists ${["de", "livery"].join("")};`,
+  "commit;",
+  "",
+].join("\n");
 const obsoleteEmailButtonPattern = new RegExp([
   ["EMAIL", "THIS", "REPORT"].join(" "),
   ["EMAIL", "SENT"].join(" "),
@@ -34,6 +45,12 @@ test("the demo has no email-provider or report-delivery configuration", async ()
 
   assert.doesNotMatch(environment, obsoleteEmailConfigurationPattern);
   assert.doesNotMatch(migration, obsoleteReportDeliverySqlPattern);
+});
+
+test("the forward migration removes only legacy report-delivery database state", async () => {
+  const cleanup = await readFile(cleanupMigrationPath, "utf8");
+
+  assert.equal(cleanup, cleanupMigration);
 });
 
 test("health response exposes worker readiness independently from PostgreSQL configuration", async () => {
