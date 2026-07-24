@@ -1,12 +1,23 @@
 import {
+  doublePrecision,
   integer,
   jsonb,
   pgTable,
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
+
+import type {
+  CompanyBrief,
+  CompanyMarketEvidence,
+  EvidenceCoverage,
+  InvestmentMemorySnapshot,
+  OpportunityReportItem,
+  SourceRef,
+} from "../lib/contracts/domain";
 
 export const scanRuns = pgTable("scan_runs", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -110,8 +121,70 @@ export const intelligenceReports = pgTable("intelligence_reports", {
   runId: uuid("run_id").notNull().references(() => scanRuns.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   marketSummary: text("market_summary").notNull(),
-  opportunities: jsonb("opportunities").notNull().default([]),
+  opportunities: jsonb("opportunities")
+    .$type<OpportunityReportItem[]>()
+    .notNull()
+    .default([]),
+  analysisStatus: text("analysis_status").notNull().default("completed"),
+  companyCount: integer("company_count").notNull().default(0),
+  beliefRevisedCount: integer("belief_revised_count").notNull().default(0),
+  monitorCount: integer("monitor_count").notNull().default(0),
+  noMaterialChangeCount: integer("no_material_change_count").notNull().default(0),
+  analysisUnavailableCount: integer("analysis_unavailable_count")
+    .notNull()
+    .default(0),
+  priorityDealId: text("priority_deal_id"),
+  evidenceCoverage: jsonb("evidence_coverage")
+    .$type<EvidenceCoverage>()
+    .notNull()
+    .default({
+      acceptedPublicEvents: 0,
+      excludedPublicItems: 0,
+      truncatedPublicEvents: 0,
+      recalledDealCount: 0,
+      unavailableDealCount: 0,
+    }),
 });
+
+export const companyAnalyses = pgTable("company_analyses", {
+  id: text("id").primaryKey(),
+  workspaceId: text("workspace_id").notNull(),
+  reportId: text("report_id").notNull().references(
+    () => intelligenceReports.id,
+    { onDelete: "cascade" },
+  ),
+  runId: uuid("run_id").notNull().references(
+    () => scanRuns.id,
+    { onDelete: "cascade" },
+  ),
+  dealId: text("deal_id").notNull().references(
+    () => deals.id,
+    { onDelete: "cascade" },
+  ),
+  companyName: text("company_name").notNull(),
+  dealStatus: text("deal_status").notNull(),
+  outcome: text("outcome").notNull(),
+  confidence: text("confidence").notNull(),
+  score: doublePrecision("score").notNull(),
+  investmentMemory: jsonb("investment_memory")
+    .$type<InvestmentMemorySnapshot>()
+    .notNull(),
+  marketEvidence: jsonb("market_evidence")
+    .$type<CompanyMarketEvidence>()
+    .notNull(),
+  implications: jsonb("implications")
+    .$type<{ positive: string[]; negative: string[] }>()
+    .notNull(),
+  recommendedNextMove: text("recommended_next_move").notNull(),
+  companyBrief: jsonb("company_brief").$type<CompanyBrief>().notNull(),
+  sourceRefs: jsonb("source_refs").$type<SourceRef[]>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  unique("company_analyses_report_deal_unique").on(
+    table.reportId,
+    table.dealId,
+  ),
+]);
 
 export const xtraceIngestJobs = pgTable("xtrace_ingest_jobs", {
   jobId: text("job_id").primaryKey(),

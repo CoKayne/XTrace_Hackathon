@@ -1,5 +1,13 @@
 {
   "version": "7",
-  "dialect": "sqlite",
-  "entries": []
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784923200000,
+      "tag": "0004_company_analyses",
+      "breakpoints": true
+    }
+  ]
 }
