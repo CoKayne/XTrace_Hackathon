@@ -1,7 +1,13 @@
 import type { OpportunityReportItem } from "../../lib/contracts/domain";
+import { withinPublicationWindow } from "../../lib/market/dedupe";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 
 const DEFAULT_WORKSPACE_ID = "workspace_demo";
+const MARKET_EVENT_WINDOW_DAYS = 14;
+
+interface IntelligenceRepositoryClockOptions {
+  now?: () => Date;
+}
 
 export interface IntelligenceReportRecord {
   id: string;
@@ -23,9 +29,25 @@ export interface IntelligenceRepository {
   listReports(workspaceId: string): Promise<IntelligenceReportRecord[]>;
 }
 
-export function createMemoryIntelligenceRepository(): IntelligenceRepository {
+function currentMarketWindow(now: () => Date) {
+  const to = now();
+  if (!Number.isFinite(to.getTime())) {
+    throw new TypeError("Market event reads require a valid current time.");
+  }
+  return {
+    from: new Date(
+      to.getTime() - MARKET_EVENT_WINDOW_DAYS * 24 * 60 * 60 * 1_000,
+    ),
+    to,
+  };
+}
+
+export function createMemoryIntelligenceRepository(
+  options: IntelligenceRepositoryClockOptions = {},
+): IntelligenceRepository {
   const events = new Map<string, { workspaceId: string; event: NormalizedMarketEvent }>();
   const reports = new Map<string, IntelligenceReportRecord>();
+  const now = options.now ?? (() => new Date());
   return {
     async saveMarketEvents(items, workspaceId = DEFAULT_WORKSPACE_ID) {
       for (const event of items) {
@@ -36,8 +58,16 @@ export function createMemoryIntelligenceRepository(): IntelligenceRepository {
       }
     },
     async listMarketEvents(workspaceId) {
+      const { to } = currentMarketWindow(now);
       return [...events.values()]
-        .filter((row) => row.workspaceId === workspaceId)
+        .filter((row) =>
+          row.workspaceId === workspaceId
+          && withinPublicationWindow(
+            row.event.publishedAt,
+            to,
+            MARKET_EVENT_WINDOW_DAYS,
+          )
+        )
         .map((row) => structuredClone(row.event))
         .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
     },
@@ -58,13 +88,15 @@ export function createMemoryIntelligenceRepository(): IntelligenceRepository {
   };
 }
 
-function createSupabaseIntelligenceRepository(options: {
+export function createSupabaseIntelligenceRepository(options: {
   url: string;
   serviceRoleKey: string;
   fetchImpl?: typeof fetch;
+  now?: () => Date;
 }): IntelligenceRepository {
   const base = `${options.url.replace(/\/$/, "")}/rest/v1`;
   const fetchImpl = options.fetchImpl ?? fetch;
+  const now = options.now ?? (() => new Date());
   const headers = {
     apikey: options.serviceRoleKey,
     authorization: `Bearer ${options.serviceRoleKey}`,
@@ -108,8 +140,12 @@ function createSupabaseIntelligenceRepository(options: {
       });
     },
     async listMarketEvents(workspaceId) {
+      const window = currentMarketWindow(now);
       const rows = await request(
-        `/market_events?workspace_id=eq.${encodeURIComponent(workspaceId)}&select=payload&order=published_at.desc`,
+        `/market_events?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+          + `&published_at=gte.${encodeURIComponent(window.from.toISOString())}`
+          + `&published_at=lte.${encodeURIComponent(window.to.toISOString())}`
+          + "&select=payload&order=published_at.desc",
       ) as Array<{ payload: NormalizedMarketEvent }>;
       return rows.map((row) => row.payload);
     },

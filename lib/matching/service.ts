@@ -83,12 +83,21 @@ function groundedText(
   };
 }
 
-function safeNextStep(value: string): string {
-  const unsafe = /\b(invest|buy|commit|wire|approve funding|issue a term sheet)\b/i;
-  const humanReview = /\b(review|research|diligence|verify|contact|follow[\s-]?up|reconnect|schedule|check)\b/i;
-  return !unsafe.test(value) && humanReview.test(value)
-    ? value
-    : "Review the cited sources and decide whether a founder follow-up is warranted.";
+const NEXT_STEP_BY_STATUS = {
+  screening:
+    "Review the cited evidence and decide whether to continue internal screening.",
+  watchlist:
+    "Review the cited evidence and decide whether to update the watchlist status.",
+  evaluating:
+    "Review the cited evidence and decide whether to update ongoing internal diligence.",
+  passed:
+    "Review the cited evidence and decide whether to reopen internal diligence.",
+  invested:
+    "Review the cited evidence and decide whether to update portfolio monitoring.",
+} satisfies Record<DealStatus, string>;
+
+function deterministicNextStep(status: DealStatus): string {
+  return NEXT_STEP_BY_STATUS[status];
 }
 
 const OVERLAP_STOP_WORDS = new Set([
@@ -225,7 +234,7 @@ export function createMatchingService(reasoner: MatchingReasoner) {
           previousContext: previousContext.text,
           positiveImplications,
           negativeImplications,
-          nextStep: safeNextStep(match.nextStep),
+          nextStep: deterministicNextStep(deal.status),
           demoFixtureIds,
           score,
           sources: [...usedSourceIds].map((sourceId) => sourceById.get(sourceId)!),

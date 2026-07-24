@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createMemoryIntelligenceRepository } from "../../db/repositories/intelligence";
+import * as intelligenceRepositoryModule from "../../db/repositories/intelligence";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 
-function event(id: string): NormalizedMarketEvent {
+const { createMemoryIntelligenceRepository } = intelligenceRepositoryModule;
+
+function event(
+  id: string,
+  publishedAt = "2026-07-22T12:00:00.000Z",
+): NormalizedMarketEvent {
   return {
     id,
     title: `Event ${id}`,
@@ -14,7 +19,7 @@ function event(id: string): NormalizedMarketEvent {
     summary: "A source-backed market event.",
     positiveImplications: [],
     negativeImplications: [],
-    publishedAt: "2026-07-22T12:00:00.000Z",
+    publishedAt,
     confidence: "medium",
     sources: [{
       id: `source_${id}`,
@@ -22,7 +27,7 @@ function event(id: string): NormalizedMarketEvent {
       title: `Event ${id}`,
       url: `https://example.com/${id}`,
       publisher: "Example",
-      publishedAt: "2026-07-22T12:00:00.000Z",
+      publishedAt,
       excerpt: "A source-backed market event.",
     }],
     canonicalUrl: `https://example.com/${id}`,
@@ -33,7 +38,9 @@ function event(id: string): NormalizedMarketEvent {
 }
 
 test("market event upserts are idempotent", async () => {
-  const repository = createMemoryIntelligenceRepository();
+  const repository = createMemoryIntelligenceRepository({
+    now: () => new Date("2026-07-24T12:00:00.000Z"),
+  });
 
   await repository.saveMarketEvents([event("one")]);
   await repository.saveMarketEvents([event("one"), event("two")]);
@@ -42,6 +49,63 @@ test("market event upserts are idempotent", async () => {
     (await repository.listMarketEvents("workspace_demo")).map((item) => item.id).sort(),
     ["one", "two"],
   );
+});
+
+test("market event reads use an inclusive latest-fourteen-day publication window", async () => {
+  const repository = createMemoryIntelligenceRepository({
+    now: () => new Date("2026-07-24T12:00:00.000Z"),
+  });
+  await repository.saveMarketEvents([
+    event("at-lower-bound", "2026-07-10T12:00:00.000Z"),
+    event("recent", "2026-07-24T12:00:00.000Z"),
+    event("one-millisecond-old", "2026-07-10T11:59:59.999Z"),
+  ]);
+
+  assert.deepEqual(
+    (await repository.listMarketEvents("workspace_demo")).map((item) => item.id),
+    ["recent", "at-lower-bound"],
+  );
+});
+
+test("Supabase market event reads bound publication time in the repository query", async () => {
+  const createSupabaseIntelligenceRepository = (
+    intelligenceRepositoryModule as unknown as {
+      createSupabaseIntelligenceRepository?: (options: {
+        url: string;
+        serviceRoleKey: string;
+        fetchImpl: typeof fetch;
+        now: () => Date;
+      }) => {
+        listMarketEvents(workspaceId: string): Promise<NormalizedMarketEvent[]>;
+      };
+    }
+  ).createSupabaseIntelligenceRepository;
+  assert.ok(
+    createSupabaseIntelligenceRepository,
+    "Supabase repository factory must be available for boundary verification",
+  );
+
+  let requestedUrl: URL | undefined;
+  const repository = createSupabaseIntelligenceRepository({
+    url: "https://project.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    now: () => new Date("2026-07-24T12:00:00.000Z"),
+    fetchImpl: (async (input) => {
+      requestedUrl = new URL(String(input));
+      return new Response("[]", {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }) as typeof fetch,
+  });
+
+  await repository.listMarketEvents("workspace_demo");
+
+  assert.ok(requestedUrl);
+  assert.deepEqual(requestedUrl.searchParams.getAll("published_at"), [
+    "gte.2026-07-10T12:00:00.000Z",
+    "lte.2026-07-24T12:00:00.000Z",
+  ]);
 });
 
 test("reports are stored newest first", async () => {
