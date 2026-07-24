@@ -6,6 +6,7 @@ import {
   type SourceRef,
 } from "../contracts/domain";
 import {
+  confidenceForScore,
   rankQualifiedMatches,
   weightedOpportunityScore,
   type OpportunityScoreInputs,
@@ -47,6 +48,29 @@ export interface MatchingInput {
 
 export interface MatchingReasoner {
   reason(input: MatchingInput): Promise<ReasonedMatch[]>;
+}
+
+export interface GroundedMatch {
+  dealId: string;
+  confidence: "low" | "medium" | "high";
+  score: number;
+  whyNow: string;
+  previousContext: string;
+  implications: {
+    positive: string[];
+    negative: string[];
+  };
+  nextStep: string;
+  relationship: "satisfies" | "contradicts" | "related";
+  events: Array<{
+    id: string;
+    title: string;
+    eventType: string;
+    publishedAt: string;
+    sourceIds: string[];
+  }>;
+  sources: SourceRef[];
+  demoFixtureIds: string[];
 }
 
 interface GroundedClaim {
@@ -135,8 +159,7 @@ function overlapStrength(
 }
 
 export function createMatchingService(reasoner: MatchingReasoner) {
-  return {
-    async match(input: MatchingInput): Promise<OpportunityReportItem[]> {
+  const analyze = async (input: MatchingInput): Promise<GroundedMatch[]> => {
       const sourceById = new Map(input.sources.map((source) => [source.id, source]));
       const contextByDeal = new Map(input.memoryContexts.map((context) => [
         context.dealId,
@@ -212,19 +235,53 @@ export function createMatchingService(reasoner: MatchingReasoner) {
             deterministicRelevance,
           ),
         });
+        const events = input.events.flatMap((event) => {
+          const sourceIds = event.sources
+            .map((source) => source.id)
+            .filter((sourceId) => usedSourceIds.has(sourceId));
+          return sourceIds.length > 0
+            ? [{
+                id: event.id,
+                title: event.title,
+                eventType: event.eventType,
+                publishedAt: event.publishedAt,
+                sourceIds,
+              }]
+            : [];
+        });
+        const confidence = confidenceForScore(score);
+        const relationship = positiveImplications.length > 0
+          && negativeImplications.length === 0
+          ? "satisfies" as const
+          : negativeImplications.length > 0
+            && positiveImplications.length === 0
+          ? "contradicts" as const
+          : "related" as const;
         return [{
-          ...match,
+          dealId: match.dealId,
+          confidence,
+          score,
           whyNow: whyNow.text,
           previousContext: previousContext.text,
-          positiveImplications,
-          negativeImplications,
+          implications: {
+            positive: positiveImplications,
+            negative: negativeImplications,
+          },
           nextStep: nextStepForDealStatus(deal.status),
+          relationship,
+          events,
           demoFixtureIds,
-          score,
           sources: [...usedSourceIds].map((sourceId) => sourceById.get(sourceId)!),
         }];
       });
 
+      return grounded.sort((left, right) => right.score - left.score);
+  };
+
+  return {
+    analyze,
+    async match(input: MatchingInput): Promise<OpportunityReportItem[]> {
+      const grounded = await analyze(input);
       return rankQualifiedMatches(grounded).map((match, index) =>
         OpportunityReportItemSchema.parse({
           rank: index + 1,
@@ -233,10 +290,7 @@ export function createMatchingService(reasoner: MatchingReasoner) {
           score: match.score,
           whyNow: match.whyNow,
           previousContext: match.previousContext,
-          implications: {
-            positive: match.positiveImplications,
-            negative: match.negativeImplications,
-          },
+          implications: match.implications,
           nextStep: match.nextStep,
           sources: match.sources,
           demoFixtureIds: match.demoFixtureIds,
