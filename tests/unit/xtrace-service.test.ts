@@ -286,6 +286,31 @@ test("fails closed when a search client omits both accepted envelope discriminan
   );
 });
 
+test("preserves a sanitized XTrace HTTP failure reason for durable run diagnostics", async () => {
+  const service = createXTraceService({
+    search: async () => {
+      throw new XTraceHttpError(422, false, "Request failed validation");
+    },
+  } as never, {
+    resolveMemory: async () => null,
+  });
+
+  await assert.rejects(
+    service.recallDealContext({
+      workspaceId: "demo",
+      query: "Which deals were blocked by regulation?",
+      candidateDealIds: ["deal_1"],
+      limit: 5,
+    }),
+    (error: unknown) => {
+      assert.ok(error instanceof XTraceUnavailableError);
+      assert.equal(error.message, "Request failed validation");
+      assert.equal(error.retryable, false);
+      return true;
+    },
+  );
+});
+
 test("serializes provenance before persisting an async ingest job", async () => {
   let received: unknown;
   const persisted: unknown[] = [];

@@ -381,7 +381,9 @@ async function invoke<T>(operation: () => Promise<T>): Promise<T> {
     return await operation();
   } catch (error) {
     if (error instanceof XTraceUnavailableError) throw error;
-    if (error instanceof XTraceHttpError) throw new XTraceUnavailableError(error.retryable);
+    if (error instanceof XTraceHttpError) {
+      throw new XTraceUnavailableError(error.retryable, error.message);
+    }
     throw new XTraceUnavailableError(true);
   }
 }

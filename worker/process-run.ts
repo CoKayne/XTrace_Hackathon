@@ -18,10 +18,12 @@ import {
   type MarketEventSelection,
 } from "../lib/market/selection";
 import type { MarketService } from "../lib/market/service";
+import type { NormalizedMarketEvent } from "../lib/market/types";
 import type { MemoryContext } from "../lib/xtrace/service";
 import type { PersistedIngest } from "../lib/xtrace/service";
 
 type RunsRepository = ReturnType<typeof createRunsRepository>;
+const MAX_XTRACE_RECALL_QUERY_CHARACTERS = 4_000;
 
 export interface ProcessRunDependencies {
   runs: RunsRepository;
@@ -106,37 +108,18 @@ export async function processClaimedRun(
     const marketSelection = selectMarketEventsForAnalysis(market.events);
     const analysisEvents = marketSelection.events;
     const marketWarnings: string[] = [];
-    const marketNotices: string[] = [];
     if (market.status !== "completed") {
       const warning = market.status === "failed"
         ? "All configured market providers failed; the report contains no fresh market evidence."
         : "Some market providers failed; the report is based on the successful sources only.";
       marketWarnings.push(warning);
     }
-    if (marketSelection.ineligibleCount > 0) {
-      marketNotices.push(
-        `${marketSelection.ineligibleCount} public source ${
-          marketSelection.ineligibleCount === 1 ? "item did" : "items did"
-        } not contain a bounded funding, technology, regulatory, commercial, or macroeconomic signal and ${
-          marketSelection.ineligibleCount === 1 ? "was" : "were"
-        } excluded from downstream analysis.`,
-      );
-    }
-    const lowerRankedCount =
-      marketSelection.eligibleCount - marketSelection.events.length;
-    if (lowerRankedCount > 0) {
-      marketWarnings.push(
-        `${lowerRankedCount} lower-ranked market ${
-          lowerRankedCount === 1 ? "event was" : "events were"
-        } excluded from XTrace recall and opportunity analysis to keep model inputs bounded.`,
-      );
-    }
     warnings.push(...marketWarnings);
     await updateStage(
       "market_scan",
       "completed",
-      marketWarnings.length || marketNotices.length
-        ? [...marketWarnings, ...marketNotices].join(" ")
+      marketWarnings.length
+        ? marketWarnings.join(" ")
         : undefined,
     );
 
@@ -208,9 +191,7 @@ export async function processClaimedRun(
         const recalled = await dependencies.xtrace.recallDealContext({
           workspaceId: claimedRun.workspaceId,
           runId: claimedRun.id,
-          query: analysisEvents
-            .map((event) => `${event.title}. ${event.summary}`)
-            .join("\n"),
+          query: buildXTraceRecallQuery(analysisEvents),
           candidateDealIds: allDeals.map((deal) => deal.id),
           limit: 100,
         });
@@ -236,8 +217,8 @@ export async function processClaimedRun(
           warnings.push(warning);
           await updateStage("memory_recall", "completed", warning);
         }
-      } catch {
-        const warning = "XTrace recall was unavailable; no historical Deal candidates were sent to matching.";
+      } catch (error) {
+        const warning = `XTrace recall was unavailable (${errorDetail(error)}); no historical Deal candidates were sent to matching.`;
         warnings.push(warning);
         await updateStage("memory_recall", "failed", warning);
       }
@@ -281,10 +262,7 @@ export async function processClaimedRun(
     return { run: finalRun, report: storedReport };
   } catch (error) {
     if (activeStageStatus !== "failed") {
-      const detail = (error instanceof Error ? error.message : String(error))
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 800) || "Unknown scan error";
+      const detail = errorDetail(error);
       try {
         await updateStage(
           activeStage,
@@ -302,6 +280,39 @@ export async function processClaimedRun(
     });
     throw error;
   }
+}
+
+function buildXTraceRecallQuery(
+  events: NormalizedMarketEvent[],
+  limit = MAX_XTRACE_RECALL_QUERY_CHARACTERS,
+): string {
+  if (!events.length) return "";
+  if (!Number.isInteger(limit) || limit <= 0) {
+    throw new TypeError("XTrace recall query limit must be a positive integer.");
+  }
+
+  const lines = events.map((event) =>
+    `${event.title}. ${event.summary}`.replace(/\s+/g, " ").trim()
+  );
+  const fullQuery = lines.join("\n");
+  if (fullQuery.length <= limit) return fullQuery;
+
+  const separatorCharacters = Math.min(lines.length - 1, limit);
+  const contentCharacters = limit - separatorCharacters;
+  const baseLineBudget = Math.floor(contentCharacters / lines.length);
+  let remainder = contentCharacters % lines.length;
+  return lines.map((line) => {
+    const lineBudget = baseLineBudget + (remainder > 0 ? 1 : 0);
+    if (remainder > 0) remainder -= 1;
+    return line.slice(0, lineBudget);
+  }).join("\n");
+}
+
+function errorDetail(error: unknown): string {
+  return (error instanceof Error ? error.message : String(error))
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 800) || "Unknown scan error";
 }
 
 function buildMarketSummary(

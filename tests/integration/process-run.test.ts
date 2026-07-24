@@ -383,7 +383,7 @@ test("XTrace recall failure never falls back to structured memory and marks the 
         throw new Error("No jobs expected");
       },
       async recallDealContext() {
-        throw new Error("XTrace unavailable");
+        throw new Error("Request failed validation (422)");
       },
     },
     now: () => new Date("2026-07-23T12:00:00.000Z"),
@@ -392,7 +392,9 @@ test("XTrace recall failure never falls back to structured memory and marks the 
   assert.equal(result.run.status, "partial");
   assert.equal(result.report.opportunities.length, 0);
   assert.match(result.report.marketSummary, /1 source-backed market event/i);
-  assert.ok(result.run.warnings.some((warning) => /XTrace recall was unavailable/i.test(warning)));
+  assert.ok(result.run.warnings.some((warning) =>
+    /XTrace recall was unavailable.*Request failed validation \(422\)/i.test(warning)
+  ));
   assert.ok(result.run.warnings.every((warning) => !/structured fallback/i.test(warning)));
 });
 
@@ -500,6 +502,9 @@ test("bounds market evidence before XTrace and Claude while preserving all event
   const fetchedEvents = Array.from({ length: 23 }, (_, index) =>
     marketEvent(index)
   );
+  for (const event of fetchedEvents) {
+    event.summary = `${event.summary} ${"market evidence ".repeat(100)}`;
+  }
   let recallQuery = "";
   let reasonerEventIds: string[] = [];
 
@@ -563,15 +568,17 @@ test("bounds market evidence before XTrace and Claude while preserving all event
     reasonerEventIds,
     Array.from({ length: 20 }, (_, offset) => `market_${22 - offset}`),
   );
+  assert.ok(recallQuery.length <= 4_000, `Recall query was ${recallQuery.length} characters`);
   assert.match(recallQuery, /startup 22/);
+  assert.match(recallQuery, /startup 3 closes/);
   assert.doesNotMatch(recallQuery, /startup 2 closes/);
   assert.equal(
     (await intelligence.listMarketEvents("workspace_demo")).length,
     fetchedEvents.length,
   );
-  assert.equal(result.run.status, "partial");
-  assert.ok(result.run.warnings.some((warning) =>
-    /3 lower-ranked market events were excluded/i.test(warning)
+  assert.equal(result.run.status, "completed", JSON.stringify(result.run.warnings));
+  assert.ok(result.run.warnings.every((warning) =>
+    !/lower-ranked market events were excluded/i.test(warning)
   ));
   assert.match(result.report.marketSummary, /selected 20 of 23/i);
 });
