@@ -614,10 +614,28 @@ export default function Home() {
                       ))}
                     </div>
                     <div className="memory-summary">
-                      <div className="panel-label"><span>CAPTURED DEAL HISTORY</span><small>Source-linked</small></div>
-                      <strong>14</strong><span>verified memories</span>
-                      <ul><li>6 facts</li><li>3 artifacts</li><li>5 episodes</li></ul>
-                      <button onClick={() => setPanel("search")}>Search all deal memory</button>
+                      <div className="panel-label"><span>CAPTURED DEAL HISTORY</span><small>Synthesized · Source-linked</small></div>
+                      <div className="decision-memory-label"><span>DECISION MEMORY</span><small>Confirmed Nov 18, 2025</small></div>
+                      <h2>Pass — regulatory timing made the opportunity uninvestable.</h2>
+                      <p className="decision-memory-copy">Across the IC memo, partner notes, founder materials, and CRM history, the team consistently believed in the clinical need and founders. The unresolved FDA pathway—not product quality—drove the pass.</p>
+                      <div className="revisit-condition">
+                        <span>REVISIT CONDITION</span>
+                        <strong>Re-open when accelerated review expands to AI-assisted diagnostics.</strong>
+                      </div>
+                      <div className="evidence-doc-heading"><span>DETAILED EVIDENCE</span><small>4 linked documents</small></div>
+                      <div className="memory-documents">
+                        {[
+                          ["IC", "Investment committee memo", "Nov 18, 2025 · 6 cited excerpts"],
+                          ["PM", "Partner meeting notes", "Nov 12, 2025 · 4 cited excerpts"],
+                          ["FD", "Founder deck · v4", "Oct 29, 2025 · 3 cited pages"],
+                          ["CRM", "CRM decision log", "Oct–Nov 2025 · Owner KM"],
+                        ].map(([type, title, detail]) => (
+                          <button key={title} onClick={() => setPanel("evidence")}>
+                            <span>{type}</span><span><strong>{title}</strong><small>{detail}</small></span>
+                          </button>
+                        ))}
+                      </div>
+                      <button className="inspect-memory" onClick={() => setPanel("evidence")}>Inspect full evidence chain</button>
                     </div>
                   </div>
                 )}
