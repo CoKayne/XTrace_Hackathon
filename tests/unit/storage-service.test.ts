@@ -10,6 +10,7 @@ import {
   createSupabaseDemoDataStore,
 } from "../../lib/storage/service";
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
+import { DEMO_FIXTURE_LABEL } from "../../lib/contracts/domain";
 
 test("private document access issues only same-origin backend reads valid for at most ten minutes", async () => {
   let now = 1_700_000_000_000;
@@ -86,6 +87,49 @@ test("PostgreSQL storage reads durable workspace-document confirmations", async 
   assert.equal(parsed.pathname, "/rest/v1/workspace_documents");
   assert.equal(parsed.searchParams.get("workspace_id"), "eq.workspace_demo");
   assert.equal(parsed.searchParams.get("select"), "document_id");
+});
+
+test("PostgreSQL storage durably writes the synthetic decision rationale", async () => {
+  let interactionPost: { url: string; body: Record<string, unknown> } | undefined;
+  const data = createSupabaseDemoDataStore({
+    url: "https://database.example.test",
+    serviceRoleKey: "test-service-role",
+    async fetchImpl(input, init) {
+      if (init?.method === "POST") {
+        interactionPost = {
+          url: String(input),
+          body: JSON.parse(String(init.body)) as Record<string, unknown>,
+        };
+        return new Response(null, { status: 204 });
+      }
+      return Response.json([]);
+    },
+  });
+
+  await data.ensureFixture({
+    id: "fixture_1",
+    workspaceId: "workspace_demo",
+    documentId: "doc_1",
+    dealId: "deal_1",
+    companyName: "Asteria Bio",
+    occurredAt: "2026-07-01T00:00:00.000Z",
+    provenance: "demo_fixture",
+    label: DEMO_FIXTURE_LABEL,
+    status: "passed",
+    decisionReason: "Synthetic decision: pass until regulatory timing changes.",
+    concerns: ["Regulatory timing"],
+    revisitConditions: ["Regulatory timing changes"],
+    meetingSummary: "Synthetic internal decision record.",
+  });
+
+  assert.equal(
+    new URL(interactionPost?.url ?? "https://invalid.test").pathname,
+    "/rest/v1/deal_interactions",
+  );
+  assert.equal(
+    interactionPost?.body.decision_reason,
+    "Synthetic decision: pass until regulatory timing changes.",
+  );
 });
 
 test("the backend document route requires a valid read capability and never exposes storage credentials", async () => {

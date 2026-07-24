@@ -79,6 +79,23 @@ export const deals = pgTable("deals", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const dealInteractions = pgTable("deal_interactions", {
+  id: text("id").primaryKey(),
+  workspaceId: text("workspace_id").notNull(),
+  documentId: text("document_id").notNull(),
+  dealId: text("deal_id").notNull(),
+  companyName: text("company_name").notNull(),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+  provenance: text("provenance").notNull(),
+  label: text("label").notNull(),
+  status: text("status").notNull(),
+  decisionReason: text("decision_reason").notNull(),
+  concerns: jsonb("concerns").$type<string[]>().notNull().default([]),
+  revisitConditions: jsonb("revisit_conditions").$type<string[]>().notNull().default([]),
+  meetingSummary: text("meeting_summary").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const marketEvents = pgTable("market_events", {
   workspaceId: text("workspace_id").notNull(),
   id: text("id").notNull(),
@@ -102,6 +119,8 @@ export const xtraceIngestJobs = pgTable("xtrace_ingest_jobs", {
   dealId: text("deal_id").notNull(),
   sourceIds: jsonb("source_ids").$type<string[]>().notNull().default([]),
   fixtureIds: jsonb("fixture_ids").$type<string[]>().notNull().default([]),
+  bundleFingerprint: text("bundle_fingerprint").notNull(),
+  serializerVersion: text("serializer_version").notNull(),
   provenance: text("provenance").notNull(),
   status: text("status").notNull(),
   memoryIds: jsonb("memory_ids").$type<string[]>().notNull().default([]),

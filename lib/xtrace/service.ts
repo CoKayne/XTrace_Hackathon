@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import {
   getXTraceLineageRepository,
   type XTraceLineageRepository,
@@ -11,6 +13,7 @@ import {
 } from "./client";
 
 export const DEFAULT_XTRACE_WORKSPACE_ID = "workspace_demo";
+export const DEAL_MEMORY_SERIALIZER_VERSION = "deal-memory-v1";
 const DEFAULT_APP_ID = "xtrace-vc-deal-intelligence";
 const REQUESTS_PER_MINUTE = 25;
 const REQUEST_WINDOW_MS = 60_000;
@@ -60,6 +63,7 @@ export type XTraceServiceDependencies = {
   now?: () => number;
   appId?: string;
   workspaceId?: string;
+  serializerVersion?: string;
   lineageRepository?: XTraceLineageRepository;
   limiter?: XTraceRateLimiter;
 };
@@ -102,6 +106,8 @@ export function createXTraceService(
       : defaultXTraceRateLimiter());
   const appId = dependencies.appId ?? DEFAULT_APP_ID;
   const workspaceId = dependencies.workspaceId ?? DEFAULT_XTRACE_WORKSPACE_ID;
+  const serializerVersion =
+    dependencies.serializerVersion ?? DEAL_MEMORY_SERIALIZER_VERSION;
   const lineage = dependencies.lineageRepository ?? getXTraceLineageRepository();
 
   const persist = async (record: PersistedIngest) => {
@@ -110,6 +116,10 @@ export function createXTraceService(
 
   return {
     async ingestDealMemory(bundle: DealMemoryBundle): Promise<PersistedIngest> {
+      const serializedBundle = serializeBundle(bundle);
+      const bundleFingerprint = createHash("sha256")
+        .update(serializedBundle, "utf8")
+        .digest("hex");
       const sourceIds = [...new Set(bundle.facts.flatMap((fact) =>
         fact.sources.map((source) => source.id)
       ))];
@@ -119,6 +129,8 @@ export function createXTraceService(
         dealId: bundle.dealId,
         sourceIds,
         fixtureIds,
+        bundleFingerprint,
+        serializerVersion,
       });
       if (reusable) {
         const record = {
@@ -133,7 +145,7 @@ export function createXTraceService(
       const response = await invoke(async () => {
         await limiter.acquire();
         return client.ingest({
-          messages: [{ role: "user", content: serializeBundle(bundle) }],
+          messages: [{ role: "user", content: serializedBundle }],
           user_id: stableXTraceUserId(workspaceId),
           conv_id: `deal:${bundle.dealId}`,
           app_id: appId,
@@ -146,6 +158,8 @@ export function createXTraceService(
         dealId: bundle.dealId,
         sourceIds,
         fixtureIds,
+        bundleFingerprint,
+        serializerVersion,
         provenance: bundleProvenance(bundle),
         status: record.status,
       });

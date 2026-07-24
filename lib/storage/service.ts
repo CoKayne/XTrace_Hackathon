@@ -515,6 +515,7 @@ export function createSupabaseDemoDataStore(options: {
         provenance: input.provenance,
         label: input.label,
         status: input.status,
+        decision_reason: input.decisionReason,
         concerns: input.concerns,
         revisit_conditions: input.revisitConditions,
         meeting_summary: input.meetingSummary,

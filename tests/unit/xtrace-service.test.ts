@@ -13,7 +13,10 @@ import {
   XTracePollingTimeoutError,
   XTraceUnavailableError,
 } from "../../lib/xtrace/service";
-import { createMemoryXTraceLineageRepository } from "../../db/repositories/xtrace-lineage";
+import {
+  createMemoryXTraceLineageRepository,
+  createSupabaseXTraceLineageRepository,
+} from "../../db/repositories/xtrace-lineage";
 import { ingestMemoryStage } from "../../worker/stages/ingest-memory";
 
 const bundle = {
@@ -259,6 +262,106 @@ test("reuses an equivalent non-failed XTrace ingest instead of creating a duplic
 
   assert.equal(ingestCalls, 1);
   assert.deepEqual(second, first);
+  const [storedJob] = await lineage.listOpenJobs("workspace_demo");
+  assert.match(storedJob.bundleFingerprint, /^[a-f0-9]{64}$/);
+  assert.equal(storedJob.serializerVersion, "deal-memory-v1");
+});
+
+test("does not reuse an XTrace ingest when serialized decision content changes", async () => {
+  let ingestCalls = 0;
+  const lineage = createMemoryXTraceLineageRepository();
+  const service = createXTraceService({
+    ingest: async () => {
+      ingestCalls += 1;
+      return { id: `job_${ingestCalls}`, status: "pending" };
+    },
+  } as never, {
+    workspaceId: "workspace_demo",
+    lineageRepository: lineage,
+  });
+  const revisedBundle = structuredClone(bundle);
+  revisedBundle.interactions[0].decisionReason =
+    "The synthetic team now passed because the regulatory pathway materially changed.";
+
+  await service.ingestDealMemory(bundle);
+  await service.ingestDealMemory(revisedBundle);
+
+  assert.equal(ingestCalls, 2);
+});
+
+test("does not reuse an XTrace ingest across serializer versions", async () => {
+  let ingestCalls = 0;
+  const lineage = createMemoryXTraceLineageRepository();
+  const client = {
+    ingest: async () => {
+      ingestCalls += 1;
+      return { id: `job_${ingestCalls}`, status: "pending" };
+    },
+  };
+  const versionOne = createXTraceService(client as never, {
+    workspaceId: "workspace_demo",
+    lineageRepository: lineage,
+    serializerVersion: "deal-memory-v1",
+  });
+  const versionTwo = createXTraceService(client as never, {
+    workspaceId: "workspace_demo",
+    lineageRepository: lineage,
+    serializerVersion: "deal-memory-v2",
+  });
+
+  await versionOne.ingestDealMemory(bundle);
+  await versionTwo.ingestDealMemory(bundle);
+
+  assert.equal(ingestCalls, 2);
+});
+
+test("Supabase lineage persists and queries fingerprint plus serializer version", async () => {
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+  const repository = createSupabaseXTraceLineageRepository({
+    url: "https://database.example.test",
+    serviceRoleKey: "test-service-role",
+    fetchImpl: async (input, init) => {
+      requests.push({ url: String(input), init });
+      if (init?.method === "POST") return new Response(null, { status: 204 });
+      return Response.json([{
+        job_id: "job_1",
+        workspace_id: "workspace_demo",
+        deal_id: "deal_1",
+        source_ids: ["source_1"],
+        fixture_ids: ["fixture_1"],
+        bundle_fingerprint: "a".repeat(64),
+        serializer_version: "deal-memory-v1",
+        provenance: "source_document",
+        status: "succeeded",
+        memory_ids: ["mem_1"],
+      }]);
+    },
+  });
+  const reuseContract = {
+    workspaceId: "workspace_demo",
+    dealId: "deal_1",
+    sourceIds: ["source_1"],
+    fixtureIds: ["fixture_1"],
+    bundleFingerprint: "a".repeat(64),
+    serializerVersion: "deal-memory-v1",
+  };
+
+  await repository.recordSubmission({
+    jobId: "job_1",
+    ...reuseContract,
+    provenance: "source_document",
+    status: "pending",
+  });
+  const reusable = await repository.findReusableIngest(reuseContract);
+
+  const submission = JSON.parse(String(requests[0].init?.body)) as Record<string, unknown>;
+  assert.equal(submission.bundle_fingerprint, "a".repeat(64));
+  assert.equal(submission.serializer_version, "deal-memory-v1");
+  const reuseUrl = new URL(requests[1].url);
+  assert.equal(reuseUrl.searchParams.get("bundle_fingerprint"), `eq.${"a".repeat(64)}`);
+  assert.equal(reuseUrl.searchParams.get("serializer_version"), "eq.deal-memory-v1");
+  assert.equal(reusable?.bundleFingerprint, "a".repeat(64));
+  assert.equal(reusable?.serializerVersion, "deal-memory-v1");
 });
 
 test("polls pending jobs with exponential backoff and persists created memory IDs", async () => {
@@ -272,6 +375,8 @@ test("polls pending jobs with exponential backoff and persists created memory ID
     dealId: "deal_1",
     sourceIds: ["source_1"],
     fixtureIds: ["fixture_1"],
+    bundleFingerprint: "existing-test-fingerprint",
+    serializerVersion: "deal-memory-v1",
     provenance: "source_document",
     status: "pending",
   });
@@ -307,6 +412,8 @@ test("lists only non-terminal XTrace ingest jobs for the requested workspace", a
       ...job,
       sourceIds: ["source_1"],
       fixtureIds: [],
+      bundleFingerprint: `fingerprint-${job.jobId}`,
+      serializerVersion: "deal-memory-v1",
       provenance: "source_document",
     });
   }
@@ -328,6 +435,8 @@ test("keeps polling through running and throws when the polling budget is exhaus
     dealId: "deal_1",
     sourceIds: ["source_1"],
     fixtureIds: [],
+    bundleFingerprint: "running-test-fingerprint",
+    serializerVersion: "deal-memory-v1",
     provenance: "source_document",
     status: "running",
   });

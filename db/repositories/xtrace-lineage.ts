@@ -6,6 +6,8 @@ export interface XTraceIngestLineage {
   dealId: string;
   sourceIds: string[];
   fixtureIds: string[];
+  bundleFingerprint: string;
+  serializerVersion: string;
   provenance: Provenance;
   status: "pending" | "running" | "succeeded" | "failed";
   memoryIds: string[];
@@ -33,6 +35,8 @@ export interface XTraceLineageRepository {
     dealId: string;
     sourceIds: string[];
     fixtureIds: string[];
+    bundleFingerprint: string;
+    serializerVersion: string;
   }): Promise<XTraceIngestLineage | null>;
   resolve(input: {
     memoryId: string;
@@ -87,6 +91,8 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
         && candidate.status !== "failed"
         && sameStringSet(candidate.sourceIds, input.sourceIds)
         && sameStringSet(candidate.fixtureIds, input.fixtureIds)
+        && candidate.bundleFingerprint === input.bundleFingerprint
+        && candidate.serializerVersion === input.serializerVersion
       );
       return job ? structuredClone(job) : null;
     },
@@ -113,7 +119,7 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
   };
 }
 
-function createSupabaseXTraceLineageRepository(options: {
+export function createSupabaseXTraceLineageRepository(options: {
   url: string;
   serviceRoleKey: string;
   fetchImpl?: typeof fetch;
@@ -149,6 +155,20 @@ function createSupabaseXTraceLineageRepository(options: {
       provenance: row.provenance as Provenance,
     };
   }
+  function toIngestLineage(row: Record<string, unknown>): XTraceIngestLineage {
+    return {
+      jobId: String(row.job_id),
+      workspaceId: String(row.workspace_id),
+      dealId: String(row.deal_id),
+      sourceIds: Array.isArray(row.source_ids) ? row.source_ids.map(String) : [],
+      fixtureIds: Array.isArray(row.fixture_ids) ? row.fixture_ids.map(String) : [],
+      bundleFingerprint: String(row.bundle_fingerprint),
+      serializerVersion: String(row.serializer_version),
+      provenance: row.provenance as Provenance,
+      status: row.status as XTraceIngestLineage["status"],
+      memoryIds: Array.isArray(row.memory_ids) ? row.memory_ids.map(String) : [],
+    };
+  }
   return {
     async recordSubmission(input) {
       await request("/xtrace_ingest_jobs?on_conflict=job_id", {
@@ -160,6 +180,8 @@ function createSupabaseXTraceLineageRepository(options: {
           deal_id: input.dealId,
           source_ids: input.sourceIds,
           fixture_ids: input.fixtureIds,
+          bundle_fingerprint: input.bundleFingerprint,
+          serializer_version: input.serializerVersion,
           provenance: input.provenance,
           status: input.status,
           memory_ids: [],
@@ -199,20 +221,11 @@ function createSupabaseXTraceLineageRepository(options: {
       const rows = await request(
         `/xtrace_ingest_jobs?workspace_id=eq.${encodeURIComponent(workspaceId)}&status=in.(pending,running)&order=created_at.asc`,
       ) as Record<string, unknown>[];
-      return rows.map((row) => ({
-        jobId: String(row.job_id),
-        workspaceId: String(row.workspace_id),
-        dealId: String(row.deal_id),
-        sourceIds: Array.isArray(row.source_ids) ? row.source_ids.map(String) : [],
-        fixtureIds: Array.isArray(row.fixture_ids) ? row.fixture_ids.map(String) : [],
-        provenance: row.provenance as Provenance,
-        status: row.status as XTraceIngestLineage["status"],
-        memoryIds: Array.isArray(row.memory_ids) ? row.memory_ids.map(String) : [],
-      }));
+      return rows.map(toIngestLineage);
     },
     async findReusableIngest(input) {
       const rows = await request(
-        `/xtrace_ingest_jobs?workspace_id=eq.${encodeURIComponent(input.workspaceId)}&deal_id=eq.${encodeURIComponent(input.dealId)}&status=in.(pending,running,succeeded)&order=created_at.desc`,
+        `/xtrace_ingest_jobs?workspace_id=eq.${encodeURIComponent(input.workspaceId)}&deal_id=eq.${encodeURIComponent(input.dealId)}&bundle_fingerprint=eq.${encodeURIComponent(input.bundleFingerprint)}&serializer_version=eq.${encodeURIComponent(input.serializerVersion)}&status=in.(pending,running,succeeded)&order=created_at.desc`,
       ) as Record<string, unknown>[];
       const row = rows.find((candidate) =>
         sameStringSet(
@@ -223,17 +236,10 @@ function createSupabaseXTraceLineageRepository(options: {
           Array.isArray(candidate.fixture_ids) ? candidate.fixture_ids.map(String) : [],
           input.fixtureIds,
         )
+        && String(candidate.bundle_fingerprint) === input.bundleFingerprint
+        && String(candidate.serializer_version) === input.serializerVersion
       );
-      return row ? {
-        jobId: String(row.job_id),
-        workspaceId: String(row.workspace_id),
-        dealId: String(row.deal_id),
-        sourceIds: Array.isArray(row.source_ids) ? row.source_ids.map(String) : [],
-        fixtureIds: Array.isArray(row.fixture_ids) ? row.fixture_ids.map(String) : [],
-        provenance: row.provenance as Provenance,
-        status: row.status as XTraceIngestLineage["status"],
-        memoryIds: Array.isArray(row.memory_ids) ? row.memory_ids.map(String) : [],
-      } : null;
+      return row ? toIngestLineage(row) : null;
     },
     async resolve(input) {
       const direct = await request(

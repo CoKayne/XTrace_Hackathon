@@ -232,6 +232,7 @@ create table if not exists deal_interactions (
     constraint deal_interactions_demo_fixture_label_check
     check (label = 'Synthetic VC decision record created for the hackathon demo'),
   status text not null check (status in ('screening', 'watchlist', 'evaluating', 'passed', 'invested')),
+  decision_reason text not null,
   concerns jsonb not null default '[]'::jsonb,
   revisit_conditions jsonb not null default '[]'::jsonb,
   meeting_summary text not null,
@@ -271,6 +272,8 @@ create table if not exists xtrace_ingest_jobs (
   deal_id text not null references deals(id) on delete cascade,
   source_ids jsonb not null default '[]'::jsonb,
   fixture_ids jsonb not null default '[]'::jsonb,
+  bundle_fingerprint text not null,
+  serializer_version text not null,
   provenance text not null,
   status text not null check (status in ('pending', 'running', 'succeeded', 'failed')),
   memory_ids jsonb not null default '[]'::jsonb,
