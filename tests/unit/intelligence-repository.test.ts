@@ -6,6 +6,7 @@ import {
   createMemoryIntelligenceRepository,
   type IntelligenceReportRecord,
 } from "../../db/repositories/intelligence";
+import * as intelligenceRepositoryModule from "../../db/repositories/intelligence";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 
 function event(
@@ -51,6 +52,33 @@ test("market event upserts are idempotent", async () => {
     (await repository.listMarketEvents("workspace_demo")).map((item) => item.id).sort(),
     ["one", "two"],
   );
+});
+
+test("Supabase market event upserts accept successful empty responses", async () => {
+  const createSupabaseRepository = (
+    intelligenceRepositoryModule as typeof intelligenceRepositoryModule & {
+      createSupabaseIntelligenceRepository?: (options: {
+        url: string;
+        serviceRoleKey: string;
+        fetchImpl: typeof fetch;
+      }) => {
+        saveMarketEvents(events: NormalizedMarketEvent[]): Promise<void>;
+      };
+    }
+  ).createSupabaseIntelligenceRepository;
+  assert.equal(
+    typeof createSupabaseRepository,
+    "function",
+    "the Supabase intelligence repository must be directly testable",
+  );
+
+  const repository = createSupabaseRepository!({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async () => new Response(null, { status: 201 }),
+  });
+
+  await repository.saveMarketEvents([event("empty-write-response")]);
 });
 
 test("market event reads use an inclusive latest-fourteen-day publication window", async () => {

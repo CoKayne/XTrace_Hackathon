@@ -111,7 +111,7 @@ export function createMemoryIntelligenceRepository(
   };
 }
 
-function createSupabaseIntelligenceRepository(options: {
+export function createSupabaseIntelligenceRepository(options: {
   url: string;
   serviceRoleKey: string;
   fetchImpl?: typeof fetch;
@@ -136,7 +136,8 @@ function createSupabaseIntelligenceRepository(options: {
       throw new Error(`PostgreSQL gateway ${response.status}: ${detail.slice(0, 240)}`);
     }
     if (response.status === 204) return null;
-    return response.json();
+    const body = await response.text();
+    return body.trim() ? JSON.parse(body) : null;
   }
   function toReport(row: Record<string, unknown>): IntelligenceReportRecord {
     return safeReport({
