@@ -2,6 +2,12 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { ReportDraftDialog } from "./report-draft-dialog";
+import {
+  buildInternalReportDraft,
+  type InternalReportDraft,
+} from "../lib/reports/draft";
+
 type View =
   | "overview"
   | "deals"
@@ -112,7 +118,6 @@ interface Report {
   createdAt: string;
   marketSummary: string;
   opportunities: Opportunity[];
-  delivery?: { status: string; sentAt?: string };
 }
 
 interface Health {
@@ -121,7 +126,6 @@ interface Health {
   xtrace: boolean;
   anthropic: boolean;
   storage: boolean;
-  email: boolean;
   corpusReady: boolean;
   corpusConfirmedCount: number;
   corpusRequiredCount: number;
@@ -195,6 +199,7 @@ export default function Home() {
   const [confirmedDealAssignments, setConfirmedDealAssignments] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [focusedReportId, setFocusedReportId] = useState<string | null>(null);
+  const [reportDraft, setReportDraft] = useState<InternalReportDraft | null>(null);
   const [chatQuestion, setChatQuestion] = useState("");
   const [chatMessages, setChatMessages] = useState<Array<{
     role: "user" | "assistant";
@@ -391,22 +396,15 @@ export default function Home() {
     }
   }
 
-  async function sendLatestReport() {
-    if (!latestReport) return;
-    setBusy("email");
-    setError("");
-    try {
-      await api(`/api/reports/${latestReport.id}/email`, {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
-      setNotice("Report delivery accepted for the configured demo recipient.");
-      await load();
-    } catch (emailError) {
-      setError(emailError instanceof Error ? emailError.message : "Could not send report");
-    } finally {
-      setBusy(null);
-    }
+  function draftReport(report: Report) {
+    if (!overview) return;
+    setReportDraft(buildInternalReportDraft({
+      report,
+      companyNames: Object.fromEntries(
+        overview.deals.map((deal) => [deal.id, deal.companyName]),
+      ),
+      appOrigin: window.location.origin,
+    }));
   }
 
   async function askChat(event: FormEvent) {
@@ -536,8 +534,7 @@ export default function Home() {
               <ReportsView
                 reports={reports}
                 deals={overview.deals}
-                onEmail={sendLatestReport}
-                busy={busy === "email"}
+                onDraft={draftReport}
                 focusedReportId={focusedReportId}
               />
             )}
@@ -556,6 +553,10 @@ export default function Home() {
           </>
         )}
       </section>
+      <ReportDraftDialog
+        draft={reportDraft}
+        onClose={() => setReportDraft(null)}
+      />
     </main>
   );
 }
@@ -627,7 +628,7 @@ function OverviewView({
               ? "Use XTrace to recover source-backed facts and labeled internal decision context."
               : "Use the confirmed structured Deal context; XTrace is not active for this run."],
             ["03", "Match", "Claude connects changed conditions to the Deals that may be affected."],
-            ["04", "Act", "Rank a cited Top 5 and prepare a real report email for the investor."],
+            ["04", "Act", "Rank a cited Top 5 and prepare a copy-ready internal brief for the investor."],
           ].map(([number, title, copy]) => (
             <div className="vsee-workflow-row" key={number}>
               <b>{number}</b><strong>{title}</strong><p>{copy}</p>
@@ -870,14 +871,12 @@ function MarketView({ events }: { events: MarketEvent[] }) {
 function ReportsView({
   reports,
   deals,
-  onEmail,
-  busy,
+  onDraft,
   focusedReportId,
 }: {
   reports: Report[];
   deals: Deal[];
-  onEmail(): void;
-  busy: boolean;
+  onDraft(report: Report): void;
   focusedReportId: string | null;
 }) {
   const companyByDeal = new Map(deals.map((deal) => [deal.id, deal.companyName]));
@@ -894,16 +893,7 @@ function ReportsView({
           <header>
             <div><span>REPORT {shortDate(report.createdAt)}</span><p>{report.marketSummary}</p></div>
             {reportIndex === 0 && (
-              <button
-                onClick={onEmail}
-                disabled={busy || report.delivery?.status === "pending" || report.delivery?.status === "sent"}
-              >
-                {busy || report.delivery?.status === "pending"
-                  ? "SENDING…"
-                  : report.delivery?.status === "sent"
-                    ? "EMAIL SENT"
-                    : "EMAIL THIS REPORT →"}
-              </button>
+              <button onClick={() => onDraft(report)}>DRAFT THIS REPORT →</button>
             )}
           </header>
           {report.opportunities.length ? report.opportunities.map((item) => (
@@ -1006,7 +996,6 @@ function SettingsView({ health }: { health: Health | null }) {
     ["xtrace", "XTrace Memory", "Long-term Deal and decision-context recall"],
     ["anthropic", "Anthropic", "Evidence-grounded matching and report reasoning"],
     ["storage", "Private source storage", "Private PDFs and ten-minute source access"],
-    ["email", "Email", "Real intelligence report delivery"],
     ["marketProviders", "Market providers", "Latest 14-day public information"],
   ];
   return (

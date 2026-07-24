@@ -8,6 +8,7 @@ import { createDefaultDemoDataStore } from "../../lib/storage/service";
 
 const pagePath = new URL("../../app/page.tsx", import.meta.url);
 const cssPath = new URL("../../app/vsee.css", import.meta.url);
+const dialogPath = new URL("../../app/report-draft-dialog.tsx", import.meta.url);
 
 test("health response exposes worker readiness independently from PostgreSQL configuration", async () => {
   const previousUrl = process.env.SUPABASE_URL;
@@ -101,4 +102,26 @@ test("dashboard supports report deep links, page anchors, and a two-row mobile n
   assert.match(page, /#page=\$\{source\.page\}/);
   assert.match(page, /No Deals match/i);
   assert.match(css, /grid-template-columns:repeat\(4,1fr\)/);
+});
+
+test("reports open an editable internal draft dialog without sending email", async () => {
+  const [page, dialog, css] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(dialogPath, "utf8"),
+    readFile(cssPath, "utf8"),
+  ]);
+
+  assert.match(page, /DRAFT THIS REPORT →/);
+  assert.match(page, /buildInternalReportDraft/);
+  assert.match(dialog, /<dialog/);
+  assert.match(dialog, /Subject/);
+  assert.match(dialog, /Message/);
+  assert.match(dialog, /COPY BODY/);
+  assert.match(dialog, /COPY FULL DRAFT/);
+  assert.match(dialog, /aria-live="polite"/);
+  assert.doesNotMatch(dialog, />To</);
+  assert.doesNotMatch(page, /\/api\/reports\/\$\{latestReport\.id\}\/email/);
+  assert.doesNotMatch(page, /EMAIL THIS REPORT|EMAIL SENT|SENDING…/);
+  assert.match(css, /\.vsee-draft-dialog::backdrop/);
+  assert.match(css, new RegExp("@media\\(max-width:680px\\).*\\.vsee-draft-dialog", "s"));
 });
