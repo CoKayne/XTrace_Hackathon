@@ -996,16 +996,17 @@ function ReportsView({
   focusedReportId: string | null;
 }) {
   const companyByDeal = new Map(deals.map((deal) => [deal.id, deal.companyName]));
+  const report = reports[0];
   return (
     <div className="vsee-content">
-      <SectionTitle eyebrow="DECISION BRIEF" title="Cited reasons for a second look." copy="Only medium- and high-confidence matches enter the Top 5. A recommendation is never proof that a company has improved; it is a reason for the investor to follow up." />
-      {!reports.length ? (
+      <SectionTitle eyebrow="DECISION BRIEF" title="Cited reasons for a second look." copy="This page always shows the most recent intelligence report. Only medium- and high-confidence matches enter the Top 5. A recommendation is never proof that a company has improved; it is a reason for the investor to follow up." />
+      {!report ? (
         <Empty title="No intelligence report yet" copy="Complete a scan to generate the first evidence-linked report." />
-      ) : reports.map((report, reportIndex) => report.companyAnalyses.length ? (
+      ) : report.companyAnalyses.length ? (
         <CompanyIntelligenceReport
           report={report}
           focused={focusedReportId === report.id}
-          allowDraft={reportIndex === 0}
+          allowDraft
           onDraft={onDraft}
           key={report.id}
         />
@@ -1018,9 +1019,7 @@ function ReportsView({
         >
           <header>
             <div><span>LEGACY REPORT {shortDate(report.createdAt)}</span><p>{report.marketSummary}</p></div>
-            {reportIndex === 0 && (
-              <button onClick={() => onDraft(report)}>DRAFT THIS REPORT →</button>
-            )}
+            <button onClick={() => onDraft(report)}>DRAFT THIS REPORT →</button>
           </header>
           {report.opportunities.length ? report.opportunities.map((item) => (
             <section className="vsee-opportunity" key={`${report.id}-${item.dealId}`}>
@@ -1042,7 +1041,7 @@ function ReportsView({
             </section>
           )) : <Empty title="No legacy opportunities" copy="This older report did not contain company-level analyses." />}
         </article>
-      ))}
+      )}
     </div>
   );
 }
