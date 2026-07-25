@@ -248,6 +248,8 @@ export function PriorityResult({
         </section>
       </div>
 
+      <SampleProfileSections dealId={analysis.dealId} />
+
       {analysis.outcome !== "analysis_unavailable" && (
         <section className="vsee-next-move">
           <span>RECOMMENDED NEXT MOVE</span>
@@ -539,12 +541,33 @@ function BriefFieldsWithSample({
   );
 }
 
+function SampleProfileSections({ dealId }: { dealId: string }) {
+  const profile = SAMPLE_DEAL_PROFILES[dealId];
+  if (!profile) return null;
+  return (
+    <div className="vsee-priority-profile">
+      <SampleProfileFields
+        profile={profile}
+        section="traction"
+        heading={`Traction · ${profile.label}`}
+      />
+      <SampleProfileFields
+        profile={profile}
+        section="dealTerms"
+        heading={`Deal terms · ${profile.label}`}
+      />
+    </div>
+  );
+}
+
 function SampleProfileFields({
   profile,
   section,
+  heading,
 }: {
   profile: SampleDealProfile | undefined;
   section: "traction" | "dealTerms";
+  heading?: string;
 }) {
   if (!profile) return null;
   const rows = section === "traction"
@@ -552,7 +575,7 @@ function SampleProfileFields({
     : profile.dealTerms.map((row) => ({ label: row.term, value: row.value }));
   return (
     <div className="vsee-sample-profile">
-      <span className="vsee-eyebrow">{profile.label}</span>
+      <span className="vsee-eyebrow">{heading ?? profile.label}</span>
       <div className="vsee-evidence-fields">
         {rows.map((row) => (
           <article key={row.label}>

@@ -175,3 +175,6 @@
 @media(max-width:680px){.vsee-draft-dialog{width:100vw;max-width:none;max-height:calc(100dvh - 12px);margin:auto 0 0;border-width:1px 0 0}.vsee-draft-composer>header{position:sticky;top:0;background:#0b0e0c;z-index:1}.vsee-draft-fields{padding:16px}.vsee-draft-composer input,.vsee-draft-composer textarea{font-size:16px}.vsee-draft-composer>footer{position:sticky;bottom:0;background:#0b0e0c;align-items:stretch;flex-direction:column}.vsee-draft-composer>footer>div{display:grid;grid-template-columns:1fr 1fr}.vsee-draft-composer>footer button:last-child{grid-column:1/-1}}
 .vsee-sample-profile{margin-top:18px;display:flex;flex-direction:column;gap:10px}
 .vsee-sample-profile>.vsee-eyebrow{color:var(--lime)}
+.vsee-priority-profile{padding:20px 24px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.vsee-priority-profile .vsee-sample-profile{margin-top:0}
+@media(max-width:1040px){.vsee-priority-profile{grid-template-columns:1fr}}
