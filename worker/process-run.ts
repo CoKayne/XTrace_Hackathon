@@ -24,6 +24,7 @@ import type {
 } from "../lib/matching/service";
 import { createMatchingService } from "../lib/matching/service";
 import {
+  MAX_MARKET_EVENTS_FOR_ANALYSIS,
   selectMarketEventsForAnalysis,
   type MarketEventSelection,
 } from "../lib/market/selection";
@@ -118,7 +119,23 @@ export async function processClaimedRun(
       market.events,
       claimedRun.workspaceId,
     );
-    const marketSelection = selectMarketEventsForAnalysis(market.events);
+    const portfolioTexts = new Map(dependencies.bundles.map(
+      (bundle) => [bundle.dealId, [
+        bundle.companyName,
+        ...bundle.facts.map((fact) => fact.text),
+        ...bundle.interactions.flatMap((interaction) => [
+          interaction.summary,
+          interaction.decisionReason,
+          ...interaction.concerns,
+          ...interaction.revisitConditions,
+        ]),
+      ]],
+    ));
+    const marketSelection = selectMarketEventsForAnalysis(
+      market.events,
+      MAX_MARKET_EVENTS_FOR_ANALYSIS,
+      portfolioTexts,
+    );
     const analysisEvents = marketSelection.events;
     const marketWarnings: string[] = [];
     if (market.status !== "completed") {

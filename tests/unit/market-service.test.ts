@@ -13,6 +13,7 @@ import {
 } from "../../lib/market/service";
 import {
   MAX_MARKET_EVENTS_FOR_ANALYSIS,
+  portfolioSearchTerms,
   selectMarketEventsForAnalysis,
 } from "../../lib/market/selection";
 import type {
@@ -283,6 +284,77 @@ test("deterministically ranks and caps market events for downstream analysis", (
   );
   assert.equal(selected.totalCount, 4);
   assert.equal(selected.droppedCount, 1);
+});
+
+const PORTFOLIO_TEXTS = new Map<string, readonly string[]>([
+  ["deal_1906", ["1906", "The company develops controlled-dose cannabis products.", "Synthetic internal note: the team reviewed the proposition."]],
+  ["deal_100plus", ["100Plus", "100Plus provides remote patient monitoring for chronic care.", "Synthetic internal note: the team reviewed the proposition."]],
+  ["deal_7bridges", ["7bridges", "7bridges automates logistics and supply chain decisions.", "Synthetic internal note: the team reviewed the proposition."]],
+  ["deal_acquco", ["Acquco", "Acquco acquires and scales Amazon marketplace brands.", "Synthetic internal note: the team reviewed the proposition."]],
+]);
+
+test("portfolio-relevant events outrank higher-confidence unrelated events", () => {
+  const terms = portfolioSearchTerms([...PORTFOLIO_TEXTS.values()]);
+  assert.ok(terms.has("cannabis"));
+  assert.ok(terms.has("logistics"));
+  assert.ok(!terms.has("team"), "boilerplate shared by most Deals must be dropped");
+  assert.ok(!terms.has("proposition"), "boilerplate shared by most Deals must be dropped");
+
+  const selected = selectMarketEventsForAnalysis([
+    event({
+      id: "junk-high",
+      confidence: "high",
+      publishedAt: "2026-07-24T11:00:00.000Z",
+    }),
+    event({
+      id: "relevant-medium",
+      title: "Cannabis brand closes Series B funding round",
+      summary: "The cannabis company announced a Series B funding round.",
+      confidence: "medium",
+      publishedAt: "2026-07-23T11:00:00.000Z",
+    }),
+  ], 1, PORTFOLIO_TEXTS);
+
+  assert.deepEqual(
+    selected.events.map((candidate) => candidate.id),
+    ["relevant-medium"],
+    "a portfolio-relevant medium-confidence event must beat unrelated "
+    + "high-confidence noise for the bounded analysis slots",
+  );
+});
+
+test("every Deal's strongest candidate keeps a reserved analysis slot", () => {
+  const noise = Array.from({ length: 6 }, (_, index) =>
+    event({
+      id: `noise-${index}`,
+      title: "Monitoring payment records funding round announced",
+      summary: "A broad announcement mentioning monitoring and payment records.",
+      confidence: "high",
+      publishedAt: "2026-07-24T11:00:00.000Z",
+      canonicalUrl: `https://noise.example/${index}`,
+      contentChecksum: `noise-${index}`,
+    }));
+  const dealSpecific = event({
+    id: "amazon-specific",
+    title: "Amazon marketplace brands see funding round revival",
+    summary: "Amazon marketplace aggregators announced new funding.",
+    confidence: "medium",
+    publishedAt: "2026-07-20T11:00:00.000Z",
+    canonicalUrl: "https://relevant.example/amazon",
+    contentChecksum: "amazon-1",
+  });
+
+  const selected = selectMarketEventsForAnalysis(
+    [...noise, dealSpecific],
+    3,
+    PORTFOLIO_TEXTS,
+  );
+
+  assert.ok(
+    selected.events.some((candidate) => candidate.id === "amazon-specific"),
+    "the only event matching a Deal's own terms must survive the cap even "
+    + "when broad noise outranks it globally",
+  );
 });
 
 test("excludes generic press releases even when a provider assigns broad market labels", () => {
