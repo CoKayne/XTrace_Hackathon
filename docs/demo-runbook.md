@@ -35,40 +35,42 @@ npm run dev
 curl -s http://localhost:3000/api/settings/health
 ```
 
-## 賽前保險：把「好報告」留在最新位置
+## Demo 編排：乾淨開場、現場揭曉（2026-07-25 定案）
 
-Reports 頁只顯示最新報告，所以**demo 畫面 = 最後一次掃描的結果**。開演前
-1-2 小時做賽前預掃：
+原則：**頁面在分析跑完之前不知道結果**。belief revision 的數字與
+PRIORITY RESULT 區塊只在掃描真的產出時才出現；開場時 Reports 頁是
+「No intelligence report yet」的空狀態，數字是台上按掃描後當場跳出的。
+（2026-07-25 彩排實測：空狀態 → 掃描 16 秒 → 1906 belief_revised
+medium 52.5% 出現，與凍結判斷一致。）
 
-1. 按 WAKE AGENT & SCAN MARKET（或 `curl -s -X POST
-   http://localhost:3000/api/runs -H "Content-Type: application/json" -d
-   '{"mode":"xtrace"}'`），約 2 分鐘完成。
-2. 看 Reports 頁：若有 1-2 家 BELIEF REVISED → 停手，這就是 demo 報告。
-3. 若結果比上一份差（例如 0 家 BR），刪掉這份較差的報告，讓好報告回到
-   最新位置：
+1. **開演前 1-2 小時彩排**：按 WAKE AGENT & SCAN MARKET（或
+   `curl -s -X POST http://localhost:3000/api/runs -H "Content-Type:
+   application/json" -d '{"mode":"xtrace"}'`）。記下結果——
+   證據沒變的話台上會得到一模一樣的報告；有新證據則是誠實的新判斷。
+2. **上台前重置（清空報告，讓頁面回到不知情狀態）**：
 
 ```bash
 export SUPABASE_URL="$(security find-generic-password -a "$USER" -s vsee-supabase-url -w)"
 export SRK="$(security find-generic-password -a "$USER" -s vsee-supabase-service-role-key -w)"
-# 先列出報告（新到舊），找出要刪的 report id：
-curl -s "$SUPABASE_URL/rest/v1/intelligence_reports?select=id,run_id,created_at&order=created_at.desc&limit=5" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
-# 刪除該報告（換掉 REPORT_ID，先刪 company_analyses 再刪報告本體）：
-curl -s -X DELETE "$SUPABASE_URL/rest/v1/company_analyses?report_id=eq.REPORT_ID" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
-curl -s -X DELETE "$SUPABASE_URL/rest/v1/intelligence_reports?id=eq.REPORT_ID" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
+curl -s -X DELETE "$SUPABASE_URL/rest/v1/company_analyses?workspace_id=eq.workspace_demo" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
+curl -s -X DELETE "$SUPABASE_URL/rest/v1/intelligence_reports?workspace_id=eq.workspace_demo" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
 ```
 
-刪除只動報告快照，不影響 Deal、來源、XTrace 記憶或後續掃描。
+   只刪報告快照；Deal、來源、XTrace 記憶、判斷快取都不動。重新整理
+   Reports 頁應顯示「No intelligence report yet」。
+3. **台上**：按 WAKE AGENT & SCAN MARKET → 進度畫面走完整管線
+   （市場掃描 → XTrace 記憶召回 → 19 家逐一分析 → 報告）→ 約 20-30 秒
+   後報告生成，belief revision 第一次出現在畫面上。
 
 ## 展示順序
 
 1. Overview：19 筆 Deal、Sample decision record 標籤、XTrace 開關。
-2. Reports 頁（就是最新報告）：講 BELIEF REVISED 的完整故事——
-   Then（當初 pass 的決策脈絡，來自 XTrace recall）對 Now（真實市場事件，
-   引用點開是真的 federalregister.gov / 官方來源），建議行動走白名單。
-3. 選配：現場按 WAKE AGENT & SCAN MARKET 掃一次（約 2 分鐘，進度畫面照
-   stage 走：市場掃描 → XTrace 記憶同步/召回 → 19 筆逐一分析 → 報告）。
-   **注意：現場掃描的新結果會取代畫面上的報告**——若賽前已備好強報告，
-   建議把現場掃描放在講完主故事之後，或跳過。
+2. Reports 頁：現在是空的——「系統還沒有任何結論」。
+3. **現場按 WAKE AGENT & SCAN MARKET**（主秀）：進度畫面走完整管線，
+   約 20-30 秒後報告當場生成。
+4. 講解跳出的 BELIEF REVISED：Then（當初 pass 的決策脈絡，來自 XTrace
+   recall）對 Now（真實市場事件，引用點開是真的 federalregister.gov /
+   官方來源），建議行動走白名單；低於門檻的相關訊號誠實標 monitor。
 
 ## 現場掃描的話術（重要）
 
@@ -82,6 +84,11 @@ curl -s -X DELETE "$SUPABASE_URL/rest/v1/intelligence_reports?id=eq.REPORT_ID" -
 - health 的 worker=false：worker 沒在跑或剛重啟，等 15 秒或重跑步驟 1。
 - POST /api/runs 回 503：fail-closed 機制，同上，等 worker 心跳恢復。
 - 換新資料庫部署時：migrations 必須套到 0006（README 已更新）。
+- 彩排結果不理想且證據已變（凍結模式會把第一次的新判斷存起來重放）：
+  刪掉最新一列判斷快取，強制下一掃重新判斷：
+  `curl -s "$SUPABASE_URL/rest/v1/reasoner_judgments?select=fingerprint&order=updated_at.desc&limit=1" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"`
+  取得 fingerprint 後
+  `curl -s -X DELETE "$SUPABASE_URL/rest/v1/reasoner_judgments?fingerprint=eq.<fp>" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"`
 - 兩個 worker 同時在跑會搶工作：`ps aux | grep runner.ts` 檢查，多的殺掉。
 
 ## 關鍵事實（評審問答備用）
