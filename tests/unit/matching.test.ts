@@ -92,8 +92,8 @@ test("uses the approved weighted score and confidence boundaries", () => {
     evidenceQuality: 1,
   }), 1);
   assert.equal(confidenceForScore(0.78), "high");
-  assert.equal(confidenceForScore(0.55), "medium");
-  assert.equal(confidenceForScore(0.549), "low");
+  assert.equal(confidenceForScore(0.5), "medium");
+  assert.equal(confidenceForScore(0.499), "low");
 });
 
 test("analyze retains grounded low-confidence matches for monitoring", async () => {
@@ -109,10 +109,10 @@ test("analyze retains grounded low-confidence matches for monitoring", async () 
       citedSourceIds: ["market_1", "deal_source_1"],
       demoFixtureIds: [],
       scoreInputs: {
-        eventRelevance: 0.5,
-        dealRelevance: 0.5,
-        priorContextStrength: 0.5,
-        evidenceQuality: 0.5,
+        eventRelevance: 0.45,
+        dealRelevance: 0.45,
+        priorContextStrength: 0.45,
+        evidenceQuality: 0.45,
       },
       claimSourceIds: {
         "AI infrastructure networks funding increased.": ["market_1"],
