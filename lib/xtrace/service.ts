@@ -133,7 +133,9 @@ export function createXTraceService(
         bundleFingerprint,
         serializerVersion,
       });
-      if (reusable) {
+      const reusableIsEmptySuccess = reusable?.status === "succeeded"
+        && reusable.memoryIds.length === 0;
+      if (reusable && !reusableIsEmptySuccess) {
         const record = {
           dealId: reusable.dealId,
           jobId: reusable.jobId,

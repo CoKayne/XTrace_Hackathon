@@ -420,6 +420,37 @@ test("reuses an equivalent non-failed XTrace ingest instead of creating a duplic
   assert.equal(storedJob.serializerVersion, "deal-memory-v1");
 });
 
+test("does not reuse a succeeded ingest that produced no memories", async () => {
+  let ingestCalls = 0;
+  const lineage = createMemoryXTraceLineageRepository();
+  const service = createXTraceService({
+    ingest: async () => {
+      ingestCalls += 1;
+      return { id: `job_${ingestCalls}`, status: "pending" };
+    },
+  } as never, {
+    workspaceId: "workspace_demo",
+    lineageRepository: lineage,
+  });
+
+  const first = await service.ingestDealMemory(bundle);
+  await lineage.recordCompletion({
+    jobId: first.jobId,
+    status: "succeeded",
+    memoryIds: [],
+  });
+
+  const second = await service.ingestDealMemory(bundle);
+
+  assert.equal(
+    ingestCalls,
+    2,
+    "an empty succeeded ingest must not satisfy fingerprint reuse, otherwise "
+    + "a Deal whose extraction produced zero memories can never be recalled",
+  );
+  assert.notEqual(second.jobId, first.jobId);
+});
+
 test("does not reuse an XTrace ingest when serialized decision content changes", async () => {
   let ingestCalls = 0;
   const lineage = createMemoryXTraceLineageRepository();
