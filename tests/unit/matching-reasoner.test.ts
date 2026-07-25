@@ -135,3 +135,63 @@ test("Claude matching reasoner parses JSON and rejects Deals outside the candida
   assert.match(calls[0], /Do not invent company progress/i);
   assert.deepEqual(result.map((item) => item.dealId), ["deal_ably"]);
 });
+
+test("matching reasoner asks for coverage-first reporting", async () => {
+  let systemPrompt = "";
+  const reasoner = createClaudeMatchingReasoner({
+    async complete(input: { system: string }) {
+      systemPrompt = input.system;
+      return "[]";
+    },
+  } as never);
+
+  await reasoner.reason({
+    deals: [{ id: "deal_x", companyName: "X", status: "passed" }],
+    events: [{ id: "event_x", title: "Event X" }],
+    memoryContexts: [],
+    sources: [],
+  } as never);
+
+  assert.match(
+    systemPrompt,
+    /including uncertain ones/,
+    "the reasoner must be instructed to report uncertain overlaps and let "
+    + "downstream deterministic validation filter, otherwise literal "
+    + "instruction-following suppresses recall",
+  );
+});
+
+test("matching reasoner coerces numeric score strings from the model", async () => {
+  const match = {
+    dealId: "deal_x",
+    whyNow: "Event happened.",
+    previousContext: "Prior context.",
+    positiveImplications: [],
+    negativeImplications: [],
+    nextStep: "Review the cited evidence.",
+    citedSourceIds: ["source_x"],
+    demoFixtureIds: [],
+    scoreInputs: {
+      eventRelevance: "0.7",
+      dealRelevance: "0.6",
+      priorContextStrength: "0.5",
+      evidenceQuality: "0.8",
+    },
+    claimSourceIds: { "Event happened.": ["source_x"] },
+  };
+  const reasoner = createClaudeMatchingReasoner({
+    async complete() {
+      return JSON.stringify([match]);
+    },
+  } as never);
+
+  const result = await reasoner.reason({
+    deals: [{ id: "deal_x", companyName: "X", status: "passed" }],
+    events: [{ id: "event_x", title: "Event X" }],
+    memoryContexts: [],
+    sources: [{ id: "source_x", provenance: "public_web", title: "S", url: "https://s.example", excerpt: "Event happened." }],
+  } as never);
+
+  assert.equal(result.length, 1, "string score values must not reject the match");
+  assert.equal(result[0].scoreInputs.eventRelevance, 0.7);
+});

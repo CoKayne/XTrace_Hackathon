@@ -7,11 +7,15 @@ import type {
   ReasonedMatch,
 } from "./service";
 
+// The model occasionally emits numeric scores as strings; coerce instead of
+// rejecting the whole batch of matches.
+const BoundedScoreSchema = z.coerce.number().min(0).max(1);
+
 const ScoreInputsSchema = z.object({
-  eventRelevance: z.number().min(0).max(1),
-  dealRelevance: z.number().min(0).max(1),
-  priorContextStrength: z.number().min(0).max(1),
-  evidenceQuality: z.number().min(0).max(1),
+  eventRelevance: BoundedScoreSchema,
+  dealRelevance: BoundedScoreSchema,
+  priorContextStrength: BoundedScoreSchema,
+  evidenceQuality: BoundedScoreSchema,
 });
 
 const ReasonedMatchSchema = z.object({
@@ -41,10 +45,13 @@ export function createClaudeMatchingReasoner(
           "Do not invent company progress, revenue, customers, fundraising, or current status.",
           "Use only the supplied memory context and source catalog.",
           "Every sentence in whyNow and previousContext, and every implication, must appear verbatim as a key in claimSourceIds.",
-          "Every claim must be copied verbatim from every cited SourceRef.excerpt; a source ID alone is not evidence.",
+          "Claims are validated mechanically: each claim must be an exact, character-for-character contiguous substring of every cited source's excerpt in the sources catalog. Compose whyNow and previousContext only by copy-pasting sentences out of source excerpts; never write your own sentence, never paraphrase, never merge two excerpts into one sentence.",
+          "memoryContexts text is retrieval output, not quotable evidence: use it to decide which Deals are relevant, then locate the matching entry in the sources catalog and copy from that excerpt instead.",
           "Synthetic fixture records are internal demo context, never external company facts.",
           "nextStep must be a human research, review, diligence, or follow-up action; never recommend investing or committing capital.",
-          "Return JSON only: an array matching the requested schema. Return [] when the evidence is insufficient.",
+          "Report every credible Deal/event overlap you find, including uncertain ones; reflect uncertainty in scoreInputs rather than omitting the match. Downstream deterministic validation drops ungrounded claims, so coverage matters more than filtering here.",
+          "Score each dimension honestly on its own merits, not uniformly low: when a public event directly addresses a Deal's sector, decision reason, or a recorded revisit condition (for example a reimbursement rule change for a remote patient monitoring company), eventRelevance and dealRelevance belong at 0.7 or higher; reserve scores below 0.4 for tangential links. Do not down-score a well-evidenced direct overlap merely to be cautious.",
+          "Return JSON only: an array matching the requested schema. Return [] only when no event plausibly relates to any Deal.",
         ].join(" ");
       const requestContent = JSON.stringify({
         task: "Rank credible Deal/event overlaps for human follow-up.",
@@ -58,11 +65,12 @@ export function createClaudeMatchingReasoner(
           citedSourceIds: ["valid source IDs only"],
           demoFixtureIds: ["fixture IDs used"],
           scoreInputs: {
-            eventRelevance: "0..1",
-            dealRelevance: "0..1",
-            priorContextStrength: "0..1",
-            evidenceQuality: "0..1",
+            eventRelevance: 0.55,
+            dealRelevance: 0.55,
+            priorContextStrength: 0.55,
+            evidenceQuality: 0.55,
           },
+          scoreInputsNote: "scoreInputs values are JSON numbers between 0 and 1, never strings",
           claimSourceIds: {
             "exact sentence copied from whyNow": ["valid source IDs"],
           },
