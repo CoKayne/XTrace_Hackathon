@@ -230,7 +230,17 @@ export default function Home() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void load();
+      void (async () => {
+        // Demo choreography: every page load starts from a clean slate, so
+        // scan results only ever appear as the outcome of a scan the viewer
+        // started. A failed reset must not block the app from loading.
+        try {
+          await api("/api/demo/reset", { method: "POST" });
+        } catch {
+          // Ignore: the reset is best-effort.
+        }
+        await load();
+      })();
     }, 0);
     return () => window.clearTimeout(timer);
   }, [load]);

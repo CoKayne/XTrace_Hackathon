@@ -59,6 +59,10 @@ export interface IntelligenceRepository {
     workspaceId: string,
     dealId: string,
   ): Promise<CompanyAnalysis[]>;
+  // Demo choreography: wipe every scan product (reports, analyses, finished
+  // runs, market events) while keeping the corpus, XTrace lineage, and
+  // stored judgments. Queued and running scans survive.
+  resetScanProducts(workspaceId?: string): Promise<void>;
 }
 
 function marketWindowAt(to: Date) {
@@ -285,6 +289,14 @@ export function createMemoryIntelligenceRepository(
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
         .map((analysis) => structuredClone(analysis));
     },
+    async resetScanProducts(workspaceId = DEFAULT_WORKSPACE_ID) {
+      for (const [key, row] of events) {
+        if (row.workspaceId === workspaceId) events.delete(key);
+      }
+      for (const [key, report] of reports) {
+        if (report.workspaceId === workspaceId) reports.delete(key);
+      }
+    },
   };
 }
 
@@ -479,6 +491,24 @@ export function createSupabaseIntelligenceRepository(options: {
         + `&deal_id=eq.${encodeURIComponent(dealId)}&order=created_at.desc`,
       ) as Record<string, unknown>[];
       return rows.map(toAnalysis);
+    },
+    async resetScanProducts(workspaceId = DEFAULT_WORKSPACE_ID) {
+      const workspace = encodeURIComponent(workspaceId);
+      // Children first; deleting finished runs also cascades their steps.
+      // Queued and running scans survive so an in-flight demo scan can still
+      // land its report after the wipe.
+      const deletions = [
+        `/company_analyses?workspace_id=eq.${workspace}`,
+        `/intelligence_reports?workspace_id=eq.${workspace}`,
+        `/scan_runs?workspace_id=eq.${workspace}&status=in.(completed,partial,failed)`,
+        `/market_events?workspace_id=eq.${workspace}`,
+      ];
+      for (const path of deletions) {
+        await request(path, {
+          method: "DELETE",
+          headers: { Prefer: "return=minimal" },
+        });
+      }
     },
   };
 }

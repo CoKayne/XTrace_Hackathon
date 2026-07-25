@@ -507,3 +507,46 @@ test("Supabase reads accept PostgREST timestamptz offset timestamps", async () =
   );
   assert.equal(dealAnalyses.length, 19);
 });
+
+test("resetScanProducts wipes reports and market events but nothing else is reachable", async () => {
+  const repository = createMemoryIntelligenceRepository({
+    now: () => new Date("2026-07-24T12:00:00.000Z"),
+  });
+  await repository.saveMarketEvents([event("wiped")]);
+  await repository.saveReport({
+    id: "report_wiped",
+    workspaceId: "workspace_demo",
+    runId: "run_wiped",
+    createdAt: "2026-07-23T12:00:00.000Z",
+    marketSummary: "To be wiped.",
+    opportunities: [],
+  });
+
+  await repository.resetScanProducts("workspace_demo");
+
+  assert.deepEqual(await repository.listReports("workspace_demo"), []);
+  assert.deepEqual(await repository.listMarketEvents("workspace_demo"), []);
+});
+
+test("Supabase resetScanProducts keeps queued and running scans alive", async () => {
+  const deletePaths: string[] = [];
+  const repository = intelligenceRepositoryModule.createSupabaseIntelligenceRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "DELETE") deletePaths.push(String(input));
+      return new Response(null, { status: 204 });
+    },
+  });
+
+  await repository.resetScanProducts("workspace_demo");
+
+  assert.equal(deletePaths.length, 4);
+  const runsDelete = deletePaths.find((path) => path.includes("/scan_runs"));
+  assert.ok(runsDelete, "finished scan runs must be wiped");
+  assert.match(
+    runsDelete!,
+    /status=in\.\(completed,partial,failed\)/,
+    "queued and running scans must survive the reset",
+  );
+});

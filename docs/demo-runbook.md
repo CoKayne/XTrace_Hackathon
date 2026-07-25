@@ -43,24 +43,20 @@ PRIORITY RESULT 區塊只在掃描真的產出時才出現；開場時 Reports �
 （2026-07-25 彩排實測：空狀態 → 掃描 16 秒 → 1906 belief_revised
 medium 52.5% 出現，與凍結判斷一致。）
 
-1. **開演前 1-2 小時彩排**：按 WAKE AGENT & SCAN MARKET（或
-   `curl -s -X POST http://localhost:3000/api/runs -H "Content-Type:
-   application/json" -d '{"mode":"xtrace"}'`）。記下結果——
+**重置是全自動的：每次頁面載入（重整）都會清空所有掃描產物**——報告、
+分析、已完成的 run 歷史、市場事件。保留 Deal 語料、來源、XTrace 記憶
+與判斷快取；排隊中/執行中的掃描不受影響。（實作：頁面掛載時打
+`POST /api/demo/reset`。）
+
+1. **開演前 1-2 小時彩排**：按 WAKE AGENT & SCAN MARKET。記下結果——
    證據沒變的話台上會得到一模一樣的報告；有新證據則是誠實的新判斷。
-2. **上台前重置（清空報告，讓頁面回到不知情狀態）**：
-
-```bash
-export SUPABASE_URL="$(security find-generic-password -a "$USER" -s vsee-supabase-url -w)"
-export SRK="$(security find-generic-password -a "$USER" -s vsee-supabase-service-role-key -w)"
-curl -s -X DELETE "$SUPABASE_URL/rest/v1/company_analyses?workspace_id=eq.workspace_demo" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
-curl -s -X DELETE "$SUPABASE_URL/rest/v1/intelligence_reports?workspace_id=eq.workspace_demo" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
-```
-
-   只刪報告快照；Deal、來源、XTrace 記憶、判斷快取都不動。重新整理
-   Reports 頁應顯示「No intelligence report yet」。
+2. **上台前**：重新整理頁面一次即可，所有頁面回到不知情狀態
+   （Reports =「No intelligence report yet」、Overview =「No report yet」）。
 3. **台上**：按 WAKE AGENT & SCAN MARKET → 進度畫面走完整管線
-   （市場掃描 → XTrace 記憶召回 → 19 家逐一分析 → 報告）→ 約 20-30 秒
+   （市場掃描 → XTrace 記憶召回 → 19 家逐一分析 → 報告）→ 約 16-30 秒
    後報告生成，belief revision 第一次出現在畫面上。
+4. **注意**：報告出現後**不要再重整頁面**（會被自動清掉）；真的手滑了
+   就再按一次掃描，判斷重放會在約 16 秒內重現同一份報告。
 
 ## 展示順序
 
