@@ -178,3 +178,56 @@
 .vsee-priority-profile{padding:20px 24px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:22px}
 .vsee-priority-profile .vsee-sample-profile{margin-top:0}
 @media(max-width:1040px){.vsee-priority-profile{grid-template-columns:1fr}}
+
+/* 2026-07-25 legibility pass: bigger reading sizes, key lines first, long
+   detail text collapsed behind native details/summary. */
+.vsee-section-title p,.vsee-hero>div:first-child>p:last-child{font-size:14px}
+.vsee-report>header>div>p{font-size:13px}
+.vsee-report-coverage strong{font-size:30px}
+.vsee-report-coverage span{font-size:10px}
+.vsee-no-belief-change p{font-size:14px}
+.vsee-no-belief-change>span,.vsee-company-analysis-list>header>div>span,.vsee-priority-grid>section>span,.vsee-next-move>span{font-size:10px}
+.vsee-priority-grid h3{font-size:26px}
+.vsee-priority-grid dt{font-size:10px}
+.vsee-priority-grid dd,.vsee-priority-grid>section>p{font-size:14px;color:#c2c9c4}
+.vsee-priority-grid>section{min-height:250px}
+.vsee-priority-grid li strong{font-size:15px}
+.vsee-priority-grid li small{font-size:10px}
+.vsee-belief-shift>span{font-size:12px!important}
+.vsee-belief-shift>p{font-size:13px!important}
+.vsee-belief-shift>small{font-size:10px}
+.vsee-next-move p{font-size:18px}
+.vsee-analysis-badges>span,.vsee-analysis-outcome{padding:8px 10px;font-size:10px}
+.vsee-company-analysis-rows>button>div strong{font-size:20px}
+.vsee-company-analysis-rows>button>div small,.vsee-company-analysis-rows>button>span:not(.vsee-analysis-outcome){font-size:9px}
+.vsee-company-analysis-rows>button>p{font-size:12px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vsee-company-analysis-rows>button>b{font-size:9px}
+.vsee-evidence-fields>article>span{font-size:10px}
+.vsee-evidence-fields>article>strong{font-size:20px}
+.vsee-brief-risks p,.vsee-decision-history p,.vsee-source-lineage p{font-size:13px}
+.vsee-company-brief-card>nav button{font-size:10px}
+.vsee-company-brief-card>header p{font-size:10px}
+.vsee-event>p{font-size:13px}
+.vsee-context b{font-size:8px}
+.vsee-context span{font-size:12px}
+.vsee-context-grid dt{font-size:9px}
+.vsee-context-grid dd{font-size:12px}
+.vsee-chat-log article>p{font-size:14px}
+.vsee-opportunity p{font-size:13px}
+.vsee-implications{font-size:13px}
+.vsee-workflow-row>p{font-size:12px}
+.vsee-latest>p{font-size:12px}
+.vsee-mini-result strong{font-size:13px}
+.vsee-empty p{font-size:12px}
+.vsee-priority-lead{margin:0 0 16px;color:#e6ebe7;font:400 17px/1.55 var(--serif)}
+.vsee-details{margin-top:8px;border-top:1px solid var(--line)}
+.vsee-details>summary{padding:12px 0;color:#9aa49d;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font:700 10px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.vsee-details>summary::-webkit-details-marker{display:none}
+.vsee-details>summary::before{content:"▸";color:var(--lime);transition:transform .15s}
+.vsee-details[open]>summary::before{transform:rotate(90deg)}
+.vsee-details>summary:hover{color:var(--lime)}
+.vsee-details>p{margin:0 0 14px;color:#b4bcb7;font-size:13px;line-height:1.7}
+.vsee-details dl{margin:0 0 14px;display:grid;gap:5px}
+.vsee-report>header .vsee-details{margin-top:4px;border-top:0;max-width:860px}
+.vsee-report>header .vsee-details>summary{padding:7px 0}
+.vsee-priority-grid>section>p.vsee-priority-lead{margin:0 0 16px;color:#e6ebe7;font:400 17px/1.55 var(--serif)}

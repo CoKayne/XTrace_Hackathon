@@ -78,6 +78,26 @@ function formatReportDate(value: string) {
   }).format(new Date(value));
 }
 
+// Grounded text is assembled from claim sentences, so the same source
+// sentence can repeat. Display-level dedupe only; the stored text and the
+// evidence trail are untouched.
+function dedupeSentences(text: string): string {
+  const sentences = text.split(/(?<=\.)\s+(?=["“(A-Z])/);
+  const seen = new Set<string>();
+  const kept: string[] = [];
+  for (const raw of sentences) {
+    const sentence = raw.trim();
+    if (!sentence || seen.has(sentence)) continue;
+    seen.add(sentence);
+    kept.push(sentence);
+  }
+  return kept.join(" ");
+}
+
+function leadSentence(text: string): string {
+  return dedupeSentences(text).split(/(?<=\.)\s+(?=["“(A-Z])/)[0] ?? text;
+}
+
 export function CompanyIntelligenceReport({
   report,
   focused,
@@ -114,7 +134,10 @@ export function CompanyIntelligenceReport({
         <div>
           <span>REPORT · {formatReportDate(report.createdAt)}</span>
           <h2>{report.counts.companyCount} companies analyzed</h2>
-          <p>{report.marketSummary}</p>
+          <details className="vsee-details">
+            <summary>How this scan was assembled</summary>
+            <p>{report.marketSummary}</p>
+          </details>
         </div>
         {allowDraft && (
           <button onClick={() => onDraft(report)}>DRAFT THIS REPORT →</button>
@@ -210,10 +233,15 @@ export function PriorityResult({
         <section>
           <span>THEN / INVESTMENT MEMORY</span>
           <h3>What the fund believed</h3>
-          <Definition label="Previous meeting" value={analysis.investmentMemory.previousMeetingSummary} />
-          <Definition label="Decision reason" value={analysis.investmentMemory.decisionReason} />
-          <Definition label="Partner concerns" value={analysis.investmentMemory.concerns.join(" · ")} />
-          <Definition label="Revisit conditions" value={analysis.investmentMemory.revisitConditions.join(" · ")} />
+          <p className="vsee-priority-lead">
+            {analysis.investmentMemory.decisionReason}
+          </p>
+          <details className="vsee-details">
+            <summary>Full decision context</summary>
+            <Definition label="Previous meeting" value={analysis.investmentMemory.previousMeetingSummary} />
+            <Definition label="Partner concerns" value={analysis.investmentMemory.concerns.join(" · ")} />
+            <Definition label="Revisit conditions" value={analysis.investmentMemory.revisitConditions.join(" · ")} />
+          </details>
         </section>
         <section className={`vsee-belief-shift ${analysis.outcome}`}>
           <span>{outcomeLabels[analysis.outcome].toUpperCase()}</span>
@@ -234,7 +262,9 @@ export function PriorityResult({
         <section>
           <span>NOW / MARKET EVIDENCE</span>
           <h3>What changed</h3>
-          <p>{analysis.marketEvidence.explanation}</p>
+          <p className="vsee-priority-lead">
+            {leadSentence(analysis.marketEvidence.explanation)}
+          </p>
           {!!analysis.marketEvidence.events.length && (
             <ul>
               {analysis.marketEvidence.events.map((event) => (
@@ -244,6 +274,13 @@ export function PriorityResult({
                 </li>
               ))}
             </ul>
+          )}
+          {dedupeSentences(analysis.marketEvidence.explanation)
+            !== leadSentence(analysis.marketEvidence.explanation) && (
+            <details className="vsee-details">
+              <summary>Full cited evidence</summary>
+              <p>{dedupeSentences(analysis.marketEvidence.explanation)}</p>
+            </details>
           )}
         </section>
       </div>
