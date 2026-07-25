@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from "react";
 
+import {
+  SAMPLE_DEAL_PROFILES,
+  type SampleDealProfile,
+} from "./deal-profiles";
 import type {
   CompanyAnalysis,
   CompanyAnalysisConfidence,
@@ -418,16 +422,28 @@ export function CompanyBrief({
             />
           )}
           {activeTab === "Traction" && (
-            <EvidenceFields
-              fields={analysis.companyBrief.traction}
-              sources={analysis.sources}
-            />
+            <>
+              <EvidenceFields
+                fields={analysis.companyBrief.traction}
+                sources={analysis.sources}
+              />
+              <SampleProfileFields
+                profile={SAMPLE_DEAL_PROFILES[analysis.dealId]}
+                section="traction"
+              />
+            </>
           )}
           {activeTab === "Deal Terms" && (
-            <EvidenceFields
-              fields={analysis.companyBrief.dealTerms}
-              sources={analysis.sources}
-            />
+            <>
+              <EvidenceFields
+                fields={analysis.companyBrief.dealTerms}
+                sources={analysis.sources}
+              />
+              <SampleProfileFields
+                profile={SAMPLE_DEAL_PROFILES[analysis.dealId]}
+                section="dealTerms"
+              />
+            </>
           )}
           {activeTab === "Risks" && (
             <div className="vsee-brief-risks">
@@ -503,6 +519,32 @@ function EvidenceFields({
 function Unavailable() {
   return (
     <p className="vsee-unavailable">Not available in current evidence</p>
+  );
+}
+
+function SampleProfileFields({
+  profile,
+  section,
+}: {
+  profile: SampleDealProfile | undefined;
+  section: "traction" | "dealTerms";
+}) {
+  if (!profile) return null;
+  const rows = section === "traction"
+    ? profile.traction.map((row) => ({ label: row.metric, value: row.value }))
+    : profile.dealTerms.map((row) => ({ label: row.term, value: row.value }));
+  return (
+    <div className="vsee-sample-profile">
+      <span className="vsee-eyebrow">{profile.label}</span>
+      <div className="vsee-evidence-fields">
+        {rows.map((row) => (
+          <article key={row.label}>
+            <span>{row.label}</span>
+            <strong>{row.value}</strong>
+          </article>
+        ))}
+      </div>
+    </div>
   );
 }
 
