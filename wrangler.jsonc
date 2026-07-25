@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "vsee-vc",
+  "compatibility_date": "2026-07-25",
+  // vinext injects nodejs_compat itself; declaring it here too made the
+  // merged deploy config list it twice, which the Cloudflare API rejects.
+  "main": "./worker/index.ts",
+  "assets": {
+    "directory": "dist/client",
+    "not_found_handling": "none",
+    "binding": "ASSETS"
+  },
+  "images": {
+    "binding": "IMAGES"
+  }
+}
