@@ -80,7 +80,8 @@ apply [`drizzle/0001_remove_report_delivery.sql`](drizzle/0001_remove_report_del
 then [`drizzle/0002_durable_decision_lineage.sql`](drizzle/0002_durable_decision_lineage.sql),
 then [`drizzle/0003_sanitize_report_next_steps.sql`](drizzle/0003_sanitize_report_next_steps.sql),
 then [`drizzle/0004_company_analyses.sql`](drizzle/0004_company_analyses.sql),
-then [`drizzle/0005_sample_decision_label.sql`](drizzle/0005_sample_decision_label.sql)
+then [`drizzle/0005_sample_decision_label.sql`](drizzle/0005_sample_decision_label.sql),
+then [`drizzle/0006_reasoner_judgments.sql`](drizzle/0006_reasoner_judgments.sql)
 to the Supabase PostgreSQL database before seeding the fixed corpus. Operators
 upgrading a database that already has earlier migrations applied may apply the
 missing migrations in order. Company intelligence reports require `0004`;
@@ -100,6 +101,18 @@ npm run worker
 
 The worker and Web App must receive the same Supabase, XTrace, Anthropic, and
 market-source environment variables.
+
+### Deterministic judgment replay
+
+Claude Opus 4.8 exposes no sampling controls, so identical evidence would
+otherwise produce slightly different scores on every scan. The worker stores
+each matching judgment in `reasoner_judgments`, keyed by a fingerprint of the
+full evidence input (deal bundles, selected market events, recalled memory,
+source catalog, prompt, and model). While the evidence window is unchanged,
+repeated scans replay the stored judgment and produce identical reports; new
+evidence changes the fingerprint and triggers a fresh judgment. Set
+`REASONER_JUDGMENT_REFRESH=1` on the worker to bypass replay and overwrite the
+stored judgment.
 
 ### Production worker container
 
@@ -135,7 +148,7 @@ worker heartbeat.
 
 ### Worker runbook
 
-1. For a new database, apply migrations `0000` through `0005` in order; for an
+1. For a new database, apply migrations `0000` through `0006` in order; for an
    existing database, apply the migrations it is missing in order. Then seed
    the corpus before starting the Worker.
 2. Start the Worker and wait for the container health status to become

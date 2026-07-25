@@ -2,6 +2,7 @@ import { hostname } from "node:os";
 
 import { getDataClient } from "../db/client";
 import { getIntelligenceRepository } from "../db/repositories/intelligence";
+import { getReasonerJudgmentsRepository } from "../db/repositories/reasoner-judgments";
 import { createRunsRepository } from "../db/repositories/runs";
 import { getXTraceLineageRepository } from "../db/repositories/xtrace-lineage";
 import { createClaudeClient } from "../lib/claude/client";
@@ -91,7 +92,10 @@ export async function runNextQueuedScan(): Promise<boolean> {
       bundles: buildPreloadedDealMemoryBundles(),
       importGate: createProductInputGate(createDefaultDemoDataStore()),
       market: createMarketService({ providers }),
-      reasoner: createClaudeMatchingReasoner(createClaudeClient()),
+      reasoner: createClaudeMatchingReasoner(createClaudeClient(), {
+        judgments: getReasonerJudgmentsRepository(),
+        refreshJudgments: process.env.REASONER_JUDGMENT_REFRESH === "1",
+      }),
       xtrace,
     });
   } catch (error) {

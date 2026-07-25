@@ -1,5 +1,8 @@
+import { createHash } from "node:crypto";
+
 import { z } from "zod";
 
+import type { ReasonerJudgmentsRepository } from "../../db/repositories/reasoner-judgments";
 import type { ClaudeClient } from "../claude/client";
 import type {
   MatchingInput,
@@ -33,8 +36,18 @@ const ReasonedMatchSchema = z.object({
 
 const ReasonedMatchesSchema = z.array(ReasonedMatchSchema).max(20);
 
+export type ClaudeMatchingReasonerOptions = {
+  // Persisted judgment replay. Opus 4.8 exposes no sampling controls, so the
+  // only way to keep repeated scans deterministic is to store the judgment for
+  // a given evidence fingerprint and replay it while the evidence is unchanged.
+  judgments?: ReasonerJudgmentsRepository;
+  // When true, skip replay and overwrite the stored judgment (re-roll mode).
+  refreshJudgments?: boolean;
+};
+
 export function createClaudeMatchingReasoner(
   client: ClaudeClient,
+  options: ClaudeMatchingReasonerOptions = {},
 ): MatchingReasoner {
   return {
     async reason(input: MatchingInput): Promise<ReasonedMatch[]> {
@@ -80,6 +93,14 @@ export function createClaudeMatchingReasoner(
         memoryContexts: input.memoryContexts,
         sources: input.sources,
       });
+      const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
+      const fingerprint = createHash("sha256")
+        .update(`reasoner-judgment-v1\n${model}\n${system}\n${requestContent}`, "utf8")
+        .digest("hex");
+      if (options.judgments && !options.refreshJudgments) {
+        const replayed = await replayJudgment(options.judgments, fingerprint, input);
+        if (replayed) return replayed;
+      }
       let response = await client.complete({
         system,
         messages: [{
@@ -107,24 +128,54 @@ export function createClaudeMatchingReasoner(
         });
         parsed = ReasonedMatchesSchema.parse(parseJson(response));
       }
-      const allowedDeals = new Set(input.deals.map((deal) => deal.id));
-      const allowedSources = new Set(input.sources.map((source) => source.id));
-      return parsed
-        .filter((match) => allowedDeals.has(match.dealId))
-        .map((match) => ({
-          ...match,
-          citedSourceIds: unique(match.citedSourceIds)
-            .filter((sourceId) => allowedSources.has(sourceId)),
-          demoFixtureIds: unique(match.demoFixtureIds),
-          claimSourceIds: Object.fromEntries(
-            Object.entries(match.claimSourceIds).map(([claim, sourceIds]) => [
-              claim,
-              unique(sourceIds).filter((sourceId) => allowedSources.has(sourceId)),
-            ]),
-          ),
-        }));
+      const matches = normalizeMatches(parsed, input);
+      if (options.judgments) {
+        try {
+          await options.judgments.save({ fingerprint, model, payload: matches });
+        } catch {
+          // Persistence is an optimization; the live judgment still stands.
+        }
+      }
+      return matches;
     },
   };
+}
+
+async function replayJudgment(
+  judgments: ReasonerJudgmentsRepository,
+  fingerprint: string,
+  input: MatchingInput,
+): Promise<ReasonedMatch[] | null> {
+  try {
+    const record = await judgments.find(fingerprint);
+    if (!record) return null;
+    return normalizeMatches(ReasonedMatchesSchema.parse(record.payload), input);
+  } catch {
+    // An unreadable stored judgment falls through to a live model call.
+    return null;
+  }
+}
+
+function normalizeMatches(
+  parsed: z.infer<typeof ReasonedMatchesSchema>,
+  input: MatchingInput,
+): ReasonedMatch[] {
+  const allowedDeals = new Set(input.deals.map((deal) => deal.id));
+  const allowedSources = new Set(input.sources.map((source) => source.id));
+  return parsed
+    .filter((match) => allowedDeals.has(match.dealId))
+    .map((match) => ({
+      ...match,
+      citedSourceIds: unique(match.citedSourceIds)
+        .filter((sourceId) => allowedSources.has(sourceId)),
+      demoFixtureIds: unique(match.demoFixtureIds),
+      claimSourceIds: Object.fromEntries(
+        Object.entries(match.claimSourceIds).map(([claim, sourceIds]) => [
+          claim,
+          unique(sourceIds).filter((sourceId) => allowedSources.has(sourceId)),
+        ]),
+      ),
+    }));
 }
 
 function parseJson(text: string): unknown {

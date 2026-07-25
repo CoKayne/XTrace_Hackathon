@@ -2,6 +2,10 @@
 
 > Reports 頁**只顯示最新一份報告**（歷史仍在資料庫與 API，UI 不再列出）。
 > belief_revised 門檻：medium 信心 = 加權分數 ≥ 0.50（2026-07-25 產品決策）。
+> 分數不再每輪浮動：同樣證據的判斷會存進 `reasoner_judgments` 表
+> （migration 0006），之後掃描直接重放同一份判斷；只有證據真的變了
+> 才會重新判斷。worker 加 `REASONER_JUDGMENT_REFRESH=1` 可強制重判
+> （銀行模式，找到好結果後拿掉此變數即凍結）。
 
 ## 開演前 10 分鐘檢查清單
 
@@ -77,7 +81,7 @@ curl -s -X DELETE "$SUPABASE_URL/rest/v1/intelligence_reports?id=eq.REPORT_ID" -
 
 - health 的 worker=false：worker 沒在跑或剛重啟，等 15 秒或重跑步驟 1。
 - POST /api/runs 回 503：fail-closed 機制，同上，等 worker 心跳恢復。
-- 換新資料庫部署時：migrations 必須套到 0005（README 已更新）。
+- 換新資料庫部署時：migrations 必須套到 0006（README 已更新）。
 - 兩個 worker 同時在跑會搶工作：`ps aux | grep runner.ts` 檢查，多的殺掉。
 
 ## 關鍵事實（評審問答備用）

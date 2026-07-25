@@ -195,3 +195,84 @@ test("matching reasoner coerces numeric score strings from the model", async () 
   assert.equal(result.length, 1, "string score values must not reject the match");
   assert.equal(result[0].scoreInputs.eventRelevance, 0.7);
 });
+
+const REPLAY_COMPLETION = `[
+  {
+    "dealId": "deal_ably",
+    "whyNow": "The official announcement concerns realtime infrastructure.",
+    "previousContext": "The synthetic record says the fund passed.",
+    "positiveImplications": [],
+    "negativeImplications": [],
+    "nextStep": "Review the cited source and decide whether to follow up.",
+    "citedSourceIds": ["market_source", "deal_source"],
+    "demoFixtureIds": ["fixture_ably"],
+    "scoreInputs": {
+      "eventRelevance": 0.8,
+      "dealRelevance": 0.8,
+      "priorContextStrength": 0.7,
+      "evidenceQuality": 0.8
+    },
+    "claimSourceIds": {
+      "The official announcement concerns realtime infrastructure.": ["market_source"]
+    }
+  }
+]`;
+
+function replayInput() {
+  return {
+    deals: [{ id: "deal_ably", companyName: "Ably", status: "passed" as const }],
+    events: [event],
+    memoryContexts: buildStructuredMemoryContexts([bundle]),
+    sources: buildMatchingSources([bundle], [event]),
+  };
+}
+
+test("identical evidence replays the stored judgment without a new model call", async () => {
+  const { createMemoryReasonerJudgmentsRepository } = await import(
+    "../../db/repositories/reasoner-judgments"
+  );
+  const judgments = createMemoryReasonerJudgmentsRepository();
+  let modelCalls = 0;
+  const reasoner = createClaudeMatchingReasoner({
+    async complete() {
+      modelCalls += 1;
+      return REPLAY_COMPLETION;
+    },
+  }, { judgments });
+
+  const first = await reasoner.reason(replayInput());
+  const second = await reasoner.reason(replayInput());
+
+  assert.equal(modelCalls, 1);
+  assert.deepEqual(second, first);
+  assert.equal(first[0].dealId, "deal_ably");
+});
+
+test("refresh mode re-rolls the model and later replays the refreshed judgment", async () => {
+  const { createMemoryReasonerJudgmentsRepository } = await import(
+    "../../db/repositories/reasoner-judgments"
+  );
+  const judgments = createMemoryReasonerJudgmentsRepository();
+  let refreshCalls = 0;
+  const refreshing = createClaudeMatchingReasoner({
+    async complete() {
+      refreshCalls += 1;
+      return REPLAY_COMPLETION;
+    },
+  }, { judgments, refreshJudgments: true });
+
+  await refreshing.reason(replayInput());
+  await refreshing.reason(replayInput());
+  assert.equal(refreshCalls, 2, "refresh mode must bypass replay");
+
+  let frozenCalls = 0;
+  const frozen = createClaudeMatchingReasoner({
+    async complete() {
+      frozenCalls += 1;
+      return REPLAY_COMPLETION;
+    },
+  }, { judgments });
+  const replayed = await frozen.reason(replayInput());
+  assert.equal(frozenCalls, 0, "frozen mode must replay the stored judgment");
+  assert.equal(replayed[0].dealId, "deal_ably");
+});
