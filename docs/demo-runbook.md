@@ -1,5 +1,11 @@
 # VSee Demo Runbook（2026-07-25 版）
 
+> **公開網址（交給評審的連結）**：https://vsee-vc.j6m3c041008.workers.dev
+> Web 部署在 Cloudflare Workers（`npx vinext deploy` 重新部署；secrets 已
+> 用 wrangler 設好）。**背景 worker 跑在你的 Mac 上**——連結存活期間
+> Mac 必須開機、worker 必須在跑（開演前檢查清單步驟 1）。頁面重整不會
+> 清資料；清空只有頂欄 RESET DEMO 按鈕會做。
+
 > Reports 頁**只顯示最新一份報告**（歷史仍在資料庫與 API，UI 不再列出）。
 > belief_revised 門檻：medium 信心 = 加權分數 ≥ 0.50（2026-07-25 產品決策）。
 > 分數不再每輪浮動：同樣證據的判斷會存進 `reasoner_judgments` 表
