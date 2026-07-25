@@ -22,7 +22,7 @@ export function weightedOpportunityScore(input: OpportunityScoreInputs) {
 
 export function confidenceForScore(score: number): OpportunityConfidence {
   if (score >= 0.78) return "high";
-  if (score >= 0.58) return "medium";
+  if (score >= 0.55) return "medium";
   return "low";
 }
 

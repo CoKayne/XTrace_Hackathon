@@ -92,8 +92,8 @@ test("uses the approved weighted score and confidence boundaries", () => {
     evidenceQuality: 1,
   }), 1);
   assert.equal(confidenceForScore(0.78), "high");
-  assert.equal(confidenceForScore(0.58), "medium");
-  assert.equal(confidenceForScore(0.579), "low");
+  assert.equal(confidenceForScore(0.55), "medium");
+  assert.equal(confidenceForScore(0.549), "low");
 });
 
 test("analyze retains grounded low-confidence matches for monitoring", async () => {
