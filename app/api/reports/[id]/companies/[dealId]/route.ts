@@ -1,5 +1,5 @@
 import { getIntelligenceRepository } from "../../../../../../db/repositories/intelligence";
-import { jsonError, jsonOk } from "../../../../../../lib/api/response";
+import { errorResponse, jsonError, jsonOk } from "../../../../../../lib/api/response";
 import { toPublicCompanyAnalysis } from "../../../../../../lib/reports/public";
 
 export const dynamic = "force-dynamic";
@@ -8,11 +8,12 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string; dealId: string }> },
 ) {
-  const { id, dealId } = await context.params;
-  const report = await getIntelligenceRepository().getReport(id);
-  if (!report) {
-    return jsonError("NOT_FOUND", `Report ${id} was not found`, 404);
-  }
+  try {
+    const { id, dealId } = await context.params;
+    const report = await getIntelligenceRepository().getReport(id);
+    if (!report) {
+      return jsonError("NOT_FOUND", `Report ${id} was not found`, 404);
+    }
   const analysis = report.companyAnalyses.find(
     (candidate) => candidate.dealId === dealId,
   );
@@ -32,4 +33,7 @@ export async function GET(
         503,
         true,
       );
+  } catch (error) {
+    return errorResponse(error);
+  }
 }
