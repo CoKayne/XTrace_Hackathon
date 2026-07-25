@@ -59,6 +59,12 @@ records are sample data and permanently display:
 
 Never remove or obscure that label.
 
+The Deals view may additionally show fabricated traction and deal-term
+figures for a company. That block permanently displays the label
+`Sample deal profile`, is presentation-only, and never enters memory
+bundles, XTrace, recall queries, or matching input (a regression test
+pins this).
+
 The fixed corpus is the demo's initial private knowledge base. It does not
 replace the live market scan: every manual run still collects public evidence
 published in the latest 14 days.

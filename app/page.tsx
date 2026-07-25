@@ -13,6 +13,7 @@ import {
   type InternalReportDraft,
 } from "../lib/reports/draft";
 import { decisionReasonLabel } from "../lib/demo/decision-label";
+import { SAMPLE_DEAL_PROFILES } from "./deal-profiles";
 import type { ChatMemoryStatus } from "../lib/chat/service";
 
 type View =
@@ -784,7 +785,9 @@ function DealsView({ deals, query, onQuery }: { deals: Deal[]; query: string; on
         />
       ) : (
         <div className="vsee-deal-list">
-          {deals.map((deal) => (
+          {deals.map((deal) => {
+            const profile = SAMPLE_DEAL_PROFILES[deal.id];
+            return (
           <article className="vsee-deal" key={deal.id}>
             <div className="vsee-monogram">{deal.companyName.slice(0, 2).toUpperCase()}</div>
             <div className="vsee-deal-name">
@@ -818,9 +821,29 @@ function DealsView({ deals, query, onQuery }: { deals: Deal[]; query: string; on
               ) : (
                 <><b>SOURCE ONLY</b><span>No synthetic decision record attached.</span></>
               )}
+              {profile && (
+                <>
+                  <b>{profile.label}</b>
+                  <dl className="vsee-context-grid">
+                    {profile.traction.map((row) => (
+                      <div key={row.metric}>
+                        <dt>{row.metric}</dt>
+                        <dd>{row.value}</dd>
+                      </div>
+                    ))}
+                    {profile.dealTerms.map((row) => (
+                      <div key={row.term}>
+                        <dt>{row.term}</dt>
+                        <dd>{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </>
+              )}
             </div>
           </article>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
