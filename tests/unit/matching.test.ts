@@ -109,10 +109,10 @@ test("analyze retains grounded low-confidence matches for monitoring", async () 
       citedSourceIds: ["market_1", "deal_source_1"],
       demoFixtureIds: [],
       scoreInputs: {
-        eventRelevance: 0.55,
-        dealRelevance: 0.55,
-        priorContextStrength: 0.55,
-        evidenceQuality: 0.55,
+        eventRelevance: 0.5,
+        dealRelevance: 0.5,
+        priorContextStrength: 0.5,
+        evidenceQuality: 0.5,
       },
       claimSourceIds: {
         "AI infrastructure networks funding increased.": ["market_1"],
