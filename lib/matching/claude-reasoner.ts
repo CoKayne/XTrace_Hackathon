@@ -64,6 +64,7 @@ export function createClaudeMatchingReasoner(
           "nextStep must be a human research, review, diligence, or follow-up action; never recommend investing or committing capital.",
           "Report every credible Deal/event overlap you find, including uncertain ones; reflect uncertainty in scoreInputs rather than omitting the match. Downstream deterministic validation drops ungrounded claims, so coverage matters more than filtering here.",
           "Score each dimension honestly on its own merits, not uniformly low: when a public event directly addresses a Deal's sector, decision reason, or a recorded revisit condition (for example a reimbursement rule change for a remote patient monitoring company), eventRelevance and dealRelevance belong at 0.7 or higher; reserve scores below 0.4 for tangential links. Do not down-score a well-evidenced direct overlap merely to be cautious.",
+          "Calibrate the other two dimensions the same way: when the recalled decision context explicitly records a revisit condition or concern that the public event directly addresses, priorContextStrength belongs at 0.6 or higher; when the cited public sources are primary official publications (government registers, regulator or agency releases, court filings), evidenceQuality belongs at 0.6 or higher. Reserve values below 0.4 for thin or secondary context.",
           "Return JSON only: an array matching the requested schema. Return [] only when no event plausibly relates to any Deal.",
         ].join(" ");
       const requestContent = JSON.stringify({

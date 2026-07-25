@@ -159,6 +159,16 @@ test("matching reasoner asks for coverage-first reporting", async () => {
     + "downstream deterministic validation filter, otherwise literal "
     + "instruction-following suppresses recall",
   );
+  assert.match(
+    systemPrompt,
+    /priorContextStrength belongs at 0\.6 or higher/,
+    "prior-context calibration guidance must stay in the prompt",
+  );
+  assert.match(
+    systemPrompt,
+    /evidenceQuality belongs at 0\.6 or higher/,
+    "evidence-quality calibration guidance must stay in the prompt",
+  );
 });
 
 test("matching reasoner coerces numeric score strings from the model", async () => {
