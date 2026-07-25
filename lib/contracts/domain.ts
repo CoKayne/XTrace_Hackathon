@@ -243,7 +243,7 @@ export const CompanyAnalysisSchema = z.object({
   recommendedNextMove: z.string().min(1),
   companyBrief: CompanyBriefSchema,
   sources: z.array(SourceRefSchema),
-  createdAt: z.string().datetime(),
+  createdAt: z.string().datetime({ offset: true }),
 }).superRefine((analysis, context) => {
   if (
     analysis.outcome === "belief_revised"

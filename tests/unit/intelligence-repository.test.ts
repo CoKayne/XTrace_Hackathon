@@ -444,3 +444,66 @@ test("Supabase report writes use the atomic report RPC", async () => {
     false,
   );
 });
+
+test("Supabase reads accept PostgREST timestamptz offset timestamps", async () => {
+  const report = completeReport();
+  const offsetCreatedAt = "2026-07-25T00:55:05.106+00:00";
+  const analysisRows = report.companyAnalyses.map((analysis) => ({
+    id: analysis.id,
+    workspace_id: report.workspaceId,
+    report_id: report.id,
+    run_id: analysis.runId,
+    deal_id: analysis.dealId,
+    company_name: analysis.companyName,
+    deal_status: analysis.dealStatus,
+    outcome: analysis.outcome,
+    confidence: analysis.confidence,
+    score: analysis.score,
+    investment_memory: analysis.investmentMemory,
+    market_evidence: analysis.marketEvidence,
+    implications: analysis.implications,
+    recommended_next_move: analysis.recommendedNextMove,
+    company_brief: analysis.companyBrief,
+    source_refs: analysis.sources,
+    created_at: offsetCreatedAt,
+  }));
+  const repository = createSupabaseIntelligenceRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      if (url.includes("/intelligence_reports")) {
+        return Response.json([{
+          id: report.id,
+          workspace_id: report.workspaceId,
+          run_id: report.runId,
+          created_at: offsetCreatedAt,
+          market_summary: report.marketSummary,
+          opportunities: [],
+          analysis_status: report.analysisStatus,
+          company_count: 19,
+          belief_revised_count: 0,
+          monitor_count: 0,
+          no_material_change_count: 19,
+          analysis_unavailable_count: 0,
+          priority_deal_id: null,
+          evidence_coverage: report.evidenceCoverage,
+        }]);
+      }
+      if (url.includes("/company_analyses")) {
+        return Response.json(analysisRows);
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    },
+  });
+
+  const fetched = await repository.getReportByRunId(report.runId);
+  assert.equal(fetched?.companyAnalyses.length, 19);
+  assert.equal(fetched?.companyAnalyses[0]?.createdAt, offsetCreatedAt);
+
+  const dealAnalyses = await repository.listDealAnalyses(
+    report.workspaceId,
+    report.companyAnalyses[0].dealId,
+  );
+  assert.equal(dealAnalyses.length, 19);
+});
