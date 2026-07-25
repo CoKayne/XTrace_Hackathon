@@ -78,10 +78,12 @@ server-only values. Do not expose service keys through `NEXT_PUBLIC_*`.
 Apply [`drizzle/0000_vsee_postgres.sql`](drizzle/0000_vsee_postgres.sql), then
 apply [`drizzle/0001_remove_report_delivery.sql`](drizzle/0001_remove_report_delivery.sql),
 then [`drizzle/0002_durable_decision_lineage.sql`](drizzle/0002_durable_decision_lineage.sql),
-then [`drizzle/0003_sanitize_report_next_steps.sql`](drizzle/0003_sanitize_report_next_steps.sql)
+then [`drizzle/0003_sanitize_report_next_steps.sql`](drizzle/0003_sanitize_report_next_steps.sql),
+then [`drizzle/0004_company_analyses.sql`](drizzle/0004_company_analyses.sql)
 to the Supabase PostgreSQL database before seeding the fixed corpus. Operators
-upgrading a database that already has `0000` and `0001` applied may apply
-`0002` and `0003` in order.
+upgrading a database that already has earlier migrations applied may apply the
+missing migrations in order. Company intelligence reports require `0004`;
+without it every report read fails.
 
 ```bash
 npm install
@@ -132,9 +134,9 @@ worker heartbeat.
 
 ### Worker runbook
 
-1. For a new database, apply `0000` followed by `0001`; for an existing
-   database with `0000` already applied, apply `0001` alone. Then seed the
-   corpus before starting the Worker.
+1. For a new database, apply migrations `0000` through `0004` in order; for an
+   existing database, apply the migrations it is missing in order. Then seed
+   the corpus before starting the Worker.
 2. Start the Worker and wait for the container health status to become
    `healthy`.
 3. Confirm `/api/settings/health` reports both `postgres: true` and
