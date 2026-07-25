@@ -571,3 +571,39 @@ test("runs a fourteen-day scan from recorded providers and preserves scoped fail
     /recorded upstream timeout/,
   );
 });
+
+test("parses publisher feeds whose dates glue am/pm to the time", async () => {
+  const feed = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Trade press</title>
+    <item>
+      <guid>trade-1</guid>
+      <title>Health system expands remote patient monitoring program</title>
+      <link>https://trade.example/rpm-expansion</link>
+      <pubDate>Jul 23, 2026 12:31pm</pubDate>
+      <description>The health system announced a major expansion of its remote patient monitoring program.</description>
+    </item>
+  </channel>
+</rss>`;
+  const provider = createRssMarketProvider({
+    id: "trade-feed",
+    name: "Trade feed",
+    url: "https://trade.example/feed.xml",
+    publisher: "Trade Press",
+  }, {
+    fetch: recordingFetch([new Response(feed, { status: 200 })], []),
+  });
+
+  const items = await provider.fetch(WINDOW);
+
+  assert.equal(
+    items.length,
+    1,
+    "items with non-RFC822 dates must not be silently dropped",
+  );
+  assert.ok(
+    Number.isFinite(Date.parse(items[0].publishedAt ?? "")),
+    `publishedAt must normalize to a parseable timestamp, got: ${items[0]?.publishedAt}`,
+  );
+}); 

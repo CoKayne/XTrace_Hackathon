@@ -282,10 +282,13 @@ function normalizedDate(value: string | undefined): string | undefined {
   if (!value) {
     return undefined;
   }
-  const parsed = new Date(cleanXmlText(value));
+  const cleaned = cleanXmlText(value);
+  // Some trade-press feeds glue am/pm onto the time ("12:31pm"), which
+  // Date rejects; separate it before parsing.
+  const parsed = new Date(cleaned.replace(/(\d)\s*(am|pm)\b/i, "$1 $2"));
   return Number.isFinite(parsed.getTime())
     ? parsed.toISOString()
-    : cleanXmlText(value);
+    : cleaned;
 }
 
 function parseRssItems(
