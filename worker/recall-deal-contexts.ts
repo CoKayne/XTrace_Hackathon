@@ -13,6 +13,12 @@ export interface DealRecallResult {
   failures: Array<{ dealId: string; message: string }>;
 }
 
+// The shared XTrace budget is 25 requests per minute and one scan issues one
+// recall per Deal, so a full 19-Deal recall fits inside a single window and
+// the only reason to stay below full fan-out is politeness to the API.
+const RECALL_CONCURRENCY = 6;
+const RECALL_RETRY_DELAY_MS = 2_000;
+
 export async function recallAllDealContexts(input: {
   workspaceId: string;
   runId: string;
@@ -32,28 +38,76 @@ export async function recallAllDealContexts(input: {
     };
   }
 
-  for (const bundle of input.bundles) {
-    try {
-      const contexts = await input.service.recallDealContext({
+  const service = input.service;
+  type RecallOutcome =
+    | { dealId: string; contexts: MemoryContext[] }
+    | { dealId: string; message: string };
+  const outcomes = await mapWithConcurrency(
+    input.bundles,
+    RECALL_CONCURRENCY,
+    async (bundle): Promise<RecallOutcome> => {
+      const recall = () => service.recallDealContext({
         workspaceId: input.workspaceId,
         runId: `${input.runId}:${bundle.dealId}`,
         query: dealRecallQuery(bundle),
         candidateDealIds: [bundle.dealId],
         limit: 20,
       });
-      contextsByDeal.set(
-        bundle.dealId,
-        contexts.filter((context) => context.dealId === bundle.dealId),
-      );
-    } catch (error) {
-      failures.push({
-        dealId: bundle.dealId,
-        message: safeRecallFailure(error),
-      });
+      try {
+        let contexts: MemoryContext[];
+        try {
+          contexts = await recall();
+        } catch {
+          // One retry absorbs transient provider slowness; a second failure
+          // is reported honestly as an unavailable analysis.
+          await delay(RECALL_RETRY_DELAY_MS);
+          contexts = await recall();
+        }
+        return {
+          dealId: bundle.dealId,
+          contexts: contexts.filter((context) => context.dealId === bundle.dealId),
+        };
+      } catch (error) {
+        return { dealId: bundle.dealId, message: safeRecallFailure(error) };
+      }
+    },
+  );
+
+  for (const outcome of outcomes) {
+    if ("contexts" in outcome) {
+      contextsByDeal.set(outcome.dealId, outcome.contexts);
+    } else {
+      failures.push({ dealId: outcome.dealId, message: outcome.message });
     }
   }
 
   return { contextsByDeal, failures };
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function mapWithConcurrency<Item, Result>(
+  items: readonly Item[],
+  concurrency: number,
+  operation: (item: Item) => Promise<Result>,
+): Promise<Result[]> {
+  const results: Result[] = new Array(items.length);
+  let nextIndex = 0;
+  const workers = Array.from(
+    { length: Math.max(1, Math.min(concurrency, items.length)) },
+    async () => {
+      for (;;) {
+        const index = nextIndex;
+        nextIndex += 1;
+        if (index >= items.length) return;
+        results[index] = await operation(items[index]);
+      }
+    },
+  );
+  await Promise.all(workers);
+  return results;
 }
 
 export function dealRecallQuery(bundle: DealMemoryBundle): string {

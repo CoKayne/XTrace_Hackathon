@@ -71,6 +71,39 @@ test("one failed recall does not suppress the other eighteen Deals", async () =>
   assert.equal(result.contextsByDeal.size, 18);
 });
 
+test("a transient recall failure recovers on the single retry", async () => {
+  const bundles = buildPreloadedDealMemoryBundles();
+  const flakyDealId = bundles[0].dealId;
+  let flakyCalls = 0;
+  const result = await recallAllDealContexts({
+    workspaceId: "workspace_demo",
+    runId: "00000000-0000-4000-8000-000000000001",
+    bundles,
+    service: {
+      async recallDealContext(input) {
+        if (input.candidateDealIds[0] === flakyDealId) {
+          flakyCalls += 1;
+          if (flakyCalls === 1) throw new Error("transient provider timeout");
+        }
+        return [{
+          dealId: input.candidateDealIds[0],
+          memoryId: `memory_${input.candidateDealIds[0]}`,
+          memoryType: "fact",
+          text: "Source-backed investment context.",
+          score: 0.9,
+          provenance: "source_document",
+          sourceIds: [`source_${input.candidateDealIds[0]}`],
+          fixtureIds: [],
+        }];
+      },
+    },
+  });
+
+  assert.equal(flakyCalls, 2);
+  assert.equal(result.failures.length, 0);
+  assert.equal(result.contextsByDeal.size, 19);
+});
+
 test("recall queries carry each Deal's own decision context, not only template words", () => {
   const bundles = buildPreloadedDealMemoryBundles();
   for (const bundle of bundles) {

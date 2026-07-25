@@ -496,7 +496,8 @@ test("polls pending XTrace ingest jobs before recall", async () => {
   });
 
   assert.equal(calls[0], "poll:job_1:deal_ably");
-  assert.equal(calls.filter((call) => call === "recall").length, 19);
+  // Every recall throws, and each Deal gets exactly one retry: 19 * 2 calls.
+  assert.equal(calls.filter((call) => call === "recall").length, 38);
   assert.equal(result.run.status, "partial");
   assert.equal(result.report.counts.analysisUnavailable, 19);
   assert.ok(result.run.warnings.some((warning) => /19 Deals/i.test(warning)));
