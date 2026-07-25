@@ -142,3 +142,38 @@ test("missing XTrace service marks every Deal unavailable without local fallback
     failure.message === "XTRACE_SERVICE_UNAVAILABLE"
   ));
 });
+
+test("non-retryable recall failures are not retried", async () => {
+  const { XTraceUnavailableError } = await import("../../lib/xtrace/service");
+  const bundles = buildPreloadedDealMemoryBundles();
+  const failedDealId = bundles[0].dealId;
+  let failedCalls = 0;
+  const result = await recallAllDealContexts({
+    workspaceId: "workspace_demo",
+    runId: "00000000-0000-4000-8000-000000000001",
+    bundles,
+    service: {
+      async recallDealContext(input) {
+        if (input.candidateDealIds[0] === failedDealId) {
+          failedCalls += 1;
+          throw new XTraceUnavailableError(false, "malformed search response");
+        }
+        return [{
+          dealId: input.candidateDealIds[0],
+          memoryId: `memory_${input.candidateDealIds[0]}`,
+          memoryType: "fact",
+          text: "Source-backed investment context.",
+          score: 0.9,
+          provenance: "source_document",
+          sourceIds: [`source_${input.candidateDealIds[0]}`],
+          fixtureIds: [],
+        }];
+      },
+    },
+  });
+
+  assert.equal(failedCalls, 1, "non-retryable failures must not be retried");
+  assert.equal(result.failures.length, 1);
+  assert.equal(result.failures[0].dealId, failedDealId);
+  assert.equal(result.contextsByDeal.size, 18);
+});

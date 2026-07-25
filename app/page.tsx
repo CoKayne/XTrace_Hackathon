@@ -306,6 +306,8 @@ export default function Home() {
             report,
             ...current.filter((item) => item.id !== report.id),
           ]);
+          // The scan also produced new market events and overview counts.
+          void load();
           setFocusedReportId(report.id);
           setView("reports");
           setScanProgressOpen(false);
@@ -345,7 +347,7 @@ export default function Home() {
       cancelled = true;
       if (timer !== undefined) window.clearTimeout(timer);
     };
-  }, [activeRunId]);
+  }, [activeRunId, load]);
 
   const filteredDeals = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -996,7 +998,9 @@ function ReportsView({
   focusedReportId: string | null;
 }) {
   const companyByDeal = new Map(deals.map((deal) => [deal.id, deal.companyName]));
-  const report = reports[0];
+  // Default to the newest report; a shared permalink (?report=<id>) still
+  // opens the exact report it referenced.
+  const report = reports.find((item) => item.id === focusedReportId) ?? reports[0];
   return (
     <div className="vsee-content">
       <SectionTitle eyebrow="DECISION BRIEF" title="Cited reasons for a second look." copy="This page always shows the most recent intelligence report. Only medium- and high-confidence matches enter the Top 5. A recommendation is never proof that a company has improved; it is a reason for the investor to follow up." />

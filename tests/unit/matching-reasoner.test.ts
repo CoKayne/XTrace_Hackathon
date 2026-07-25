@@ -276,3 +276,30 @@ test("refresh mode re-rolls the model and later replays the refreshed judgment",
   assert.equal(frozenCalls, 0, "frozen mode must replay the stored judgment");
   assert.equal(replayed[0].dealId, "deal_ably");
 });
+
+test("retrievedAt alone does not change the judgment fingerprint", async () => {
+  const { createMemoryReasonerJudgmentsRepository } = await import(
+    "../../db/repositories/reasoner-judgments"
+  );
+  const judgments = createMemoryReasonerJudgmentsRepository();
+  let modelCalls = 0;
+  const reasoner = createClaudeMatchingReasoner({
+    async complete() {
+      modelCalls += 1;
+      return REPLAY_COMPLETION;
+    },
+  }, { judgments });
+
+  const stamped = (retrievedAt: string) => ({
+    ...replayInput(),
+    events: [{ ...event, retrievedAt } as typeof event],
+  });
+  await reasoner.reason(stamped("2026-07-25T10:00:00.000Z"));
+  await reasoner.reason(stamped("2026-07-25T11:30:00.000Z"));
+
+  assert.equal(
+    modelCalls,
+    1,
+    "a scan-time retrieval stamp must not defeat judgment replay",
+  );
+});

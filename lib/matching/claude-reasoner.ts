@@ -89,7 +89,7 @@ export function createClaudeMatchingReasoner(
           },
         },
         deals: input.deals,
-        marketEvents: input.events,
+        marketEvents: input.events.map(stableJudgmentEvent),
         memoryContexts: input.memoryContexts,
         sources: input.sources,
       });
@@ -132,13 +132,24 @@ export function createClaudeMatchingReasoner(
       if (options.judgments) {
         try {
           await options.judgments.save({ fingerprint, model, payload: matches });
-        } catch {
-          // Persistence is an optimization; the live judgment still stands.
+        } catch (error) {
+          // Persistence is an optimization; the live judgment still stands,
+          // but the operator must know determinism is currently off.
+          warnJudgmentPersistence(error);
         }
       }
       return matches;
     },
   };
+}
+
+// retrievedAt is stamped at scan time, so two scans over identical market
+// content would otherwise never share a judgment fingerprint. Every other
+// event field is content-derived and stable.
+function stableJudgmentEvent(event: MatchingInput["events"][number]) {
+  const { retrievedAt, ...stable } = event as { retrievedAt?: string };
+  void retrievedAt;
+  return stable;
 }
 
 async function replayJudgment(
@@ -150,10 +161,23 @@ async function replayJudgment(
     const record = await judgments.find(fingerprint);
     if (!record) return null;
     return normalizeMatches(ReasonedMatchesSchema.parse(record.payload), input);
-  } catch {
+  } catch (error) {
     // An unreadable stored judgment falls through to a live model call.
+    warnJudgmentPersistence(error);
     return null;
   }
+}
+
+let judgmentPersistenceWarned = false;
+
+function warnJudgmentPersistence(error: unknown) {
+  if (judgmentPersistenceWarned) return;
+  judgmentPersistenceWarned = true;
+  const message = error instanceof Error ? error.message : String(error);
+  console.warn(
+    "[reasoner] judgment persistence unavailable; scans will re-judge every "
+    + `time (is migration 0006 applied?): ${message.slice(0, 200)}`,
+  );
 }
 
 function normalizeMatches(

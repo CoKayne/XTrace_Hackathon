@@ -1,7 +1,8 @@
 import type { DealMemoryBundle } from "../lib/contracts/domain";
-import type {
-  MemoryContext,
-  RecallDealContextInput,
+import {
+  XTraceUnavailableError,
+  type MemoryContext,
+  type RecallDealContextInput,
 } from "../lib/xtrace/service";
 
 export interface DealRecallService {
@@ -57,9 +58,14 @@ export async function recallAllDealContexts(input: {
         let contexts: MemoryContext[];
         try {
           contexts = await recall();
-        } catch {
+        } catch (error) {
           // One retry absorbs transient provider slowness; a second failure
-          // is reported honestly as an unavailable analysis.
+          // is reported honestly as an unavailable analysis. Failures the
+          // service marks non-retryable (malformed responses, 4xx) would fail
+          // identically again, so retrying would only burn shared budget.
+          if (error instanceof XTraceUnavailableError && !error.retryable) {
+            throw error;
+          }
           await delay(RECALL_RETRY_DELAY_MS);
           contexts = await recall();
         }
