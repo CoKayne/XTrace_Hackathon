@@ -149,8 +149,6 @@ export function CompanyIntelligenceReport({
       {priority ? (
         <PriorityResult
           analysis={priority}
-          onDraft={() => onDraft(report)}
-          onInspectEvidence={() => openBrief(priority, "Source Lineage")}
           onOpenBrief={() => openBrief(priority)}
         />
       ) : (
@@ -202,13 +200,9 @@ function ReportCoverage({ report }: { report: IntelligenceReportView }) {
 
 export function PriorityResult({
   analysis,
-  onInspectEvidence,
-  onDraft,
   onOpenBrief,
 }: {
   analysis: CompanyAnalysis;
-  onInspectEvidence(): void;
-  onDraft(): void;
   onOpenBrief(): void;
 }) {
   return (
@@ -267,12 +261,33 @@ export function PriorityResult({
           </p>
           {!!analysis.marketEvidence.events.length && (
             <ul>
-              {analysis.marketEvidence.events.map((event) => (
-                <li key={event.id}>
-                  <strong>{event.title}</strong>
-                  <small>{event.eventType} · {formatReportDate(event.publishedAt)}</small>
-                </li>
-              ))}
+              {analysis.marketEvidence.events.map((event) => {
+                const sourceUrl = event.sourceIds
+                  .map((sourceId) => analysis.sources.find(
+                    (source) => source.id === sourceId,
+                  ))
+                  .map((source) =>
+                    source && "url" in source ? source.url : undefined
+                  )
+                  .find(Boolean);
+                return (
+                  <li key={event.id}>
+                    {sourceUrl ? (
+                      <a
+                        className="vsee-event-source-link"
+                        href={sourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <strong>{event.title} ↗</strong>
+                      </a>
+                    ) : (
+                      <strong>{event.title}</strong>
+                    )}
+                    <small>{event.eventType} · {formatReportDate(event.publishedAt)}</small>
+                  </li>
+                );
+              })}
             </ul>
           )}
           {dedupeSentences(analysis.marketEvidence.explanation)
@@ -294,8 +309,6 @@ export function PriorityResult({
         </section>
       )}
       <footer>
-        <button onClick={onInspectEvidence}>INSPECT EVIDENCE</button>
-        <button onClick={onDraft}>DRAFT INTERNAL REPORT</button>
         <button className="primary" onClick={onOpenBrief}>OPEN FULL COMPANY BRIEF →</button>
       </footer>
     </section>

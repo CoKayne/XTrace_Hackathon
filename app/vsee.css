@@ -231,3 +231,5 @@
 .vsee-report>header .vsee-details{margin-top:4px;border-top:0;max-width:860px}
 .vsee-report>header .vsee-details>summary{padding:7px 0}
 .vsee-priority-grid>section>p.vsee-priority-lead{margin:0 0 16px;color:#e6ebe7;font:400 17px/1.55 var(--serif)}
+.vsee-priority-grid li a.vsee-event-source-link{color:inherit;text-decoration:none}
+.vsee-priority-grid li a.vsee-event-source-link:hover strong,.vsee-priority-grid li a.vsee-event-source-link:focus-visible strong{color:var(--lime)}
