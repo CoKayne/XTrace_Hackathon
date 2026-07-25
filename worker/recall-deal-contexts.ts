@@ -57,13 +57,21 @@ export async function recallAllDealContexts(input: {
 }
 
 export function dealRecallQuery(bundle: DealMemoryBundle): string {
+  // Template-only queries rank poorly: every Deal's memories share the same
+  // boilerplate phrasing, so the query must carry this Deal's own decision
+  // content for similarity search to surface this Deal's memories first.
+  const decisionContext = bundle.interactions.flatMap((interaction) => [
+    interaction.summary,
+    interaction.decisionReason,
+    ...interaction.concerns,
+    ...interaction.revisitConditions,
+  ]);
+  const factTexts = bundle.facts.map((fact) => fact.text);
   return [
     bundle.companyName,
     "investment decision",
-    "meeting summary",
-    "decision reason",
-    "partner concerns",
-    "revisit conditions",
+    ...decisionContext,
+    ...factTexts,
   ].join(" · ").slice(0, 4_000);
 }
 

@@ -3,7 +3,10 @@ import test from "node:test";
 
 import { buildPreloadedDealMemoryBundles } from "../../lib/corpus/service";
 import type { RecallDealContextInput } from "../../lib/xtrace/service";
-import { recallAllDealContexts } from "../../worker/recall-deal-contexts";
+import {
+  dealRecallQuery,
+  recallAllDealContexts,
+} from "../../worker/recall-deal-contexts";
 
 test("recalls one bounded XTrace query for every MVP Deal", async () => {
   const queries: RecallDealContextInput[] = [];
@@ -66,6 +69,31 @@ test("one failed recall does not suppress the other eighteen Deals", async () =>
   assert.equal(result.failures[0].dealId, failedDealId);
   assert.doesNotMatch(result.failures[0].message, /provider secret/i);
   assert.equal(result.contextsByDeal.size, 18);
+});
+
+test("recall queries carry each Deal's own decision context, not only template words", () => {
+  const bundles = buildPreloadedDealMemoryBundles();
+  for (const bundle of bundles) {
+    const query = dealRecallQuery(bundle);
+    assert.ok(query.length <= 4_000);
+    assert.ok(query.includes(bundle.companyName));
+    const interaction = bundle.interactions[0];
+    if (interaction) {
+      assert.ok(
+        query.includes(interaction.decisionReason),
+        `${bundle.dealId} query must include its decision reason so similarity `
+        + "search can rank the Deal's own memories above other Deals' "
+        + "template phrasing",
+      );
+    }
+    const fact = bundle.facts[0];
+    if (fact) {
+      assert.ok(
+        query.includes(fact.text.slice(0, 60)),
+        `${bundle.dealId} query must include source-backed fact text`,
+      );
+    }
+  }
 });
 
 test("missing XTrace service marks every Deal unavailable without local fallback", async () => {
