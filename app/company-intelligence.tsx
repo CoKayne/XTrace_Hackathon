@@ -422,28 +422,20 @@ export function CompanyBrief({
             />
           )}
           {activeTab === "Traction" && (
-            <>
-              <EvidenceFields
-                fields={analysis.companyBrief.traction}
-                sources={analysis.sources}
-              />
-              <SampleProfileFields
-                profile={SAMPLE_DEAL_PROFILES[analysis.dealId]}
-                section="traction"
-              />
-            </>
+            <BriefFieldsWithSample
+              fields={analysis.companyBrief.traction}
+              sources={analysis.sources}
+              profile={SAMPLE_DEAL_PROFILES[analysis.dealId]}
+              section="traction"
+            />
           )}
           {activeTab === "Deal Terms" && (
-            <>
-              <EvidenceFields
-                fields={analysis.companyBrief.dealTerms}
-                sources={analysis.sources}
-              />
-              <SampleProfileFields
-                profile={SAMPLE_DEAL_PROFILES[analysis.dealId]}
-                section="dealTerms"
-              />
-            </>
+            <BriefFieldsWithSample
+              fields={analysis.companyBrief.dealTerms}
+              sources={analysis.sources}
+              profile={SAMPLE_DEAL_PROFILES[analysis.dealId]}
+              section="dealTerms"
+            />
           )}
           {activeTab === "Risks" && (
             <div className="vsee-brief-risks">
@@ -519,6 +511,31 @@ function EvidenceFields({
 function Unavailable() {
   return (
     <p className="vsee-unavailable">Not available in current evidence</p>
+  );
+}
+
+function BriefFieldsWithSample({
+  fields,
+  sources,
+  profile,
+  section,
+}: {
+  fields: EvidenceField[];
+  sources: SourceRef[];
+  profile: SampleDealProfile | undefined;
+  section: "traction" | "dealTerms";
+}) {
+  if (!profile) return <EvidenceFields fields={fields} sources={sources} />;
+  // With a sample profile present, empty evidence placeholders add nothing:
+  // show only evidence fields that actually carry a cited value.
+  const populated = fields.filter((field) => field.value);
+  return (
+    <>
+      {populated.length > 0 && (
+        <EvidenceFields fields={populated} sources={sources} />
+      )}
+      <SampleProfileFields profile={profile} section={section} />
+    </>
   );
 }
 
