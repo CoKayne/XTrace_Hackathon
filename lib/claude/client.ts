@@ -15,31 +15,54 @@ export function createClaudeClient(options: {
   apiKey?: string;
   model?: string;
   fetchImpl?: typeof fetch;
+  backoffMs?: number;
 } = {}): ClaudeClient {
   const apiKey = options.apiKey ?? process.env.ANTHROPIC_API_KEY;
   const model = options.model ?? process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
   const fetchImpl = options.fetchImpl ?? fetch;
+  const backoffMs = options.backoffMs ?? 2_000;
 
   return {
     async complete(input) {
       if (!apiKey) {
         throw new Error("Anthropic is not configured");
       }
-      const response = await fetchImpl("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: input.maxTokens ?? 3_000,
-          system: input.system,
-          messages: input.messages,
-        }),
-        signal: AbortSignal.timeout(45_000),
-      });
+      let response: Response | undefined;
+      let requestError: unknown;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        if (attempt > 0) {
+          await new Promise((resolve) => setTimeout(resolve, backoffMs));
+        }
+        try {
+          response = await fetchImpl("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "x-api-key": apiKey,
+              "anthropic-version": "2023-06-01",
+            },
+            body: JSON.stringify({
+              model,
+              max_tokens: input.maxTokens ?? 3_000,
+              system: input.system,
+              messages: input.messages,
+            }),
+            signal: AbortSignal.timeout(90_000),
+          });
+          requestError = undefined;
+        } catch (error) {
+          requestError = error;
+          response = undefined;
+          continue;
+        }
+        const retryable = response.status === 429 || response.status >= 500;
+        if (!retryable) break;
+      }
+      if (!response) {
+        throw requestError instanceof Error
+          ? requestError
+          : new Error("Anthropic request could not be completed");
+      }
       if (!response.ok) {
         throw new Error(`Anthropic request failed with ${response.status}`);
       }
