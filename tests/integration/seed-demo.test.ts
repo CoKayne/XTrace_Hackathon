@@ -62,7 +62,7 @@ test("running the demo seed twice creates zero duplicate runtime records or priv
   assert.equal(snapshot.fixtures.length, DEMO_FIXTURES.length);
   assert.ok(snapshot.fixtures.every((fixture) => fixture.provenance === "demo_fixture"));
   assert.ok(snapshot.fixtures.every(
-    (fixture) => fixture.label === "Synthetic VC decision record created for the hackathon demo",
+    (fixture) => fixture.label === "Sample decision record",
   ));
   assert.equal(objectStorage.inspect().length, 14);
 });

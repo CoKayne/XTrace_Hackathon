@@ -41,7 +41,7 @@ test("synthetic investment state remains visibly labeled", () => {
   assert.equal(fixtureDeals.length, 19);
   for (const deal of fixtureDeals) {
     assert.equal(deal.fixture?.provenance, "demo_fixture");
-    assert.match(deal.fixture?.label ?? "", /Synthetic VC decision record/);
+    assert.match(deal.fixture?.label ?? "", /Sample decision record/);
     assert.ok(deal.fixture?.decisionReason.trim());
   }
 });

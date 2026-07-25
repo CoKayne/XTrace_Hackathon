@@ -98,7 +98,7 @@ test("every synthetic record is permanently labeled and every selected deal has 
   );
   assert.ok(DEMO_FIXTURES.every((fixture) => fixture.provenance === "demo_fixture"));
   assert.ok(DEMO_FIXTURES.every(
-    (fixture) => fixture.label === "Synthetic VC decision record created for the hackathon demo",
+    (fixture) => fixture.label === "Sample decision record",
   ));
   assert.equal(DEMO_DEAL_EVIDENCE.length, DEMO_FIXTURES.length);
 
@@ -241,7 +241,7 @@ test("confirmation persists the complete labeled fixture and emits page-backed e
   assert.equal(result.memoryBundles[0].interactions[0].provenance, "demo_fixture");
   assert.equal(
     result.memoryBundles[0].interactions[0].label,
-    "Synthetic VC decision record created for the hackathon demo",
+    "Sample decision record",
   );
   assert.equal(result.memoryBundles[0].facts[0].sources[0].provenance, "source_document");
   assert.equal(result.memoryBundles[0].facts[0].sources[0].page, 4);

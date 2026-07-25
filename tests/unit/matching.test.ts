@@ -278,7 +278,7 @@ test("drops unsupported claims and retains explicit fixture lineage", async () =
       {
         id: "fixture_1",
         provenance: "demo_fixture",
-        title: "Synthetic VC decision record created for the hackathon demo",
+        title: "Sample decision record",
         excerpt: "The fund passed because timing was early.",
       },
     ],

@@ -52,10 +52,10 @@ HuMetric, Alpha Builders, INNFormNest, SilverMemory, Kanesh, and Fellowtrip.
 Every fact, memory bundle, match, and source link from that PDF must retain the
 correct page number.
 
-The source PDFs are real supplied artifacts. Four internal investment-state
-records are synthetic and permanently display:
+The source PDFs are real supplied artifacts. The internal investment-state
+records are sample data and permanently display:
 
-> Synthetic VC decision record created for the hackathon demo
+> Sample decision record
 
 Never remove or obscure that label.
 
@@ -79,7 +79,8 @@ Apply [`drizzle/0000_vsee_postgres.sql`](drizzle/0000_vsee_postgres.sql), then
 apply [`drizzle/0001_remove_report_delivery.sql`](drizzle/0001_remove_report_delivery.sql),
 then [`drizzle/0002_durable_decision_lineage.sql`](drizzle/0002_durable_decision_lineage.sql),
 then [`drizzle/0003_sanitize_report_next_steps.sql`](drizzle/0003_sanitize_report_next_steps.sql),
-then [`drizzle/0004_company_analyses.sql`](drizzle/0004_company_analyses.sql)
+then [`drizzle/0004_company_analyses.sql`](drizzle/0004_company_analyses.sql),
+then [`drizzle/0005_sample_decision_label.sql`](drizzle/0005_sample_decision_label.sql)
 to the Supabase PostgreSQL database before seeding the fixed corpus. Operators
 upgrading a database that already has earlier migrations applied may apply the
 missing migrations in order. Company intelligence reports require `0004`;
@@ -134,7 +135,7 @@ worker heartbeat.
 
 ### Worker runbook
 
-1. For a new database, apply migrations `0000` through `0004` in order; for an
+1. For a new database, apply migrations `0000` through `0005` in order; for an
    existing database, apply the migrations it is missing in order. Then seed
    the corpus before starting the Worker.
 2. Start the Worker and wait for the container health status to become

@@ -32,7 +32,7 @@ curl -s http://localhost:3000/api/settings/health
 
 ## 展示順序
 
-1. Overview：19 筆 Deal、synthetic 決策紀錄標籤、XTrace 開關。
+1. Overview：19 筆 Deal、Sample decision record 標籤、XTrace 開關。
 2. 開報告歷史，進 **run 7747f72f 的報告**：完整 belief_revised 流程——
    Priority Result 是 1906（medium、0.56），Then（當初 pass 的合成決策脈絡，
    來自 XTrace recall）對 Now（白宮 E.O. 14401 加速精神疾病治療的行政命令與

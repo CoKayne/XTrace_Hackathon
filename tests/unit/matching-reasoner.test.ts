@@ -31,7 +31,7 @@ const bundle: DealMemoryBundle = {
     concerns: ["Timing"],
     revisitConditions: ["Relevant market change"],
     provenance: "demo_fixture",
-    label: "Synthetic VC decision record created for the hackathon demo",
+    label: "Sample decision record",
   }],
 };
 
@@ -60,7 +60,7 @@ test("structured matching context preserves source and synthetic-fixture lineage
   const contexts = buildStructuredMemoryContexts([bundle]);
   assert.deepEqual(contexts[0].sourceIds, ["deal_source"]);
   assert.deepEqual(contexts[0].fixtureIds, ["fixture_ably"]);
-  assert.match(contexts[0].text, /Synthetic VC decision record/i);
+  assert.match(contexts[0].text, /Sample decision record/i);
   assert.match(contexts[0].text, /Decision reason: The synthetic team passed pending stronger adoption evidence/i);
 
   const sources = buildMatchingSources([bundle], [event]);

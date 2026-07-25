@@ -287,10 +287,10 @@ test("deterministically ranks and caps market events for downstream analysis", (
 });
 
 const PORTFOLIO_TEXTS = new Map<string, readonly string[]>([
-  ["deal_1906", ["1906", "The company develops controlled-dose cannabis products.", "Synthetic internal note: the team reviewed the proposition."]],
-  ["deal_100plus", ["100Plus", "100Plus provides remote patient monitoring for chronic care.", "Synthetic internal note: the team reviewed the proposition."]],
-  ["deal_7bridges", ["7bridges", "7bridges automates logistics and supply chain decisions.", "Synthetic internal note: the team reviewed the proposition."]],
-  ["deal_acquco", ["Acquco", "Acquco acquires and scales Amazon marketplace brands.", "Synthetic internal note: the team reviewed the proposition."]],
+  ["deal_1906", ["1906", "The company develops controlled-dose cannabis products.", "Sample internal note: the team reviewed the proposition."]],
+  ["deal_100plus", ["100Plus", "100Plus provides remote patient monitoring for chronic care.", "Sample internal note: the team reviewed the proposition."]],
+  ["deal_7bridges", ["7bridges", "7bridges automates logistics and supply chain decisions.", "Sample internal note: the team reviewed the proposition."]],
+  ["deal_acquco", ["Acquco", "Acquco acquires and scales Amazon marketplace brands.", "Sample internal note: the team reviewed the proposition."]],
 ]);
 
 test("portfolio-relevant events outrank higher-confidence unrelated events", () => {

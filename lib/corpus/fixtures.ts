@@ -30,7 +30,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team passed because the source material established the logistics-platform proposition but did not yet provide enough evidence for an investment decision.",
     concerns: ["The investment team wanted a clearer path to repeatable adoption."],
     revisitConditions: ["Revisit when the team can review new source-backed operating evidence."],
-    meetingSummary: "Synthetic internal note: the team passed after an initial review and recorded the evidence needed for a future revisit.",
+    meetingSummary: "Sample internal note: the team passed after an initial review and recorded the evidence needed for a future revisit.",
   },
   {
     id: "fixture_a_champs_watchlist",
@@ -44,7 +44,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team placed the Deal on the watchlist while it waits for stronger source-backed evidence around the smart sports-and-health assistant proposition.",
     concerns: ["The team wanted to see how the opportunity develops against relevant market themes."],
     revisitConditions: ["Revisit when new source-backed information provides a concrete reason to compare the opportunity again."],
-    meetingSummary: "Synthetic internal note: the team kept this Deal on a watchlist for a later evidence-backed review.",
+    meetingSummary: "Sample internal note: the team kept this Deal on a watchlist for a later evidence-backed review.",
   },
   {
     id: "fixture_ada_health_evaluating",
@@ -58,7 +58,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team continued evaluation because conversational health guidance is relevant to its review, while the diagnostic-reasoning proposition requires careful evidence-backed diligence.",
     concerns: ["The team needs to distinguish source-supported facts from its internal assessment."],
     revisitConditions: ["Revisit after the next diligence discussion is supported by cited source material."],
-    meetingSummary: "Synthetic internal note: the team is evaluating the Deal and has documented its diligence questions.",
+    meetingSummary: "Sample internal note: the team is evaluating the Deal and has documented its diligence questions.",
   },
   {
     id: "fixture_acin_invested",
@@ -72,7 +72,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The synthetic team recorded an investment decision so the demo can show ongoing monitoring of an operational-risk network proposition.",
     concerns: ["The team wants periodic evidence-backed monitoring rather than unsupported updates."],
     revisitConditions: ["Revisit when relevant public or source-document evidence warrants a portfolio-context review."],
-    meetingSummary: "Synthetic internal note: the team recorded this Deal as invested for the demo's historical-context workflow.",
+    meetingSummary: "Sample internal note: the team recorded this Deal as invested for the demo's historical-context workflow.",
   },
   {
     id: "fixture_100plus_evaluating",
@@ -86,7 +86,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team continued evaluation because AI-assisted remote patient monitoring fits the review theme, but the supplied source alone is insufficient to complete diligence.",
     concerns: ["The Partner wants source-backed evidence that the product fits real remote-patient-monitoring workflows."],
     revisitConditions: ["Advance the review when new source-backed product-adoption or workflow evidence is available."],
-    meetingSummary: "Synthetic internal note: the team discussed the remote patient monitoring proposition and left the Deal in active evaluation pending additional evidence.",
+    meetingSummary: "Sample internal note: the team discussed the remote patient monitoring proposition and left the Deal in active evaluation pending additional evidence.",
   },
   {
     id: "fixture_1906_passed",
@@ -100,7 +100,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team passed because the controlled-dose, non-smokable product proposition was not accompanied by enough source-backed evidence to underwrite category adoption and constraints.",
     concerns: ["The Partner wants evidence clarifying how the product proposition can be evaluated within its category constraints."],
     revisitConditions: ["Revisit when source-backed adoption and category-specific diligence evidence is available."],
-    meetingSummary: "Synthetic internal note: the team reviewed the controlled-dose plant-medicine proposition and recorded the evidence required before reconsideration.",
+    meetingSummary: "Sample internal note: the team reviewed the controlled-dose plant-medicine proposition and recorded the evidence required before reconsideration.",
   },
   {
     id: "fixture_ably_evaluating",
@@ -114,7 +114,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team continued evaluation because dependable realtime infrastructure is relevant, while differentiation and adoption still require source-backed diligence.",
     concerns: ["The Partner wants clearer evidence of why the realtime pub/sub platform is differentiated for its intended users."],
     revisitConditions: ["Advance when new source-backed differentiation or adoption evidence can be reviewed."],
-    meetingSummary: "Synthetic internal note: the team discussed the cloud-native realtime communication proposition and kept the Deal under evaluation.",
+    meetingSummary: "Sample internal note: the team discussed the cloud-native realtime communication proposition and kept the Deal under evaluation.",
   },
   {
     id: "fixture_acquco_passed",
@@ -128,7 +128,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team passed because the acquisition-and-scaling playbook proposition required more source-backed evidence about repeatability and execution.",
     concerns: ["The Partner wants evidence that the stated brand-acquisition playbooks can be applied repeatably."],
     revisitConditions: ["Revisit when source-backed operating evidence supports the repeatability of the acquisition model."],
-    meetingSummary: "Synthetic internal note: the team reviewed the Amazon-brand acquisition model and documented repeatability as the main open question.",
+    meetingSummary: "Sample internal note: the team reviewed the Amazon-brand acquisition model and documented repeatability as the main open question.",
   },
   {
     id: "fixture_intertwin_ai_watchlist",
@@ -142,7 +142,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team placed the Deal on the watchlist because multimodal consumer twins are relevant to current AI themes, but the supplied source does not yet establish a sufficiently concrete use case.",
     concerns: ["The Partner wants a clearer source-backed account of the user, workflow, and data boundaries for the consumer-twin proposition."],
     revisitConditions: ["Revisit when new evidence identifies a concrete use case and responsible data workflow."],
-    meetingSummary: "Synthetic internal note: the team discussed the evolving multimodal consumer-twin concept and chose to monitor it for more concrete evidence.",
+    meetingSummary: "Sample internal note: the team discussed the evolving multimodal consumer-twin concept and chose to monitor it for more concrete evidence.",
   },
   {
     id: "fixture_unikudo_screening",
@@ -156,7 +156,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team kept the Deal in screening because consolidating fragmented university application portals is a clear proposition that still needs source-backed validation.",
     concerns: ["The Partner wants evidence that applicants consistently need and use a single guided application path."],
     revisitConditions: ["Advance when source-backed user-adoption or workflow evidence is available."],
-    meetingSummary: "Synthetic internal note: the team completed an initial screen of the guided university-application dashboard and recorded adoption as the next diligence topic.",
+    meetingSummary: "Sample internal note: the team completed an initial screen of the guided university-application dashboard and recorded adoption as the next diligence topic.",
   },
   {
     id: "fixture_mirror_watchlist",
@@ -170,7 +170,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team placed the Deal on the watchlist because the cloned-voice speech-coaching workflow is distinctive, while learning value and responsible voice handling require more evidence.",
     concerns: ["The Partner wants source-backed evidence of user benefit and clear safeguards for cloned-voice data."],
     revisitConditions: ["Revisit when evidence addresses both learning outcomes and voice-data handling."],
-    meetingSummary: "Synthetic internal note: the team reviewed the speech-coaching loop and chose to monitor the Deal pending stronger outcome and data-handling evidence.",
+    meetingSummary: "Sample internal note: the team reviewed the speech-coaching loop and chose to monitor the Deal pending stronger outcome and data-handling evidence.",
   },
   {
     id: "fixture_coupro_evaluating",
@@ -184,7 +184,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team continued evaluation because the source reports initial local-network usage and merchant impact, while repeatability beyond that reported result remains an open diligence question.",
     concerns: ["The Partner wants source-backed evidence that user and merchant engagement can remain repeatable over time."],
     revisitConditions: ["Advance when updated evidence clarifies repeat usage and merchant participation."],
-    meetingSummary: "Synthetic internal note: the team discussed the local coupon network and retained the Deal for further evaluation of repeatability.",
+    meetingSummary: "Sample internal note: the team discussed the local coupon network and retained the Deal for further evaluation of repeatability.",
   },
   {
     id: "fixture_indieshow_watchlist",
@@ -198,7 +198,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team placed the Deal on the watchlist because its event workflow spans promotion through check-in, but user adoption and product focus need stronger evidence.",
     concerns: ["The Partner wants evidence showing which part of the end-to-end event workflow creates the strongest user value."],
     revisitConditions: ["Revisit when source-backed adoption identifies a repeatable core workflow."],
-    meetingSummary: "Synthetic internal note: the team reviewed the performing-arts event platform and chose to monitor which workflow becomes its strongest entry point.",
+    meetingSummary: "Sample internal note: the team reviewed the performing-arts event platform and chose to monitor which workflow becomes its strongest entry point.",
   },
   {
     id: "fixture_humetric_evaluating",
@@ -212,7 +212,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team continued evaluation because consent-based, agent-queryable people data is relevant to AI infrastructure, while authorization and adoption need careful evidence-backed review.",
     concerns: ["The Partner wants a concrete account of consent, authorization, and verification across the proposed data workflow."],
     revisitConditions: ["Advance when source-backed implementation evidence clarifies authorization and user adoption."],
-    meetingSummary: "Synthetic internal note: the team discussed the authorized people-data layer and kept it in evaluation with consent and verification as core diligence topics.",
+    meetingSummary: "Sample internal note: the team discussed the authorized people-data layer and kept it in evaluation with consent and verification as core diligence topics.",
   },
   {
     id: "fixture_alpha_builders_screening",
@@ -226,7 +226,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team kept the Deal in screening because plain-English, research-backed stock analysis is a clear proposition that requires further trust and validation diligence.",
     concerns: ["The Partner wants source-backed evidence explaining research quality, user trust, and the boundaries of generated analysis."],
     revisitConditions: ["Advance when product evidence clarifies validation methods and responsible user guidance."],
-    meetingSummary: "Synthetic internal note: the team completed an initial screen of the stock-research workflow and recorded validation and trust as the next review areas.",
+    meetingSummary: "Sample internal note: the team completed an initial screen of the stock-research workflow and recorded validation and trust as the next review areas.",
   },
   {
     id: "fixture_innformnest_passed",
@@ -240,7 +240,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team passed because the treatment and recurrence proposition requires substantially more source-backed clinical and product evidence.",
     concerns: ["The Partner wants rigorous evidence supporting the stated treatment and recurrence proposition."],
     revisitConditions: ["Revisit when source-backed clinical, product, and applicable review evidence is available."],
-    meetingSummary: "Synthetic internal note: the team reviewed the onychomycosis spray proposition and passed pending stronger evidence for its stated outcomes.",
+    meetingSummary: "Sample internal note: the team reviewed the onychomycosis spray proposition and passed pending stronger evidence for its stated outcomes.",
   },
   {
     id: "fixture_silvermemory_watchlist",
@@ -254,7 +254,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team placed the Deal on the watchlist because voice-AI cognitive care is relevant to AgeTech, while care outcomes and responsible data use need more evidence.",
     concerns: ["The Partner wants source-backed evidence of user benefit and safeguards for sensitive voice and care information."],
     revisitConditions: ["Revisit when evidence addresses care outcomes, adoption, and sensitive-data handling."],
-    meetingSummary: "Synthetic internal note: the team discussed the voice-AI cognitive-care concept and chose to monitor it for outcome and data-handling evidence.",
+    meetingSummary: "Sample internal note: the team discussed the voice-AI cognitive-care concept and chose to monitor it for outcome and data-handling evidence.",
   },
   {
     id: "fixture_kanesh_evaluating",
@@ -268,7 +268,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team continued evaluation because privacy-preserving Digital Product Passport infrastructure is a clear compliance proposition that needs implementation evidence.",
     concerns: ["The Partner wants evidence that the proposed privacy model can fit real manufacturing supply-chain workflows."],
     revisitConditions: ["Advance when source-backed integration or implementation evidence is available."],
-    meetingSummary: "Synthetic internal note: the team reviewed the Digital Product Passport infrastructure proposition and kept it in evaluation pending implementation evidence.",
+    meetingSummary: "Sample internal note: the team reviewed the Digital Product Passport infrastructure proposition and kept it in evaluation pending implementation evidence.",
   },
   {
     id: "fixture_fellowtrip_passed",
@@ -282,7 +282,7 @@ export const DEMO_FIXTURES: readonly DemoFixture[] = [
     decisionReason: "The team passed because the broad travel-collaboration proposition did not yet provide enough source-backed evidence of a differentiated, repeatable user workflow.",
     concerns: ["The Partner wants evidence that users repeatedly choose the collaboration layer over existing travel-planning alternatives."],
     revisitConditions: ["Revisit when source-backed retention or differentiated-workflow evidence is available."],
-    meetingSummary: "Synthetic internal note: the team reviewed the collaborative travel proposition and passed until stronger differentiation and repeat-usage evidence emerges.",
+    meetingSummary: "Sample internal note: the team reviewed the collaborative travel proposition and passed until stronger differentiation and repeat-usage evidence emerges.",
   },
 ];
 

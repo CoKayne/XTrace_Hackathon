@@ -35,7 +35,7 @@ test("Chat API answers the exact 7bridges question shown in the UI", async () =>
     };
   };
   assert.equal(payload.data.insufficientEvidence, false);
-  assert.match(payload.data.answer, /Synthetic VC decision record created for the hackathon demo/i);
+  assert.match(payload.data.answer, /Sample decision record/i);
   assert.match(payload.data.answer, /Decision reason: The team passed because/i);
   assert.ok(payload.data.citations.some((citation) =>
     citation.id === "fixture_7bridges_passed" &&
@@ -100,7 +100,7 @@ test("Chat API answers the latest report recommendation from persisted report li
       }, {
         id: "fixture_7bridges_passed",
         provenance: "demo_fixture",
-        title: "Synthetic VC decision record created for the hackathon demo",
+        title: "Sample decision record",
         excerpt: "The synthetic VC record says the team previously passed on 7bridges.",
       }],
       demoFixtureIds: ["fixture_7bridges_passed"],

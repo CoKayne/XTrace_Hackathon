@@ -12,7 +12,7 @@ export const DealStatusSchema = z.preprocess(
   z.enum(["screening", "watchlist", "evaluating", "passed", "invested"]),
 );
 
-export const DEMO_FIXTURE_LABEL = "Synthetic VC decision record created for the hackathon demo" as const;
+export const DEMO_FIXTURE_LABEL = "Sample decision record" as const;
 
 export const RunStatusSchema = z.enum([
   "queued",

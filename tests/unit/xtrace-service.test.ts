@@ -336,7 +336,7 @@ test("serializes provenance before persisting an async ingest job", async () => 
   const message = request.messages[0].content;
   assert.match(message, /\[source_document\]/);
   assert.match(message, /\[demo_fixture\]/);
-  assert.match(message, /label=Synthetic VC decision record created for the hackathon demo/);
+  assert.match(message, /label=Sample decision record/);
   assert.match(message, /decision_reason=The synthetic team passed pending a clearer regulatory path/);
   assert.deepEqual(persisted, [{ dealId: "deal_1", jobId: "job_1", status: "pending", memoryIds: [] }]);
 });
