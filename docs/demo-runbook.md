@@ -1,4 +1,7 @@
-# VSee Demo Runbook（2026-07-24 版）
+# VSee Demo Runbook（2026-07-25 版）
+
+> Reports 頁**只顯示最新一份報告**（歷史仍在資料庫與 API，UI 不再列出）。
+> belief_revised 門檻：medium 信心 = 加權分數 ≥ 0.50（2026-07-25 產品決策）。
 
 ## 開演前 10 分鐘檢查清單
 
@@ -28,19 +31,40 @@ npm run dev
 curl -s http://localhost:3000/api/settings/health
 ```
 
-4. 建議開演前先掃 1-2 次刷新報告庫（每次約 2 分鐘）。
+## 賽前保險：把「好報告」留在最新位置
+
+Reports 頁只顯示最新報告，所以**demo 畫面 = 最後一次掃描的結果**。開演前
+1-2 小時做賽前預掃：
+
+1. 按 WAKE AGENT & SCAN MARKET（或 `curl -s -X POST
+   http://localhost:3000/api/runs -H "Content-Type: application/json" -d
+   '{"mode":"xtrace"}'`），約 2 分鐘完成。
+2. 看 Reports 頁：若有 1-2 家 BELIEF REVISED → 停手，這就是 demo 報告。
+3. 若結果比上一份差（例如 0 家 BR），刪掉這份較差的報告，讓好報告回到
+   最新位置：
+
+```bash
+export SUPABASE_URL="$(security find-generic-password -a "$USER" -s vsee-supabase-url -w)"
+export SRK="$(security find-generic-password -a "$USER" -s vsee-supabase-service-role-key -w)"
+# 先列出報告（新到舊），找出要刪的 report id：
+curl -s "$SUPABASE_URL/rest/v1/intelligence_reports?select=id,run_id,created_at&order=created_at.desc&limit=5" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
+# 刪除該報告（換掉 REPORT_ID，先刪 company_analyses 再刪報告本體）：
+curl -s -X DELETE "$SUPABASE_URL/rest/v1/company_analyses?report_id=eq.REPORT_ID" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
+curl -s -X DELETE "$SUPABASE_URL/rest/v1/intelligence_reports?id=eq.REPORT_ID" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"
+```
+
+刪除只動報告快照，不影響 Deal、來源、XTrace 記憶或後續掃描。
 
 ## 展示順序
 
 1. Overview：19 筆 Deal、Sample decision record 標籤、XTrace 開關。
-2. 開報告歷史，進 **run 7747f72f 的報告**：完整 belief_revised 流程——
-   Priority Result 是 1906（medium、0.56），Then（當初 pass 的合成決策脈絡，
-   來自 XTrace recall）對 Now（白宮 E.O. 14401 加速精神疾病治療的行政命令與
-   RFI），建議行動「重啟內部審視」，引用點開是真的 federalregister.gov 文件。
-3. 開 **run 3134f225 的報告**：五筆 monitor 展示廣度（100Plus 對 CMS 給付案、
-   Ada Health、1906、7bridges、INNFormNest）。
-4. 現場按 WAKE AGENT & SCAN MARKET 掃一次（約 90-120 秒，進度畫面照著
+2. Reports 頁（就是最新報告）：講 BELIEF REVISED 的完整故事——
+   Then（當初 pass 的決策脈絡，來自 XTrace recall）對 Now（真實市場事件，
+   引用點開是真的 federalregister.gov / 官方來源），建議行動走白名單。
+3. 選配：現場按 WAKE AGENT & SCAN MARKET 掃一次（約 2 分鐘，進度畫面照
    stage 走：市場掃描 → XTrace 記憶同步/召回 → 19 筆逐一分析 → 報告）。
+   **注意：現場掃描的新結果會取代畫面上的報告**——若賽前已備好強報告，
+   建議把現場掃描放在講完主故事之後，或跳過。
 
 ## 現場掃描的話術（重要）
 
@@ -53,7 +77,7 @@ curl -s http://localhost:3000/api/settings/health
 
 - health 的 worker=false：worker 沒在跑或剛重啟，等 15 秒或重跑步驟 1。
 - POST /api/runs 回 503：fail-closed 機制，同上，等 worker 心跳恢復。
-- 換新資料庫部署時：migrations 必須套到 0004（README 已更新）。
+- 換新資料庫部署時：migrations 必須套到 0005（README 已更新）。
 - 兩個 worker 同時在跑會搶工作：`ps aux | grep runner.ts` 檢查，多的殺掉。
 
 ## 關鍵事實（評審問答備用）
@@ -65,3 +89,5 @@ curl -s http://localhost:3000/api/settings/health
   建議行動。分析中沒有任何一句話能脫離已存證據。
 - XTrace 失敗絕不靜默 fallback：該 Deal 標 analysis_unavailable、報告標
   incomplete。
+- 信心門檻：加權分數 ≥ 0.78 = high、≥ 0.50 = medium；belief_revised 需要
+  medium 以上，低於門檻的相關訊號一律 monitor。
