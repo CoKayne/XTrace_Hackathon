@@ -230,17 +230,7 @@ export default function Home() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void (async () => {
-        // Demo choreography: every page load starts from a clean slate, so
-        // scan results only ever appear as the outcome of a scan the viewer
-        // started. A failed reset must not block the app from loading.
-        try {
-          await api("/api/demo/reset", { method: "POST" });
-        } catch {
-          // Ignore: the reset is best-effort.
-        }
-        await load();
-      })();
+      void load();
     }, 0);
     return () => window.clearTimeout(timer);
   }, [load]);
@@ -424,6 +414,24 @@ export default function Home() {
     }
   }
 
+  async function resetDemo() {
+    setBusy("reset");
+    setError("");
+    try {
+      await api("/api/demo/reset", { method: "POST" });
+      setFocusedReportId(null);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("report");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      await load();
+      setNotice("Demo reset. Run a scan to generate a fresh evidence-linked report.");
+    } catch (resetError) {
+      setError(resetError instanceof Error ? resetError.message : "Could not reset the demo");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   function selectDocuments(documentIds: string[]) {
     setSelectedDocuments(documentIds);
     setImportPreview(null);
@@ -577,6 +585,15 @@ export default function Home() {
             <strong>{nav.find((item) => item.view === view)?.label}</strong>
           </div>
           <div className="vsee-top-actions">
+            <button
+              className="vsee-memory-toggle"
+              onClick={resetDemo}
+              disabled={busy === "reset"}
+              aria-label="Clear prior scan results so the next scan starts from a clean slate"
+              title="Clears reports, analyses, run history, and market events. Deals, sources, and XTrace memory stay."
+            >
+              {busy === "reset" ? "RESETTING…" : "RESET DEMO"}
+            </button>
             <button
               className={`vsee-memory-toggle ${xtraceEnabled ? "on" : ""}`}
               onClick={() => setXtraceEnabled((enabled) => !enabled)}

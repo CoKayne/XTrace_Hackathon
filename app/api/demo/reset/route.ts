@@ -6,10 +6,11 @@ const WORKSPACE_ID = "workspace_demo";
 
 export const dynamic = "force-dynamic";
 
-// Demo choreography: the page must not know any scan outcome before the
-// viewer runs a scan, so every page load wipes prior scan products (reports,
-// analyses, finished runs, market events). The corpus, XTrace lineage, and
-// stored judgments are untouched, and queued or running scans survive.
+// Demo choreography: the RESET DEMO control wipes prior scan products
+// (reports, analyses, finished runs, market events) so the next scan is a
+// clean-slate reveal. The corpus, XTrace lineage, and stored judgments are
+// untouched, and queued or running scans survive. Reset is always an
+// explicit human action; page loads never trigger it.
 export async function POST(request: Request) {
   const rate = await rateLimitRequest(request, "demo-reset", 60, 10 * 60_000);
   if (!rate.allowed) {

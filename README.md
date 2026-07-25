@@ -19,11 +19,11 @@ investor a cited reason to perform a second look.
    the Top 5 medium/high-confidence results.
 6. Persist an intelligence report, then use **Draft this report** to prepare
    and copy an editable browser-local subject and message without sending it.
-   Demo choreography: every Web App page load calls `POST /api/demo/reset`,
+   Demo choreography: the **RESET DEMO** control calls `POST /api/demo/reset`,
    which wipes prior scan products (reports, analyses, finished runs, market
-   events) so results only appear as the outcome of a scan the viewer
-   started. The corpus, XTrace lineage, and stored judgments survive, as do
-   queued and running scans.
+   events) so the next scan starts from a clean slate. The corpus, XTrace
+   lineage, and stored judgments survive, as do queued and running scans.
+   Reset is always an explicit action; page loads never trigger it.
 7. Use Chat to query only data already stored in VSee; Chat never browses or
    mutates Deal state.
 
