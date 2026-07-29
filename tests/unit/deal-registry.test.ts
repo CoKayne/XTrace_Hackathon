@@ -125,6 +125,42 @@ test("confirmation is retry-idempotent and does not change upload or XTrace stat
   assert.deepEqual(registry.inspect().externalEffects, []);
 });
 
+test("confirmation request ids bind every immutable semantic field", async () => {
+  const changes: Array<[string, (input: ConfirmSourceAssignmentInput) => ConfirmSourceAssignmentInput]> = [
+    ["actor", (input) => ({ ...input, assignedByUserId: "user_other" })],
+    ["reason", (input) => ({ ...input, reason: "A different reason." })],
+    ["time", (input) => ({ ...input, confirmedAt: "2026-07-28T11:01:00.000Z" })],
+    ["company id", (input) => ({ ...input, companyId: "company_other" })],
+    ["company name", (input) => ({ ...input, companyName: "Company other", memoryBundle: undefined })],
+    ["status", (input) => ({ ...input, status: "passed", memoryBundle: undefined })],
+    ["deal", (input) => ({ ...input, dealId: "deal_other", memoryBundle: undefined })],
+  ];
+  for (const [label, change] of changes) {
+    const sources = createMemorySourceRegistry();
+    const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+    const input = await assignment(sources, {
+      workspaceId: "workspace_one",
+      dealId: "deal_one",
+      sourceId: "source_one",
+      requestId: `request_${label}`,
+    });
+    await registry.confirmSourceAssignment(input);
+    await assert.rejects(
+      registry.confirmSourceAssignment(change(input)),
+      /request.*different|fingerprint/i,
+      label,
+    );
+  }
+});
+
+test("source revision fingerprints are SHA-256 over canonical UTF-8 ordering", () => {
+  const ids = ["a,b", "a", "B", "é", "e\u0301", "中"];
+  assert.equal(
+    sourceRevisionFingerprint(ids),
+    "sha256:0385ed119273e8847094485994e6df1d410c8909df4306cd9b77ee092e7d7cb3",
+  );
+});
+
 test("active assignment supersession updates the fingerprint deterministically", async () => {
   const sources = createMemorySourceRegistry();
   const registry = createMemoryDealRegistry({ sourceRegistry: sources });
@@ -199,6 +235,68 @@ test("workspace identity is mandatory and colliding Deal ids remain isolated", a
   );
 });
 
+test("memory ownership rejects foreign workspace, Deal, source, and stale revision lineage", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  const input = await assignment(sources, {
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    sourceId: "source_one",
+    memoryBundle: {
+      dealId: "deal_one",
+      companyName: "Company deal_one",
+      status: "screening",
+      facts: [{
+        text: "A verified fact.",
+        sources: [{
+          id: "evidence_one",
+          provenance: "source_document",
+          title: "Source one",
+          documentId: "source_one",
+          page: 1,
+          excerpt: "A verified fact.",
+        }],
+      }],
+      interactions: [],
+    },
+  });
+  const owner = {
+    workspaceId: input.workspaceId,
+    dealId: input.dealId,
+    sourceId: "source_one",
+    sourceRevisionId: input.sourceRevisionId,
+  };
+  await registry.confirmSourceAssignment({
+    ...input,
+    memoryLineage: { evidence: { evidence_one: owner }, interactions: {} },
+  });
+  assert.equal(
+    (await registry.listAnalysisEligibleBundles("workspace_one"))[0]
+      ?.facts.length,
+    1,
+  );
+
+  for (const changedOwner of [
+    { ...owner, workspaceId: "workspace_other" },
+    { ...owner, dealId: "deal_other" },
+    { ...owner, sourceId: "source_other" },
+    { ...owner, sourceRevisionId: "revision_stale" },
+  ]) {
+    const isolated = createMemoryDealRegistry({ sourceRegistry: sources });
+    await assert.rejects(
+      isolated.confirmSourceAssignment({
+        ...input,
+        requestId: `request_${JSON.stringify(changedOwner)}`,
+        memoryLineage: {
+          evidence: { evidence_one: changedOwner },
+          interactions: {},
+        },
+      }),
+      /lineage|foreign|source|revision/i,
+    );
+  }
+});
+
 test("confirmation rejects cross-workspace revisions and conflicting retry identities", async () => {
   const sources = createMemorySourceRegistry();
   const registry = createMemoryDealRegistry({ sourceRegistry: sources });
@@ -271,7 +369,7 @@ test("preloaded registry backfill is idempotent and keeps nineteen as fixture da
   assert.equal(deals.inspect().assignments.length, 19);
 });
 
-test("backfill reuses a migration-created immutable revision without rewriting timestamps", async () => {
+test("backfill tolerates migration timestamps but rejects extractor provenance drift", async () => {
   const sources = createMemorySourceRegistry();
   const deals = createMemoryDealRegistry({ sourceRegistry: sources });
   await sources.createInitialRevision({
@@ -285,7 +383,8 @@ test("backfill reuses a migration-created immutable revision without rewriting t
       "private/demo-corpus/698a582d94484808c419aab4602a72aa36612fdafebba56a690be3bea848d47a/7bridges-Pitch-Deck.pdf",
     objectVersion:
       "698a582d94484808c419aab4602a72aa36612fdafebba56a690be3bea848d47a",
-    extractorId: "legacy-migration",
+    extractorId: "preloaded-pdf",
+    extractorVersion: "1",
     extractedAt: "2026-07-01T00:00:00.000Z",
     createdAt: "2026-07-01T00:00:00.000Z",
   });
@@ -304,8 +403,32 @@ test("backfill reuses a migration-created immutable revision without rewriting t
         workspaceId: "workspace_demo",
         revisionId: "source_revision_doc_7bridges_1",
       })
-    )?.extractorId,
-    "legacy-migration",
+    )?.extractedAt,
+    "2026-07-01T00:00:00.000Z",
+  );
+
+  const mismatchedSources = createMemorySourceRegistry();
+  await mismatchedSources.createInitialRevision({
+    ...revisionInput(
+      "workspace_demo",
+      "doc_7bridges",
+      "source_revision_doc_7bridges_1",
+      "698a582d94484808c419aab4602a72aa36612fdafebba56a690be3bea848d47a",
+    ),
+    objectKey:
+      "private/demo-corpus/698a582d94484808c419aab4602a72aa36612fdafebba56a690be3bea848d47a/7bridges-Pitch-Deck.pdf",
+    objectVersion:
+      "698a582d94484808c419aab4602a72aa36612fdafebba56a690be3bea848d47a",
+    extractorId: "wrong-extractor",
+  });
+  await assert.rejects(
+    backfillPreloadedSourceRegistry({
+      workspaceId: "workspace_demo",
+      assignedByUserId: "user_demo",
+      sourceRegistry: mismatchedSources,
+      dealRegistry: createMemoryDealRegistry({ sourceRegistry: mismatchedSources }),
+    }),
+    /different immutable source data/i,
   );
 });
 
@@ -417,4 +540,62 @@ test("Supabase eligible reads reject a stale active-revision fingerprint", async
     repository.listAnalysisEligibleBundles("workspace_one"),
     /fingerprint|active source/i,
   );
+});
+
+test("Supabase eligible reads reject stale evidence and interaction revision ownership", async () => {
+  for (const table of ["source_evidence", "deal_interactions"]) {
+    const repository = createSupabaseDealRegistry({
+      url: "https://example.supabase.co",
+      serviceRoleKey: "test-service-role-key",
+      fetchImpl: async (input) => {
+        const url = String(input);
+        if (url.includes("/deals?")) {
+          return Response.json([{
+            id: "deal_one",
+            workspace_id: "workspace_one",
+            company_id: "company_one",
+            company_name: "Company one",
+            status: "screening",
+            analysis_eligible_at: "2026-07-28T11:00:00.000Z",
+            active_source_revision_fingerprint:
+              sourceRevisionFingerprint(["revision_one"]),
+          }]);
+        }
+        if (url.includes("/deal_source_assignments?")) {
+          return Response.json([{
+            deal_id: "deal_one",
+            source_id: "source_one",
+            source_revision_id: "revision_one",
+          }]);
+        }
+        if (url.includes(`/${table}?`)) {
+          return Response.json([{
+            id: `${table}_one`,
+            workspace_id: "workspace_one",
+            deal_id: "deal_one",
+            document_id: "source_one",
+            source_revision_id: "revision_stale",
+            provenance: table === "source_evidence"
+              ? "source_document"
+              : "demo_fixture",
+            page: 1,
+            fact: "Fact",
+            excerpt: "Excerpt",
+            occurred_at: "2026-07-28T10:00:00.000Z",
+            meeting_summary: "Summary",
+            decision_reason: "Reason",
+            concerns: [],
+            revisit_conditions: [],
+            label: "Sample decision record",
+          }]);
+        }
+        return Response.json([]);
+      },
+    });
+    await assert.rejects(
+      repository.listAnalysisEligibleBundles("workspace_one"),
+      /inactive|stale|foreign|revision/i,
+      table,
+    );
+  }
 });

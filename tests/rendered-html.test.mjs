@@ -58,7 +58,7 @@ test("keeps company intelligence and responsive hierarchy in the production sour
   assert.match(page, /CompanyIntelligenceReport/);
   assert.match(page, /System activity/);
   assert.doesNotMatch(page, /\{ view: "runs", label: "Runs"/);
-  assert.match(progress, /Comparing evidence across 19 companies/);
+  assert.match(progress, /Comparing evidence across eligible companies/);
 
   for (const label of [
     "THEN / INVESTMENT MEMORY",

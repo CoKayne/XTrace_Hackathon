@@ -115,19 +115,6 @@ export async function runDemoSeed(
     }
   }
 
-  for (const evidence of DEMO_DEAL_EVIDENCE) {
-    increment(created, "evidence", await dependencies.dataStore.ensureEvidence({
-      workspaceId: DEMO_WORKSPACE.id,
-      ...evidence,
-    }));
-  }
-  for (const fixture of DEMO_FIXTURES) {
-    increment(created, "fixtures", await dependencies.dataStore.ensureFixture({
-      workspaceId: DEMO_WORKSPACE.id,
-      ...fixture,
-    }));
-  }
-
   if (dependencies.sourceRegistry && dependencies.dealRegistry) {
     await backfillPreloadedSourceRegistry({
       workspaceId: DEMO_WORKSPACE.id,
@@ -135,6 +122,25 @@ export async function runDemoSeed(
       sourceRegistry: dependencies.sourceRegistry,
       dealRegistry: dependencies.dealRegistry,
     });
+  }
+
+  for (const evidence of DEMO_DEAL_EVIDENCE) {
+    increment(created, "evidence", await dependencies.dataStore.ensureEvidence({
+      workspaceId: DEMO_WORKSPACE.id,
+      sourceRevisionId: dependencies.sourceRegistry
+        ? `source_revision_${evidence.documentId}_1`
+        : undefined,
+      ...evidence,
+    }));
+  }
+  for (const fixture of DEMO_FIXTURES) {
+    increment(created, "fixtures", await dependencies.dataStore.ensureFixture({
+      workspaceId: DEMO_WORKSPACE.id,
+      sourceRevisionId: dependencies.sourceRegistry
+        ? `source_revision_${fixture.documentId}_1`
+        : undefined,
+      ...fixture,
+    }));
   }
 
   return { reset: Boolean(options.reset), created };

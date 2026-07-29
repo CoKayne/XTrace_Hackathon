@@ -190,7 +190,7 @@ test("scans stay in the investor workflow and open the durable report", async ()
     "Scanning the last 14 days of public evidence",
     "Normalizing and ranking market events",
     "Recalling XTrace investment memory",
-    "Comparing evidence across 19 companies",
+    "Comparing evidence across eligible companies",
     "Generating company intelligence report",
     "Report ready",
     "The scan could not produce a report",

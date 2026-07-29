@@ -137,3 +137,87 @@ is the existing opt-in external XTrace live test. Typecheck and lint also pass.
 - Verified implementation snapshot SHA: `f92d799`
 - The final amended task commit SHA is reported in the task handoff because a
   Git commit cannot contain its own SHA.
+
+## Review round 1
+
+Independent review initially returned **NOT APPROVED** with one critical,
+seven important, and two moderate findings. All findings were addressed with
+new RED tests followed by repository, migration, worker, schema, seed, and UI
+changes.
+
+### Security and atomicity
+
+- Registry mutation now occurs only through narrowly scoped
+  `SECURITY DEFINER` RPCs owned by the dedicated
+  `vsee_registry_owner NOLOGIN NOINHERIT NOBYPASSRLS` role. Every definer RPC
+  has `search_path = ''` and uses fully qualified application objects.
+- `service_role` has registry-table `SELECT` plus explicit RPC execution, but
+  no direct registry `INSERT`, `UPDATE`, `DELETE`, or `TRUNCATE`. Column-level
+  Deal grants exclude `analysis_eligible_at` and
+  `active_source_revision_fingerprint`.
+- The annotation write moved from direct PostgREST table insertion to
+  `annotate_source_revision`.
+- Live exploit tests prove RPC writes and reads succeed while direct revision,
+  annotation, assignment, eligibility, fingerprint, and truncate mutations
+  fail. Catalog assertions verify the dedicated owner and locked search path.
+- Exact append retry resolves the immutable target under the per-source lock
+  before checking the current predecessor. Immediate replay, replay after a
+  later revision, and mismatched replay are covered in memory and live
+  PostgreSQL.
+- Confirmation request IDs now persist a canonical semantic fingerprint over
+  workspace, Deal, company identity, status, revision, actor, reason, and
+  normalized confirmation time. Any changed field is rejected.
+
+### Ownership, fingerprints, and snapshots
+
+- Evidence and interactions persist `source_revision_id`. The Deal Registry
+  validates internal workspace/Deal/source/revision ownership on ingress and
+  verifies that every row still matches an active assignment on egress.
+  Internal interaction identity is retained without changing the public
+  `DealMemoryBundle` shape.
+- Active-revision fingerprints use injective UTF-8 length framing, bytewise
+  `C` ordering, and SHA-256 in both TypeScript and PostgreSQL. Tests cover
+  commas, punctuation, case, composed/decomposed non-ASCII, exact bytes/hash,
+  and SQL/TypeScript parity. Deal ordering uses the same UTF-8 comparator.
+- New analysis reports require both eligible snapshot count and fingerprint.
+  These are stored internally, checked atomically against analysis length and
+  `company_count`, and cannot be replaced for the same report/run by a
+  different snapshot. Legacy report responses expose neither field.
+- Production captures the snapshot from registered Deals and their active
+  source-revision fingerprints. Dynamic three-Deal persistence and omitted,
+  mismatched, and reclaimed-run overwrite cases are covered.
+- Production and UI copy no longer hard-code 19; the number remains only in
+  fixed corpus fixtures and tests describing that fixture.
+
+### Backfill and schema parity
+
+- Backfill request and assignment IDs use injective tuple framing plus SHA-256;
+  a live delimiter-collision fixture retains both assignments.
+- Seed/migration provenance is aligned to `preloaded-pdf` version `1`.
+  Backfill accepts documented historical timestamp differences only and
+  rejects extractor identity/version drift.
+- `db/schema.ts` mirrors every `0009` CHECK, status constraint, workspace
+  composite foreign key, and partial unique index. Live catalog assertions
+  compare the mirrored constraint set and index predicate.
+
+### Review verification
+
+- Focused repository/UI tests: **41 passed, 0 failed**.
+- Full regression: **485 discovered; 484 passed, 0 failed, 1 skipped**. The
+  skip is the existing opt-in external XTrace live test.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with no warnings or errors.
+- `npm run test:migrations`: **7 passed, 0 failed, 0 skipped**.
+
+### Operational preflight
+
+Migration `0009` is intentionally fail-closed. The managed-Supabase migration
+deployment role must be permitted to create/alter the dedicated NOLOGIN role,
+alter function ownership, create policies, and grant least privileges. If it
+cannot establish that boundary, deployment must stop; there is no privileged
+owner fallback. Apply the migration through the administrative migration
+channel before starting the worker.
+
+The initial Task 5 implementation commit was
+`42f1585bfb45bdb4cb03955017566c4f2080f3d1`. The review-fix commit is reported
+in the handoff because a commit cannot contain its own SHA.

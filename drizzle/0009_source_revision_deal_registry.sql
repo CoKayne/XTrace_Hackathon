@@ -1,5 +1,17 @@
 begin;
 
+do $$
+begin
+  if not exists (
+    select 1 from pg_catalog.pg_roles
+    where rolname = 'vsee_registry_owner'
+  ) then
+    create role vsee_registry_owner nologin noinherit nobypassrls;
+  end if;
+end;
+$$;
+alter role vsee_registry_owner nologin noinherit nobypassrls;
+
 alter table public.deals
   add column if not exists status text,
   add column if not exists analysis_eligible_at timestamptz,
@@ -107,6 +119,9 @@ create table if not exists public.source_revision_annotations (
 create table if not exists public.deal_source_assignments (
   id text not null,
   request_id text not null check (btrim(request_id) <> ''),
+  request_fingerprint text check (
+    request_fingerprint ~ '^sha256:[0-9a-f]{64}$'
+  ),
   workspace_id text not null
     references public.workspaces(id) on delete cascade,
   deal_id text not null,
@@ -139,11 +154,85 @@ create index if not exists deal_source_assignments_workspace_deal_created
     workspace_id, deal_id, created_at, source_revision_id
   );
 
+alter table public.deal_source_assignments
+  add column if not exists request_fingerprint text;
+
+create or replace function public.sha256_length_framed(values_to_frame text[])
+returns text
+language sql
+immutable
+strict
+security invoker
+set search_path = ''
+as $$
+  select 'sha256:' || pg_catalog.encode(
+    public.digest(
+      pg_catalog.convert_to(
+        pg_catalog.string_agg(
+          pg_catalog.octet_length(value)::text || ':' || value,
+          '' order by ordinal
+        ),
+        'UTF8'
+      ),
+      'sha256'
+    ),
+    'hex'
+  )
+  from pg_catalog.unnest(values_to_frame)
+    with ordinality as framed(value, ordinal)
+$$;
+
+create or replace function public.source_revision_set_fingerprint(
+  revision_ids text[]
+)
+returns text
+language sql
+immutable
+security invoker
+set search_path = ''
+as $$
+  select public.sha256_length_framed(
+    pg_catalog.array_prepend(
+      'source-revisions-v2',
+      coalesce(
+        (
+          select pg_catalog.array_agg(id order by id collate "C")
+          from (
+            select distinct id
+            from pg_catalog.unnest(revision_ids) as ids(id)
+          ) as unique_ids
+        ),
+        array[]::text[]
+      )
+    )
+  )
+$$;
+
+alter table public.source_evidence
+  add column if not exists source_revision_id text;
+alter table public.deal_interactions
+  add column if not exists source_revision_id text;
+alter table public.intelligence_reports
+  add column if not exists eligible_snapshot_count integer,
+  add column if not exists eligible_snapshot_fingerprint text;
+alter table public.intelligence_reports
+  add constraint intelligence_reports_eligible_snapshot_check
+  check (
+    (
+      eligible_snapshot_count is null
+      and eligible_snapshot_fingerprint is null
+    )
+    or (
+      eligible_snapshot_count >= 0
+      and btrim(eligible_snapshot_fingerprint) <> ''
+    )
+  );
+
 create or replace function public.validate_source_revision_insert()
 returns trigger
 language plpgsql
 security invoker
-set search_path = pg_catalog, public
+set search_path = ''
 as $$
 declare
   previous_revision integer;
@@ -188,7 +277,7 @@ create or replace function public.reject_immutable_source_registry_mutation()
 returns trigger
 language plpgsql
 security invoker
-set search_path = pg_catalog, public
+set search_path = ''
 as $$
 begin
   raise exception '% rows are append-only', tg_table_name;
@@ -214,8 +303,8 @@ create or replace function public.create_initial_source_revision(
 )
 returns setof public.source_revisions
 language plpgsql
-security invoker
-set search_path = pg_catalog, public
+security definer
+set search_path = ''
 as $$
 declare
   target_workspace_id text := btrim(p_revision ->> 'workspaceId');
@@ -304,8 +393,8 @@ create or replace function public.append_source_revision(
 )
 returns setof public.source_revisions
 language plpgsql
-security invoker
-set search_path = pg_catalog, public
+security definer
+set search_path = ''
 as $$
 declare
   target_workspace_id text := btrim(p_revision ->> 'workspaceId');
@@ -313,6 +402,7 @@ declare
   target_revision_id text := btrim(p_revision ->> 'id');
   target_supersedes_id text := btrim(p_revision ->> 'supersedesRevisionId');
   current_revision public.source_revisions%rowtype;
+  existing_target public.source_revisions%rowtype;
 begin
   if jsonb_typeof(p_revision) <> 'object' then
     raise exception 'p_revision must be a JSON object';
@@ -332,6 +422,37 @@ begin
       0
     )
   );
+
+  select revision.*
+  into existing_target
+  from public.source_revisions as revision
+  where revision.workspace_id = target_workspace_id
+    and revision.id = target_revision_id;
+  if found then
+    if existing_target.source_id <> target_source_id
+      or existing_target.content_hash <> btrim(p_revision ->> 'contentHash')
+      or existing_target.object_key <> btrim(p_revision ->> 'objectKey')
+      or existing_target.object_version <> btrim(p_revision ->> 'objectVersion')
+      or existing_target.content_type <> btrim(p_revision ->> 'contentType')
+      or existing_target.extractor_id <> btrim(p_revision ->> 'extractorId')
+      or existing_target.extractor_version
+        <> btrim(p_revision ->> 'extractorVersion')
+      or existing_target.extracted_at
+        <> (p_revision ->> 'extractedAt')::timestamptz
+      or existing_target.supersedes_revision_id <> target_supersedes_id
+      or existing_target.created_at
+        <> (p_revision ->> 'createdAt')::timestamptz
+    then
+      raise exception
+        'Source revision is immutable and contains different data';
+    end if;
+    return query
+      select revision.*
+      from public.source_revisions as revision
+      where revision.workspace_id = target_workspace_id
+        and revision.id = target_revision_id;
+    return;
+  end if;
 
   select revision.*
   into current_revision
@@ -377,6 +498,45 @@ begin
 end;
 $$;
 
+create or replace function public.annotate_source_revision(
+  p_annotation jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  target_workspace_id text := btrim(p_annotation ->> 'workspaceId');
+  target_revision_id text := btrim(p_annotation ->> 'revisionId');
+  target_kind text := btrim(p_annotation ->> 'kind');
+  target_reason text := btrim(p_annotation ->> 'reason');
+begin
+  if coalesce(target_workspace_id, '') = ''
+    or coalesce(target_revision_id, '') = ''
+    or coalesce(target_reason, '') = ''
+  then
+    raise exception 'The complete source annotation is required';
+  end if;
+  if target_kind not in ('retracted', 'identity_corrected', 'superseded') then
+    raise exception 'The source revision annotation kind is invalid';
+  end if;
+  if not exists (
+    select 1 from public.source_revisions as revision
+    where revision.workspace_id = target_workspace_id
+      and revision.id = target_revision_id
+  ) then
+    raise exception 'The source revision does not exist in this workspace';
+  end if;
+  insert into public.source_revision_annotations (
+    workspace_id, revision_id, kind, reason, superseded_by_run_id
+  ) values (
+    target_workspace_id, target_revision_id, target_kind, target_reason,
+    nullif(p_annotation ->> 'supersededByRunId', '')::uuid
+  );
+end;
+$$;
+
 -- Upgrade already-seeded databases without assuming a fixed Deal count.
 with owned_sources as (
   select evidence.workspace_id, evidence.document_id as source_id
@@ -414,6 +574,31 @@ from owned_sources as owned
 join public.source_documents as document on document.id = owned.source_id
 on conflict (workspace_id, source_id, revision) do nothing;
 
+update public.source_evidence as evidence
+set source_revision_id = revision.id
+from public.source_revisions as revision
+where evidence.source_revision_id is null
+  and revision.workspace_id = evidence.workspace_id
+  and revision.source_id = evidence.document_id
+  and revision.revision = 1;
+
+update public.deal_interactions as interaction
+set source_revision_id = revision.id
+from public.source_revisions as revision
+where interaction.source_revision_id is null
+  and revision.workspace_id = interaction.workspace_id
+  and revision.source_id = interaction.document_id
+  and revision.revision = 1;
+
+alter table public.source_evidence
+  add constraint source_evidence_exact_revision_fkey
+  foreign key (workspace_id, document_id, source_revision_id)
+  references public.source_revisions (workspace_id, source_id, id);
+alter table public.deal_interactions
+  add constraint deal_interactions_exact_revision_fkey
+  foreign key (workspace_id, document_id, source_revision_id)
+  references public.source_revisions (workspace_id, source_id, id);
+
 with evidence_ownership as (
   select evidence.workspace_id, evidence.deal_id,
     evidence.document_id as source_id
@@ -424,15 +609,24 @@ with evidence_ownership as (
   from public.deal_interactions as interaction
 )
 insert into public.deal_source_assignments (
-  id, request_id, workspace_id, deal_id, source_id, source_revision_id,
+  id, request_id, request_fingerprint, workspace_id, deal_id, source_id,
+  source_revision_id,
   assigned_by_user_id, reason, created_at, superseded_at
 )
 select
-  'backfill:' || md5(
-    ownership.workspace_id || ':' || ownership.deal_id || ':'
-      || ownership.source_id
-  ),
-  'backfill:' || ownership.deal_id || ':' || ownership.source_id,
+  'backfill:' || public.sha256_length_framed(array[
+    ownership.workspace_id, ownership.deal_id, ownership.source_id
+  ]),
+  'backfill:' || public.sha256_length_framed(array[
+    ownership.deal_id, ownership.source_id
+  ]),
+  public.sha256_length_framed(array[
+    'confirmation-request-v1', ownership.workspace_id, ownership.deal_id,
+    deal.company_id, deal.company_name, deal.status, revision.id,
+    'migration:0009',
+    'Backfilled from existing source-backed Deal evidence.',
+    deal.created_at::text
+  ]),
   ownership.workspace_id,
   ownership.deal_id,
   ownership.source_id,
@@ -451,6 +645,17 @@ join public.source_revisions as revision
   and revision.revision = 1
 on conflict (workspace_id, request_id) do nothing;
 
+update public.deal_source_assignments
+set request_fingerprint = public.sha256_length_framed(array[
+  'legacy-confirmation-request-v1', workspace_id, request_id, deal_id,
+  source_id, source_revision_id, assigned_by_user_id, reason,
+  created_at::text
+])
+where request_fingerprint is null;
+
+alter table public.deal_source_assignments
+  alter column request_fingerprint set not null;
+
 update public.deals as deal
 set
   analysis_eligible_at = coalesce(
@@ -458,13 +663,13 @@ set
     active.first_assignment_at
   ),
   active_source_revision_fingerprint =
-    'source-revisions-v1:' || active.revision_ids
+    public.source_revision_set_fingerprint(active.revision_ids)
 from (
   select assignment.workspace_id, assignment.deal_id,
     min(assignment.created_at) as first_assignment_at,
-    string_agg(
-      assignment.source_revision_id,
-      ',' order by assignment.source_revision_id
+    array_agg(
+      assignment.source_revision_id
+      order by assignment.source_revision_id collate "C"
     ) as revision_ids
   from public.deal_source_assignments as assignment
   where assignment.superseded_at is null
@@ -482,7 +687,7 @@ create or replace function public.source_assignment_result(
 returns jsonb
 language sql
 immutable
-set search_path = pg_catalog, public
+set search_path = ''
 as $$
   select jsonb_build_object(
     'deal', jsonb_build_object(
@@ -520,8 +725,8 @@ create or replace function public.confirm_source_assignment(
 )
 returns jsonb
 language plpgsql
-security invoker
-set search_path = pg_catalog, public
+security definer
+set search_path = ''
 as $$
 declare
   target_request_id text := btrim(p_assignment ->> 'requestId');
@@ -535,6 +740,7 @@ declare
   target_reason text := btrim(p_assignment ->> 'reason');
   target_confirmed_at timestamptz :=
     (p_assignment ->> 'confirmedAt')::timestamptz;
+  target_request_fingerprint text;
   source_revision public.source_revisions%rowtype;
   existing_request public.deal_source_assignments%rowtype;
   existing_company public.companies%rowtype;
@@ -562,6 +768,12 @@ begin
   ) then
     raise exception 'The Deal status is invalid';
   end if;
+  target_request_fingerprint := public.sha256_length_framed(array[
+    'confirmation-request-v1', target_workspace_id, target_deal_id,
+    target_company_id, target_company_name, target_status,
+    target_revision_id, target_user_id, target_reason,
+    target_confirmed_at::text
+  ]);
 
   perform pg_advisory_xact_lock(
     hashtextextended(
@@ -591,9 +803,8 @@ begin
   where assignment.workspace_id = target_workspace_id
     and assignment.request_id = target_request_id;
   if found then
-    if existing_request.deal_id <> target_deal_id
-      or existing_request.source_revision_id <> target_revision_id
-    then
+    if existing_request.request_fingerprint
+      <> target_request_fingerprint then
       raise exception
         'The confirmation request was used for a different Deal or revision';
     end if;
@@ -677,11 +888,14 @@ begin
       and assignment.superseded_at is null;
 
     insert into public.deal_source_assignments (
-      id, request_id, workspace_id, deal_id, source_id,
+      id, request_id, request_fingerprint, workspace_id, deal_id, source_id,
       source_revision_id, assigned_by_user_id, reason, created_at
     ) values (
-      'assignment:' || md5(target_workspace_id || ':' || target_request_id),
+      'assignment:' || public.sha256_length_framed(array[
+        target_workspace_id, target_request_id
+      ]),
       target_request_id,
+      target_request_fingerprint,
       target_workspace_id,
       target_deal_id,
       source_revision.source_id,
@@ -695,11 +909,13 @@ begin
   select
     array_agg(
       assignment.source_revision_id
-      order by assignment.source_revision_id
+      order by assignment.source_revision_id collate "C"
     ),
-    'source-revisions-v1:' || string_agg(
-      assignment.source_revision_id,
-      ',' order by assignment.source_revision_id
+    public.source_revision_set_fingerprint(
+      array_agg(
+        assignment.source_revision_id
+        order by assignment.source_revision_id collate "C"
+      )
     )
   into active_revision_ids, active_fingerprint
   from public.deal_source_assignments as assignment
@@ -727,9 +943,154 @@ begin
 end;
 $$;
 
+alter function public.save_intelligence_report(jsonb, jsonb)
+  rename to save_intelligence_report_legacy_0009;
+
+create or replace function public.save_intelligence_report(
+  p_report jsonb,
+  p_analyses jsonb
+)
+returns setof public.intelligence_reports
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  target_report_id text := btrim(p_report ->> 'id');
+  target_workspace_id text := btrim(p_report ->> 'workspaceId');
+  target_run_id uuid := (p_report ->> 'runId')::uuid;
+  target_snapshot_count integer :=
+    (p_report ->> 'eligibleSnapshotCount')::integer;
+  target_snapshot_fingerprint text :=
+    nullif(btrim(p_report ->> 'eligibleSnapshotFingerprint'), '');
+  existing_report public.intelligence_reports%rowtype;
+begin
+  if jsonb_typeof(p_report) <> 'object'
+    or jsonb_typeof(p_analyses) <> 'array'
+  then
+    raise exception 'A report object and analyses array are required';
+  end if;
+  if coalesce(target_report_id, '') = ''
+    or coalesce(target_workspace_id, '') = ''
+  then
+    raise exception 'The report identity is required';
+  end if;
+  if target_snapshot_fingerprint is null then
+    if jsonb_array_length(p_analyses) <> 0 then
+      raise exception
+        'Legacy reports cannot save new company analyses without a snapshot';
+    end if;
+  elsif target_snapshot_count is null
+    or target_snapshot_count < 0
+    or target_snapshot_count <> jsonb_array_length(p_analyses)
+    or target_snapshot_count
+      <> coalesce((p_report ->> 'companyCount')::integer, -1)
+  then
+    raise exception
+      'The eligible Deal snapshot must match analyses and company count';
+  end if;
+
+  perform pg_advisory_xact_lock(
+    hashtextextended(
+      jsonb_build_array(target_workspace_id, target_report_id)::text,
+      0
+    )
+  );
+  select report.*
+  into existing_report
+  from public.intelligence_reports as report
+  where report.workspace_id = target_workspace_id
+    and report.id = target_report_id;
+  if found and (
+    existing_report.run_id <> target_run_id
+    or existing_report.eligible_snapshot_count
+      is distinct from target_snapshot_count
+    or existing_report.eligible_snapshot_fingerprint
+      is distinct from target_snapshot_fingerprint
+  ) then
+    raise exception
+      'A report cannot overwrite a different run or eligible Deal snapshot';
+  end if;
+
+  perform 1
+  from public.save_intelligence_report_legacy_0009(
+    p_report, p_analyses
+  );
+
+  update public.intelligence_reports as report
+  set
+    eligible_snapshot_count = target_snapshot_count,
+    eligible_snapshot_fingerprint = target_snapshot_fingerprint
+  where report.workspace_id = target_workspace_id
+    and report.id = target_report_id;
+
+  return query
+  select report.*
+  from public.intelligence_reports as report
+  where report.workspace_id = target_workspace_id
+    and report.id = target_report_id;
+end;
+$$;
+
 alter table public.source_revisions enable row level security;
 alter table public.source_revision_annotations enable row level security;
 alter table public.deal_source_assignments enable row level security;
+
+grant usage on schema public to vsee_registry_owner;
+grant select, insert on public.source_revisions to vsee_registry_owner;
+grant select, insert on public.source_revision_annotations
+  to vsee_registry_owner;
+grant select, insert, update on public.deal_source_assignments
+  to vsee_registry_owner;
+grant select, insert on public.companies to vsee_registry_owner;
+grant select, insert, update on public.deals to vsee_registry_owner;
+grant select, insert, update on public.intelligence_reports
+  to vsee_registry_owner;
+grant select, insert, update, delete on public.company_analyses
+  to vsee_registry_owner;
+grant execute on function
+  public.save_intelligence_report_legacy_0009(jsonb, jsonb)
+  to vsee_registry_owner;
+
+create policy source_revisions_registry_owner
+  on public.source_revisions for all to vsee_registry_owner
+  using (true) with check (true);
+create policy source_annotations_registry_owner
+  on public.source_revision_annotations for all to vsee_registry_owner
+  using (true) with check (true);
+create policy source_assignments_registry_owner
+  on public.deal_source_assignments for all to vsee_registry_owner
+  using (true) with check (true);
+create policy companies_registry_owner
+  on public.companies for all to vsee_registry_owner
+  using (true) with check (true);
+create policy deals_registry_owner
+  on public.deals for all to vsee_registry_owner
+  using (true) with check (true);
+create policy intelligence_reports_registry_owner
+  on public.intelligence_reports for all to vsee_registry_owner
+  using (true) with check (true);
+create policy company_analyses_registry_owner
+  on public.company_analyses for all to vsee_registry_owner
+  using (true) with check (true);
+
+alter function public.create_initial_source_revision(jsonb)
+  owner to vsee_registry_owner;
+alter function public.append_source_revision(jsonb)
+  owner to vsee_registry_owner;
+alter function public.annotate_source_revision(jsonb)
+  owner to vsee_registry_owner;
+alter function public.confirm_source_assignment(jsonb)
+  owner to vsee_registry_owner;
+alter function public.save_intelligence_report(jsonb, jsonb)
+  owner to vsee_registry_owner;
+alter function public.source_assignment_result(
+  public.deals, public.source_revisions, text[], boolean
+) owner to vsee_registry_owner;
+alter function public.sha256_length_framed(text[])
+  owner to vsee_registry_owner;
+alter function public.source_revision_set_fingerprint(text[])
+  owner to vsee_registry_owner;
 
 revoke all privileges on table public.source_revisions from public;
 revoke all privileges on table public.source_revision_annotations from public;
@@ -737,7 +1098,13 @@ revoke all privileges on table public.deal_source_assignments from public;
 revoke all on function public.create_initial_source_revision(jsonb)
   from public;
 revoke all on function public.append_source_revision(jsonb) from public;
+revoke all on function public.annotate_source_revision(jsonb) from public;
 revoke all on function public.confirm_source_assignment(jsonb) from public;
+revoke all on function public.save_intelligence_report(jsonb, jsonb)
+  from public;
+revoke all on function
+  public.save_intelligence_report_legacy_0009(jsonb, jsonb)
+  from public;
 revoke all on function public.source_assignment_result(
   public.deals, public.source_revisions, text[], boolean
 ) from public;
@@ -770,6 +1137,10 @@ begin
       restricted_role
     );
     execute format(
+      'revoke all on function public.annotate_source_revision(jsonb) from %I',
+      restricted_role
+    );
+    execute format(
       'revoke all on function public.confirm_source_assignment(jsonb) from %I',
       restricted_role
     );
@@ -777,20 +1148,37 @@ begin
 
   if exists (select 1 from pg_roles where rolname = 'service_role') then
     grant usage on schema public to service_role;
-    grant all privileges on table public.source_revisions to service_role;
-    grant all privileges on table public.source_revision_annotations
-      to service_role;
-    grant all privileges on table public.deal_source_assignments
-      to service_role;
+    revoke all privileges on table public.source_revisions from service_role;
+    revoke all privileges on table public.source_revision_annotations
+      from service_role;
+    revoke all privileges on table public.deal_source_assignments
+      from service_role;
+    grant select on table public.source_revisions to service_role;
+    grant select on table public.source_revision_annotations to service_role;
+    grant select on table public.deal_source_assignments to service_role;
+    revoke insert, update on table public.deals from service_role;
+    grant insert (
+      id, workspace_id, company_id, company_name, status, created_at
+    ) on public.deals to service_role;
+    grant update (
+      company_id, company_name, status, created_at
+    ) on public.deals to service_role;
     grant execute on function
       public.create_initial_source_revision(jsonb) to service_role;
     grant execute on function public.append_source_revision(jsonb)
+      to service_role;
+    grant execute on function public.annotate_source_revision(jsonb)
       to service_role;
     grant execute on function public.confirm_source_assignment(jsonb)
       to service_role;
     grant execute on function public.source_assignment_result(
       public.deals, public.source_revisions, text[], boolean
     ) to service_role;
+    grant execute on function
+      public.save_intelligence_report(jsonb, jsonb) to service_role;
+    revoke all on function
+      public.save_intelligence_report_legacy_0009(jsonb, jsonb)
+      from service_role;
   end if;
 end;
 $$;

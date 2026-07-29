@@ -165,6 +165,29 @@ test("append requires the exact current revision and concurrent retries cannot d
   );
 });
 
+test("append retries resolve the immutable target before checking the current predecessor", async () => {
+  const registry = createMemorySourceRegistry();
+  const first = await registry.createInitialRevision(
+    revisionInput("workspace_one", "source_one", "revision_one", "hash_a"),
+  );
+  const secondInput = {
+    ...revisionInput("workspace_one", "source_one", "revision_two", "hash_b"),
+    supersedesRevisionId: first.id,
+  };
+  const second = await registry.appendRevision(secondInput);
+  assert.deepEqual(await registry.appendRevision(secondInput), second);
+
+  await registry.appendRevision({
+    ...revisionInput("workspace_one", "source_one", "revision_three", "hash_c"),
+    supersedesRevisionId: second.id,
+  });
+  assert.deepEqual(await registry.appendRevision(secondInput), second);
+  await assert.rejects(
+    registry.appendRevision({ ...secondInput, contentHash: "hash_changed" }),
+    /immutable|different/i,
+  );
+});
+
 test("annotations are append-only, nonblank, and cannot cross workspaces", async () => {
   const registry = createMemorySourceRegistry();
   const revision = await registry.createInitialRevision(
@@ -249,6 +272,13 @@ test("Supabase revisions use atomic workspace-scoped RPC requests", async () => 
     workspaceId: "workspace_one",
     revisionId: "revision_one",
   });
+  await repository.annotateRevision({
+    workspaceId: "workspace_one",
+    revisionId: "revision_one",
+    kind: "retracted",
+    reason: "Incorrect evidence.",
+    supersededByRunId: null,
+  });
 
   assert.equal(
     requests[0].url,
@@ -261,4 +291,8 @@ test("Supabase revisions use atomic workspace-scoped RPC requests", async () => 
   const readUrl = new URL(requests[1].url);
   assert.equal(readUrl.searchParams.get("workspace_id"), "eq.workspace_one");
   assert.equal(readUrl.searchParams.get("id"), "eq.revision_one");
+  assert.equal(
+    requests[2].url,
+    "https://example.supabase.co/rest/v1/rpc/annotate_source_revision",
+  );
 });

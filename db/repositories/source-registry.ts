@@ -123,6 +123,24 @@ function equalRevision(
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function revisionMatchesInput(
+  revision: SourceRevision,
+  input: AppendSourceRevisionInput,
+): boolean {
+  return revision.id === input.id
+    && revision.workspaceId === input.workspaceId
+    && revision.sourceId === input.sourceId
+    && revision.contentHash === input.contentHash
+    && revision.objectKey === input.objectKey
+    && revision.objectVersion === input.objectVersion
+    && revision.contentType === input.contentType
+    && revision.extractorId === input.extractorId
+    && revision.extractorVersion === input.extractorVersion
+    && revision.extractedAt === input.extractedAt
+    && revision.supersedesRevisionId === input.supersedesRevisionId
+    && revision.createdAt === input.createdAt;
+}
+
 export function createMemorySourceRegistry(): MemorySourceRegistry {
   const revisions = new Map<string, SourceRevision>();
   const revisionIdsBySource = new Map<string, string[]>();
@@ -176,6 +194,16 @@ export function createMemorySourceRegistry(): MemorySourceRegistry {
           "An initial source revision is required before an append.",
         );
       }
+      const revisionKey = identity(input.workspaceId, input.id);
+      const existingTarget = revisions.get(revisionKey);
+      if (existingTarget) {
+        if (revisionMatchesInput(existingTarget, input)) {
+          return structuredClone(existingTarget);
+        }
+        throw new Error(
+          `Revision id ${input.id} is immutable and already contains different data.`,
+        );
+      }
       const currentId = currentIds.at(-1)!;
       if (input.supersedesRevisionId !== currentId) {
         throw new Error(
@@ -186,12 +214,6 @@ export function createMemorySourceRegistry(): MemorySourceRegistry {
       if (current.sourceId !== input.sourceId) {
         throw new Error(
           "The superseded revision belongs to a different source.",
-        );
-      }
-      const revisionKey = identity(input.workspaceId, input.id);
-      if (revisions.has(revisionKey)) {
-        throw new Error(
-          `Revision id ${input.id} already exists in this workspace.`,
         );
       }
       const candidate = SourceRevisionSchema.parse({
@@ -372,15 +394,17 @@ export function createSupabaseSourceRegistry(options: {
       const workspaceId = requiredWorkspaceId(input.workspaceId);
       const revisionId = requiredText(input.revisionId, "A revision id");
       const reason = requiredText(input.reason, "An annotation reason");
-      await request("/source_revision_annotations", {
+      await request("/rpc/annotate_source_revision", {
         method: "POST",
         headers: { Prefer: "return=minimal" },
         body: JSON.stringify({
-          workspace_id: workspaceId,
-          revision_id: revisionId,
-          kind: input.kind,
-          reason,
-          superseded_by_run_id: input.supersededByRunId,
+          p_annotation: {
+            workspaceId,
+            revisionId,
+            kind: input.kind,
+            reason,
+            supersededByRunId: input.supersededByRunId,
+          },
         }),
       });
     },

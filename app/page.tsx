@@ -812,7 +812,7 @@ function OverviewView({
               ? "Use XTrace to recover source-backed facts and labeled internal decision context."
               : "Use the confirmed structured Deal context; XTrace is not active for this run."],
             ["03", "Match", "Claude connects changed conditions to the Deals that may be affected."],
-            ["04", "Act", "Analyze all 19 companies, rank supported belief revisions, and preserve the full report."],
+            ["04", "Act", "Analyze every eligible company, rank supported belief revisions, and preserve the full report."],
           ].map(([number, title, copy]) => (
             <div className="vsee-workflow-row" key={number}>
               <b>{number}</b><strong>{title}</strong><p>{copy}</p>

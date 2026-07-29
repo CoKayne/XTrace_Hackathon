@@ -36,6 +36,7 @@ export interface IntelligenceReportWrite extends IntelligenceReportIdentity {
   // authoritative registry received an analysis, but is not added to legacy
   // report response shapes.
   eligibleDealCount?: number;
+  eligibleSnapshotFingerprint?: string;
   analysisStatus?: ReportAnalysisStatus;
   evidenceCoverage?: EvidenceCoverage;
   counts?: CompanyAnalysisCounts;
@@ -229,10 +230,46 @@ function parseCompanyAnalyses(
   });
 }
 
+function validateEligibleSnapshot(report: IntelligenceReportWrite): {
+  count: number;
+  fingerprint: string;
+} | null {
+  if (report.companyAnalyses === undefined) return null;
+  if (
+    !Number.isInteger(report.eligibleDealCount)
+    || (report.eligibleDealCount ?? -1) < 0
+  ) {
+    throw new Error(
+      "A new analysis report requires an eligible Deal snapshot count.",
+    );
+  }
+  const fingerprint = report.eligibleSnapshotFingerprint?.trim();
+  if (!fingerprint) {
+    throw new Error(
+      "A new analysis report requires an eligible snapshot fingerprint.",
+    );
+  }
+  if (report.companyAnalyses.length !== report.eligibleDealCount) {
+    throw new Error(
+      `The eligible Deal snapshot contains ${report.eligibleDealCount} Deals, but the report contains ${report.companyAnalyses.length} analyses.`,
+    );
+  }
+  if (
+    report.counts
+    && report.counts.companyCount !== report.eligibleDealCount
+  ) {
+    throw new Error(
+      "The report company count does not match the eligible Deal snapshot.",
+    );
+  }
+  return { count: report.eligibleDealCount, fingerprint };
+}
+
 function safeReport(report: IntelligenceReportWrite): IntelligenceReportRecord {
   const cloned = structuredClone(report);
   const legacyShape = { ...cloned };
   delete legacyShape.eligibleDealCount;
+  delete legacyShape.eligibleSnapshotFingerprint;
   const workspaceId = requiredWorkspaceId(cloned.workspaceId);
   const opportunities = sanitizeReportOpportunities(cloned.opportunities);
   const companyAnalyses = parseCompanyAnalyses({
@@ -277,6 +314,7 @@ export function createMemoryIntelligenceRepository(
 ): IntelligenceRepository {
   const events = new Map<string, { workspaceId: string; event: NormalizedMarketEvent }>();
   const reports = new Map<string, IntelligenceReportRecord>();
+  const snapshots = new Map<string, { count: number; fingerprint: string }>();
   const now = options.now ?? (() => new Date());
   return {
     async saveMarketEvents(items, workspaceId) {
@@ -303,11 +341,27 @@ export function createMemoryIntelligenceRepository(
         .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
     },
     async saveReport(report) {
+      const snapshot = validateEligibleSnapshot(report);
       const validated = safeReport(report);
+      const key = workspaceIdentity(validated.workspaceId, validated.id);
+      const existingSnapshot = snapshots.get(key);
+      if (
+        existingSnapshot
+        && snapshot
+        && (
+          existingSnapshot.count !== snapshot.count
+          || existingSnapshot.fingerprint !== snapshot.fingerprint
+        )
+      ) {
+        throw new Error(
+          "The report's eligible Deal snapshot is immutable and cannot be replaced with a different snapshot.",
+        );
+      }
       reports.set(
-        workspaceIdentity(validated.workspaceId, validated.id),
+        key,
         structuredClone(validated),
       );
+      if (snapshot) snapshots.set(key, snapshot);
       return structuredClone(validated);
     },
     async getReport(workspaceId, reportId) {
@@ -483,7 +537,11 @@ export function createSupabaseIntelligenceRepository(options: {
       return rows.map((row) => row.payload);
     },
     async saveReport(report) {
+      const snapshot = validateEligibleSnapshot(report);
       const validated = safeReport(report);
+      const analysesToPersist = report.companyAnalyses === undefined
+        ? []
+        : validated.companyAnalyses;
       const rows = await request("/rpc/save_intelligence_report", {
         method: "POST",
         headers: { Prefer: "return=representation" },
@@ -504,8 +562,10 @@ export function createSupabaseIntelligenceRepository(options: {
               validated.counts.analysisUnavailable,
             priorityDealId: validated.priorityDealId,
             evidenceCoverage: validated.evidenceCoverage,
+            eligibleSnapshotCount: snapshot?.count ?? null,
+            eligibleSnapshotFingerprint: snapshot?.fingerprint ?? null,
           },
-          p_analyses: validated.companyAnalyses.map((analysis) => ({
+          p_analyses: analysesToPersist.map((analysis) => ({
             ...analysis,
             workspaceId: validated.workspaceId,
             sourceRefs: analysis.sources,

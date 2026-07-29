@@ -60,10 +60,12 @@ export interface DemoDealRecord {
 
 export interface StoredEvidenceRecord extends DemoDealEvidence {
   workspaceId: string;
+  sourceRevisionId?: string;
 }
 
 export interface StoredFixtureRecord extends DemoFixture {
   workspaceId: string;
+  sourceRevisionId?: string;
 }
 
 export interface DemoDataStore {
@@ -546,6 +548,7 @@ export function createSupabaseDemoDataStore(options: {
         id: input.id,
         workspace_id: input.workspaceId,
         document_id: input.documentId,
+        source_revision_id: input.sourceRevisionId,
         deal_id: input.dealId,
         company_name: input.companyName,
         provenance: input.provenance,
@@ -563,6 +566,7 @@ export function createSupabaseDemoDataStore(options: {
         id: input.id,
         workspace_id: input.workspaceId,
         document_id: input.documentId,
+        source_revision_id: input.sourceRevisionId,
         deal_id: input.dealId,
         company_name: input.companyName,
         occurred_at: input.occurredAt,

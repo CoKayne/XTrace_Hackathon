@@ -28,7 +28,7 @@ const stages = [
   },
   {
     key: "opportunity_matching",
-    label: "Comparing evidence across 19 companies",
+    label: "Comparing evidence across eligible companies",
   },
   {
     key: "report",

@@ -37,11 +37,25 @@ export interface ConfirmSourceAssignmentInput {
   reason: string;
   confirmedAt: string;
   memoryBundle?: DealMemoryBundle;
+  memoryLineage?: DealMemoryLineage;
+}
+
+export interface DealMemoryOwnership {
+  workspaceId: string;
+  dealId: string;
+  sourceId: string;
+  sourceRevisionId: string;
+}
+
+export interface DealMemoryLineage {
+  evidence: Record<string, DealMemoryOwnership>;
+  interactions: Record<string, DealMemoryOwnership>;
 }
 
 export interface DealSourceAssignment {
   id: string;
   requestId: string;
+  requestFingerprint: string;
   workspaceId: string;
   dealId: string;
   sourceId: string;
@@ -94,7 +108,7 @@ function requiredIsoDateTime(value: string, label: string): string {
   if (!Number.isFinite(Date.parse(normalized))) {
     throw new Error(`${label} must be an ISO date-time.`);
   }
-  return normalized;
+  return new Date(normalized).toISOString();
 }
 
 function validateConfirmation(
@@ -141,8 +155,51 @@ function validateConfirmation(
 export function sourceRevisionFingerprint(
   revisionIds: readonly string[],
 ): string {
-  const sorted = [...new Set(revisionIds)].sort();
-  return `source-revisions-v1:${sorted.join(",")}`;
+  const sorted = [...new Set(revisionIds)].sort(compareUtf8);
+  return sha256(lengthFrame(["source-revisions-v2", ...sorted]));
+}
+
+export function eligibleDealSnapshotFingerprint(
+  deals: readonly RegisteredDeal[],
+): string {
+  const frames = deals
+    .map((deal) => [
+      deal.id,
+      deal.activeSourceRevisionFingerprint ?? "",
+    ] as const)
+    .sort((left, right) => compareUtf8(left[0], right[0]))
+    .flatMap((pair) => pair);
+  return sha256(lengthFrame(["eligible-deals-v1", ...frames]));
+}
+
+function compareUtf8(left: string, right: string): number {
+  return Buffer.compare(Buffer.from(left, "utf8"), Buffer.from(right, "utf8"));
+}
+
+function lengthFrame(values: readonly string[]): string {
+  return values.map((value) => `${Buffer.byteLength(value, "utf8")}:${value}`)
+    .join("");
+}
+
+function sha256(value: string): string {
+  return `sha256:${createHash("sha256").update(value, "utf8").digest("hex")}`;
+}
+
+function confirmationFingerprint(
+  input: ConfirmSourceAssignmentInput,
+): string {
+  return sha256(lengthFrame([
+    "confirmation-request-v1",
+    input.workspaceId,
+    input.dealId,
+    input.companyId,
+    input.companyName,
+    input.status,
+    input.sourceRevisionId,
+    input.assignedByUserId,
+    input.reason,
+    input.confirmedAt,
+  ]));
 }
 
 function cloneDeal(deal: RegisteredDeal): RegisteredDeal {
@@ -156,6 +213,7 @@ export function createMemoryDealRegistry(options: {
   const deals = new Map<string, RegisteredDeal>();
   const companies = new Map<string, { id: string; name: string }>();
   const bundles = new Map<string, DealMemoryBundle>();
+  const bundleLineage = new Map<string, DealMemoryLineage>();
   const assignments: DealSourceAssignment[] = [];
   const requestAssignments = new Map<string, DealSourceAssignment>();
   const externalEffects: string[] = [];
@@ -183,11 +241,39 @@ export function createMemoryDealRegistry(options: {
             === sourceRevisionFingerprint(deal.activeSourceRevisionIds)
         )
         .sort((left, right) =>
-          left.companyName.localeCompare(right.companyName)
-          || left.id.localeCompare(right.id)
+          compareUtf8(left.companyName, right.companyName)
+          || compareUtf8(left.id, right.id)
         )
         .map((deal) => {
           const stored = bundles.get(identity(workspaceId, deal.id));
+          const lineage = bundleLineage.get(identity(workspaceId, deal.id));
+          if (stored && lineage) {
+            const active = new Set(deal.activeSourceRevisionIds);
+            const refs = [
+              ...stored.facts.flatMap((fact) =>
+                fact.sources.map((source) =>
+                  [source.id, source.documentId] as const
+                )
+              ),
+              ...stored.interactions.map((interaction) =>
+                [interaction.id, undefined] as const
+              ),
+            ];
+            for (const [id, sourceId] of refs) {
+              const owner = lineage.evidence[id] ?? lineage.interactions[id];
+              if (
+                !owner
+                || owner.workspaceId !== workspaceId
+                || owner.dealId !== deal.id
+                || (sourceId !== undefined && owner.sourceId !== sourceId)
+                || !active.has(owner.sourceRevisionId)
+              ) {
+                throw new Error(
+                  `Deal ${deal.id} evidence has foreign, inactive, or stale source revision ownership.`,
+                );
+              }
+            }
+          }
           return structuredClone(stored ?? DealMemoryBundleSchema.parse({
             dealId: deal.id,
             companyName: deal.companyName,
@@ -211,13 +297,67 @@ export function createMemoryDealRegistry(options: {
           "The source revision does not exist in this workspace.",
         );
       }
+      if (
+        input.memoryBundle
+        && (
+          input.memoryBundle.facts.length > 0
+          || input.memoryBundle.interactions.length > 0
+        )
+        && !input.memoryLineage
+      ) {
+        throw new Error(
+          "Source-backed Deal memory requires internal source revision lineage.",
+        );
+      }
+      if (input.memoryBundle && input.memoryLineage) {
+        const expectedEvidence = input.memoryBundle.facts.flatMap((fact) =>
+          fact.sources.map((source) => [source.id, source.documentId] as const)
+        );
+        const expectedInteractions = input.memoryBundle.interactions.map(
+          (interaction) => interaction.id,
+        );
+        for (const [id, sourceId] of expectedEvidence) {
+          const owner = input.memoryLineage.evidence[id];
+          if (!owner || owner.sourceId !== sourceId) {
+            throw new Error(
+              "Deal evidence is missing exact internal source identity.",
+            );
+          }
+        }
+        for (const id of expectedInteractions) {
+          if (!input.memoryLineage.interactions[id]) {
+            throw new Error(
+              "Deal interaction is missing exact internal source identity.",
+            );
+          }
+        }
+        for (
+          const owner of [
+            ...Object.values(input.memoryLineage.evidence),
+            ...Object.values(input.memoryLineage.interactions),
+          ]
+        ) {
+          const revision = await sourceRegistry.getRevision({
+            workspaceId: owner.workspaceId,
+            revisionId: owner.sourceRevisionId,
+          });
+          if (
+            owner.workspaceId !== input.workspaceId
+            || owner.dealId !== input.dealId
+            || !revision
+            || revision.sourceId !== owner.sourceId
+          ) {
+            throw new Error(
+              "Deal memory lineage references a foreign workspace, Deal, source, or revision.",
+            );
+          }
+        }
+      }
       const requestKey = identity(input.workspaceId, input.requestId);
+      const requestFingerprint = confirmationFingerprint(input);
       const existingRequest = requestAssignments.get(requestKey);
       if (existingRequest) {
-        if (
-          existingRequest.dealId !== input.dealId
-          || existingRequest.sourceRevisionId !== input.sourceRevisionId
-        ) {
+        if (existingRequest.requestFingerprint !== requestFingerprint) {
           throw new Error(
             "The confirmation request id was already used for a different Deal or source revision.",
           );
@@ -280,6 +420,7 @@ export function createMemoryDealRegistry(options: {
         const assignment: DealSourceAssignment = {
           id: `deal_source_assignment_${assignmentSequence}`,
           requestId: input.requestId,
+          requestFingerprint,
           workspaceId: input.workspaceId,
           dealId: input.dealId,
           sourceId: sourceRevision.sourceId,
@@ -306,7 +447,7 @@ export function createMemoryDealRegistry(options: {
           && assignment.supersededAt === null
         )
         .map((assignment) => assignment.sourceRevisionId)
-        .sort();
+        .sort(compareUtf8);
       const deal: RegisteredDeal = {
         id: input.dealId,
         workspaceId: input.workspaceId,
@@ -323,6 +464,9 @@ export function createMemoryDealRegistry(options: {
       deals.set(dealKey, deal);
       if (input.memoryBundle) {
         bundles.set(dealKey, structuredClone(input.memoryBundle));
+        if (input.memoryLineage) {
+          bundleLineage.set(dealKey, structuredClone(input.memoryLineage));
+        }
       } else if (!bundles.has(dealKey)) {
         bundles.set(dealKey, DealMemoryBundleSchema.parse({
           dealId: deal.id,
@@ -367,7 +511,7 @@ function dealFromRow(
     activeSourceRevisionFingerprint: row.active_source_revision_fingerprint
       ? String(row.active_source_revision_fingerprint)
       : null,
-    activeSourceRevisionIds: [...activeSourceRevisionIds].sort(),
+    activeSourceRevisionIds: [...activeSourceRevisionIds].sort(compareUtf8),
   };
 }
 
@@ -413,7 +557,7 @@ function registeredDealFromRpc(value: unknown): RegisteredDeal {
       ? String(row.activeSourceRevisionFingerprint)
       : null,
     activeSourceRevisionIds: Array.isArray(row.activeSourceRevisionIds)
-      ? row.activeSourceRevisionIds.map(String).sort()
+      ? row.activeSourceRevisionIds.map(String).sort(compareUtf8)
       : [],
   };
 }
@@ -535,11 +679,15 @@ export function createSupabaseDealRegistry(options: {
         workspace_id: `eq.${workspaceId}`,
         deal_id: dealFilter,
         order: "deal_id.asc,id.asc",
+        select:
+          "id,workspace_id,deal_id,document_id,source_revision_id,provenance,page,fact,excerpt",
       });
       const interactionQuery = new URLSearchParams({
         workspace_id: `eq.${workspaceId}`,
         deal_id: dealFilter,
         order: "deal_id.asc,occurred_at.asc,id.asc",
+        select:
+          "id,workspace_id,deal_id,document_id,source_revision_id,occurred_at,meeting_summary,decision_reason,concerns,revisit_conditions,provenance,label",
       });
       const [evidenceRows, interactionRows] = await Promise.all([
         request(`/source_evidence?${evidenceQuery}`) as Promise<
@@ -572,10 +720,12 @@ export function createSupabaseDealRegistry(options: {
 
       return dealRows.map((row) => {
         const dealId = String(row.id);
-        const activeSources = new Set(
-          (revisionMap.get(dealId) ?? []).map((value) => value.sourceId),
+        const activeAssignments = new Set(
+          (revisionMap.get(dealId) ?? []).map((value) =>
+            JSON.stringify([value.sourceId, value.revisionId])
+          ),
         );
-        if (activeSources.size === 0) {
+        if (activeAssignments.size === 0) {
           throw new Error(
             `Analysis-eligible Deal ${dealId} has no active source assignment.`,
           );
@@ -587,9 +737,16 @@ export function createSupabaseDealRegistry(options: {
           String(interaction.deal_id) === dealId
         );
         for (const ownedRow of [...dealEvidence, ...dealInteractions]) {
-          if (!activeSources.has(String(ownedRow.document_id))) {
+          if (
+            String(ownedRow.workspace_id) !== workspaceId
+            || String(ownedRow.deal_id) !== dealId
+            || !activeAssignments.has(JSON.stringify([
+              String(ownedRow.document_id),
+              String(ownedRow.source_revision_id),
+            ]))
+          ) {
             throw new Error(
-              `Deal ${dealId} evidence references a source that is not actively assigned in this workspace.`,
+              `Deal ${dealId} evidence references a foreign, inactive, or stale source revision.`,
             );
           }
         }
@@ -620,7 +777,10 @@ export function createSupabaseDealRegistry(options: {
             label: interaction.label,
           })),
         });
-      });
+      }).sort((left, right) =>
+        compareUtf8(left.companyName, right.companyName)
+        || compareUtf8(left.dealId, right.dealId)
+      );
     },
 
     findForWorkspace,
@@ -665,3 +825,4 @@ export function getDealRegistry(): DealRegistry {
     : createMemoryDealRegistry();
   return singleton;
 }
+import { createHash } from "node:crypto";

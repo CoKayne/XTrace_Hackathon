@@ -5,7 +5,6 @@ import {
   buildMarketEventsReadPath,
   createMemoryIntelligenceRepository,
   createSupabaseIntelligenceRepository,
-  type IntelligenceReportRecord,
   type IntelligenceReportWrite,
 } from "../../db/repositories/intelligence";
 import * as intelligenceRepositoryModule from "../../db/repositories/intelligence";
@@ -117,7 +116,7 @@ function completeReport(
   companyAnalyses = Array.from({ length: 19 }, (_, index) =>
     companyAnalysis(index + 1)
   ),
-): IntelligenceReportRecord {
+): IntelligenceReportWrite & { companyAnalyses: CompanyAnalysis[] } {
   return {
     id: "report_complete",
     workspaceId: "workspace_demo",
@@ -129,19 +128,21 @@ function completeReport(
       acceptedPublicEvents: 0,
       excludedPublicItems: 12,
       truncatedPublicEvents: 0,
-      recalledDealCount: 19,
+      recalledDealCount: companyAnalyses.length,
       unavailableDealCount: 0,
     },
     counts: {
-      companyCount: 19,
+      companyCount: companyAnalyses.length,
       beliefRevised: 0,
       monitor: 0,
-      noMaterialChange: 19,
+      noMaterialChange: companyAnalyses.length,
       analysisUnavailable: 0,
     },
     priorityDealId: null,
     opportunities: [],
     companyAnalyses,
+    eligibleDealCount: companyAnalyses.length,
+    eligibleSnapshotFingerprint: `snapshot:${companyAnalyses.length}`,
   };
 }
 
@@ -425,6 +426,7 @@ test("report validation accepts an eligible snapshot count other than nineteen",
   const stored = await repository.saveReport({
     ...completeReport(analyses),
     eligibleDealCount: 3,
+    eligibleSnapshotFingerprint: "snapshot:3",
     counts: {
       companyCount: 3,
       beliefRevised: 0,
@@ -453,8 +455,29 @@ test("report validation rejects an analysis set that misses its captured eligibl
     repository.saveReport({
       ...completeReport([companyAnalysis(1), companyAnalysis(2)]),
       eligibleDealCount: 3,
+      eligibleSnapshotFingerprint: "snapshot:3",
     }),
     /eligible.*snapshot|3.*analyses/i,
+  );
+});
+
+test("new analysis reports require and immutably bind an eligible snapshot", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  const report = completeReport([companyAnalysis(1), companyAnalysis(2), companyAnalysis(3)]);
+  await assert.rejects(
+    repository.saveReport({
+      ...report,
+      eligibleSnapshotFingerprint: undefined,
+    }),
+    /snapshot.*fingerprint|required/i,
+  );
+  await repository.saveReport(report);
+  await assert.rejects(
+    repository.saveReport({
+      ...report,
+      eligibleSnapshotFingerprint: "snapshot:different",
+    }),
+    /snapshot.*different|immutable/i,
   );
 });
 
@@ -539,6 +562,8 @@ test("Supabase report writes use the atomic report RPC", async () => {
   const body = JSON.parse(String(requests[0].init.body));
   assert.equal(body.p_analyses.length, 19);
   assert.equal(body.p_report.companyCount, 19);
+  assert.equal(body.p_report.eligibleSnapshotCount, 19);
+  assert.equal(body.p_report.eligibleSnapshotFingerprint, "snapshot:19");
   assert.equal(stored.companyAnalyses.length, 19);
   assert.equal(
     JSON.stringify(stored).includes("test-service-role-key"),

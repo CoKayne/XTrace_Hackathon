@@ -62,6 +62,8 @@ async function persistCompleteReport() {
     },
     counts: countCompanyAnalyses(companyAnalyses),
     priorityDealId: null,
+    eligibleDealCount: companyAnalyses.length,
+    eligibleSnapshotFingerprint: "test-snapshot:company-analyses-route",
     companyAnalyses,
   });
 }

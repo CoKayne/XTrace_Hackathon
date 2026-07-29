@@ -12,6 +12,8 @@ import {
 import {
   buildPreloadedDealMemoryBundles,
 } from "../lib/corpus/service";
+import { DEMO_DEAL_EVIDENCE } from "../lib/corpus/evidence";
+import { DEMO_FIXTURES } from "../lib/corpus/fixtures";
 import {
   listDocumentDeals,
   listPreloadedDocuments,
@@ -64,6 +66,8 @@ export async function backfillPreloadedSourceRegistry(
         || existing.objectKey !== privateObjectKey(document)
         || existing.objectVersion !== document.checksum
         || existing.contentType !== "application/pdf"
+        || existing.extractorId !== "preloaded-pdf"
+        || existing.extractorVersion !== "1"
       )
     ) {
       throw new Error(
@@ -112,6 +116,28 @@ export async function backfillPreloadedSourceRegistry(
         reason: "Backfilled from the supplied private demo corpus.",
         confirmedAt: PRELOADED_REVISION_TIME,
         memoryBundle,
+        memoryLineage: {
+          evidence: Object.fromEntries(
+            DEMO_DEAL_EVIDENCE
+              .filter((item) => item.dealId === deal.dealId)
+              .map((item) => [item.id, {
+                workspaceId,
+                dealId: deal.dealId,
+                sourceId: item.documentId,
+                sourceRevisionId: revisions.get(item.documentId)!,
+              }]),
+          ),
+          interactions: Object.fromEntries(
+            DEMO_FIXTURES
+              .filter((item) => item.dealId === deal.dealId)
+              .map((item) => [item.id, {
+                workspaceId,
+                dealId: deal.dealId,
+                sourceId: item.documentId,
+                sourceRevisionId: revisions.get(item.documentId)!,
+              }]),
+          ),
+        },
       });
       eligibleDealCount += 1;
     }

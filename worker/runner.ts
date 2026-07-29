@@ -3,7 +3,10 @@ import { hostname } from "node:os";
 import { getDataClient } from "../db/client";
 import { getIntelligenceRepository } from "../db/repositories/intelligence";
 import { getReasonerJudgmentsRepository } from "../db/repositories/reasoner-judgments";
-import { getDealRegistry } from "../db/repositories/deal-registry";
+import {
+  eligibleDealSnapshotFingerprint,
+  getDealRegistry,
+} from "../db/repositories/deal-registry";
 import { createRunsRepository } from "../db/repositories/runs";
 import { getUploadedDocumentsRepository } from "../db/repositories/uploaded-documents";
 import { createDefaultPrivateObjectStorage } from "../lib/storage/service";
@@ -72,9 +75,23 @@ export async function runNextQueuedScan(): Promise<boolean> {
       marketConfiguration.runtime,
     );
     const intelligence = getIntelligenceRepository();
-    const bundles = await getDealRegistry().listAnalysisEligibleBundles(
+    const dealRegistry = getDealRegistry();
+    const bundles = await dealRegistry.listAnalysisEligibleBundles(
       claimed.workspaceId,
     );
+    const registeredDeals = await Promise.all(
+      bundles.map((bundle) =>
+        dealRegistry.findForWorkspace({
+          workspaceId: claimed.workspaceId,
+          dealId: bundle.dealId,
+        })
+      ),
+    );
+    if (registeredDeals.some((deal) => !deal)) {
+      throw new Error(
+        "The eligible Deal snapshot changed while the scan was starting.",
+      );
+    }
     const lineage = getXTraceLineageRepository();
     const xtraceService = isXTraceConfigured()
       ? createXTraceService(getXTraceClient(), {
@@ -99,6 +116,9 @@ export async function runNextQueuedScan(): Promise<boolean> {
       runs,
       intelligence,
       bundles,
+      eligibleSnapshotFingerprint: eligibleDealSnapshotFingerprint(
+        registeredDeals.filter((deal) => deal !== null),
+      ),
       importGate: createProductInputGate(createDefaultDemoDataStore()),
       market: createMarketService({ providers }),
       reasoner: createClaudeMatchingReasoner(createClaudeClient(), {

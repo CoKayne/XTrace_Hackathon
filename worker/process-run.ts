@@ -4,6 +4,7 @@ import type {
   IntelligenceReportWrite,
   IntelligenceRepository,
 } from "../db/repositories/intelligence";
+import { createHash } from "node:crypto";
 import type { createRunsRepository } from "../db/repositories/runs";
 import {
   OpportunityReportItemSchema,
@@ -43,6 +44,7 @@ export interface ProcessRunDependencies {
   runs: RunsRepository;
   intelligence: IntelligenceRepository;
   bundles: DealMemoryBundle[];
+  eligibleSnapshotFingerprint?: string;
   importGate: ProductInputGate;
   market: Pick<MarketService, "scanMarketWindow">;
   reasoner: MatchingReasoner;
@@ -318,6 +320,14 @@ export async function processClaimedRun(
       counts,
       priorityDealId,
       eligibleDealCount: dependencies.bundles.length,
+      eligibleSnapshotFingerprint: dependencies.eligibleSnapshotFingerprint
+        ?? `sha256:${
+          createHash("sha256").update(
+            JSON.stringify(
+              dependencies.bundles.map((bundle) => bundle.dealId).sort(),
+            ),
+          ).digest("hex")
+        }`,
       companyAnalyses,
     };
     const storedReport = await dependencies.intelligence.saveReport(report);

@@ -1,5 +1,6 @@
 import {
   bigint,
+  check,
   doublePrecision,
   foreignKey,
   index,
@@ -66,6 +67,10 @@ export const scanRunSteps = pgTable("scan_run_steps", {
     foreignColumns: [scanRuns.workspaceId, scanRuns.id],
     name: "scan_run_steps_workspace_run_fkey",
   }).onDelete("cascade"),
+  check(
+    "deals_status_check",
+    sql`${table.status} in ('screening', 'watchlist', 'evaluating', 'passed', 'invested')`,
+  ),
 ]);
 
 export const workerHeartbeats = pgTable("worker_heartbeats", {
@@ -147,6 +152,10 @@ export const deals = pgTable("deals", {
     foreignColumns: [companies.workspaceId, companies.id],
     name: "deals_workspace_company_fkey",
   }).onDelete("cascade"),
+  check(
+    "deals_status_check",
+    sql`${table.status} in ('screening', 'watchlist', 'evaluating', 'passed', 'invested')`,
+  ),
 ]);
 
 export const sourceRevisions = pgTable("source_revisions", {
@@ -196,6 +205,17 @@ export const sourceRevisions = pgTable("source_revisions", {
     table.sourceId,
     table.revision,
   ),
+  check("source_revisions_revision_check", sql`${table.revision} > 0`),
+  check(
+    "source_revisions_initial_link_check",
+    sql`(${table.revision} = 1 and ${table.supersedesRevisionId} is null) or (${table.revision} > 1 and ${table.supersedesRevisionId} is not null)`,
+  ),
+  check("source_revisions_content_hash_check", sql`btrim(${table.contentHash}) <> ''`),
+  check("source_revisions_object_key_check", sql`btrim(${table.objectKey}) <> ''`),
+  check("source_revisions_object_version_check", sql`btrim(${table.objectVersion}) <> ''`),
+  check("source_revisions_content_type_check", sql`btrim(${table.contentType}) <> ''`),
+  check("source_revisions_extractor_id_check", sql`btrim(${table.extractorId}) <> ''`),
+  check("source_revisions_extractor_version_check", sql`btrim(${table.extractorVersion}) <> ''`),
 ]);
 
 export const sourceRevisionAnnotations = pgTable(
@@ -225,12 +245,21 @@ export const sourceRevisionAnnotations = pgTable(
       foreignColumns: [scanRuns.workspaceId, scanRuns.id],
       name: "source_revision_annotations_workspace_run_fkey",
     }),
+    check(
+      "source_revision_annotations_kind_check",
+      sql`${table.kind} in ('retracted', 'identity_corrected', 'superseded')`,
+    ),
+    check(
+      "source_revision_annotations_reason_check",
+      sql`btrim(${table.reason}) <> ''`,
+    ),
   ],
 );
 
 export const dealSourceAssignments = pgTable("deal_source_assignments", {
   id: text("id").notNull(),
   requestId: text("request_id").notNull(),
+  requestFingerprint: text("request_fingerprint").notNull(),
   workspaceId: text("workspace_id").notNull().references(
     () => workspaces.id,
     { onDelete: "cascade" },
@@ -270,6 +299,26 @@ export const dealSourceAssignments = pgTable("deal_source_assignments", {
   uniqueIndex("deal_source_assignments_one_active_source")
     .on(table.workspaceId, table.dealId, table.sourceId)
     .where(sql`${table.supersededAt} is null`),
+  check(
+    "deal_source_assignments_request_id_check",
+    sql`btrim(${table.requestId}) <> ''`,
+  ),
+  check(
+    "deal_source_assignments_request_fingerprint_check",
+    sql`${table.requestFingerprint} ~ '^sha256:[0-9a-f]{64}$'`,
+  ),
+  check(
+    "deal_source_assignments_assigned_by_user_id_check",
+    sql`btrim(${table.assignedByUserId}) <> ''`,
+  ),
+  check(
+    "deal_source_assignments_reason_check",
+    sql`btrim(${table.reason}) <> ''`,
+  ),
+  check(
+    "deal_source_assignments_supersession_time_check",
+    sql`${table.supersededAt} is null or ${table.supersededAt} >= ${table.createdAt}`,
+  ),
 ]);
 
 export const sourceEvidence = pgTable("source_evidence", {
@@ -282,6 +331,7 @@ export const sourceEvidence = pgTable("source_evidence", {
     () => sourceDocuments.id,
     { onDelete: "cascade" },
   ),
+  sourceRevisionId: text("source_revision_id"),
   dealId: text("deal_id").notNull(),
   companyName: text("company_name").notNull(),
   provenance: text("provenance").notNull(),
@@ -296,6 +346,15 @@ export const sourceEvidence = pgTable("source_evidence", {
     foreignColumns: [deals.workspaceId, deals.id],
     name: "source_evidence_workspace_deal_fkey",
   }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.workspaceId, table.documentId, table.sourceRevisionId],
+    foreignColumns: [
+      sourceRevisions.workspaceId,
+      sourceRevisions.sourceId,
+      sourceRevisions.id,
+    ],
+    name: "source_evidence_exact_revision_fkey",
+  }),
 ]);
 
 export const dealInteractions = pgTable("deal_interactions", {
@@ -308,6 +367,7 @@ export const dealInteractions = pgTable("deal_interactions", {
     () => sourceDocuments.id,
     { onDelete: "cascade" },
   ),
+  sourceRevisionId: text("source_revision_id"),
   dealId: text("deal_id").notNull(),
   companyName: text("company_name").notNull(),
   occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
@@ -326,6 +386,15 @@ export const dealInteractions = pgTable("deal_interactions", {
     foreignColumns: [deals.workspaceId, deals.id],
     name: "deal_interactions_workspace_deal_fkey",
   }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.workspaceId, table.documentId, table.sourceRevisionId],
+    foreignColumns: [
+      sourceRevisions.workspaceId,
+      sourceRevisions.sourceId,
+      sourceRevisions.id,
+    ],
+    name: "deal_interactions_exact_revision_fkey",
+  }),
 ]);
 
 export const marketEvents = pgTable("market_events", {
@@ -373,6 +442,8 @@ export const intelligenceReports = pgTable("intelligence_reports", {
       recalledDealCount: 0,
       unavailableDealCount: 0,
     }),
+  eligibleSnapshotCount: integer("eligible_snapshot_count"),
+  eligibleSnapshotFingerprint: text("eligible_snapshot_fingerprint"),
 }, (table) => [
   primaryKey({ columns: [table.workspaceId, table.id] }),
   unique("intelligence_reports_one_per_run").on(
@@ -384,6 +455,10 @@ export const intelligenceReports = pgTable("intelligence_reports", {
     foreignColumns: [scanRuns.workspaceId, scanRuns.id],
     name: "intelligence_reports_workspace_run_fkey",
   }).onDelete("cascade"),
+  check(
+    "intelligence_reports_eligible_snapshot_check",
+    sql`(${table.eligibleSnapshotCount} is null and ${table.eligibleSnapshotFingerprint} is null) or (${table.eligibleSnapshotCount} >= 0 and btrim(${table.eligibleSnapshotFingerprint}) <> '')`,
+  ),
 ]);
 
 export const companyAnalyses = pgTable("company_analyses", {
