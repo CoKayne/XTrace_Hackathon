@@ -124,7 +124,12 @@ function rateLimitClientIdentifier(
 ): string {
   if (context?.mode === "product") {
     if (!context.principal) throw new Error("UNAUTHENTICATED");
-    return `principal:${context.principal.userId}:workspace:${context.workspaceId}`;
+    return JSON.stringify([
+      "principal",
+      context.principal.userId,
+      "workspace",
+      context.workspaceId,
+    ]);
   }
   return clientIdentifier(request);
 }

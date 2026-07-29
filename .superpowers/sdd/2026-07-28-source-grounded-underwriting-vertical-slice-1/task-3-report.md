@@ -217,3 +217,52 @@ re-review reported no remaining Critical or Important issues and `Ready: Yes`.
 - The follow-up commit message is
   `fix(security): close tenant isolation review gaps`; its SHA is reported in
   the handoff because a commit cannot embed its own content-derived SHA.
+
+## Review round 2
+
+The formal round-1 re-review of
+`22d8a5a6e2006b1184edc2290ef55fd3fb2a24e3` found one remaining Important
+operator-instruction gap and one Minor rate-limit identity gap. This narrowly
+scoped follow-up closes both:
+
+- The active demo deployment runbook now requires migrations `0000` through
+  `0008`; its `0006` feature-origin annotation remains unchanged because it is
+  not a deployment ceiling. The README's canonical release-verification block
+  now runs the mandatory live `npm run test:migrations` command. The
+  documentation regression scans both active operator documents—`README.md`
+  and `docs/demo-runbook.md`—for stale English, range-symbol, and Chinese
+  migration ceilings, including the active `套用 0000 到 000N` syntax, while
+  retaining the exact ordered `0000`–`0008` README migration list assertion.
+- Product limiter identity now hashes the injective JSON tuple
+  `["principal", userId, "workspace", workspaceId]`, not a
+  delimiter-concatenated string. The exact reviewed collision between
+  `("a:workspace:b", "c")` and `("a", "b:workspace:c")` failed before the
+  change and now yields distinct hashes. Existing adversarial coverage still
+  proves forged query, header, cookie, body, and IP selectors cannot change
+  the trusted principal/workspace quota identity.
+
+### Review-round-2 verification
+
+- Documentation RED: the expanded operator-doc regression first failed on
+  `docs/demo-runbook.md` ending at `0006`; after that correction it failed
+  independently because the canonical README verification block omitted
+  `npm run test:migrations`; both behaviors then passed.
+- Final read-only review identified that the first regex recognized `套到` but
+  not the runbook's `套用 0000 到 000N` phrasing. The exact
+  `migrations 必須依序套用 0000 到 0006` mutation failed before adding the
+  Chinese range token and passed afterward.
+- Rate identity RED: **5 passed, 1 failed**, with the two reviewed tuples
+  producing the same SHA-256 hash. GREEN: **6 passed, 0 failed**.
+- Focused authorization, product-route, storage, run, intelligence, XTrace,
+  rate-limit, and memory-identity suite: **198 passed, 0 failed**.
+- Required live migration and operator-document suite
+  (`npm run test:migrations`): **2 passed, 0 failed**.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `git diff --check`: passed.
+
+No database behavior changes in this round. Migration `0008` retains the
+maintenance-window and fail-closed legacy-mismatch operational notes above.
+The round-2 commit message is
+`fix(security): finalize tenant deployment safeguards`; its SHA is reported
+in the handoff.

@@ -226,6 +226,7 @@ Set this JSON in `MARKET_OFFICIAL_FEEDS_JSON` or
 
 ```bash
 npm test
+npm run test:migrations
 npm run typecheck
 npm run lint
 npm run build

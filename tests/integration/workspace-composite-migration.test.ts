@@ -197,11 +197,24 @@ test(
   },
 );
 
-test("operator instructions list every migration through 0008 in order", () => {
+test("operator instructions require every migration through 0008", () => {
   const readme = readFileSync(
     fileURLToPath(new URL("../../README.md", import.meta.url)),
     "utf8",
   );
+  const operatorInstructions = [
+    {
+      path: "README.md",
+      content: readme,
+    },
+    {
+      path: "docs/demo-runbook.md",
+      content: readFileSync(
+        fileURLToPath(new URL("../../docs/demo-runbook.md", import.meta.url)),
+        "utf8",
+      ),
+    },
+  ];
   let previous = -1;
   for (let index = 0; index <= 8; index += 1) {
     const marker = `drizzle/${String(index).padStart(4, "0")}_`;
@@ -209,10 +222,29 @@ test("operator instructions list every migration through 0008 in order", () => {
     assert.ok(position > previous, `${marker} must appear in migration order`);
     previous = position;
   }
-  assert.doesNotMatch(
-    readme,
-    /migrations `0000` through `000[0-7]`/,
-    "operator instructions must not retain a stale migration range",
+  const staleMigrationRange =
+    /\bmigrations?\b[^\n.]{0,160}(?:through|to|套到|到|`?0000`?\s*(?:-|–|—|→))\s*`?000[0-7]`?/iu;
+  assert.match(
+    "migrations 必須依序套用 0000 到 0006",
+    staleMigrationRange,
+    "operator-doc regression must recognize the active Chinese range syntax",
+  );
+  for (const instruction of operatorInstructions) {
+    assert.doesNotMatch(
+      instruction.content,
+      staleMigrationRange,
+      `${instruction.path} must not retain a stale migration range`,
+    );
+  }
+
+  const releaseVerification = readme.match(
+    /## Verification\s+```bash\n([\s\S]*?)\n```/,
+  );
+  assert.ok(releaseVerification, "README must retain release verification");
+  assert.match(
+    releaseVerification[1],
+    /^npm run test:migrations$/m,
+    "README release verification must require live migration tests",
   );
 });
 

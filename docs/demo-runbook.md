@@ -85,7 +85,7 @@ medium 52.5% 出現，與凍結判斷一致。）
 
 - health 的 worker=false：worker 沒在跑或剛重啟，等 15 秒或重跑步驟 1。
 - POST /api/runs 回 503：fail-closed 機制，同上，等 worker 心跳恢復。
-- 換新資料庫部署時：migrations 必須套到 0006（README 已更新）。
+- 換新資料庫部署時：migrations 必須依序套用 0000 到 0008（README 已更新）。
 - 彩排結果不理想且證據已變（凍結模式會把第一次的新判斷存起來重放）：
   刪掉最新一列判斷快取，強制下一掃重新判斷：
   `curl -s "$SUPABASE_URL/rest/v1/reasoner_judgments?select=fingerprint&order=updated_at.desc&limit=1" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"`

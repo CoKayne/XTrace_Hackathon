@@ -172,6 +172,71 @@ test("product request limiting keys by the authorized principal and workspace", 
   assert.doesNotMatch(hashes.join(" "), /workspace_attacker|203\\.0\\.113\\.44/);
 });
 
+test("product rate-limit identity is injective for delimiter-bearing trusted identifiers", async () => {
+  const hashes: string[] = [];
+  const environment = {
+    NODE_ENV: "production",
+    SUPABASE_URL: "https://database.example",
+    SUPABASE_SERVICE_ROLE_KEY: "server-only",
+  };
+  const fetchImpl: typeof fetch = async (_url, init) => {
+    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    hashes.push(String(body.p_client_hash));
+    return Response.json([{ allowed: true, retry_after_seconds: 0 }]);
+  };
+  const permissions: AuthorizedRequestContext["permissions"] = {
+    readWorkspace: true,
+    readPrivateSources: true,
+    mutateSources: true,
+    managePolicy: false,
+    administerFrameworks: false,
+  };
+
+  await rateLimitRequest(
+    new Request("https://demo.example/api/runs"),
+    "run-scan",
+    5,
+    60_000,
+    {
+      environment,
+      fetchImpl,
+      context: {
+        mode: "product",
+        principal: {
+          userId: "a:workspace:b",
+          email: "first@example.test",
+        },
+        workspaceId: "c",
+        role: "partner",
+        permissions,
+      },
+    },
+  );
+  await rateLimitRequest(
+    new Request("https://demo.example/api/runs"),
+    "run-scan",
+    5,
+    60_000,
+    {
+      environment,
+      fetchImpl,
+      context: {
+        mode: "product",
+        principal: {
+          userId: "a",
+          email: "second@example.test",
+        },
+        workspaceId: "b:workspace:c",
+        role: "partner",
+        permissions,
+      },
+    },
+  );
+
+  assert.equal(hashes.length, 2);
+  assert.notEqual(hashes[0], hashes[1]);
+});
+
 test("requirePermission rejects a missing explicit capability", () => {
   const context: AuthorizedRequestContext = {
     mode: "public_demo",
