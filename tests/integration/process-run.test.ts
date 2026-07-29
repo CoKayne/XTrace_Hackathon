@@ -11,6 +11,8 @@ import { processClaimedRun } from "../../worker/process-run";
 const READY_IMPORT_GATE = {
   async assertReady() {},
 };
+const ELIGIBLE_SNAPSHOT_FINGERPRINT =
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 function createTestIntelligenceRepository() {
   return createMemoryIntelligenceRepository({
@@ -63,6 +65,7 @@ test("a claimed run fails before market work when durable product-input confirma
       runs,
       intelligence: createTestIntelligenceRepository(),
       bundles: buildPreloadedDealMemoryBundles(),
+      eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
       importGate: {
         async assertReady(workspaceId) {
           assert.equal(workspaceId, "workspace_demo");
@@ -105,6 +108,7 @@ test("a failed stage persists its exact error in the durable run warnings", asyn
       runs,
       intelligence: createTestIntelligenceRepository(),
       bundles: buildPreloadedDealMemoryBundles(),
+      eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
       importGate: READY_IMPORT_GATE,
       market: {
         async scanMarketWindow() {
@@ -129,6 +133,41 @@ test("a failed stage persists its exact error in the durable run warnings", asyn
   );
 });
 
+test("a new analysis run requires the canonical eligible snapshot token", async () => {
+  const runs = createRunsRepository(createMemoryDataClient());
+  await runs.create({
+    workspaceId: "workspace_demo",
+    mode: "structured",
+    windowDays: 14,
+  });
+  const run = await runs.claimNext("test-worker");
+  assert.ok(run);
+  let marketCalled = false;
+
+  await assert.rejects(
+    processClaimedRun(run, {
+      runs,
+      intelligence: createTestIntelligenceRepository(),
+      bundles: buildPreloadedDealMemoryBundles(),
+      eligibleSnapshotFingerprint: undefined as never,
+      importGate: READY_IMPORT_GATE,
+      market: {
+        async scanMarketWindow() {
+          marketCalled = true;
+          throw new Error("Market work must not run without a snapshot token.");
+        },
+      },
+      reasoner: {
+        async reason() {
+          throw new Error("Reasoning must not run without a snapshot token.");
+        },
+      },
+    }),
+    /eligible snapshot.*required|canonical.*snapshot/i,
+  );
+  assert.equal(marketCalled, false);
+});
+
 test("a claimed run persists market evidence, an always-present summary, and ranked matches", async () => {
   const runs = createRunsRepository(createMemoryDataClient());
   const queued = await runs.create({
@@ -145,6 +184,7 @@ test("a claimed run persists market evidence, an always-present summary, and ran
     runs,
     intelligence,
     bundles,
+    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -248,6 +288,7 @@ test("persists a generic public item but excludes it from downstream analysis wi
     runs,
     intelligence,
     bundles: buildPreloadedDealMemoryBundles(),
+    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -330,6 +371,7 @@ test("XTrace recall failure never falls back to structured memory and marks the 
     runs,
     intelligence: createTestIntelligenceRepository(),
     bundles: buildPreloadedDealMemoryBundles(),
+    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -424,6 +466,7 @@ test("polls pending XTrace ingest jobs before recall", async () => {
     runs,
     intelligence: createTestIntelligenceRepository(),
     bundles: buildPreloadedDealMemoryBundles(),
+    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -527,6 +570,7 @@ test("bounds market evidence before XTrace and Claude while preserving all event
     runs,
     intelligence,
     bundles,
+    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {

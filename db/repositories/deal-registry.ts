@@ -67,6 +67,9 @@ export interface DealSourceAssignment {
 }
 
 export interface DealRegistry {
+  getAnalysisEligibleSnapshot(
+    workspaceId: string,
+  ): Promise<AnalysisEligibleSnapshot>;
   listAnalysisEligibleBundles(workspaceId: string): Promise<DealMemoryBundle[]>;
   findForWorkspace(input: {
     workspaceId: string;
@@ -79,6 +82,12 @@ export interface DealRegistry {
     sourceRevision: SourceRevision;
     newlyEligible: boolean;
   }>;
+}
+
+export interface AnalysisEligibleSnapshot {
+  count: number;
+  dealIds: string[];
+  fingerprint: string;
 }
 
 export interface MemoryDealRegistry extends DealRegistry {
@@ -230,6 +239,24 @@ export function createMemoryDealRegistry(options: {
   }
 
   return {
+    async getAnalysisEligibleSnapshot(workspaceId) {
+      workspaceId = requiredWorkspaceId(workspaceId);
+      const eligibleDeals = [...deals.values()]
+        .filter((deal) =>
+          deal.workspaceId === workspaceId
+          && deal.analysisEligibleAt !== null
+          && deal.activeSourceRevisionIds.length > 0
+          && deal.activeSourceRevisionFingerprint
+            === sourceRevisionFingerprint(deal.activeSourceRevisionIds)
+        )
+        .sort((left, right) => compareUtf8(left.id, right.id));
+      return {
+        count: eligibleDeals.length,
+        dealIds: eligibleDeals.map((deal) => deal.id),
+        fingerprint: eligibleDealSnapshotFingerprint(eligibleDeals),
+      };
+    },
+
     async listAnalysisEligibleBundles(workspaceId) {
       workspaceId = requiredWorkspaceId(workspaceId);
       return [...deals.values()]
@@ -406,6 +433,18 @@ export function createMemoryDealRegistry(options: {
       const wasEligible = existingDeal?.analysisEligibleAt !== null
         && existingDeal?.analysisEligibleAt !== undefined;
       if (!alreadyActive) {
+        const backdatedSupersession = assignments.some((assignment) =>
+          assignment.workspaceId === input.workspaceId
+          && assignment.dealId === input.dealId
+          && assignment.sourceId === sourceRevision.sourceId
+          && assignment.supersededAt === null
+          && Date.parse(input.confirmedAt) < Date.parse(assignment.createdAt)
+        );
+        if (backdatedSupersession) {
+          throw new Error(
+            "The confirmation time cannot backdate assignment supersession chronology.",
+          );
+        }
         for (const assignment of assignments) {
           if (
             assignment.workspaceId === input.workspaceId
@@ -647,6 +686,40 @@ export function createSupabaseDealRegistry(options: {
     );
   }
   return {
+    async getAnalysisEligibleSnapshot(workspaceId) {
+      workspaceId = requiredWorkspaceId(workspaceId);
+      const value = await request(
+        "/rpc/get_analysis_eligible_snapshot",
+        {
+          method: "POST",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({ p_workspace_id: workspaceId }),
+        },
+      );
+      if (!value || typeof value !== "object") {
+        throw new Error(
+          "The eligible Deal snapshot RPC returned no snapshot.",
+        );
+      }
+      const snapshot = value as Record<string, unknown>;
+      const count = Number(snapshot.count);
+      const dealIds = Array.isArray(snapshot.dealIds)
+        ? snapshot.dealIds.map(String)
+        : [];
+      const fingerprint = String(snapshot.fingerprint ?? "");
+      if (
+        !Number.isInteger(count)
+        || count < 0
+        || dealIds.length !== count
+        || !/^sha256:[0-9a-f]{64}$/.test(fingerprint)
+      ) {
+        throw new Error(
+          "The eligible Deal snapshot RPC returned an invalid snapshot.",
+        );
+      }
+      return { count, dealIds, fingerprint };
+    },
+
     async listAnalysisEligibleBundles(workspaceId) {
       workspaceId = requiredWorkspaceId(workspaceId);
       const dealQuery = new URLSearchParams({

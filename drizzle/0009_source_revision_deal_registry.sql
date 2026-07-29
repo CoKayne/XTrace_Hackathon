@@ -10,7 +10,48 @@ begin
   end if;
 end;
 $$;
-alter role vsee_registry_owner nologin noinherit nobypassrls;
+alter role vsee_registry_owner
+  nosuperuser nocreatedb nocreaterole noreplication
+  nologin noinherit nobypassrls;
+
+do $$
+declare
+  membership record;
+begin
+  for membership in
+    select granted.rolname as granted_role, member.rolname as member_role
+    from pg_catalog.pg_auth_members as link
+    join pg_catalog.pg_roles as granted on granted.oid = link.roleid
+    join pg_catalog.pg_roles as member on member.oid = link.member
+    where granted.rolname = 'vsee_registry_owner'
+      or member.rolname = 'vsee_registry_owner'
+  loop
+    execute pg_catalog.format(
+      'revoke %I from %I',
+      membership.granted_role,
+      membership.member_role
+    );
+  end loop;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_roles
+    where rolname = 'vsee_registry_owner'
+      and (
+        rolsuper or rolinherit or rolcreaterole or rolcreatedb
+        or rolcanlogin or rolreplication or rolbypassrls
+      )
+  ) or exists (
+    select 1
+    from pg_catalog.pg_auth_members
+    where roleid = 'vsee_registry_owner'::regrole
+      or member = 'vsee_registry_owner'::regrole
+  ) then
+    raise exception
+      'vsee_registry_owner could not be normalized to an isolated owner role';
+  end if;
+end;
+$$;
 
 alter table public.deals
   add column if not exists status text,
@@ -182,6 +223,23 @@ as $$
     with ordinality as framed(value, ordinal)
 $$;
 
+create or replace function public.canonical_utc_iso_milliseconds(
+  p_value timestamptz
+)
+returns text
+language sql
+immutable
+strict
+parallel safe
+security invoker
+set search_path = ''
+as $$
+  select pg_catalog.to_char(
+    p_value at time zone 'UTC',
+    'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'
+  )
+$$;
+
 create or replace function public.source_revision_set_fingerprint(
   revision_ids text[]
 )
@@ -206,6 +264,76 @@ as $$
       )
     )
   )
+$$;
+
+create or replace function public.get_analysis_eligible_snapshot(
+  p_workspace_id text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  target_workspace_id text := btrim(p_workspace_id);
+  eligible_count integer;
+  captured_count integer := 0;
+  deal_ids text[] := array[]::text[];
+  frames text[] := array['eligible-deals-v1'];
+  captured record;
+begin
+  if coalesce(target_workspace_id, '') = '' then
+    raise exception 'A workspace is required';
+  end if;
+  perform pg_advisory_xact_lock(
+    hashtextextended(
+      jsonb_build_array(
+        'analysis-eligible-snapshot', target_workspace_id
+      )::text,
+      0
+    )
+  );
+  select count(*)::integer
+  into eligible_count
+  from public.deals as deal
+  where deal.workspace_id = target_workspace_id
+    and deal.analysis_eligible_at is not null;
+
+  for captured in
+    select
+      deal.id,
+      public.source_revision_set_fingerprint(
+        array_agg(
+          assignment.source_revision_id
+          order by assignment.source_revision_id collate "C"
+        )
+      ) as revision_fingerprint
+    from public.deals as deal
+    join public.deal_source_assignments as assignment
+      on assignment.workspace_id = deal.workspace_id
+      and assignment.deal_id = deal.id
+      and assignment.superseded_at is null
+    where deal.workspace_id = target_workspace_id
+      and deal.analysis_eligible_at is not null
+    group by deal.id
+    order by deal.id collate "C"
+  loop
+    captured_count := captured_count + 1;
+    deal_ids := array_append(deal_ids, captured.id);
+    frames := array_append(frames, captured.id);
+    frames := array_append(frames, captured.revision_fingerprint);
+  end loop;
+
+  if captured_count <> eligible_count then
+    raise exception
+      'Every analysis-eligible Deal must have an active source assignment';
+  end if;
+  return jsonb_build_object(
+    'count', captured_count,
+    'dealIds', to_jsonb(deal_ids),
+    'fingerprint', public.sha256_length_framed(frames)
+  );
+end;
 $$;
 
 alter table public.source_evidence
@@ -649,7 +777,7 @@ update public.deal_source_assignments
 set request_fingerprint = public.sha256_length_framed(array[
   'legacy-confirmation-request-v1', workspace_id, request_id, deal_id,
   source_id, source_revision_id, assigned_by_user_id, reason,
-  created_at::text
+  public.canonical_utc_iso_milliseconds(created_at)
 ])
 where request_fingerprint is null;
 
@@ -772,9 +900,17 @@ begin
     'confirmation-request-v1', target_workspace_id, target_deal_id,
     target_company_id, target_company_name, target_status,
     target_revision_id, target_user_id, target_reason,
-    target_confirmed_at::text
+    public.canonical_utc_iso_milliseconds(target_confirmed_at)
   ]);
 
+  perform pg_advisory_xact_lock(
+    hashtextextended(
+      jsonb_build_array(
+        'analysis-eligible-snapshot', target_workspace_id
+      )::text,
+      0
+    )
+  );
   perform pg_advisory_xact_lock(
     hashtextextended(
       jsonb_build_array(target_workspace_id, target_deal_id)::text,
@@ -963,6 +1099,9 @@ declare
     (p_report ->> 'eligibleSnapshotCount')::integer;
   target_snapshot_fingerprint text :=
     nullif(btrim(p_report ->> 'eligibleSnapshotFingerprint'), '');
+  authoritative_snapshot jsonb;
+  authoritative_deal_ids text[];
+  submitted_deal_ids text[];
   existing_report public.intelligence_reports%rowtype;
 begin
   if jsonb_typeof(p_report) <> 'object'
@@ -996,6 +1135,35 @@ begin
       0
     )
   );
+  if target_snapshot_fingerprint is not null then
+    authoritative_snapshot :=
+      public.get_analysis_eligible_snapshot(target_workspace_id);
+    authoritative_deal_ids := array(
+      select value
+      from jsonb_array_elements_text(
+        authoritative_snapshot -> 'dealIds'
+      ) as ids(value)
+      order by value collate "C"
+    );
+    submitted_deal_ids := array(
+      select deal_id
+      from (
+        select distinct analysis ->> 'dealId' as deal_id
+        from jsonb_array_elements(p_analyses) as analysis
+      ) as submitted
+      order by deal_id collate "C"
+    );
+    if target_snapshot_count
+        <> (authoritative_snapshot ->> 'count')::integer
+      or target_snapshot_fingerprint
+        <> authoritative_snapshot ->> 'fingerprint'
+      or submitted_deal_ids is distinct from authoritative_deal_ids
+      or cardinality(submitted_deal_ids) <> jsonb_array_length(p_analyses)
+    then
+      raise exception
+        'The submitted report does not match the authoritative eligible Deal snapshot';
+    end if;
+  end if;
   select report.*
   into existing_report
   from public.intelligence_reports as report
@@ -1029,6 +1197,27 @@ begin
   from public.intelligence_reports as report
   where report.workspace_id = target_workspace_id
     and report.id = target_report_id;
+end;
+$$;
+
+create or replace function public.reset_intelligence_products(
+  p_workspace_id text
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  target_workspace_id text := btrim(p_workspace_id);
+begin
+  if coalesce(target_workspace_id, '') = '' then
+    raise exception 'A workspace is required';
+  end if;
+  delete from public.company_analyses as analysis
+  where analysis.workspace_id = target_workspace_id;
+  delete from public.intelligence_reports as report
+  where report.workspace_id = target_workspace_id;
 end;
 $$;
 
@@ -1084,12 +1273,18 @@ alter function public.confirm_source_assignment(jsonb)
   owner to vsee_registry_owner;
 alter function public.save_intelligence_report(jsonb, jsonb)
   owner to vsee_registry_owner;
+alter function public.reset_intelligence_products(text)
+  owner to vsee_registry_owner;
 alter function public.source_assignment_result(
   public.deals, public.source_revisions, text[], boolean
 ) owner to vsee_registry_owner;
 alter function public.sha256_length_framed(text[])
   owner to vsee_registry_owner;
+alter function public.canonical_utc_iso_milliseconds(timestamptz)
+  owner to vsee_registry_owner;
 alter function public.source_revision_set_fingerprint(text[])
+  owner to vsee_registry_owner;
+alter function public.get_analysis_eligible_snapshot(text)
   owner to vsee_registry_owner;
 
 revoke all privileges on table public.source_revisions from public;
@@ -1101,6 +1296,12 @@ revoke all on function public.append_source_revision(jsonb) from public;
 revoke all on function public.annotate_source_revision(jsonb) from public;
 revoke all on function public.confirm_source_assignment(jsonb) from public;
 revoke all on function public.save_intelligence_report(jsonb, jsonb)
+  from public;
+revoke all on function public.reset_intelligence_products(text)
+  from public;
+revoke all on function public.get_analysis_eligible_snapshot(text)
+  from public;
+revoke all on function public.canonical_utc_iso_milliseconds(timestamptz)
   from public;
 revoke all on function
   public.save_intelligence_report_legacy_0009(jsonb, jsonb)
@@ -1144,6 +1345,14 @@ begin
       'revoke all on function public.confirm_source_assignment(jsonb) from %I',
       restricted_role
     );
+    execute format(
+      'revoke all on function public.reset_intelligence_products(text) from %I',
+      restricted_role
+    );
+    execute format(
+      'revoke all on function public.get_analysis_eligible_snapshot(text) from %I',
+      restricted_role
+    );
   end loop;
 
   if exists (select 1 from pg_roles where rolname = 'service_role') then
@@ -1153,9 +1362,15 @@ begin
       from service_role;
     revoke all privileges on table public.deal_source_assignments
       from service_role;
+    revoke all privileges on table public.intelligence_reports
+      from service_role;
+    revoke all privileges on table public.company_analyses
+      from service_role;
     grant select on table public.source_revisions to service_role;
     grant select on table public.source_revision_annotations to service_role;
     grant select on table public.deal_source_assignments to service_role;
+    grant select on table public.intelligence_reports to service_role;
+    grant select on table public.company_analyses to service_role;
     revoke insert, update on table public.deals from service_role;
     grant insert (
       id, workspace_id, company_id, company_name, status, created_at
@@ -1176,6 +1391,10 @@ begin
     ) to service_role;
     grant execute on function
       public.save_intelligence_report(jsonb, jsonb) to service_role;
+    grant execute on function
+      public.reset_intelligence_products(text) to service_role;
+    grant execute on function
+      public.get_analysis_eligible_snapshot(text) to service_role;
     revoke all on function
       public.save_intelligence_report_legacy_0009(jsonb, jsonb)
       from service_role;

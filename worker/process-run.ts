@@ -4,7 +4,6 @@ import type {
   IntelligenceReportWrite,
   IntelligenceRepository,
 } from "../db/repositories/intelligence";
-import { createHash } from "node:crypto";
 import type { createRunsRepository } from "../db/repositories/runs";
 import {
   OpportunityReportItemSchema,
@@ -44,7 +43,7 @@ export interface ProcessRunDependencies {
   runs: RunsRepository;
   intelligence: IntelligenceRepository;
   bundles: DealMemoryBundle[];
-  eligibleSnapshotFingerprint?: string;
+  eligibleSnapshotFingerprint: string;
   importGate: ProductInputGate;
   market: Pick<MarketService, "scanMarketWindow">;
   reasoner: MatchingReasoner;
@@ -75,6 +74,15 @@ export async function processClaimedRun(
   const warnings: string[] = [];
   const workerId = claimedRun.workerId;
   if (!workerId) throw new Error(`Run ${claimedRun.id} has no owning worker`);
+  if (
+    !/^sha256:[0-9a-f]{64}$/.test(
+      dependencies.eligibleSnapshotFingerprint,
+    )
+  ) {
+    throw new Error(
+      "A canonical eligible snapshot fingerprint is required.",
+    );
+  }
   let activeStage = claimedRun.currentStage ?? "worker_setup";
   let activeStageStatus:
     | "running"
@@ -320,14 +328,8 @@ export async function processClaimedRun(
       counts,
       priorityDealId,
       eligibleDealCount: dependencies.bundles.length,
-      eligibleSnapshotFingerprint: dependencies.eligibleSnapshotFingerprint
-        ?? `sha256:${
-          createHash("sha256").update(
-            JSON.stringify(
-              dependencies.bundles.map((bundle) => bundle.dealId).sort(),
-            ),
-          ).digest("hex")
-        }`,
+      eligibleSnapshotFingerprint:
+        dependencies.eligibleSnapshotFingerprint,
       companyAnalyses,
     };
     const storedReport = await dependencies.intelligence.saveReport(report);

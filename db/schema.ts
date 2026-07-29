@@ -67,10 +67,6 @@ export const scanRunSteps = pgTable("scan_run_steps", {
     foreignColumns: [scanRuns.workspaceId, scanRuns.id],
     name: "scan_run_steps_workspace_run_fkey",
   }).onDelete("cascade"),
-  check(
-    "deals_status_check",
-    sql`${table.status} in ('screening', 'watchlist', 'evaluating', 'passed', 'invested')`,
-  ),
 ]);
 
 export const workerHeartbeats = pgTable("worker_heartbeats", {

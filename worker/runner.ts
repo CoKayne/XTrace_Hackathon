@@ -3,10 +3,7 @@ import { hostname } from "node:os";
 import { getDataClient } from "../db/client";
 import { getIntelligenceRepository } from "../db/repositories/intelligence";
 import { getReasonerJudgmentsRepository } from "../db/repositories/reasoner-judgments";
-import {
-  eligibleDealSnapshotFingerprint,
-  getDealRegistry,
-} from "../db/repositories/deal-registry";
+import { getDealRegistry } from "../db/repositories/deal-registry";
 import { createRunsRepository } from "../db/repositories/runs";
 import { getUploadedDocumentsRepository } from "../db/repositories/uploaded-documents";
 import { createDefaultPrivateObjectStorage } from "../lib/storage/service";
@@ -76,18 +73,22 @@ export async function runNextQueuedScan(): Promise<boolean> {
     );
     const intelligence = getIntelligenceRepository();
     const dealRegistry = getDealRegistry();
+    const snapshotBefore = await dealRegistry.getAnalysisEligibleSnapshot(
+      claimed.workspaceId,
+    );
     const bundles = await dealRegistry.listAnalysisEligibleBundles(
       claimed.workspaceId,
     );
-    const registeredDeals = await Promise.all(
-      bundles.map((bundle) =>
-        dealRegistry.findForWorkspace({
-          workspaceId: claimed.workspaceId,
-          dealId: bundle.dealId,
-        })
-      ),
+    const snapshotAfter = await dealRegistry.getAnalysisEligibleSnapshot(
+      claimed.workspaceId,
     );
-    if (registeredDeals.some((deal) => !deal)) {
+    const bundleIds = bundles.map((bundle) => bundle.dealId).sort();
+    if (
+      snapshotBefore.fingerprint !== snapshotAfter.fingerprint
+      || snapshotBefore.count !== snapshotAfter.count
+      || JSON.stringify(bundleIds)
+        !== JSON.stringify([...snapshotAfter.dealIds].sort())
+    ) {
       throw new Error(
         "The eligible Deal snapshot changed while the scan was starting.",
       );
@@ -116,9 +117,7 @@ export async function runNextQueuedScan(): Promise<boolean> {
       runs,
       intelligence,
       bundles,
-      eligibleSnapshotFingerprint: eligibleDealSnapshotFingerprint(
-        registeredDeals.filter((deal) => deal !== null),
-      ),
+      eligibleSnapshotFingerprint: snapshotAfter.fingerprint,
       importGate: createProductInputGate(createDefaultDemoDataStore()),
       market: createMarketService({ providers }),
       reasoner: createClaudeMatchingReasoner(createClaudeClient(), {

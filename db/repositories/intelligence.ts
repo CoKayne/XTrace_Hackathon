@@ -249,6 +249,11 @@ function validateEligibleSnapshot(report: IntelligenceReportWrite): {
       "A new analysis report requires an eligible snapshot fingerprint.",
     );
   }
+  if (!/^sha256:[0-9a-f]{64}$/.test(fingerprint)) {
+    throw new Error(
+      "A new analysis report requires a canonical SHA-256 eligible snapshot fingerprint.",
+    );
+  }
   if (report.companyAnalyses.length !== report.eligibleDealCount) {
     throw new Error(
       `The eligible Deal snapshot contains ${report.eligibleDealCount} Deals, but the report contains ${report.companyAnalyses.length} analyses.`,
@@ -314,7 +319,11 @@ export function createMemoryIntelligenceRepository(
 ): IntelligenceRepository {
   const events = new Map<string, { workspaceId: string; event: NormalizedMarketEvent }>();
   const reports = new Map<string, IntelligenceReportRecord>();
-  const snapshots = new Map<string, { count: number; fingerprint: string }>();
+  const snapshots = new Map<string, {
+    runId: string;
+    count: number | null;
+    fingerprint: string | null;
+  }>();
   const now = options.now ?? (() => new Date());
   return {
     async saveMarketEvents(items, workspaceId) {
@@ -345,12 +354,18 @@ export function createMemoryIntelligenceRepository(
       const validated = safeReport(report);
       const key = workspaceIdentity(validated.workspaceId, validated.id);
       const existingSnapshot = snapshots.get(key);
+      const submittedSnapshot = {
+        runId: validated.runId,
+        count: snapshot?.count ?? null,
+        fingerprint: snapshot?.fingerprint ?? null,
+      };
       if (
         existingSnapshot
-        && snapshot
         && (
-          existingSnapshot.count !== snapshot.count
-          || existingSnapshot.fingerprint !== snapshot.fingerprint
+          existingSnapshot.runId !== submittedSnapshot.runId
+          || existingSnapshot.count !== submittedSnapshot.count
+          || existingSnapshot.fingerprint
+            !== submittedSnapshot.fingerprint
         )
       ) {
         throw new Error(
@@ -361,7 +376,7 @@ export function createMemoryIntelligenceRepository(
         key,
         structuredClone(validated),
       );
-      if (snapshot) snapshots.set(key, snapshot);
+      snapshots.set(key, submittedSnapshot);
       return structuredClone(validated);
     },
     async getReport(workspaceId, reportId) {
@@ -396,7 +411,10 @@ export function createMemoryIntelligenceRepository(
         if (row.workspaceId === workspaceId) events.delete(key);
       }
       for (const [key, report] of reports) {
-        if (report.workspaceId === workspaceId) reports.delete(key);
+        if (report.workspaceId === workspaceId) {
+          reports.delete(key);
+          snapshots.delete(key);
+        }
       }
     },
   };
@@ -614,12 +632,15 @@ export function createSupabaseIntelligenceRepository(options: {
     async resetScanProducts(workspaceId) {
       workspaceId = requiredWorkspaceId(workspaceId);
       const workspace = encodeURIComponent(workspaceId);
+      await request("/rpc/reset_intelligence_products", {
+        method: "POST",
+        headers: { Prefer: "return=minimal" },
+        body: JSON.stringify({ p_workspace_id: workspaceId }),
+      });
       // Children first; deleting finished runs also cascades their steps.
       // Queued and running scans survive so an in-flight demo scan can still
       // land its report after the wipe.
       const deletions = [
-        `/company_analyses?workspace_id=eq.${workspace}`,
-        `/intelligence_reports?workspace_id=eq.${workspace}`,
         `/scan_runs?workspace_id=eq.${workspace}&status=in.(completed,partial,failed)`,
         `/market_events?workspace_id=eq.${workspace}`,
       ];

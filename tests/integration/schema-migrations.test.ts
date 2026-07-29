@@ -144,10 +144,26 @@ test(
       executeSql(database, `
         do $$
         begin
-          create role service_role nologin noinherit nobypassrls;
+          create role service_role nologin noinherit bypassrls;
         exception when duplicate_object then null;
         end;
         $$;
+        do $$
+        begin
+          create role vsee_registry_owner;
+        exception when duplicate_object then null;
+        end;
+        $$;
+        do $$
+        begin
+          create role vsee_registry_hostile_member login inherit;
+        exception when duplicate_object then null;
+        end;
+        $$;
+        alter role vsee_registry_owner
+          superuser createdb createrole replication
+          login inherit bypassrls;
+        grant vsee_registry_owner to vsee_registry_hostile_member;
       `);
       const migrations = [
         "0000_vsee_postgres.sql",
@@ -222,6 +238,40 @@ test(
             ]);
         `),
         String(mirroredConstraints.length),
+      );
+      assert.equal(
+        executeSql(database, `
+          select rel.relname || '|' || con.conname || '|'
+            || pg_get_constraintdef(con.oid)
+          from pg_constraint as con
+          join pg_class as rel on rel.oid = con.conrelid
+          where con.connamespace = 'public'::regnamespace
+            and con.conname = 'deals_status_check';
+        `),
+        "deals|deals_status_check|CHECK ((status = ANY (ARRAY['screening'::text, 'watchlist'::text, 'evaluating'::text, 'passed'::text, 'invested'::text])))",
+      );
+      assert.doesNotThrow(() =>
+        executeSql(database, `
+          insert into public.workspaces (id, name)
+          values ('workspace_schema_check', 'Schema check');
+          insert into public.scan_runs (
+            id, workspace_id, mode, status
+          ) values (
+            '00000000-0000-4000-8000-000000000399',
+            'workspace_schema_check', 'structured', 'completed'
+          );
+          insert into public.scan_run_steps (
+            id, workspace_id, run_id, stage, status
+          ) values (
+            '00000000-0000-4000-8000-000000000398',
+            'workspace_schema_check',
+            '00000000-0000-4000-8000-000000000399',
+            'analyze_companies', 'running'
+          );
+          update public.scan_run_steps
+          set status = 'completed', completed_at = now()
+          where id = '00000000-0000-4000-8000-000000000398';
+        `)
       );
       assert.match(
         executeSql(database, `
@@ -351,6 +401,42 @@ test(
             and id = 'revision_shared';
         `)
       );
+      executeSql(database, `
+        insert into public.scan_runs (
+          id, workspace_id, mode, status
+        ) values (
+          '00000000-0000-4000-8000-000000000300',
+          'workspace_two', 'structured', 'running'
+        );
+      `);
+      executeSql(database, `
+        select * from public.save_intelligence_report(
+          jsonb_build_object(
+            'id', 'report_legacy_transition',
+            'workspaceId', 'workspace_two',
+            'runId', '00000000-0000-4000-8000-000000000300',
+            'createdAt', '2026-07-28T12:31:00.000Z',
+            'marketSummary', 'Legacy report.'
+          ),
+          '[]'::jsonb
+        );
+      `);
+      assert.throws(() =>
+        executeSql(database, `
+          select * from public.save_intelligence_report(
+            jsonb_build_object(
+              'id', 'report_legacy_transition',
+              'workspaceId', 'workspace_two',
+              'runId', '00000000-0000-4000-8000-000000000300',
+              'companyCount', 0,
+              'eligibleSnapshotCount', 0,
+              'eligibleSnapshotFingerprint',
+                'sha256:b191db9f70688d445f293772932f76525aa10fdee96a0d4b696357c4fc2aca54'
+            ),
+            '[]'::jsonb
+          );
+        `)
+      );
       assert.throws(() =>
         executeSql(database, `
           select id
@@ -426,6 +512,72 @@ test(
         `),
         "1|2026-07-28T12:00:00Z|sha256:e261978d1aa749a6b4efa250d1e6ce21d151c1dc124dcfda394aa0d7ef936743",
       );
+      assert.doesNotThrow(() =>
+        executeSql(database, `
+          set timezone = 'UTC';
+          select public.confirm_source_assignment(jsonb_build_object(
+            'requestId', 'request_timezone',
+            'workspaceId', 'workspace_one',
+            'dealId', 'deal_timezone',
+            'companyId', 'company_timezone',
+            'companyName', 'Timezone Company',
+            'status', 'screening',
+            'sourceRevisionId', 'revision_two',
+            'assignedByUserId', 'user_one',
+            'reason', 'Canonical timestamp replay.',
+            'confirmedAt', '2026-07-28T12:00:00.123Z'
+          ));
+          set timezone = 'America/Los_Angeles';
+          select public.confirm_source_assignment(jsonb_build_object(
+            'requestId', 'request_timezone',
+            'workspaceId', 'workspace_one',
+            'dealId', 'deal_timezone',
+            'companyId', 'company_timezone',
+            'companyName', 'Timezone Company',
+            'status', 'screening',
+            'sourceRevisionId', 'revision_two',
+            'assignedByUserId', 'user_one',
+            'reason', 'Canonical timestamp replay.',
+            'confirmedAt', '2026-07-28T05:00:00.123-07:00'
+          ));
+        `)
+      );
+      assert.equal(
+        executeSql(database, `
+          select request_fingerprint
+          from public.deal_source_assignments
+          where workspace_id = 'workspace_one'
+            and request_id = 'request_timezone';
+        `),
+        "sha256:823a1edbcb7c8880e9d928685f7bcd71d73930947feb29d74e5b16fef4903cee",
+      );
+      executeSql(database, `
+        insert into public.workspaces (id, name)
+        values ('workspace_snapshot', 'Snapshot');
+      `);
+      assert.throws(() =>
+        executeSql(database, `
+          select * from public.save_intelligence_report(
+            jsonb_build_object(
+              'id', 'report_caller_lie',
+              'workspaceId', 'workspace_two',
+              'runId', '00000000-0000-4000-8000-000000000300',
+              'createdAt', '2026-07-28T12:30:00.000Z',
+              'marketSummary', 'Caller-authored lie.',
+              'companyCount', 0,
+              'eligibleSnapshotCount', 0,
+              'eligibleSnapshotFingerprint', 'caller-lie'
+            ),
+            '[]'::jsonb
+          );
+        `)
+      );
+      assert.match(
+        executeSql(database, `
+          select public.get_analysis_eligible_snapshot('workspace_one')::text;
+        `),
+        /"count": 2.*"dealIds": \["deal_one", "deal_timezone"\].*"fingerprint": "sha256:/,
+      );
       executeSql(database, `
         select id from public.append_source_revision(jsonb_build_object(
           'id', 'revision_three',
@@ -483,7 +635,115 @@ test(
           );
         `)
       );
+      executeSql(database, `
+        select public.confirm_source_assignment(jsonb_build_object(
+          'requestId', 'request_chronology_equal',
+          'workspaceId', 'workspace_one',
+          'dealId', 'deal_one',
+          'companyId', 'company_one',
+          'companyName', 'Company one',
+          'status', 'screening',
+          'sourceRevisionId', 'revision_three',
+          'assignedByUserId', 'user_one',
+          'reason', 'Equal-time supersession.',
+          'confirmedAt', '2026-07-28T12:00:00.000Z'
+        ));
+        select id from public.append_source_revision(jsonb_build_object(
+          'id', 'revision_four',
+          'workspaceId', 'workspace_one',
+          'sourceId', 'source_one',
+          'contentHash', 'hash_four',
+          'objectKey', 'private/workspace_one/source-one-v4.pdf',
+          'objectVersion', 'hash_four',
+          'contentType', 'application/pdf',
+          'extractorId', 'pdf-text',
+          'extractorVersion', '1',
+          'extractedAt', '2026-07-28T13:30:00.000Z',
+          'createdAt', '2026-07-28T13:30:01.000Z',
+          'supersedesRevisionId', 'revision_three'
+        ));
+        select public.confirm_source_assignment(jsonb_build_object(
+          'requestId', 'request_chronology_later',
+          'workspaceId', 'workspace_one',
+          'dealId', 'deal_one',
+          'companyId', 'company_one',
+          'companyName', 'Company one',
+          'status', 'screening',
+          'sourceRevisionId', 'revision_four',
+          'assignedByUserId', 'user_one',
+          'reason', 'Later-time supersession.',
+          'confirmedAt', '2026-07-28T13:00:00.000Z'
+        ));
+        select id from public.append_source_revision(jsonb_build_object(
+          'id', 'revision_five',
+          'workspaceId', 'workspace_one',
+          'sourceId', 'source_one',
+          'contentHash', 'hash_five',
+          'objectKey', 'private/workspace_one/source-one-v5.pdf',
+          'objectVersion', 'hash_five',
+          'contentType', 'application/pdf',
+          'extractorId', 'pdf-text',
+          'extractorVersion', '1',
+          'extractedAt', '2026-07-28T14:00:00.000Z',
+          'createdAt', '2026-07-28T14:00:01.000Z',
+          'supersedesRevisionId', 'revision_four'
+        ));
+      `);
+      assert.throws(() =>
+        executeSql(database, `
+          select public.confirm_source_assignment(jsonb_build_object(
+            'requestId', 'request_chronology_backdated',
+            'workspaceId', 'workspace_one',
+            'dealId', 'deal_one',
+            'companyId', 'company_one',
+            'companyName', 'Company one',
+            'status', 'screening',
+            'sourceRevisionId', 'revision_five',
+            'assignedByUserId', 'user_one',
+            'reason', 'Backdated supersession.',
+            'confirmedAt', '2026-07-28T12:59:59.999Z'
+          ));
+        `)
+      );
+      assert.equal(
+        executeSql(database, `
+          select count(*) || '|' || max(source_revision_id)
+          from public.deal_source_assignments
+          where workspace_id = 'workspace_one'
+            and deal_id = 'deal_one'
+            and superseded_at is null;
+        `),
+        "1|revision_four",
+      );
 
+      assert.equal(
+        executeSql(database, `
+          select rolsuper::text || '|' || rolinherit::text || '|'
+            || rolcreaterole::text || '|' || rolcreatedb::text || '|'
+            || rolcanlogin::text || '|' || rolreplication::text || '|'
+            || rolbypassrls::text
+          from pg_roles
+          where rolname = 'vsee_registry_owner';
+        `),
+        "false|false|false|false|false|false|false",
+      );
+      assert.equal(
+        executeSql(database, `
+          select count(*)
+          from pg_auth_members
+          where roleid = 'vsee_registry_owner'::regrole
+            or member = 'vsee_registry_owner'::regrole;
+        `),
+        "0",
+      );
+      assert.equal(
+        executeSql(database, `
+          select pg_has_role(
+            'service_role', 'vsee_registry_owner', 'MEMBER'
+          )::text;
+        `),
+        "false",
+      );
       assert.equal(
         executeSql(database, `
           select p.proname || '|' || r.rolname || '|'
@@ -518,6 +778,32 @@ test(
         select count(*) from public.source_revisions;
         reset role;
       `);
+      assert.equal(
+        executeSql(database, `
+          select table_name || '|'
+            || has_table_privilege(
+              'service_role', 'public.' || table_name, 'INSERT'
+            )::text || '|'
+            || has_table_privilege(
+              'service_role', 'public.' || table_name, 'UPDATE'
+            )::text || '|'
+            || has_table_privilege(
+              'service_role', 'public.' || table_name, 'DELETE'
+            )::text || '|'
+            || has_table_privilege(
+              'service_role', 'public.' || table_name, 'TRUNCATE'
+            )::text
+          from (values
+            ('company_analyses'),
+            ('intelligence_reports')
+          ) as report_tables(table_name)
+          order by table_name;
+        `),
+        [
+          "company_analyses|false|false|false|false",
+          "intelligence_reports|false|false|false|false",
+        ].join("\n"),
+      );
       for (const forbidden of [
         "insert into public.source_revisions (id) values ('bypass')",
         "insert into public.source_revision_annotations (workspace_id, revision_id, kind, reason) values ('workspace_one', 'revision_two', 'retracted', 'bypass')",
@@ -525,6 +811,14 @@ test(
         "update public.deals set analysis_eligible_at = now() where workspace_id = 'workspace_one' and id = 'deal_one'",
         "update public.deals set active_source_revision_fingerprint = 'bypass' where workspace_id = 'workspace_one' and id = 'deal_one'",
         "truncate public.source_revisions",
+        "insert into public.intelligence_reports (id) values ('bypass')",
+        "update public.intelligence_reports set market_summary = 'bypass'",
+        "delete from public.intelligence_reports",
+        "truncate public.intelligence_reports cascade",
+        "insert into public.company_analyses (id) values ('bypass')",
+        "update public.company_analyses set company_name = 'bypass'",
+        "delete from public.company_analyses",
+        "truncate public.company_analyses",
       ]) {
         assert.throws(() =>
           executeSql(database, `set role service_role; ${forbidden};`)
@@ -562,17 +856,52 @@ test(
           id, workspace_id, mode, status
         ) values (
           '00000000-0000-4000-8000-000000000301',
-          'workspace_one', 'structured', 'running'
+          'workspace_snapshot', 'xtrace', 'running'
         );
         insert into public.companies (workspace_id, id, name)
-        select 'workspace_one', 'snapshot_company_' || n, 'Company ' || n
+        select 'workspace_snapshot', 'snapshot_company_' || n, 'Company ' || n
         from generate_series(1, 3) as n;
         insert into public.deals (
           workspace_id, id, company_id, company_name, status
         )
-        select 'workspace_one', 'snapshot_deal_' || n,
+        select 'workspace_snapshot', 'snapshot_deal_' || n,
           'snapshot_company_' || n, 'Company ' || n, 'screening'
         from generate_series(1, 3) as n;
+        do $$
+        begin
+          for n in 1..3 loop
+            perform public.create_initial_source_revision(
+              jsonb_build_object(
+                'id', 'snapshot_revision_' || n,
+                'workspaceId', 'workspace_snapshot',
+                'sourceId', 'snapshot_source_' || n,
+                'contentHash', 'snapshot_hash_' || n,
+                'objectKey', 'private/snapshot/' || n,
+                'objectVersion', 'snapshot_hash_' || n,
+                'contentType', 'application/pdf',
+                'extractorId', 'pdf-text',
+                'extractorVersion', '1',
+                'extractedAt', '2026-07-28T13:30:00.000Z',
+                'createdAt', '2026-07-28T13:30:01.000Z'
+              )
+            );
+            perform public.confirm_source_assignment(
+              jsonb_build_object(
+                'requestId', 'snapshot_request_' || n,
+                'workspaceId', 'workspace_snapshot',
+                'dealId', 'snapshot_deal_' || n,
+                'companyId', 'snapshot_company_' || n,
+                'companyName', 'Company ' || n,
+                'status', 'screening',
+                'sourceRevisionId', 'snapshot_revision_' || n,
+                'assignedByUserId', 'snapshot_user',
+                'reason', 'Snapshot fixture.',
+                'confirmedAt', '2026-07-28T13:45:00.000Z'
+              )
+            );
+          end loop;
+        end;
+        $$;
       `);
       assert.equal(
         executeSql(database, `
@@ -601,7 +930,7 @@ test(
           from analyses, public.save_intelligence_report(
             jsonb_build_object(
               'id', 'report_snapshot_three',
-              'workspaceId', 'workspace_one',
+              'workspaceId', 'workspace_snapshot',
               'runId', '00000000-0000-4000-8000-000000000301',
               'createdAt', '2026-07-28T14:00:00.000Z',
               'marketSummary', 'Snapshot test.',
@@ -614,7 +943,8 @@ test(
               'analysisUnavailableCount', 0,
               'evidenceCoverage', '{}'::jsonb,
               'eligibleSnapshotCount', 3,
-              'eligibleSnapshotFingerprint', 'snapshot:three'
+              'eligibleSnapshotFingerprint',
+                'sha256:21240da2c08c5e52e20552375eb862d83a68e36289cddec4e7d34413e2643eeb'
             ),
             analyses.payload
           );
@@ -626,7 +956,106 @@ test(
           select * from public.save_intelligence_report(
             jsonb_build_object(
               'id', 'report_snapshot_three',
-              'workspaceId', 'workspace_one',
+              'workspaceId', 'workspace_snapshot',
+              'runId', '00000000-0000-4000-8000-000000000301'
+            ),
+            '[]'::jsonb
+          );
+        `)
+      );
+      executeSql(database, `
+        insert into public.scan_runs (
+          id, workspace_id, mode, status
+        ) values (
+          '00000000-0000-4000-8000-000000000303',
+          'workspace_snapshot', 'structured', 'running'
+        );
+      `);
+      assert.throws(() =>
+        executeSql(database, `
+          select * from public.save_intelligence_report(
+            jsonb_build_object(
+              'id', 'report_snapshot_three',
+              'workspaceId', 'workspace_snapshot',
+              'runId', '00000000-0000-4000-8000-000000000303',
+              'companyCount', 3,
+              'eligibleSnapshotCount', 3,
+              'eligibleSnapshotFingerprint',
+                'sha256:21240da2c08c5e52e20552375eb862d83a68e36289cddec4e7d34413e2643eeb'
+            ),
+            jsonb_build_array(
+              jsonb_build_object('dealId', 'snapshot_deal_1'),
+              jsonb_build_object('dealId', 'snapshot_deal_2'),
+              jsonb_build_object('dealId', 'snapshot_deal_3')
+            )
+          );
+        `)
+      );
+      executeSql(database, `
+        update public.scan_runs
+        set status = 'failed'
+        where id = '00000000-0000-4000-8000-000000000303';
+      `);
+      executeSql(database, `
+        insert into public.scan_runs (
+          id, workspace_id, mode, status
+        ) values (
+          '00000000-0000-4000-8000-000000000302',
+          'workspace_snapshot', 'structured', 'running'
+        );
+        select id from public.append_source_revision(jsonb_build_object(
+          'id', 'snapshot_revision_1_v2',
+          'workspaceId', 'workspace_snapshot',
+          'sourceId', 'snapshot_source_1',
+          'contentHash', 'snapshot_hash_1_v2',
+          'objectKey', 'private/snapshot/1-v2',
+          'objectVersion', 'snapshot_hash_1_v2',
+          'contentType', 'application/pdf',
+          'extractorId', 'pdf-text',
+          'extractorVersion', '1',
+          'extractedAt', '2026-07-28T14:30:00.000Z',
+          'createdAt', '2026-07-28T14:30:01.000Z',
+          'supersedesRevisionId', 'snapshot_revision_1'
+        ));
+        select public.confirm_source_assignment(jsonb_build_object(
+          'requestId', 'snapshot_request_1_v2',
+          'workspaceId', 'workspace_snapshot',
+          'dealId', 'snapshot_deal_1',
+          'companyId', 'snapshot_company_1',
+          'companyName', 'Company 1',
+          'status', 'screening',
+          'sourceRevisionId', 'snapshot_revision_1_v2',
+          'assignedByUserId', 'snapshot_user',
+          'reason', 'Reassigned during a later snapshot.',
+          'confirmedAt', '2026-07-28T14:45:00.000Z'
+        ));
+      `);
+      assert.throws(() =>
+        executeSql(database, `
+          select * from public.save_intelligence_report(
+            jsonb_build_object(
+              'id', 'report_stale_snapshot',
+              'workspaceId', 'workspace_snapshot',
+              'runId', '00000000-0000-4000-8000-000000000302',
+              'companyCount', 3,
+              'eligibleSnapshotCount', 3,
+              'eligibleSnapshotFingerprint',
+                'sha256:21240da2c08c5e52e20552375eb862d83a68e36289cddec4e7d34413e2643eeb'
+            ),
+            jsonb_build_array(
+              jsonb_build_object('dealId', 'snapshot_deal_1'),
+              jsonb_build_object('dealId', 'snapshot_deal_2'),
+              jsonb_build_object('dealId', 'snapshot_deal_3')
+            )
+          );
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          select * from public.save_intelligence_report(
+            jsonb_build_object(
+              'id', 'report_snapshot_three',
+              'workspaceId', 'workspace_snapshot',
               'runId', '00000000-0000-4000-8000-000000000301',
               'companyCount', 0,
               'eligibleSnapshotCount', 0,
@@ -636,6 +1065,9 @@ test(
           );
         `)
       );
+      executeSql(database, `
+        drop role if exists vsee_registry_hostile_member;
+      `);
     });
   },
 );

@@ -142,7 +142,8 @@ function completeReport(
     opportunities: [],
     companyAnalyses,
     eligibleDealCount: companyAnalyses.length,
-    eligibleSnapshotFingerprint: `snapshot:${companyAnalyses.length}`,
+    eligibleSnapshotFingerprint:
+      "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   };
 }
 
@@ -426,7 +427,8 @@ test("report validation accepts an eligible snapshot count other than nineteen",
   const stored = await repository.saveReport({
     ...completeReport(analyses),
     eligibleDealCount: 3,
-    eligibleSnapshotFingerprint: "snapshot:3",
+    eligibleSnapshotFingerprint:
+      "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     counts: {
       companyCount: 3,
       beliefRevised: 0,
@@ -455,7 +457,8 @@ test("report validation rejects an analysis set that misses its captured eligibl
     repository.saveReport({
       ...completeReport([companyAnalysis(1), companyAnalysis(2)]),
       eligibleDealCount: 3,
-      eligibleSnapshotFingerprint: "snapshot:3",
+      eligibleSnapshotFingerprint:
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     }),
     /eligible.*snapshot|3.*analyses/i,
   );
@@ -467,6 +470,13 @@ test("new analysis reports require and immutably bind an eligible snapshot", asy
   await assert.rejects(
     repository.saveReport({
       ...report,
+      eligibleSnapshotFingerprint: "caller-lie",
+    }),
+    /canonical|sha-256/i,
+  );
+  await assert.rejects(
+    repository.saveReport({
+      ...report,
       eligibleSnapshotFingerprint: undefined,
     }),
     /snapshot.*fingerprint|required/i,
@@ -475,9 +485,47 @@ test("new analysis reports require and immutably bind an eligible snapshot", asy
   await assert.rejects(
     repository.saveReport({
       ...report,
-      eligibleSnapshotFingerprint: "snapshot:different",
+      eligibleSnapshotFingerprint:
+        "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     }),
     /snapshot.*different|immutable/i,
+  );
+});
+
+test("memory report identity binds run and null-versus-bound snapshot parity", async () => {
+  const boundReport = completeReport([companyAnalysis(1)]);
+  const legacyWrite: IntelligenceReportWrite = {
+    id: boundReport.id,
+    workspaceId: boundReport.workspaceId,
+    runId: boundReport.runId,
+    createdAt: boundReport.createdAt,
+    marketSummary: "Legacy report.",
+    opportunities: [],
+  };
+
+  const boundFirst = createMemoryIntelligenceRepository();
+  await boundFirst.saveReport(boundReport);
+  await assert.rejects(
+    boundFirst.saveReport({
+      ...boundReport,
+      runId: "00000000-0000-4000-8000-000000000099",
+      companyAnalyses: boundReport.companyAnalyses.map((analysis) => ({
+        ...analysis,
+        runId: "00000000-0000-4000-8000-000000000099",
+      })),
+    }),
+    /run|identity|immutable/i,
+  );
+  await assert.rejects(
+    boundFirst.saveReport(legacyWrite),
+    /snapshot|legacy|immutable/i,
+  );
+
+  const legacyFirst = createMemoryIntelligenceRepository();
+  await legacyFirst.saveReport(legacyWrite);
+  await assert.rejects(
+    legacyFirst.saveReport(boundReport),
+    /snapshot|legacy|immutable/i,
   );
 });
 
@@ -563,7 +611,10 @@ test("Supabase report writes use the atomic report RPC", async () => {
   assert.equal(body.p_analyses.length, 19);
   assert.equal(body.p_report.companyCount, 19);
   assert.equal(body.p_report.eligibleSnapshotCount, 19);
-  assert.equal(body.p_report.eligibleSnapshotFingerprint, "snapshot:19");
+  assert.equal(
+    body.p_report.eligibleSnapshotFingerprint,
+    "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  );
   assert.equal(stored.companyAnalyses.length, 19);
   assert.equal(
     JSON.stringify(stored).includes("test-service-role-key"),
@@ -659,18 +710,27 @@ test("resetScanProducts wipes reports and market events but nothing else is reac
 
 test("Supabase resetScanProducts keeps queued and running scans alive", async () => {
   const deletePaths: string[] = [];
+  const postPaths: string[] = [];
   const repository = intelligenceRepositoryModule.createSupabaseIntelligenceRepository({
     url: "https://example.supabase.co",
     serviceRoleKey: "test-service-role-key",
     fetchImpl: async (input: RequestInfo | URL, init?: RequestInit) => {
       if (init?.method === "DELETE") deletePaths.push(String(input));
+      if (init?.method === "POST") postPaths.push(String(input));
       return new Response(null, { status: 204 });
     },
   });
 
   await repository.resetScanProducts("workspace_demo");
 
-  assert.equal(deletePaths.length, 4);
+  assert.equal(deletePaths.length, 2);
+  assert.deepEqual(postPaths, [
+    "https://example.supabase.co/rest/v1/rpc/reset_intelligence_products",
+  ]);
+  assert.doesNotMatch(
+    deletePaths.join("\n"),
+    /company_analyses|intelligence_reports/,
+  );
   const runsDelete = deletePaths.find((path) => path.includes("/scan_runs"));
   assert.ok(runsDelete, "finished scan runs must be wiped");
   assert.match(

@@ -221,3 +221,87 @@ channel before starting the worker.
 The initial Task 5 implementation commit was
 `42f1585bfb45bdb4cb03955017566c4f2080f3d1`. The review-fix commit is reported
 in the handoff because a commit cannot contain its own SHA.
+
+## Review round 2
+
+The second independent review returned **NOT APPROVED** with one critical and
+six important findings. Each finding was reproduced with a failing focused
+test before implementation and then verified in memory and/or live PostgreSQL
+as appropriate.
+
+### C1 — report-table privilege boundary
+
+- `service_role` now has read-only access to `intelligence_reports` and
+  `company_analyses`; direct `INSERT`, `UPDATE`, `DELETE`, and `TRUNCATE` are
+  revoked on both tables.
+- Report cleanup moved behind the locked
+  `reset_intelligence_products(text)` definer RPC.
+- Live catalog and exploit coverage uses a `BYPASSRLS` service role and proves
+  all eight direct mutation classes fail while the RPC remains usable.
+
+### I1 — authoritative eligible snapshots
+
+- `get_analysis_eligible_snapshot(text)` derives the eligible Deal IDs and
+  active-revision fingerprints under a workspace advisory lock and returns a
+  canonical count, ordered IDs, and SHA-256 token.
+- Assignment confirmation takes the same workspace lock. Report persistence
+  recomputes the authoritative snapshot under that lock and rejects false
+  counts, false fingerprints, missing/duplicate/foreign Deal analyses, and
+  reassignment races.
+- The worker captures the canonical snapshot before and after loading bundles,
+  requires exact identity stability, and has no Deal-ID-only fallback.
+- New-analysis repository and worker seams require the canonical
+  `sha256:<64 lowercase hex>` token.
+
+### I2 — report identity parity
+
+- Memory report identity now binds exact `runId`, count, and fingerprint,
+  including null-versus-bound state, and clears that metadata on reset.
+- Memory and live PostgreSQL tests cover legacy-to-bound, bound-to-legacy, and
+  same-snapshot cross-run overwrite rejection.
+
+### I3 — portable confirmation fingerprints
+
+- SQL now frames confirmation timestamps as fixed UTC ISO-8601 with exactly
+  millisecond precision, matching `Date.toISOString()`.
+- Live replay succeeds across `UTC` and `America/Los_Angeles` sessions and
+  equivalent `Z`/offset inputs. The persisted SQL fingerprint is asserted
+  byte-for-byte against the TypeScript vector.
+
+### I4 — dedicated owner-role preflight
+
+- Existing `vsee_registry_owner` roles are normalized to `NOSUPERUSER`,
+  `NOCREATEDB`, `NOCREATEROLE`, `NOREPLICATION`, `NOLOGIN`, `NOINHERIT`, and
+  `NOBYPASSRLS`.
+- All incoming and outgoing memberships are deliberately revoked, followed by
+  a fail-closed catalog verification.
+- The live fixture starts from a hostile privileged/login role with an
+  inheriting member and verifies all attributes, memberships, and
+  `service_role` assumability are false afterward.
+
+### I5 — Drizzle constraint parity
+
+- The misplaced `deals_status_check` was removed from `scanRunSteps` and
+  remains only on `deals`.
+- A Drizzle metadata test pins the table and exact declaration. Live catalog
+  coverage pins the table/name/normalized PostgreSQL definition and proves a
+  normal scan step can transition from `running` to `completed`.
+
+### I6 — assignment chronology parity
+
+- Memory confirmation rejects a backdated supersession before mutating any
+  assignment state.
+- Memory and live PostgreSQL coverage both accept equal and later instants,
+  reject a backdated instant, and retain the prior active revision atomically.
+
+### Review-round-2 verification
+
+- Full regression: **491 discovered; 490 passed, 0 failed, 1 skipped**. The
+  skip is the existing opt-in external XTrace live test.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with no warnings or errors.
+- `npm run test:migrations`: **7 passed, 0 failed, 0 skipped**.
+- `git diff --check`: passed.
+
+The round-2 fix commit is reported in the handoff because a commit cannot
+contain its own SHA.

@@ -106,6 +106,32 @@ test("seed and confirmed upload share one analysis-eligible query", async () => 
   assert.deepEqual(ids, ["deal_seed_7bridges", "deal_uploaded"]);
 });
 
+test("the registry captures one canonical eligible Deal snapshot token", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  await registry.confirmSourceAssignment(await assignment(sources, {
+    workspaceId: "workspace_demo",
+    dealId: "deal_one",
+    sourceId: "source_one",
+  }));
+  const snapshotRegistry = registry as typeof registry & {
+    getAnalysisEligibleSnapshot?: (
+      workspaceId: string,
+    ) => Promise<{
+      count: number;
+      dealIds: string[];
+      fingerprint: string;
+    }>;
+  };
+  assert.equal(typeof snapshotRegistry.getAnalysisEligibleSnapshot, "function");
+  const snapshot = await snapshotRegistry.getAnalysisEligibleSnapshot!(
+    "workspace_demo",
+  );
+  assert.deepEqual(snapshot.dealIds, ["deal_one"]);
+  assert.equal(snapshot.count, 1);
+  assert.match(snapshot.fingerprint, /^sha256:[0-9a-f]{64}$/);
+});
+
 test("confirmation is retry-idempotent and does not change upload or XTrace state", async () => {
   const sources = createMemorySourceRegistry();
   const registry = createMemoryDealRegistry({ sourceRegistry: sources });
@@ -197,6 +223,68 @@ test("active assignment supersession updates the fingerprint deterministically",
       .length,
     1,
   );
+});
+
+test("assignment supersession accepts equal/later instants and rejects backdating atomically", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  const initialInput = await assignment(sources, {
+    workspaceId: "workspace_one",
+    dealId: "deal_chronology",
+    sourceId: "source_chronology",
+    confirmedAt: "2026-07-28T11:00:00.000Z",
+  });
+  const first = await registry.confirmSourceAssignment(initialInput);
+  const secondRevision = await sources.appendRevision({
+    ...revisionInput(
+      "workspace_one",
+      "source_chronology",
+      "revision_chronology_2",
+      "hash_chronology_2",
+    ),
+    supersedesRevisionId: first.sourceRevision.id,
+  });
+  await registry.confirmSourceAssignment({
+    ...initialInput,
+    requestId: "request:chronology:2",
+    sourceRevisionId: secondRevision.id,
+  });
+  const thirdRevision = await sources.appendRevision({
+    ...revisionInput(
+      "workspace_one",
+      "source_chronology",
+      "revision_chronology_3",
+      "hash_chronology_3",
+    ),
+    supersedesRevisionId: secondRevision.id,
+  });
+  await registry.confirmSourceAssignment({
+    ...initialInput,
+    requestId: "request:chronology:3",
+    sourceRevisionId: thirdRevision.id,
+    confirmedAt: "2026-07-28T12:00:00.000Z",
+  });
+  const fourthRevision = await sources.appendRevision({
+    ...revisionInput(
+      "workspace_one",
+      "source_chronology",
+      "revision_chronology_4",
+      "hash_chronology_4",
+    ),
+    supersedesRevisionId: thirdRevision.id,
+  });
+  const before = registry.inspect();
+
+  await assert.rejects(
+    registry.confirmSourceAssignment({
+      ...initialInput,
+      requestId: "request:chronology:4",
+      sourceRevisionId: fourthRevision.id,
+      confirmedAt: "2026-07-28T10:59:59.999Z",
+    }),
+    /chronology|backdated|confirmation time/i,
+  );
+  assert.deepEqual(registry.inspect(), before);
 });
 
 test("workspace identity is mandatory and colliding Deal ids remain isolated", async () => {
@@ -506,6 +594,48 @@ test("Supabase confirmation and reads capture mandatory workspace scope", async 
   const findUrl = new URL(requests[1].url);
   assert.equal(findUrl.searchParams.get("workspace_id"), "eq.workspace_one");
   assert.equal(findUrl.searchParams.get("id"), "eq.deal_one");
+});
+
+test("Supabase captures the eligible snapshot in one RPC", async () => {
+  const requests: string[] = [];
+  const repository = createSupabaseDealRegistry({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      requests.push(String(input));
+      return Response.json({
+        count: 2,
+        dealIds: ["deal_a", "deal_b"],
+        fingerprint:
+          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      });
+    },
+  });
+  const snapshotRepository = repository as typeof repository & {
+    getAnalysisEligibleSnapshot?: (
+      workspaceId: string,
+    ) => Promise<{
+      count: number;
+      dealIds: string[];
+      fingerprint: string;
+    }>;
+  };
+  assert.equal(
+    typeof snapshotRepository.getAnalysisEligibleSnapshot,
+    "function",
+  );
+  assert.deepEqual(
+    await snapshotRepository.getAnalysisEligibleSnapshot!("workspace_one"),
+    {
+      count: 2,
+      dealIds: ["deal_a", "deal_b"],
+      fingerprint:
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  );
+  assert.deepEqual(requests, [
+    "https://example.supabase.co/rest/v1/rpc/get_analysis_eligible_snapshot",
+  ]);
 });
 
 test("Supabase eligible reads reject a stale active-revision fingerprint", async () => {
