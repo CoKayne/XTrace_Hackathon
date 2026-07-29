@@ -1,0 +1,267 @@
+import {
+  EvidencePackSchema,
+  SourceRevisionSchema,
+  type EvidenceLocator,
+  type EvidencePack,
+  type Fact,
+  type SourceRevision,
+} from "../../lib/contracts/evidence";
+
+export interface SourceEvidenceInput {
+  id: string;
+  workspaceId: string;
+  dealId: string;
+  sourceRevisionId: string;
+  provenanceOrigin: Fact["provenanceOrigin"];
+  field: string;
+  value: string;
+  unit: string | null;
+  currency: string | null;
+  periodStart: string | null;
+  periodEnd: string | null;
+  publishedAt: string | null;
+  eventAt: string | null;
+  retrievedAt: string;
+  locator: EvidenceLocator;
+  sourceRole: Fact["sourceRole"];
+  assertionStatus: Fact["assertionStatus"];
+  verificationMethod: string | null;
+  freshness: Fact["freshness"];
+  acceptedForGate: boolean;
+}
+
+export interface SavedEvidencePack {
+  pack: EvidencePack;
+  inputFingerprint: string;
+  sourceRevisionSnapshots: SourceRevision[];
+}
+
+/**
+ * Persistence seam for extraction output and immutable Evidence Pack results.
+ * Task 8 owns the eventual atomic Candidate finalization adapter; Task 9 does
+ * not assume a table or RPC name.
+ */
+export interface EvidencePacksRepository {
+  putSourceEvidence(inputs: SourceEvidenceInput[]): Promise<void>;
+  listSourceEvidence(input: {
+    workspaceId: string;
+    dealId: string;
+    sourceRevisionIds: string[];
+  }): Promise<SourceEvidenceInput[]>;
+  findByInputFingerprint(input: {
+    workspaceId: string;
+    inputFingerprint: string;
+  }): Promise<SavedEvidencePack | null>;
+  findByPackId(input: {
+    workspaceId: string;
+    packId: string;
+  }): Promise<SavedEvidencePack | null>;
+  saveExact(input: SavedEvidencePack): Promise<SavedEvidencePack>;
+}
+
+export interface MemoryEvidencePacksRepository
+  extends EvidencePacksRepository {
+  removeSourceEvidence(input: {
+    workspaceId: string;
+    evidenceId: string;
+  }): Promise<void>;
+  inspect(): {
+    sourceEvidence: SourceEvidenceInput[];
+    savedPacks: SavedEvidencePack[];
+  };
+}
+
+export function createMemoryEvidencePacksRepository():
+  MemoryEvidencePacksRepository {
+  const evidence = new Map<string, SourceEvidenceInput>();
+  const packsByFingerprint = new Map<string, SavedEvidencePack>();
+  const fingerprintsByPack = new Map<string, string>();
+
+  return {
+    async putSourceEvidence(inputs) {
+      for (const rawInput of inputs) {
+        const input = validateSourceEvidenceInput(rawInput);
+        const key = identity(input.workspaceId, input.id);
+        const existing = evidence.get(key);
+        if (existing && canonicalJson(existing) !== canonicalJson(input)) {
+          throw new Error(
+            `Source evidence ${input.id} is immutable and already differs.`,
+          );
+        }
+        evidence.set(key, structuredClone(input));
+      }
+    },
+
+    async listSourceEvidence(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const dealId = requiredText(input.dealId, "A Deal");
+      const revisionIds = new Set(input.sourceRevisionIds);
+      return [...evidence.values()]
+        .filter((candidate) =>
+          candidate.workspaceId === workspaceId
+          && candidate.dealId === dealId
+          && revisionIds.has(candidate.sourceRevisionId)
+        )
+        .sort((left, right) => compareUtf8(left.id, right.id))
+        .map((candidate) => structuredClone(candidate));
+    },
+
+    async findByInputFingerprint(input) {
+      const record = packsByFingerprint.get(
+        identity(
+          requiredText(input.workspaceId, "A workspace"),
+          requiredFingerprint(input.inputFingerprint),
+        ),
+      );
+      return record ? structuredClone(record) : null;
+    },
+
+    async findByPackId(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const packId = requiredText(input.packId, "An Evidence Pack");
+      const fingerprint = fingerprintsByPack.get(
+        identity(workspaceId, packId),
+      );
+      if (!fingerprint) return null;
+      const record = packsByFingerprint.get(
+        identity(workspaceId, fingerprint),
+      );
+      return record ? structuredClone(record) : null;
+    },
+
+    async saveExact(rawInput) {
+      const input = validateSavedEvidencePack(rawInput);
+      const fingerprintKey = identity(
+        input.pack.workspaceId,
+        input.inputFingerprint,
+      );
+      const packKey = identity(input.pack.workspaceId, input.pack.id);
+      const existingByFingerprint = packsByFingerprint.get(fingerprintKey);
+      if (existingByFingerprint) {
+        if (
+          canonicalJson(existingByFingerprint) !== canonicalJson(input)
+        ) {
+          throw new Error(
+            "An Evidence Pack input fingerprint is immutable and already differs.",
+          );
+        }
+        return structuredClone(existingByFingerprint);
+      }
+      const existingFingerprint = fingerprintsByPack.get(packKey);
+      if (
+        existingFingerprint
+        && existingFingerprint !== input.inputFingerprint
+      ) {
+        throw new Error(
+          `Evidence Pack ${input.pack.id} is immutable and already differs.`,
+        );
+      }
+      packsByFingerprint.set(fingerprintKey, structuredClone(input));
+      fingerprintsByPack.set(packKey, input.inputFingerprint);
+      return structuredClone(input);
+    },
+
+    async removeSourceEvidence(input) {
+      evidence.delete(identity(
+        requiredText(input.workspaceId, "A workspace"),
+        requiredText(input.evidenceId, "An evidence item"),
+      ));
+    },
+
+    inspect() {
+      return {
+        sourceEvidence: [...evidence.values()]
+          .sort((left, right) => compareUtf8(left.id, right.id))
+          .map((item) => structuredClone(item)),
+        savedPacks: [...packsByFingerprint.values()]
+          .sort((left, right) =>
+            compareUtf8(left.inputFingerprint, right.inputFingerprint)
+          )
+          .map((item) => structuredClone(item)),
+      };
+    },
+  };
+}
+
+function validateSourceEvidenceInput(
+  input: SourceEvidenceInput,
+): SourceEvidenceInput {
+  const candidate = structuredClone(input);
+  for (const [label, value] of [
+    ["An evidence id", candidate.id],
+    ["A workspace", candidate.workspaceId],
+    ["A Deal", candidate.dealId],
+    ["A source revision", candidate.sourceRevisionId],
+    ["An evidence field", candidate.field],
+    ["An evidence value", candidate.value],
+  ] as const) {
+    requiredText(value, label);
+  }
+  return candidate;
+}
+
+function validateSavedEvidencePack(
+  input: SavedEvidencePack,
+): SavedEvidencePack {
+  const pack = EvidencePackSchema.parse(input.pack);
+  const inputFingerprint = requiredFingerprint(input.inputFingerprint);
+  const sourceRevisionSnapshots = input.sourceRevisionSnapshots.map(
+    (revision) => SourceRevisionSchema.parse(revision),
+  );
+  const revisionIds = sourceRevisionSnapshots.map(({ id }) => id);
+  if (
+    new Set(revisionIds).size !== revisionIds.length
+    || pack.sourceRevisionIds.length !== revisionIds.length
+    || pack.sourceRevisionIds.some((id) => !revisionIds.includes(id))
+    || sourceRevisionSnapshots.some(
+      ({ workspaceId }) => workspaceId !== pack.workspaceId,
+    )
+  ) {
+    throw new Error(
+      "Saved Evidence Pack source snapshots must exactly match its revisions and workspace.",
+    );
+  }
+  return structuredClone({
+    pack,
+    inputFingerprint,
+    sourceRevisionSnapshots,
+  });
+}
+
+function requiredText(value: string, label: string): string {
+  const normalized = value?.trim();
+  if (!normalized) throw new Error(`${label} is required.`);
+  return normalized;
+}
+
+function requiredFingerprint(value: string): string {
+  const normalized = requiredText(value, "An input fingerprint");
+  if (!/^sha256:[0-9a-f]{64}$/.test(normalized)) {
+    throw new Error("An Evidence Pack requires a canonical SHA-256 fingerprint.");
+  }
+  return normalized;
+}
+
+function identity(workspaceId: string, id: string): string {
+  return JSON.stringify([workspaceId, id]);
+}
+
+function compareUtf8(left: string, right: string): number {
+  return Buffer.compare(Buffer.from(left, "utf8"), Buffer.from(right, "utf8"));
+}
+
+function canonicalJson(value: unknown): string {
+  return JSON.stringify(sortObject(value));
+}
+
+function sortObject(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortObject);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => compareUtf8(left, right))
+        .map(([key, item]) => [key, sortObject(item)]),
+    );
+  }
+  return value;
+}

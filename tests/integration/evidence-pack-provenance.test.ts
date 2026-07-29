@@ -1,0 +1,187 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { createMemoryEvidencePacksRepository } from "../../db/repositories/evidence-packs";
+import { createMemorySourceRegistry } from "../../db/repositories/source-registry";
+import type { ResolvedUnderwritingContext } from "../../lib/contracts/underwriting";
+import { createEvidencePackBuilder } from "../../lib/underwriting/evidence/builder";
+import {
+  createContextRouter,
+  type CriticalEvidenceProfile,
+} from "../../lib/underwriting/router";
+
+const context: ResolvedUnderwritingContext = {
+  id: "underwriting_context_seed_b2b_saas_v1",
+  contextVersion: "1",
+  stage: "seed",
+  businessModel: "b2b_saas",
+  geography: "us",
+  securityType: "preferred",
+  asOfDate: "2026-07-29",
+  criticalEvidenceProfileId: "profile_1",
+  benchmarkPackId: "benchmark_pack_synthetic_us_software_v1",
+  benchmarkCompatibility: "exact",
+  valuationMethodPolicyId: "valuation_method_1",
+  decisionPolicyId: "decision_policy_1",
+  frameworkPackId: "framework_pack_1",
+};
+
+const profile: CriticalEvidenceProfile = {
+  id: "profile_1",
+  version: "1",
+  publicationStatus: "published",
+  fields: [{
+    fieldId: "company_identity",
+    critical: true,
+    minimumModelInput: true,
+    acceptedAssertionStatuses: ["reported"],
+    acceptedFreshness: ["current"],
+  }],
+};
+
+async function fixture() {
+  const sourceRegistry = createMemorySourceRegistry();
+  const repository = createMemoryEvidencePacksRepository();
+  await sourceRegistry.createInitialRevision({
+    id: "revision_1",
+    workspaceId: "workspace_1",
+    sourceId: "source_1",
+    contentHash: "sha256:exact-content-hash",
+    objectKey: "private/deal_1/source_1.md",
+    objectVersion: "object:v1",
+    contentType: "text/markdown",
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T09:00:00.000Z",
+    createdAt: "2026-07-29T09:00:01.000Z",
+  });
+  await repository.putSourceEvidence([{
+    id: "fact_company",
+    workspaceId: "workspace_1",
+    dealId: "deal_1",
+    sourceRevisionId: "revision_1",
+    provenanceOrigin: "uploaded_document",
+    field: "Company identity",
+    value: "company_1",
+    unit: null,
+    currency: null,
+    periodStart: null,
+    periodEnd: null,
+    publishedAt: null,
+    eventAt: null,
+    retrievedAt: "2026-07-29T09:01:00.000Z",
+    locator: {
+      kind: "text_range",
+      start: 11,
+      end: 20,
+      excerpt: "Company 1",
+    },
+    sourceRole: "management",
+    assertionStatus: "reported",
+    verificationMethod: null,
+    freshness: "current",
+    acceptedForGate: true,
+  }]);
+  return {
+    sourceRegistry,
+    repository,
+    builder: createEvidencePackBuilder({
+      repository,
+      sourceRegistry,
+      router: createContextRouter(),
+      criticalEvidenceProfiles: [profile],
+      now: () => new Date("2026-07-29T09:02:00.000Z"),
+    }),
+  };
+}
+
+test("persists the exact pack fingerprint and immutable source revision snapshots", async () => {
+  const { builder, repository } = await fixture();
+  const pack = await builder.build({
+    workspaceId: "workspace_1",
+    dealId: "deal_1",
+    asOfDate: "2026-07-29",
+    sourceRevisionIds: ["revision_1"],
+    xtraceLineage: {
+      memoryIds: ["memory_1"],
+      sourceRevisionIds: ["revision_1"],
+      sourceIds: ["source_1"],
+      fixtureIds: [],
+      capturedAt: "2026-07-29T09:01:30.000Z",
+    },
+    context,
+  });
+
+  const saved = await repository.findByPackId({
+    workspaceId: "workspace_1",
+    packId: pack.id,
+  });
+  assert.ok(saved);
+  assert.match(saved.inputFingerprint, /^sha256:[0-9a-f]{64}$/);
+  assert.deepEqual(saved.pack, pack);
+  assert.deepEqual(saved.sourceRevisionSnapshots, [{
+    id: "revision_1",
+    workspaceId: "workspace_1",
+    sourceId: "source_1",
+    revision: 1,
+    contentHash: "sha256:exact-content-hash",
+    objectKey: "private/deal_1/source_1.md",
+    objectVersion: "object:v1",
+    contentType: "text/markdown",
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T09:00:00.000Z",
+    supersedesRevisionId: null,
+    createdAt: "2026-07-29T09:00:01.000Z",
+  }]);
+  assert.deepEqual(saved.pack.facts[0]?.locator, {
+    kind: "text_range",
+    start: 11,
+    end: 20,
+    excerpt: "Company 1",
+  });
+});
+
+test("rejects XTrace recalled-only text that cannot resolve to local source lineage", async () => {
+  const { builder } = await fixture();
+
+  await assert.rejects(
+    builder.build({
+      workspaceId: "workspace_1",
+      dealId: "deal_1",
+      asOfDate: "2026-07-29",
+      sourceRevisionIds: ["revision_1"],
+      xtraceLineage: {
+        memoryIds: ["recalled_only_memory"],
+        sourceRevisionIds: [],
+        sourceIds: [],
+        fixtureIds: [],
+        capturedAt: "2026-07-29T09:01:30.000Z",
+      },
+      context,
+    }),
+    /XTrace.*local source revision lineage/i,
+  );
+});
+
+test("rejects XTrace lineage that names a source outside the exact revision snapshots", async () => {
+  const { builder } = await fixture();
+
+  await assert.rejects(
+    builder.build({
+      workspaceId: "workspace_1",
+      dealId: "deal_1",
+      asOfDate: "2026-07-29",
+      sourceRevisionIds: ["revision_1"],
+      xtraceLineage: {
+        memoryIds: ["memory_1"],
+        sourceRevisionIds: ["revision_1"],
+        sourceIds: ["source_2"],
+        fixtureIds: [],
+        capturedAt: "2026-07-29T09:01:30.000Z",
+      },
+      context,
+    }),
+    /XTrace.*source lineage/i,
+  );
+});
