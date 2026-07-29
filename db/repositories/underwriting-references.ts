@@ -433,12 +433,27 @@ export function createSupabaseUnderwritingReferencesRepository(options: {
       ) {
         return { kind: "unsupported", reason: UNSUPPORTED_CONTEXT_REASON };
       }
+      const pinnedProfile = SLICE_ONE_CONTEXTS.find(
+        (candidate) =>
+          candidate.stage === input.stage
+          && candidate.businessModel === input.businessModel,
+      );
+      if (!pinnedProfile) {
+        return { kind: "unsupported", reason: UNSUPPORTED_CONTEXT_REASON };
+      }
       const rows = await request(
-        `/underwriting_contexts?stage=eq.${encodeURIComponent(input.stage)}`
+        `/underwriting_contexts?id=eq.${encodeURIComponent(pinnedProfile.id)}`
+          + `&context_version=eq.${
+            encodeURIComponent(pinnedProfile.contextVersion)
+          }`
+          + `&stage=eq.${encodeURIComponent(input.stage)}`
           + `&business_model=eq.${encodeURIComponent(input.businessModel)}`
-          + "&publication_status=eq.published&limit=1",
+          + "&publication_status=eq.published",
       ) as Array<Record<string, unknown>>;
-      const row = rows[0];
+      const row = rows.find((candidate) =>
+        candidate.id === pinnedProfile.id
+        && candidate.context_version === pinnedProfile.contextVersion
+      );
       if (!row) {
         return { kind: "unsupported", reason: UNSUPPORTED_CONTEXT_REASON };
       }

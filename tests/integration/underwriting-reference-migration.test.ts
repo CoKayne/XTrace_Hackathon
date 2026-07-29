@@ -103,6 +103,87 @@ test(
         `),
         "4|8|0",
       );
+      assert.equal(
+        executeSql(database, `
+          select count(*)
+          from pg_trigger
+          where not tgisinternal
+            and tgname in (
+              'benchmark_packs_immutable',
+              'benchmark_entries_immutable',
+              'critical_evidence_profiles_immutable',
+              'valuation_method_policies_immutable',
+              'decision_policies_immutable',
+              'framework_sources_immutable',
+              'framework_cards_immutable',
+              'framework_packs_immutable',
+              'framework_pack_cards_immutable',
+              'underwriting_contexts_immutable',
+              'fund_policy_versions_immutable'
+            );
+        `),
+        "11",
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          update public.benchmark_packs
+          set sample_notes = 'retroactively changed'
+          where id = 'benchmark_pack_synthetic_us_software_v1';
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          delete from public.underwriting_contexts
+          where id = 'underwriting_context_seed_b2b_saas_v1';
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          update public.framework_cards
+          set approved_neutral_paraphrase = 'retroactively changed'
+          where id = 'framework_card_synthetic_1_v1';
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          delete from public.framework_pack_cards
+          where framework_pack_id =
+            'framework_pack_synthetic_universal_saas_ai_v1'
+            and position = 1;
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          update public.valuation_method_policies
+          set methods = '[]'::jsonb
+          where id = 'valuation_method_seed_b2b_saas_v1';
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          delete from public.decision_policies
+          where id = 'decision_policy_seed_b2b_saas_v1';
+        `)
+      );
+      executeSql(database, `
+        insert into public.framework_packs (
+          id, version, title, synthetic, publication_status
+        ) values (
+          'framework_pack_synthetic_universal_saas_ai_v2',
+          '2',
+          'Synthetic v2 append-only fixture',
+          true,
+          'published'
+        );
+      `);
+      assert.equal(
+        executeSql(database, `
+          select version
+          from public.framework_packs
+          where id = 'framework_pack_synthetic_universal_saas_ai_v2';
+        `),
+        "2",
+      );
 
       executeSql(database, `
         insert into public.workspaces (id, name)

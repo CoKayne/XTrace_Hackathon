@@ -197,12 +197,37 @@ begin
 end;
 $$;
 
-drop trigger if exists fund_policy_versions_immutable
-  on public.fund_policy_versions;
-create trigger fund_policy_versions_immutable
-before update or delete on public.fund_policy_versions
-for each row execute function
-  public.reject_immutable_underwriting_reference();
+do $$
+declare
+  immutable_table text;
+begin
+  foreach immutable_table in array array[
+    'benchmark_packs',
+    'benchmark_entries',
+    'critical_evidence_profiles',
+    'valuation_method_policies',
+    'decision_policies',
+    'framework_sources',
+    'framework_cards',
+    'framework_packs',
+    'framework_pack_cards',
+    'underwriting_contexts',
+    'fund_policy_versions'
+  ]
+  loop
+    execute format(
+      'drop trigger if exists %I on public.%I',
+      immutable_table || '_immutable',
+      immutable_table
+    );
+    execute format(
+      'create trigger %I before update or delete on public.%I for each row execute function public.reject_immutable_underwriting_reference()',
+      immutable_table || '_immutable',
+      immutable_table
+    );
+  end loop;
+end;
+$$;
 
 create or replace function public.balanced_fund_policy_values()
 returns jsonb

@@ -257,3 +257,63 @@ test("the Supabase public framework projection excludes non-published cards and 
   assert.deepEqual(pack.cards.map((card) => card.id), ["published_card"]);
   assert.doesNotMatch(JSON.stringify(pack), /private_body|platform boundary/i);
 });
+
+test("Supabase context resolution stays pinned to the same v1 profile as memory when v2 exists", async () => {
+  let requestedUrl = "";
+  const input = {
+    stage: "seed" as const,
+    businessModel: "b2b_saas" as const,
+    geography: "us" as const,
+    securityType: "preferred" as const,
+    asOfDate: "2026-07-29",
+  };
+  const repository = createSupabaseUnderwritingReferencesRepository({
+    url: "https://database.example.test",
+    serviceRoleKey: "secret",
+    fetchImpl: async (request) => {
+      requestedUrl = String(request);
+      return Response.json([
+        {
+          id: "underwriting_context_seed_b2b_saas_v2",
+          context_version: "2",
+          stage: "seed",
+          business_model: "b2b_saas",
+          critical_evidence_profile_id: "critical_evidence_seed_b2b_saas_v2",
+          us_benchmark_pack_id: "benchmark_pack_synthetic_us_software_v2",
+          us_benchmark_compatibility: "broad_compatible",
+          global_benchmark_compatibility: "unavailable",
+          valuation_method_policy_id: "valuation_method_seed_b2b_saas_v2",
+          decision_policy_id: "decision_policy_seed_b2b_saas_v2",
+          framework_pack_id: "framework_pack_synthetic_universal_saas_ai_v2",
+          publication_status: "published",
+        },
+        {
+          id: "underwriting_context_seed_b2b_saas_v1",
+          context_version: "1",
+          stage: "seed",
+          business_model: "b2b_saas",
+          critical_evidence_profile_id: "critical_evidence_seed_b2b_saas_v1",
+          us_benchmark_pack_id: "benchmark_pack_synthetic_us_software_v1",
+          us_benchmark_compatibility: "exact",
+          global_benchmark_compatibility: "unavailable",
+          valuation_method_policy_id: "valuation_method_seed_b2b_saas_v1",
+          decision_policy_id: "decision_policy_seed_b2b_saas_v1",
+          framework_pack_id: SYNTHETIC_FRAMEWORK_PACK_ID,
+          publication_status: "published",
+        },
+      ]);
+    },
+  });
+
+  const [supabase, memory] = await Promise.all([
+    repository.resolveContext(input),
+    createMemoryUnderwritingReferencesRepository().resolveContext(input),
+  ]);
+
+  assert.deepEqual(supabase, memory);
+  assert.match(
+    requestedUrl,
+    /id=eq\.underwriting_context_seed_b2b_saas_v1/,
+  );
+  assert.match(requestedUrl, /context_version=eq\.1/);
+});
