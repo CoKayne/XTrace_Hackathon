@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   createMemoryUploadedDocumentsRepository,
+  createSupabaseUploadedDocumentsRepository,
   type ExtractionPreview,
 } from "../../db/repositories/uploaded-documents";
 import {
@@ -265,6 +266,46 @@ test("same upload bytes coexist across workspaces and mutations require the curr
     workerId: "worker-b",
     preview: previewFixture(),
   }), false);
+});
+
+test("Supabase claims an expired upload immediately after expiry but not before", async () => {
+  const expiredAt = "2026-07-25T12:00:00.000Z";
+  const record = {
+    id: "upload_1",
+    workspace_id: "workspace_demo",
+    filename: "a.txt",
+    content_type: "text/plain",
+    byte_size: 10,
+    checksum: "sum1",
+    object_key: "private/workspaces/workspace_demo/uploads/upload_1/a.txt",
+    status: "extracting",
+    failure_reason: null,
+    extraction_preview: null,
+    lease_expires_at: expiredAt,
+    created_at: expiredAt,
+    updated_at: expiredAt,
+  };
+  const seen: string[] = [];
+  const repository = createSupabaseUploadedDocumentsRepository({
+    url: "https://db.test",
+    serviceRoleKey: "key",
+    now: () => new Date("2026-07-25T12:00:01.000Z"),
+    fetchImpl: async (url, init) => {
+      seen.push(String(url));
+      if (init?.method === "PATCH") return Response.json([record]);
+      return Response.json([record]);
+    },
+  });
+  assert.equal((await repository.claimNext("worker-a"))?.id, "upload_1");
+  assert.match(seen[0]!, /lease_expires_at\.lt\.2026-07-25T12%3A00%3A01\.000Z/);
+
+  const before = createSupabaseUploadedDocumentsRepository({
+    url: "https://db.test",
+    serviceRoleKey: "key",
+    now: () => new Date("2026-07-25T11:59:59.000Z"),
+    fetchImpl: async () => Response.json([]),
+  });
+  assert.equal(await before.claimNext("worker-b"), null);
 });
 
 function previewFixture(): ExtractionPreview {

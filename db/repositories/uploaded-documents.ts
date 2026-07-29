@@ -254,7 +254,7 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       return rows[0] ? toRecord(rows[0]) : null;
     },
     async claimNext(workerId) {
-      const stale = new Date(now().getTime() - LEASE_MS).toISOString();
+      const stale = now().toISOString();
       const candidates = await request(
         "/uploaded_documents?or=(status.eq.queued,"
         + `and(status.eq.extracting,lease_expires_at.lt.${encodeURIComponent(stale)}))`
