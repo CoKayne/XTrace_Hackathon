@@ -47,6 +47,10 @@
 | TD-FWK-002 | P1 | Production gate | 真實框架的授權、來源版本與 Decision Utility 尚未全部核准 |
 | TD-COV-001 | P2 | Product limitation | 第一版深度估值只支援 Seed／Series A × B2B SaaS／Enterprise AI |
 | TD-OPS-001 | P2 | Backlog | 自動排程、訊息實際發送與 LinkedIn 發佈仍刻意停用 |
+| TD-RUN-001 | P0 | Production gate | Underwriting SECURITY DEFINER owner 尚未完全隔離既有 membership |
+| TD-RUN-002 | P1 | Production gate | SQL finalization 對 artifact 內部引用只做粗粒度驗證 |
+| TD-RUN-003 | P1 | MVP deferred | 相同 batch fingerprint 的並行 create-or-reuse 仍可能競態 |
+| TD-RUN-004 | P2 | Backlog | 衝突 duplicate identity 的 fingerprint 排序尚未 fail closed |
 
 ## 4. 詳細問題
 
@@ -311,6 +315,80 @@
 - **重啟時機**
   - 使用者完成草稿品質驗證並明確要求自動化之後。
 
+### TD-RUN-001：Underwriting RPC owner 尚未完全隔離
+
+- **證據**
+  - `0011_underwriting_runs.sql` 建立的 `vsee_underwriting_owner` 擁有
+    `SECURITY DEFINER` RPC。
+  - 若資料庫中預先存在同名 role 且具有額外 membership／attributes，
+    migration 尚未完整撤銷所有繼承能力。
+- **影響**
+  - 需要具備資料庫管理權限或惡意預先建立 role 才能觸發，但成功時可能
+    繞過新表的 service-role 寫入邊界。
+- **暫時控制**
+  - Demo／CI 使用受控、全新資料庫角色；部署前檢查 role ownership 與
+    membership。
+- **完整修正**
+  - migration 明確將 owner 設為 `NOLOGIN NOSUPERUSER NOCREATEDB
+    NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS`，撤銷所有 membership，
+    並驗證只能存取 RPC 所需物件。
+- **完成條件**
+  - hostile pre-existing role fixture 不能保留任何額外權限，RPC 正常執行。
+- **重啟時機**
+  - 部署到非全新或由第三方維運的 PostgreSQL 前。
+
+### TD-RUN-002：SQL finalization 的內部引用驗證不足
+
+- **證據**
+  - 應用層會用 strict Zod contracts 驗證 bundle，但 SQL RPC 主要驗證
+    coarse JSON shape、workspace、lease 與部分 typed dependencies。
+  - live probe 可直接呼叫 RPC，保存缺少 valuation calculation 或缺少
+    blocking fact 的 completed bundle。
+- **影響**
+  - 正常 worker 不會產生這種 payload；但持有 RPC execute 權限的錯誤
+    server code 可能保存內部不一致 artifact。
+- **暫時控制**
+  - 所有主線寫入只經 `UnderwritingArtifactsRepository`，先完成 strict
+    contract、ID-resolution 與 lineage 驗證。
+- **完整修正**
+  - SQL finalizer 驗證 valuation/calculation IDs、blocking facts、
+    judgments/disagreements、decision fired rules、drafts 與 claim edges
+    全部能在同一 payload 或 pinned reference registry 精確解析。
+- **完成條件**
+  - 直接 RPC malformed-bundle matrix 全部原子拒絕且零 artifact row。
+- **重啟時機**
+  - 向更多 server components 授予 finalization RPC execute 前。
+
+### TD-RUN-003：Batch create-or-reuse 的並行競態
+
+- **證據**
+  - 目前 Supabase 路徑先 SELECT、再 INSERT；兩個相同 fingerprint 請求可在
+    同時看不到 row 後競爭唯一 constraint，其中一個回傳錯誤而非 reuse。
+- **影響**
+  - 手動單次 `Run Analysis` 不受影響；多 worker／自動排程同時啟動時可能
+    出現可重試失敗。
+- **暫時控制**
+  - MVP 只允許單一手動啟動；worker 不並行建立同一 workspace batch。
+- **完整修正**
+  - 使用單一 `INSERT ... ON CONFLICT ... RETURNING` RPC 或 advisory lock。
+- **完成條件**
+  - 並行相同 fingerprint 全部成功取得同一 batch ID。
+- **重啟時機**
+  - 啟用自動排程或多 worker claim 前。
+
+### TD-RUN-004：Fingerprint duplicate identity 未完全排序／拒絕
+
+- **證據**
+  - 若輸入含相同 identity 但內容衝突的 duplicates，僅依 identity 排序不構成
+    total order，反轉輸入仍可能改變 hash。
+- **影響**
+  - 正常 builder 會先去重；只有繞過 builder 的 malformed input 會觸發。
+- **完整修正**
+  - canonicalizer 對 identity＋完整 canonical payload 建立 total order，
+    或遇到同 identity 不同 payload 直接拒絕。
+- **重啟時機**
+  - 對外開放低階 batch API 或強化 fingerprint fuzz tests 時。
+
 ## 5. 主線仍必須遵守的最低安全界線
 
 以下不是技術債，任何加速實作都不能移除：
@@ -338,7 +416,8 @@
 5. TD-SEED-001／TD-IMP-001 reset/import transactions。
 6. TD-REG-006 legacy lineage migration。
 7. TD-FWK-001／002 framework publication gates。
-8. TD-REG-007、TD-XTR-001、TD-SEED-002 與營運便利性工作。
+8. TD-RUN-001／002／003 的 production persistence hardening。
+9. TD-REG-007、TD-XTR-001、TD-SEED-002、TD-RUN-004 與營運便利性工作。
 
 每次關閉一項技術債時，必須在本文件補上：
 
