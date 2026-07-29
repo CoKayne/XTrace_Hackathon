@@ -509,6 +509,49 @@ test("generic customer evidence rejects future, modal, and historical/churn asse
   })));
 });
 
+test("generic customer evidence rejects a production-status contradiction", () => {
+  const contradictoryFacts = [
+    fact(
+      "fact_production_status_contradiction",
+      "customer_evidence",
+      "No production customers, but three paying customers are live in production.",
+    ),
+    fact(
+      "fact_in_production_contradiction",
+      "customer_evidence",
+      "No production customers, but three paying customers are in production.",
+    ),
+    fact(
+      "fact_relative_production_contradiction",
+      "customer_evidence",
+      "No production customers, but we have three paying customers that are live in production.",
+    ),
+    fact(
+      "fact_status_only_production_contradiction",
+      "customer_evidence",
+      "No production customers, but paying customers are live in production.",
+    ),
+  ];
+  const actual = contradictoryFacts.map((contradictoryFact) => {
+    const result = createDecisionEngine().decide(input({
+      pack: pack(completeCoverage, [contradictoryFact]),
+    }));
+    return {
+      companyQuality: result.companyQuality,
+      decision: result.decision,
+      entersCompanyQualityRefs: result.firedRules.find(({ ruleId }) =>
+        ruleId === "decision.company_quality.v1"
+      )?.inputRefs.includes(`fact:${contradictoryFact.id}`),
+    };
+  });
+
+  assert.deepEqual(actual, contradictoryFacts.map(() => ({
+    companyQuality: "mixed",
+    decision: "Advance",
+    entersCompanyQualityRefs: false,
+  })));
+});
+
 test("Seed PMF evidence accepts only field-specific normalized positive values", () => {
   const acceptedFacts = [
     fact("fact_count", "paying_customers", "3", { unit: "count" }),

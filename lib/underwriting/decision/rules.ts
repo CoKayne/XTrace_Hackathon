@@ -908,7 +908,11 @@ function customerKindsInSignal(value: string): CustomerEvidenceKind[] {
   if (/\bpaying\s+production\s+customers?\b/.test(value)) {
     return ["paying_customer", "production_customer"];
   }
-  if (/\bpaying\s+customers?\b/.test(value)) return ["paying_customer"];
+  if (/\bpaying\s+customers?\b/.test(value)) {
+    return /\b(?:live\s+)?in production\b/.test(value)
+      ? ["paying_customer", "production_customer"]
+      : ["paying_customer"];
+  }
   if (/\bproduction\s+customers?\b/.test(value)) {
     return ["production_customer"];
   }

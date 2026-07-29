@@ -381,3 +381,80 @@ Passed after the final fix-round-2 changes:
 - `npm run typecheck`;
 - `npm run lint`;
 - `git diff --check`.
+
+---
+
+## Fix round 3 — production-status customer kind
+
+### Remaining review finding addressed
+
+The whole-assertion parser correctly compared positive and negative semantic
+kinds, but a paying-customer noun phrase was classified only as
+`paying_customer`, even when its accepted present-tense status explicitly
+said `in production` or `live in production`.
+
+This allowed the following direct contradiction to appear non-overlapping:
+
+```text
+No production customers, but three paying customers are live in production.
+```
+
+### TDD record
+
+The exact review sentence was added before production changes. The RED run
+reproduced:
+
+```text
+expected Company Quality mixed, received pass
+```
+
+The regression also requires that the final decision is not
+`Invest Candidate` and that the contradictory Fact does not enter the
+Company Quality fired-rule references.
+
+### Minimal correction
+
+No parser grammar, assertion blocker, clause splitting, structured-field
+rule, or specialist behavior changed.
+
+`customerKindsInSignal()` now assigns both:
+
+```text
+paying_customer
+production_customer
+```
+
+when an accepted paying-customer clause carries `in production` or
+`live in production`. The existing kind-intersection check therefore detects
+`no production customers` as a contradiction and fails closed.
+
+The genuinely non-overlapping positive control remains accepted:
+
+```text
+No design partners yet, but three paying customers are live.
+```
+
+### Adversarial self-review
+
+The regression table also covers equivalent accepted production-status
+forms:
+
+- `paying customers are in production`;
+- a relative clause: `paying customers that are live in production`;
+- a status-only plural form: `paying customers are live in production`.
+
+Each form conflicts with `No production customers`, produces Company Quality
+`mixed`, produces `Advance` rather than `Invest Candidate`, and remains
+absent from formal Company Quality Fact references.
+
+### Verification
+
+Passed after the final fix-round-3 change:
+
+- decision unit suite: 17 passed, 0 failed;
+- Task 12, browser-local report compatibility, Task 8 memory runs, and
+  finalization: 39 passed, 0 failed, 3 PostgreSQL-only cases skipped;
+- live PostgreSQL Task 8 finalization suite: 10 passed, 0 failed;
+- `npm run typecheck`;
+- `npm run lint`;
+- `git diff --check`.
