@@ -283,3 +283,101 @@ Passed after the final production change:
 - `npm run typecheck`;
 - `npm run lint`;
 - `git diff --check`.
+
+---
+
+## Fix round 2 — whole-assertion generic customer evidence
+
+### Remaining review finding addressed
+
+The second independent review confirmed that the structured count, status,
+money, and retention predicates and the specialist-dependency correction
+were sound. Its sole remaining Important finding was that generic
+`customer_evidence` still used a positive-substring match plus a nearby
+32-character veto window.
+
+That heuristic has been removed. Generic customer text now fails closed at
+the complete-assertion boundary. Canonical structured fields remain the
+preferred path and retain the field-specific behavior approved in fix round
+1.
+
+### TDD record
+
+Before changing production code, the exact three review probes were added:
+
+```text
+We expect to have three paying customers next quarter.
+We may have three paying customers next quarter.
+We previously had three paying customers, but all have churned.
+```
+
+The RED run failed on the first newly reached probe:
+
+```text
+customer_evidence=We expect to have three paying customers next quarter.
+expected Company Quality mixed, received pass
+```
+
+The final regression evaluates all three assertions before comparing results.
+For every probe it now verifies:
+
+- Company Quality is `mixed`;
+- the decision is `Advance`, never `Invest Candidate`;
+- the Fact is absent from the Company Quality fired-rule references.
+
+### Conservative whole-assertion predicate
+
+Generic text is accepted only when all of the following hold:
+
+1. The complete assertion contains no modal, conditional, expected, planned,
+   targeted, forecast, projected, future, historical, previously,
+   no-longer-current, churned, lost, cancelled, or equivalent disqualifier.
+2. Each clause is a tightly bounded present-tense affirmative customer/design
+   partner form, or a simple bounded negative clause about a different PMF
+   signal.
+3. At least one current positive signal is present.
+4. No negative clause contradicts the same customer-evidence kind.
+
+The accepted grammar is deliberately narrow. It recognizes current
+affirmative statements such as:
+
+```text
+Three paying customers are live in production.
+We have three paying customers.
+Currently, the company has five production customers.
+```
+
+It also preserves the previously approved mixed positive control:
+
+```text
+No design partners yet, but three paying customers are live.
+```
+
+The negative design-partner clause does not contradict the current paying
+customer signal. Any unrecognized or ambiguous additional clause makes the
+entire generic assertion ineligible.
+
+### Adversarial self-review
+
+Additional regressions reject:
+
+- conditional future conversion;
+- a current-looking statement followed by `no longer active`;
+- a current-looking statement followed by cancelled contracts;
+- a direct same-signal contradiction.
+
+The original structured count, boolean/status, ARR, retention, specialist,
+mandatory-judgment, narrative, and Task 8 finalization regressions remain
+green.
+
+### Verification
+
+Passed after the final fix-round-2 changes:
+
+- decision unit suite: 16 passed, 0 failed;
+- Task 12, browser-local report compatibility, Task 8 memory runs, and
+  finalization: 38 passed, 0 failed, 3 PostgreSQL-only cases skipped;
+- live PostgreSQL Task 8 finalization suite: 10 passed, 0 failed;
+- `npm run typecheck`;
+- `npm run lint`;
+- `git diff --check`.

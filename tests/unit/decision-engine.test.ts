@@ -429,6 +429,26 @@ test("Seed PMF evidence fails closed for zero, false, absent, negated, and ambig
       "customer_evidence",
       "Three paying customers are planned for next quarter.",
     ),
+    fact(
+      "fact_conditional_text",
+      "customer_evidence",
+      "If the pipeline converts, we will have three paying customers.",
+    ),
+    fact(
+      "fact_no_longer_current_text",
+      "customer_evidence",
+      "We have three paying customers; they are no longer active.",
+    ),
+    fact(
+      "fact_cancelled_text",
+      "customer_evidence",
+      "We have three paying customers, however all contracts were cancelled.",
+    ),
+    fact(
+      "fact_contradictory_text",
+      "customer_evidence",
+      "We have three paying customers, but no paying customers are active.",
+    ),
   ];
 
   for (const rejectedFact of rejectedFacts) {
@@ -451,6 +471,44 @@ test("Seed PMF evidence fails closed for zero, false, absent, negated, and ambig
   }
 });
 
+test("generic customer evidence rejects future, modal, and historical/churn assertions as a whole", () => {
+  const adversarialFacts = [
+    fact(
+      "fact_expected_future_text",
+      "customer_evidence",
+      "We expect to have three paying customers next quarter.",
+    ),
+    fact(
+      "fact_modal_future_text",
+      "customer_evidence",
+      "We may have three paying customers next quarter.",
+    ),
+    fact(
+      "fact_historical_churn_text",
+      "customer_evidence",
+      "We previously had three paying customers, but all have churned.",
+    ),
+  ];
+  const actual = adversarialFacts.map((adversarialFact) => {
+    const result = createDecisionEngine().decide(input({
+      pack: pack(completeCoverage, [adversarialFact]),
+    }));
+    return {
+      companyQuality: result.companyQuality,
+      decision: result.decision,
+      entersCompanyQualityRefs: result.firedRules.find(({ ruleId }) =>
+        ruleId === "decision.company_quality.v1"
+      )?.inputRefs.includes(`fact:${adversarialFact.id}`),
+    };
+  });
+
+  assert.deepEqual(actual, adversarialFacts.map(() => ({
+    companyQuality: "mixed",
+    decision: "Advance",
+    entersCompanyQualityRefs: false,
+  })));
+});
+
 test("Seed PMF evidence accepts only field-specific normalized positive values", () => {
   const acceptedFacts = [
     fact("fact_count", "paying_customers", "3", { unit: "count" }),
@@ -465,6 +523,16 @@ test("Seed PMF evidence accepts only field-specific normalized positive values",
       "fact_mixed_text",
       "customer_evidence",
       "No design partners yet, but three paying customers are live.",
+    ),
+    fact(
+      "fact_present_tense_text",
+      "customer_evidence",
+      "We have three paying customers.",
+    ),
+    fact(
+      "fact_current_production_text",
+      "customer_evidence",
+      "Currently, the company has five production customers.",
     ),
   ];
 

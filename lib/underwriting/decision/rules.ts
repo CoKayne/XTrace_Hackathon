@@ -828,37 +828,91 @@ function isPositiveDecimalAtMost(value: string, maximum: string): boolean {
   }
 }
 
+type CustomerEvidenceKind =
+  | "paying_customer"
+  | "production_customer"
+  | "design_partner";
+
+const CUSTOMER_QUANTITY_PATTERN =
+  String.raw`(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)`;
+const CUSTOMER_SUBJECT_PATTERN =
+  String.raw`(?:we|the company|company|the startup|startup|the business|business|it|they)`;
+const CUSTOMER_SIGNAL_PATTERN =
+  String.raw`(?:(?:paying(?:\s+production)?|production)\s+customers?|(?:signed\s+|confirmed\s+|active\s+)?design[- ]?partners?)`;
+const CURRENT_CUSTOMER_STATUS_PATTERN =
+  String.raw`(?:active|live in production|live|signed|confirmed|in production)`;
+const CURRENT_CUSTOMER_CLAUSE_PATTERNS = [
+  new RegExp(
+    String.raw`^(?:currently,?\s+)?${CUSTOMER_QUANTITY_PATTERN}\s+${CUSTOMER_SIGNAL_PATTERN}(?:\s+(?:are\s+)?${CURRENT_CUSTOMER_STATUS_PATTERN})?$`,
+  ),
+  new RegExp(
+    String.raw`^(?:currently,?\s+)?${CUSTOMER_SUBJECT_PATTERN}\s+(?:currently\s+)?(?:has|have|serve|serves|is serving|are serving|secured|signed|onboarded)\s+(?:${CUSTOMER_QUANTITY_PATTERN}\s+)?${CUSTOMER_SIGNAL_PATTERN}(?:\s+(?:that|who)\s+are\s+${CURRENT_CUSTOMER_STATUS_PATTERN})?$`,
+  ),
+  new RegExp(
+    String.raw`^(?:currently,?\s+)?there\s+(?:is|are)\s+${CUSTOMER_QUANTITY_PATTERN}\s+${CUSTOMER_SIGNAL_PATTERN}(?:\s+(?:that|who)\s+are\s+${CURRENT_CUSTOMER_STATUS_PATTERN})?$`,
+  ),
+  new RegExp(
+    String.raw`^(?:currently,?\s+)?${CUSTOMER_SIGNAL_PATTERN}\s+(?:are|remain)\s+${CURRENT_CUSTOMER_STATUS_PATTERN}$`,
+  ),
+];
+const NEGATIVE_CUSTOMER_CLAUSE_PATTERN = new RegExp(
+  String.raw`^(?:currently,?\s+)?(?:(?:${CUSTOMER_SUBJECT_PATTERN}\s+(?:currently\s+)?(?:has|have)|there\s+(?:is|are))\s+)?no\s+(?:(?:paying|production)\s+customers?|design[- ]?partners?)(?:\s+yet)?$`,
+);
+const GENERIC_CUSTOMER_ASSERTION_BLOCKER =
+  /\b(?:can|could|may|might|would|should|will|perhaps|possibly|possible|conditional|conditionally|contingent|assuming|if|unless|expect|expects|expected|expecting|plan|plans|planned|planning|target|targets|targeted|targeting|forecast|forecasts|forecasted|forecasting|projected|projection|projections|intend|intends|intended|intending|hope|hopes|hoped|hoping|anticipate|anticipates|anticipated|anticipating|potential|prospective|future|upcoming|previously|formerly|historically|prior|once|had|used to|no longer|not anymore|churn|churns|churned|churning|lost|lose|cancel|cancels|cancelled|canceled|terminated|lapsed|departed|inactive|gone|ceased|stopped)\b|\b(?:next|last)\s+(?:week|month|quarter|year)\b/;
+const CUSTOMER_CLAUSE_SEPARATOR =
+  /\s*(?:;|,\s*(?:but|however|although|though|while|whereas|except|despite)\s+|\s+(?:but|however|although|though|while|whereas|except|despite)\s+)\s*/;
+
 function hasExplicitPositiveCustomerText(value: string): boolean {
-  const normalized = value.trim().toLowerCase().replace(/\s+/g, " ");
-  const positivePatterns = [
-    /\b(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)\s+(?:paying(?:\s+production)?|production)\s+customers?\b/g,
-    /\b(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)\s+(?:signed\s+|confirmed\s+|active\s+)?design[- ]?partners?\b/g,
-    /\b(?:has|have|serves?|serving|secured|signed|onboarded)\s+(?:(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)\s+)?(?:paying(?:\s+production)?|production)\s+customers?\b/g,
-    /\b(?:has|have|secured|signed|onboarded)\s+(?:(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)\s+)?design[- ]?partners?\b/g,
-    /\b(?:paying|production)\s+customers?\s+(?:are\s+)?(?:active|live|signed|confirmed|in production)\b/g,
-    /\bdesign[- ]?partners?\s+(?:are\s+)?(?:active|live|signed|confirmed)\b/g,
-  ];
-  for (const pattern of positivePatterns) {
-    for (const match of normalized.matchAll(pattern)) {
-      const matchIndex = match.index ?? 0;
-      const prefix = normalized.slice(Math.max(0, matchIndex - 32), matchIndex);
-      const suffix = normalized.slice(
-        matchIndex + match[0].length,
-        matchIndex + match[0].length + 32,
-      );
-      if (
-        !/\b(?:no|none|not|without|zero|0|never)\s+(?:currently\s+)?$/
-          .test(prefix)
-        && !/\b(?:plan|planned|potential|prospective|target|future)(?:\s+(?:of|for))?\s*:?\s*$/
-          .test(prefix)
-        && !/^\s*(?:(?:are|is|remain|remains|will be|would be)\s+)?(?:planned|planning|potential|prospective|a target|future|not yet)\b/
-          .test(suffix)
-      ) {
-        return true;
-      }
-    }
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, " ")
+    .replace(/[.!?]+$/, "");
+  if (
+    normalized === ""
+    || GENERIC_CUSTOMER_ASSERTION_BLOCKER.test(normalized)
+  ) {
+    return false;
   }
-  return false;
+  const clauses = normalized.split(CUSTOMER_CLAUSE_SEPARATOR)
+    .map((clause) => clause.trim())
+    .filter(Boolean);
+  const positiveKinds = new Set<CustomerEvidenceKind>();
+  const negativeKinds = new Set<CustomerEvidenceKind>();
+  for (const clause of clauses) {
+    const currentKinds = currentCustomerClauseKinds(clause);
+    if (currentKinds.length > 0) {
+      currentKinds.forEach((kind) => positiveKinds.add(kind));
+      continue;
+    }
+    const negative = negativeCustomerClauseKinds(clause);
+    if (negative.length === 0) return false;
+    negative.forEach((kind) => negativeKinds.add(kind));
+  }
+  return positiveKinds.size > 0
+    && [...positiveKinds].every((kind) => !negativeKinds.has(kind));
+}
+
+function currentCustomerClauseKinds(clause: string): CustomerEvidenceKind[] {
+  if (!CURRENT_CUSTOMER_CLAUSE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return [];
+  }
+  return customerKindsInSignal(clause);
+}
+
+function negativeCustomerClauseKinds(clause: string): CustomerEvidenceKind[] {
+  if (!NEGATIVE_CUSTOMER_CLAUSE_PATTERN.test(clause)) return [];
+  return customerKindsInSignal(clause);
+}
+
+function customerKindsInSignal(value: string): CustomerEvidenceKind[] {
+  if (/\bdesign[- ]?partners?\b/.test(value)) return ["design_partner"];
+  if (/\bpaying\s+production\s+customers?\b/.test(value)) {
+    return ["paying_customer", "production_customer"];
+  }
+  if (/\bpaying\s+customers?\b/.test(value)) return ["paying_customer"];
+  if (/\bproduction\s+customers?\b/.test(value)) {
+    return ["production_customer"];
+  }
+  return [];
 }
 
 function matchesMandate(
