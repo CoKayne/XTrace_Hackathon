@@ -89,6 +89,7 @@ export async function processClaimedRun(
     activeStageStatus = status;
     return stage(
       dependencies.runs,
+      claimedRun.workspaceId,
       claimedRun.id,
       workerId,
       name,
@@ -323,6 +324,7 @@ export async function processClaimedRun(
     await updateStage("notification", "skipped");
 
     const finalRun = await dependencies.runs.finish({
+      workspaceId: claimedRun.workspaceId,
       runId: claimedRun.id,
       status: warnings.length ? "partial" : "completed",
       workerId,
@@ -342,6 +344,7 @@ export async function processClaimedRun(
       }
     }
     await dependencies.runs.finish({
+      workspaceId: claimedRun.workspaceId,
       runId: claimedRun.id,
       status: "failed",
       workerId,
@@ -472,6 +475,7 @@ function buildMarketSummary(
 
 async function stage(
   runs: RunsRepository,
+  workspaceId: string,
   runId: string,
   workerId: string,
   name: string,
@@ -479,6 +483,7 @@ async function stage(
   warning?: string,
 ): Promise<void> {
   await runs.updateStage({
+    workspaceId,
     runId,
     workerId,
     stage: name,

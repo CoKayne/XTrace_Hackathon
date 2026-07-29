@@ -1,8 +1,11 @@
 import { z } from "zod";
 
 import { errorResponse, jsonError, jsonOk } from "../../../../lib/api/response";
+import {
+  resolveRouteRequestContext,
+  type RouteDependencies,
+} from "../../../../lib/api/route-dependencies";
 import { rateLimitRequest, requirePermission } from "../../../../lib/api/safety";
-import { resolveRequestContext } from "../../../../lib/auth/request-context";
 import { createCorpusService } from "../../../../lib/corpus/service";
 import { listPreloadedDocuments } from "../../../../lib/corpus/manifest";
 import {
@@ -24,9 +27,13 @@ const ConfirmRequestSchema = z.object({
   })),
 });
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  _routeContext?: unknown,
+  dependencies: RouteDependencies = {},
+) {
   try {
-    const context = await resolveRequestContext(request);
+    const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "mutateSources");
     if (
       process.env.NODE_ENV === "production" &&

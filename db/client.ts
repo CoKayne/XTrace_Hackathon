@@ -25,6 +25,7 @@ export interface RunRecord {
 
 export interface RunStageRecord {
   id: string;
+  workspaceId: string;
   runId: string;
   stage: string;
   status: StageStatus;
@@ -39,13 +40,28 @@ export interface CreateRunRow {
   windowDays: 14;
 }
 
+export type RunUpdatePatch = Partial<Omit<
+  RunRecord,
+  "id" | "workspaceId" | "mode" | "windowDays" | "createdAt"
+>>;
+
 export interface DataClient {
   findActiveRun(input: CreateRunRow): Promise<RunRecord | null>;
   insertRun(input: CreateRunRow): Promise<RunRecord>;
+  // Global worker-only queue claim. Every mutation after claim is scoped by
+  // the workspace returned on the claimed record.
   claimNextRun(workerId: string): Promise<RunRecord | null>;
-  renewRunLease(runId: string, workerId: string): Promise<boolean>;
-  updateRun(runId: string, patch: Partial<RunRecord>): Promise<RunRecord>;
-  getRun(runId: string, workspaceId?: string): Promise<RunRecord | null>;
+  renewRunLease(
+    workspaceId: string,
+    runId: string,
+    workerId: string,
+  ): Promise<boolean>;
+  updateRun(
+    workspaceId: string,
+    runId: string,
+    patch: RunUpdatePatch,
+  ): Promise<RunRecord>;
+  getRun(workspaceId: string, runId: string): Promise<RunRecord | null>;
   listRuns(workspaceId: string): Promise<RunRecord[]>;
   insertRunStage(input: Omit<RunStageRecord, "id">): Promise<RunStageRecord>;
   touchWorkerHeartbeat(workerId: string): Promise<void>;
@@ -70,6 +86,13 @@ function makeRun(input: CreateRunRow, now: Date): RunRecord {
     completedAt: null,
     leaseExpiresAt: null,
   };
+}
+
+function assertRunIdentityIsImmutable(patch: RunUpdatePatch): void {
+  const candidate = patch as Partial<RunRecord>;
+  if (candidate.id !== undefined || candidate.workspaceId !== undefined) {
+    throw new Error("Run workspace identity cannot be changed.");
+  }
 }
 
 export function createMemoryDataClient(options: {
@@ -120,22 +143,30 @@ export function createMemoryDataClient(options: {
       run.leaseExpiresAt = new Date(claimedAt.getTime() + leaseDurationMs).toISOString();
       return structuredClone(run);
     },
-    async renewRunLease(runId, workerId) {
+    async renewRunLease(workspaceId, runId, workerId) {
       const run = runs.get(runId);
-      if (!run || run.status !== "running" || run.workerId !== workerId) return false;
+      if (
+        !run
+        || run.workspaceId !== workspaceId
+        || run.status !== "running"
+        || run.workerId !== workerId
+      ) return false;
       run.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
       return true;
     },
-    async updateRun(runId, patch) {
+    async updateRun(workspaceId, runId, patch) {
+      assertRunIdentityIsImmutable(patch);
       const run = runs.get(runId);
-      if (!run) throw new Error(`Run ${runId} was not found`);
+      if (!run || run.workspaceId !== workspaceId) {
+        throw new Error(`Run ${runId} was not found`);
+      }
       const next = { ...run, ...structuredClone(patch) };
       runs.set(runId, next);
       return structuredClone(next);
     },
-    async getRun(runId, workspaceId) {
+    async getRun(workspaceId, runId) {
       const run = runs.get(runId);
-      return run && (!workspaceId || run.workspaceId === workspaceId)
+      return run && run.workspaceId === workspaceId
         ? structuredClone(run)
         : null;
     },
@@ -146,6 +177,10 @@ export function createMemoryDataClient(options: {
         .map((run) => structuredClone(run));
     },
     async insertRunStage(input) {
+      const run = runs.get(input.runId);
+      if (!run || run.workspaceId !== input.workspaceId) {
+        throw new Error(`Run ${input.runId} was not found`);
+      }
       const stage = { ...structuredClone(input), id: crypto.randomUUID() };
       stages.push(stage);
       return structuredClone(stage);
@@ -248,9 +283,11 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
       }) as Record<string, unknown>[];
       return rows[0] ? toRunRecord(rows[0]) : null;
     },
-    async renewRunLease(runId, workerId) {
+    async renewRunLease(workspaceId, runId, workerId) {
       const rows = await request(
-        `/scan_runs?id=eq.${encodeURIComponent(runId)}&worker_id=eq.${encodeURIComponent(workerId)}&status=eq.running`,
+        `/scan_runs?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+        + `&id=eq.${encodeURIComponent(runId)}`
+        + `&worker_id=eq.${encodeURIComponent(workerId)}&status=eq.running`,
         {
           method: "PATCH",
           headers: { Prefer: "return=representation" },
@@ -261,7 +298,8 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
       ) as Record<string, unknown>[];
       return rows.length > 0;
     },
-    async updateRun(runId, patch) {
+    async updateRun(workspaceId, runId, patch) {
+      assertRunIdentityIsImmutable(patch);
       const body: Record<string, unknown> = {};
       if (patch.status !== undefined) body.status = patch.status;
       if (patch.currentStage !== undefined) body.current_stage = patch.currentStage;
@@ -271,20 +309,22 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
       if (patch.startedAt !== undefined) body.started_at = patch.startedAt;
       if (patch.completedAt !== undefined) body.completed_at = patch.completedAt;
       if (patch.leaseExpiresAt !== undefined) body.lease_expires_at = patch.leaseExpiresAt;
-      const rows = await request(`/scan_runs?id=eq.${encodeURIComponent(runId)}`, {
+      const rows = await request(
+        `/scan_runs?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+        + `&id=eq.${encodeURIComponent(runId)}`,
+        {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
         body: JSON.stringify(body),
-      }) as Record<string, unknown>[];
+        },
+      ) as Record<string, unknown>[];
       if (!rows[0]) throw new Error(`Run ${runId} was not found`);
       return toRunRecord(rows[0]);
     },
-    async getRun(runId, workspaceId) {
-      const workspaceFilter = workspaceId
-        ? `workspace_id=eq.${encodeURIComponent(workspaceId)}&`
-        : "";
+    async getRun(workspaceId, runId) {
       const rows = await request(
-        `/scan_runs?${workspaceFilter}id=eq.${encodeURIComponent(runId)}&limit=1`,
+        `/scan_runs?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+        + `&id=eq.${encodeURIComponent(runId)}&limit=1`,
       ) as Record<string, unknown>[];
       return rows[0] ? toRunRecord(rows[0]) : null;
     },
@@ -297,6 +337,7 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
         method: "POST",
         headers: { Prefer: "return=representation" },
         body: JSON.stringify({
+          workspace_id: input.workspaceId,
           run_id: input.runId,
           stage: input.stage,
           status: input.status,
@@ -308,6 +349,7 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
       const row = rows[0];
       return {
         id: String(row.id),
+        workspaceId: String(row.workspace_id),
         runId: String(row.run_id),
         stage: String(row.stage),
         status: row.status as StageStatus,

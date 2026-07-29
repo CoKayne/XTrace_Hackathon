@@ -1,9 +1,20 @@
-import type { UploadedDocumentRecord } from "../../db/repositories/uploaded-documents";
+import type {
+  ExtractionPreview,
+  UploadedDocumentRecord,
+} from "../../db/repositories/uploaded-documents";
 
 export type PublicUploadedDocumentRecord = Omit<
   UploadedDocumentRecord,
-  "objectKey"
->;
+  "objectKey" | "extractionPreview"
+> & {
+  extractionPreview: PublicExtractionPreview | null;
+};
+
+export interface PublicExtractionPreview {
+  candidateCompanyName: string | null;
+  candidateHeadline: string | null;
+  facts: ExtractionPreview["facts"];
+}
 
 export function toPublicUploadedDocument(
   record: UploadedDocumentRecord,
@@ -17,7 +28,13 @@ export function toPublicUploadedDocument(
     checksum: record.checksum,
     status: record.status,
     failureReason: record.failureReason ? "Document processing failed." : null,
-    extractionPreview: record.extractionPreview,
+    extractionPreview: record.extractionPreview
+      ? {
+          candidateCompanyName: record.extractionPreview.candidateCompanyName,
+          candidateHeadline: record.extractionPreview.candidateHeadline,
+          facts: structuredClone(record.extractionPreview.facts),
+        }
+      : null,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };

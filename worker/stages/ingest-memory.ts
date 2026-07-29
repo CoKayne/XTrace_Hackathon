@@ -7,10 +7,13 @@ type IngestMemoryService = Pick<ReturnType<typeof createXTraceService>, "ingestD
 export async function ingestMemoryStage(
   bundle: DealMemoryBundle,
   options: {
+    workspaceId: string;
     service?: IngestMemoryService;
-  } = {},
+  },
 ): Promise<PersistedIngest> {
-  const service = options.service ?? createXTraceService(getXTraceClient());
+  const service = options.service ?? createXTraceService(getXTraceClient(), {
+    workspaceId: options.workspaceId,
+  });
   const submitted = await service.ingestDealMemory(bundle);
   if (submitted.status !== "pending" && submitted.status !== "running") return submitted;
 

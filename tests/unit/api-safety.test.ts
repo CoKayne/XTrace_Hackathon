@@ -122,8 +122,27 @@ test("product request limiting keys by the authorized principal and workspace", 
       },
     },
   );
+  const differentlyForgedRequest = new Request(
+    "https://demo.example/api/runs?workspace=workspace_other_attacker",
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "cf-connecting-ip": "198.51.100.200",
+        "x-forwarded-for": "192.0.2.99",
+        "x-workspace-id": "workspace_other_attacker",
+        cookie: "workspaceId=workspace_other_attacker",
+      },
+      body: JSON.stringify({ workspaceId: "workspace_other_attacker" }),
+    },
+  );
 
   await rateLimitRequest(forgedRequest, "run-scan", 5, 60_000, {
+    environment,
+    fetchImpl,
+    context: baseContext,
+  });
+  await rateLimitRequest(differentlyForgedRequest, "run-scan", 5, 60_000, {
     environment,
     fetchImpl,
     context: baseContext,
@@ -145,6 +164,9 @@ test("product request limiting keys by the authorized principal and workspace", 
     },
   });
 
+  assert.equal(hashes[0], hashes[1]);
+  assert.notEqual(hashes[0], hashes[2]);
+  assert.notEqual(hashes[0], hashes[3]);
   assert.equal(new Set(hashes).size, 3);
   assert.ok(hashes.every((hash) => /^[a-f0-9]{64}$/.test(hash)));
   assert.doesNotMatch(hashes.join(" "), /workspace_attacker|203\\.0\\.113\\.44/);

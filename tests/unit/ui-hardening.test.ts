@@ -110,7 +110,7 @@ test("health reports XTrace configured for an mmk key without an organization ID
 
 test("health derives corpus readiness from durable confirmation, not browser state", async () => {
   const store = createDefaultDemoDataStore();
-  await store.resetDemoData();
+  await store.resetDemoData("workspace_demo");
   try {
     for (const document of listPreloadedDocuments()) {
       if (document.role === "reference") continue;
@@ -128,7 +128,7 @@ test("health derives corpus readiness from durable confirmation, not browser sta
     assert.equal(body.data.corpusReady, true);
     assert.equal(body.data.corpusConfirmedCount, 13);
   } finally {
-    await store.resetDemoData();
+    await store.resetDemoData("workspace_demo");
   }
 });
 

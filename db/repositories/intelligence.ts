@@ -16,7 +16,6 @@ import { withinPublicationWindow } from "../../lib/market/dedupe";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 import { sanitizeReportOpportunities } from "../../lib/reports/next-step-policy";
 
-const DEFAULT_WORKSPACE_ID = "workspace_demo";
 const MARKET_EVENT_WINDOW_DAYS = 14;
 
 interface IntelligenceRepositoryClockOptions {
@@ -52,7 +51,7 @@ export interface IntelligenceReportRecord extends IntelligenceReportIdentity {
 export interface IntelligenceRepository {
   saveMarketEvents(
     events: NormalizedMarketEvent[],
-    workspaceId?: string,
+    workspaceId: string,
   ): Promise<void>;
   listMarketEvents(workspaceId: string): Promise<NormalizedMarketEvent[]>;
   saveReport(report: IntelligenceReportWrite): Promise<IntelligenceReportRecord>;
@@ -72,7 +71,7 @@ export interface IntelligenceRepository {
   // Demo choreography: wipe every scan product (reports, analyses, finished
   // runs, market events) while keeping the corpus, XTrace lineage, and
   // stored judgments. Queued and running scans survive.
-  resetScanProducts(workspaceId?: string): Promise<void>;
+  resetScanProducts(workspaceId: string): Promise<void>;
 }
 
 function marketWindowAt(to: Date) {
@@ -214,6 +213,7 @@ function parseCompanyAnalyses(
 
 function safeReport(report: IntelligenceReportWrite): IntelligenceReportRecord {
   const cloned = structuredClone(report);
+  const workspaceId = requiredWorkspaceId(cloned.workspaceId);
   const opportunities = sanitizeReportOpportunities(cloned.opportunities);
   const companyAnalyses = parseCompanyAnalyses({
     ...cloned,
@@ -224,6 +224,7 @@ function safeReport(report: IntelligenceReportWrite): IntelligenceReportRecord {
     : cloned.counts ?? countsFromAnalyses([]);
   return {
     ...cloned,
+    workspaceId,
     opportunities,
     analysisStatus: ReportAnalysisStatusSchema.parse(
       cloned.analysisStatus ?? "completed",
@@ -241,6 +242,16 @@ function safeReport(report: IntelligenceReportWrite): IntelligenceReportRecord {
   };
 }
 
+function requiredWorkspaceId(workspaceId: string): string {
+  const normalized = workspaceId?.trim();
+  if (!normalized) throw new Error("A workspace is required.");
+  return normalized;
+}
+
+function workspaceIdentity(workspaceId: string, externalId: string): string {
+  return JSON.stringify([requiredWorkspaceId(workspaceId), externalId]);
+}
+
 export function createMemoryIntelligenceRepository(
   options: IntelligenceRepositoryClockOptions = {},
 ): IntelligenceRepository {
@@ -248,9 +259,10 @@ export function createMemoryIntelligenceRepository(
   const reports = new Map<string, IntelligenceReportRecord>();
   const now = options.now ?? (() => new Date());
   return {
-    async saveMarketEvents(items, workspaceId = DEFAULT_WORKSPACE_ID) {
+    async saveMarketEvents(items, workspaceId) {
+      workspaceId = requiredWorkspaceId(workspaceId);
       for (const event of items) {
-        events.set(`${workspaceId}:${event.id}`, {
+        events.set(workspaceIdentity(workspaceId, event.id), {
           workspaceId,
           event: structuredClone(event),
         });
@@ -272,14 +284,15 @@ export function createMemoryIntelligenceRepository(
     },
     async saveReport(report) {
       const validated = safeReport(report);
-      reports.set(report.id, structuredClone(validated));
+      reports.set(
+        workspaceIdentity(validated.workspaceId, validated.id),
+        structuredClone(validated),
+      );
       return structuredClone(validated);
     },
     async getReport(workspaceId, reportId) {
-      const report = reports.get(reportId);
-      return report?.workspaceId === workspaceId
-        ? structuredClone(report)
-        : null;
+      const report = reports.get(workspaceIdentity(workspaceId, reportId));
+      return report ? structuredClone(report) : null;
     },
     async getReportByRunId(workspaceId, runId) {
       const report = [...reports.values()].find(
@@ -303,7 +316,8 @@ export function createMemoryIntelligenceRepository(
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
         .map((analysis) => structuredClone(analysis));
     },
-    async resetScanProducts(workspaceId = DEFAULT_WORKSPACE_ID) {
+    async resetScanProducts(workspaceId) {
+      workspaceId = requiredWorkspaceId(workspaceId);
       for (const [key, row] of events) {
         if (row.workspaceId === workspaceId) events.delete(key);
       }
@@ -428,7 +442,8 @@ export function createSupabaseIntelligenceRepository(options: {
     return grouped;
   }
   return {
-    async saveMarketEvents(items, workspaceId = DEFAULT_WORKSPACE_ID) {
+    async saveMarketEvents(items, workspaceId) {
+      workspaceId = requiredWorkspaceId(workspaceId);
       if (!items.length) return;
       await request("/market_events?on_conflict=workspace_id,id", {
         method: "POST",
@@ -516,7 +531,8 @@ export function createSupabaseIntelligenceRepository(options: {
       ) as Record<string, unknown>[];
       return rows.map(toAnalysis);
     },
-    async resetScanProducts(workspaceId = DEFAULT_WORKSPACE_ID) {
+    async resetScanProducts(workspaceId) {
+      workspaceId = requiredWorkspaceId(workspaceId);
       const workspace = encodeURIComponent(workspaceId);
       // Children first; deleting finished runs also cascades their steps.
       // Queued and running scans survive so an in-flight demo scan can still

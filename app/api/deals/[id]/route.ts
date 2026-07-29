@@ -1,14 +1,21 @@
 import { errorResponse, jsonError, jsonOk } from "../../../../lib/api/response";
+import {
+  resolveRouteRequestContext,
+  type RouteDependencies,
+} from "../../../../lib/api/route-dependencies";
 import { requirePermission } from "../../../../lib/api/safety";
-import { resolveRequestContext } from "../../../../lib/auth/request-context";
 import { buildDemoViewModel } from "../../../../lib/demo/view-model";
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
+  dependencies: RouteDependencies = {},
 ) {
   try {
-    const requestContext = await resolveRequestContext(request);
+    const requestContext = await resolveRouteRequestContext(
+      request,
+      dependencies,
+    );
     requirePermission(requestContext, "readWorkspace");
     const { id } = await context.params;
     const deal = buildDemoViewModel().deals.find((candidate) => candidate.id === id);

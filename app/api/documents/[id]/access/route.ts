@@ -1,7 +1,10 @@
 import { getUploadedDocumentsRepository } from "../../../../../db/repositories/uploaded-documents";
 import { errorResponse, jsonError } from "../../../../../lib/api/response";
+import {
+  resolveRouteRequestContext,
+  type RouteDependencies,
+} from "../../../../../lib/api/route-dependencies";
 import { rateLimitRequest, requirePermission } from "../../../../../lib/api/safety";
-import { resolveRequestContext } from "../../../../../lib/auth/request-context";
 import { getPreloadedDocument } from "../../../../../lib/corpus/manifest";
 import { createDefaultPrivateDocumentAccess } from "../../../../../lib/storage/service";
 
@@ -11,9 +14,13 @@ const PRIVATE_READ_TTL_SECONDS = 10 * 60;
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
+  dependencies: RouteDependencies = {},
 ) {
   try {
-    const requestContext = await resolveRequestContext(request);
+    const requestContext = await resolveRouteRequestContext(
+      request,
+      dependencies,
+    );
     requirePermission(requestContext, "readWorkspace");
     const { id } = await context.params;
     const preloaded = getPreloadedDocument(id);
@@ -30,7 +37,10 @@ export async function GET(
     requirePermission(requestContext, "readPrivateSources");
     const uploaded = preloaded
       ? null
-      : await getUploadedDocumentsRepository().get({
+      : await (
+          dependencies.uploadedDocuments
+            ?? getUploadedDocumentsRepository()
+        ).get({
           workspaceId: requestContext.workspaceId,
           id,
         });
@@ -52,9 +62,13 @@ export async function GET(
         true,
       );
     }
-    const expiresAtEpochSeconds = Math.floor(Date.now() / 1_000)
+    const expiresAtEpochSeconds = Math.floor(
+      (dependencies.now ?? Date.now)() / 1_000,
+    )
       + PRIVATE_READ_TTL_SECONDS;
-    const signedPath = await createDefaultPrivateDocumentAccess()
+    const signedPath = await (
+      dependencies.documentAccess ?? createDefaultPrivateDocumentAccess()
+    )
       .createPrivateReadUrl({
         capability: {
           workspaceId: requestContext.workspaceId,

@@ -4,6 +4,7 @@ import test from "node:test";
 import "../helpers/public-demo";
 import { GET as readDocumentRoute } from "../../app/api/documents/[id]/route";
 import {
+  createCorpusPersistence,
   createMemoryDemoDataStore,
   createMemoryPrivateObjectStorage,
   createPrivateDocumentAccess,
@@ -11,6 +12,8 @@ import {
   createSupabasePrivateObjectStorage,
 } from "../../lib/storage/service";
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
+import { createCorpusService } from "../../lib/corpus/service";
+import { DEMO_DEAL_EVIDENCE } from "../../lib/corpus/evidence";
 import { DEMO_FIXTURE_LABEL } from "../../lib/contracts/domain";
 
 test("private document access signs and validates the exact workspace-scoped source capability", async () => {
@@ -103,6 +106,168 @@ test("memory storage upserts stable records and private objects without duplicat
 
   assert.equal(data.inspect().workspaces.length, 1);
   assert.equal(objects.inspect().length, 1);
+});
+
+test("two workspace imports keep identical external ids isolated through overwrite and reset", async () => {
+  const data = createMemoryDemoDataStore();
+  const access = createPrivateDocumentAccess({
+    signingSecret: "unit-test-signing-secret-at-least-32-bytes",
+  });
+  const corpus = createCorpusService(createCorpusPersistence(data, access));
+  const document = listPreloadedDocuments().find(
+    (candidate) => candidate.id === "doc_7bridges",
+  );
+  const evidence = DEMO_DEAL_EVIDENCE.find(
+    (candidate) => candidate.documentId === document?.id,
+  );
+  assert.ok(document?.dealId && evidence);
+
+  for (const workspaceId of ["workspace_one", "workspace_two"]) {
+    await data.ensureWorkspace({ id: workspaceId, name: workspaceId });
+    await corpus.confirmImport({
+      workspaceId,
+      documentIds: [document.id],
+      dealConfirmations: [{
+        documentId: document.id,
+        dealId: document.dealId,
+      }],
+    });
+    await data.ensureEvidence({ ...evidence, workspaceId });
+  }
+
+  await data.ensureCompany({
+    id: "company_7bridges",
+    workspaceId: "workspace_one",
+    name: "Workspace One Override",
+  });
+  await data.ensureEvidence({
+    ...evidence,
+    workspaceId: "workspace_one",
+    fact: "Workspace One Override",
+  });
+
+  const beforeReset = data.inspect();
+  assert.equal(beforeReset.companies.length, 2);
+  assert.equal(beforeReset.deals.length, 2);
+  assert.equal(beforeReset.fixtures.length, 2);
+  assert.equal(beforeReset.evidence.length, 2);
+  assert.equal(
+    beforeReset.companies.find((row) =>
+      row.workspaceId === "workspace_two"
+    )?.name,
+    document.company,
+  );
+  assert.equal(
+    beforeReset.evidence.find((row) =>
+      row.workspaceId === "workspace_two"
+    )?.fact,
+    evidence.fact,
+  );
+
+  await data.resetDemoData("workspace_one");
+
+  assert.deepEqual(
+    await data.listWorkspaceDocumentIds("workspace_one"),
+    [],
+  );
+  assert.deepEqual(
+    await data.listWorkspaceDocumentIds("workspace_two"),
+    [document.id],
+  );
+  const afterReset = data.inspect();
+  for (const rows of [
+    afterReset.companies,
+    afterReset.deals,
+    afterReset.fixtures,
+    afterReset.evidence,
+  ]) {
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].workspaceId, "workspace_two");
+  }
+});
+
+test("Supabase corpus upserts use workspace-composite lookup and conflict identities", async () => {
+  const requests: Array<{ url: URL; method: string }> = [];
+  const data = createSupabaseDemoDataStore({
+    url: "https://database.example.test",
+    serviceRoleKey: "test-service-role",
+    async fetchImpl(input, init) {
+      requests.push({
+        url: new URL(String(input)),
+        method: init?.method ?? "GET",
+      });
+      return init?.method === "POST"
+        ? new Response(null, { status: 204 })
+        : Response.json([]);
+    },
+  });
+  const evidence = DEMO_DEAL_EVIDENCE[0];
+
+  await data.ensureCompany({
+    id: "company_same",
+    workspaceId: "workspace_one",
+    name: "Company",
+  });
+  await data.ensureDeal({
+    id: "deal_same",
+    workspaceId: "workspace_one",
+    companyId: "company_same",
+    companyName: "Company",
+  });
+  await data.ensureEvidence({
+    ...evidence,
+    id: "evidence_same",
+    workspaceId: "workspace_one",
+    dealId: "deal_same",
+  });
+  await data.ensureFixture({
+    id: "fixture_same",
+    workspaceId: "workspace_one",
+    documentId: evidence.documentId,
+    dealId: "deal_same",
+    companyName: "Company",
+    occurredAt: "2026-07-01T00:00:00.000Z",
+    provenance: "demo_fixture",
+    label: DEMO_FIXTURE_LABEL,
+    status: "screening",
+    decisionReason: "Sample rationale",
+    concerns: [],
+    revisitConditions: [],
+    meetingSummary: "Sample summary",
+  });
+
+  for (const table of [
+    "companies",
+    "deals",
+    "source_evidence",
+    "deal_interactions",
+  ]) {
+    const tableRequests = requests.filter(({ url }) =>
+      url.pathname === `/rest/v1/${table}`
+    );
+    assert.equal(tableRequests.length, 2, table);
+    const lookup = tableRequests.find(({ method }) => method === "GET");
+    const write = tableRequests.find(({ method }) => method === "POST");
+    assert.equal(
+      lookup?.url.searchParams.get("workspace_id"),
+      "eq.workspace_one",
+      table,
+    );
+    assert.equal(lookup?.url.searchParams.get("id"), "eq." + (
+      table === "companies"
+        ? "company_same"
+        : table === "deals"
+        ? "deal_same"
+        : table === "source_evidence"
+        ? "evidence_same"
+        : "fixture_same"
+    ));
+    assert.equal(
+      write?.url.searchParams.get("on_conflict"),
+      "workspace_id,id",
+      table,
+    );
+  }
 });
 
 test("Supabase storage uploads when a missing object is reported as HTTP 400 with nested 404", async () => {

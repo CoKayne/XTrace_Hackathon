@@ -224,6 +224,7 @@ test("resolves recalled memory to local Deal and evidence IDs", async () => {
     }),
   };
   const service = createXTraceService(client as never, {
+    workspaceId: "demo",
     resolveMemory: async () => ({
       dealId: "deal_1",
       sourceIds: ["source_1"],
@@ -254,6 +255,7 @@ test("fails closed when a search client reports an unsuccessful provider envelop
   const service = createXTraceService({
     search: async () => ({ success: false, data: [] }),
   } as never, {
+    workspaceId: "demo",
     resolveMemory: async () => null,
   });
 
@@ -272,6 +274,7 @@ test("fails closed when a search client omits both accepted envelope discriminan
   const service = createXTraceService({
     search: async () => ({ data: [] }),
   } as never, {
+    workspaceId: "demo",
     resolveMemory: async () => null,
   });
 
@@ -292,6 +295,7 @@ test("preserves a sanitized XTrace HTTP failure reason for durable run diagnosti
       throw new XTraceHttpError(422, false, "Request failed validation");
     },
   } as never, {
+    workspaceId: "demo",
     resolveMemory: async () => null,
   });
 
@@ -319,7 +323,10 @@ test("serializes provenance before persisting an async ingest job", async () => 
       received = input;
       return { id: "job_1", status: "pending" };
     },
-  } as never, { persistIngest: (record) => { persisted.push(record); } });
+  } as never, {
+    workspaceId: "workspace_demo",
+    persistIngest: (record) => { persisted.push(record); },
+  });
 
   await service.ingestDealMemory(bundle);
 
@@ -435,6 +442,7 @@ test("does not reuse a succeeded ingest that produced no memories", async () => 
 
   const first = await service.ingestDealMemory(bundle);
   await lineage.recordCompletion({
+    workspaceId: "workspace_demo",
     jobId: first.jobId,
     status: "succeeded",
     memoryIds: [],
@@ -572,6 +580,7 @@ test("polls pending jobs with exponential backoff and persists created memory ID
         : { id: "job_1", status: "succeeded", result: { memories_created: [{ id: "mem_1", type: "fact", text: "Created" }] } };
     },
   } as never, {
+    workspaceId: "workspace_demo",
     persistIngest: (record) => { persisted.push(record); },
     sleep: async (milliseconds) => { sleeps.push(milliseconds); },
     lineageRepository: lineage,
@@ -608,6 +617,49 @@ test("lists only non-terminal XTrace ingest jobs for the requested workspace", a
     ["pending", "deal_1", "pending"],
     ["running", "deal_2", "running"],
   ]);
+});
+
+test("identical XTrace job and memory ids remain isolated by workspace", async () => {
+  const lineage = createMemoryXTraceLineageRepository();
+  for (const workspaceId of ["workspace_one", "workspace_two"]) {
+    await lineage.recordSubmission({
+      jobId: "job_shared",
+      workspaceId,
+      dealId: "deal_shared",
+      sourceIds: [`source_${workspaceId}`],
+      fixtureIds: [],
+      bundleFingerprint: `fingerprint-${workspaceId}`,
+      serializerVersion: "deal-memory-v1",
+      provenance: "source_document",
+      status: "pending",
+    });
+  }
+
+  await lineage.recordCompletion({
+    workspaceId: "workspace_one",
+    jobId: "job_shared",
+    status: "succeeded",
+    memoryIds: ["memory_shared"],
+  });
+
+  assert.deepEqual(
+    (await lineage.listOpenJobs("workspace_two")).map((job) => job.jobId),
+    ["job_shared"],
+  );
+  assert.equal(
+    (await lineage.resolve({
+      workspaceId: "workspace_one",
+      memoryId: "memory_shared",
+    }))?.sourceIds[0],
+    "source_workspace_one",
+  );
+  assert.equal(
+    await lineage.resolve({
+      workspaceId: "workspace_two",
+      memoryId: "memory_shared",
+    }),
+    null,
+  );
 });
 
 test("keeps polling through running and throws when the polling budget is exhausted", async () => {
@@ -731,6 +783,34 @@ test("uses one workspace namespace for default ingest and recall", async () => {
   assert.equal(searchUser, ingestUser);
 });
 
+test("normalizes the scoped workspace before XTrace recall and caching", async () => {
+  const searchUsers: string[] = [];
+  const service = createXTraceService({
+    search: async (input: { user_id: string }) => {
+      searchUsers.push(input.user_id);
+      return { success: true, data: [] };
+    },
+  } as never, {
+    workspaceId: "workspace_demo",
+  });
+  const input = {
+    query: "test",
+    candidateDealIds: ["deal_1"],
+    limit: 1,
+  };
+
+  await service.recallDealContext({
+    ...input,
+    workspaceId: " workspace_demo ",
+  });
+  await service.recallDealContext({
+    ...input,
+    workspaceId: "workspace_demo",
+  });
+
+  assert.deepEqual(searchUsers, ["workspace:workspace_demo"]);
+});
+
 test("a shared limiter throttles calls across multiple service instances", async () => {
   let now = 0;
   const sleeps: number[] = [];
@@ -744,8 +824,14 @@ test("a shared limiter throttles calls across multiple service instances", async
     60_000,
   );
   const client = { search: async () => ({ success: true as const, data: [] }) };
-  const first = createXTraceService(client as never, { limiter });
-  const second = createXTraceService(client as never, { limiter });
+  const first = createXTraceService(client as never, {
+    workspaceId: "workspace_demo",
+    limiter,
+  });
+  const second = createXTraceService(client as never, {
+    workspaceId: "workspace_demo",
+    limiter,
+  });
   const input = {
     workspaceId: "workspace_demo",
     query: "query",
@@ -775,6 +861,7 @@ test("caches recalls by query fingerprint and excludes memories outside the cand
       };
     },
   } as never, {
+    workspaceId: "demo",
     resolveMemory: async () => {
       resolveCalls += 1;
       return resolveCalls === 1
@@ -792,7 +879,7 @@ test("caches recalls by query fingerprint and excludes memories outside the cand
 test("surfaces provider failures as typed unavailable errors", async () => {
   const service = createXTraceService({
     search: async () => { throw new Error("provider unavailable"); },
-  } as never);
+  } as never, { workspaceId: "demo" });
 
   await assert.rejects(
     service.recallDealContext({ workspaceId: "demo", query: "What changed?", candidateDealIds: ["deal_1"], limit: 5 }),
@@ -803,6 +890,7 @@ test("surfaces provider failures as typed unavailable errors", async () => {
 test("uses the bridge to persist and complete a worker ingest stage", async () => {
   const calls: Array<[string, unknown]> = [];
   const result = await ingestMemoryStage(bundle, {
+    workspaceId: "workspace_demo",
     service: {
       ingestDealMemory: async () => ({ dealId: "deal_1", jobId: "job_1", status: "pending", memoryIds: [] }),
       pollIngestJob: async (jobId, options) => {
@@ -815,3 +903,10 @@ test("uses the bridge to persist and complete a worker ingest stage", async () =
   assert.deepEqual(calls, [["job_1", { dealId: "deal_1" }]]);
   assert.deepEqual(result, { dealId: "deal_1", jobId: "job_1", status: "succeeded", memoryIds: ["mem_1"] });
 });
+
+if (false) {
+  // @ts-expect-error lower-level XTrace services must select a trusted workspace
+  createXTraceService({} as never);
+  // @ts-expect-error worker ingest stages must receive the claimed workspace
+  void ingestMemoryStage({} as never);
+}

@@ -7,8 +7,11 @@ import {
   jsonError,
   jsonOk,
 } from "../../../lib/api/response";
+import {
+  resolveRouteRequestContext,
+  type RouteDependencies,
+} from "../../../lib/api/route-dependencies";
 import { rateLimitRequest, requirePermission } from "../../../lib/api/safety";
-import { resolveRequestContext } from "../../../lib/auth/request-context";
 import { getProductInputReadiness } from "../../../lib/corpus/import-readiness";
 import { createDefaultDemoDataStore } from "../../../lib/storage/service";
 import { isXTraceConfigured } from "../../../lib/xtrace/client";
@@ -16,9 +19,13 @@ import { toPublicRun } from "../../../lib/runs/public";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  _routeContext?: unknown,
+  dependencies: RouteDependencies = {},
+) {
   try {
-    const context = await resolveRequestContext(request);
+    const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
     const runs = await createRunsRepository(getDataClient()).list(
       context.workspaceId,
@@ -29,9 +36,13 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  _routeContext?: unknown,
+  dependencies: RouteDependencies = {},
+) {
   try {
-    const context = await resolveRequestContext(request);
+    const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
     if (
       process.env.NODE_ENV === "production" &&

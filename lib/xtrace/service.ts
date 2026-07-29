@@ -13,7 +13,6 @@ import {
   type XTraceSearchResult,
 } from "./client";
 
-export const DEFAULT_XTRACE_WORKSPACE_ID = "workspace_demo";
 export const DEAL_MEMORY_SERIALIZER_VERSION = "deal-memory-v1";
 const DEFAULT_APP_ID = "xtrace-vc-deal-intelligence";
 const REQUESTS_PER_MINUTE = 25;
@@ -63,7 +62,7 @@ export type XTraceServiceDependencies = {
   sleep?: (milliseconds: number) => Promise<void>;
   now?: () => number;
   appId?: string;
-  workspaceId?: string;
+  workspaceId: string;
   serializerVersion?: string;
   lineageRepository?: XTraceLineageRepository;
   limiter?: XTraceRateLimiter;
@@ -95,7 +94,7 @@ let persistentLimiter: XTraceRateLimiter | undefined;
 
 export function createXTraceService(
   client: XTraceClient,
-  dependencies: XTraceServiceDependencies = {},
+  dependencies: XTraceServiceDependencies,
 ) {
   const cache = new Map<string, MemoryContext[]>();
   const limiter = dependencies.limiter
@@ -106,7 +105,7 @@ export function createXTraceService(
         )
       : defaultXTraceRateLimiter());
   const appId = dependencies.appId ?? DEFAULT_APP_ID;
-  const workspaceId = dependencies.workspaceId ?? DEFAULT_XTRACE_WORKSPACE_ID;
+  const workspaceId = requiredWorkspaceId(dependencies.workspaceId);
   const serializerVersion =
     dependencies.serializerVersion ?? DEAL_MEMORY_SERIALIZER_VERSION;
   const lineage = dependencies.lineageRepository ?? getXTraceLineageRepository();
@@ -168,6 +167,7 @@ export function createXTraceService(
       });
       if (isTerminal(record.status)) {
         await lineage.recordCompletion({
+          workspaceId,
           jobId: record.jobId,
           status: record.status,
           memoryIds: record.memoryIds,
@@ -195,6 +195,7 @@ export function createXTraceService(
         await persist(record);
         if (isTerminal(latest.status)) {
           await lineage.recordCompletion({
+            workspaceId,
             jobId,
             status: latest.status,
             memoryIds: record.memoryIds,
@@ -213,34 +214,39 @@ export function createXTraceService(
     },
 
     async recallDealContext(input: RecallDealContextInput): Promise<MemoryContext[]> {
-      const fingerprint = recallFingerprint(input);
+      const requestWorkspaceId = requiredWorkspaceId(input.workspaceId);
+      if (requestWorkspaceId !== workspaceId) {
+        throw new Error("XTrace request workspace does not match the scoped service.");
+      }
+      const scopedInput = { ...input, workspaceId };
+      const fingerprint = recallFingerprint(scopedInput);
       const cached = cache.get(fingerprint);
       if (cached) return cached;
 
       const response = await invoke(async () => {
         await limiter.acquire();
         return client.search({
-          query: input.query,
-          user_id: stableXTraceUserId(input.workspaceId),
+          query: scopedInput.query,
+          user_id: stableXTraceUserId(workspaceId),
           app_id: appId,
           mode: "retrieve",
-          limit: Math.max(1, Math.min(input.limit, 100)),
+          limit: Math.max(1, Math.min(scopedInput.limit, 100)),
         });
       });
       if (!isAcceptedXTraceSearchResponse(response)) {
         throw new XTraceUnavailableError(false, "XTrace search response was invalid");
       }
-      const allowedDealIds = new Set(input.candidateDealIds);
+      const allowedDealIds = new Set(scopedInput.candidateDealIds);
       const contexts: MemoryContext[] = [];
       for (const memory of response.data) {
         const resolved = dependencies.resolveMemory
           ? await dependencies.resolveMemory(memory, {
-              workspaceId: input.workspaceId,
-              candidateDealIds: input.candidateDealIds,
+              workspaceId,
+              candidateDealIds: scopedInput.candidateDealIds,
             })
           : await lineage.resolve({
               memoryId: memory.id,
-              workspaceId: input.workspaceId,
+              workspaceId,
               convId: memory.conv_id ?? undefined,
             });
         if (!resolved || !allowedDealIds.has(resolved.dealId)) continue;
@@ -262,6 +268,12 @@ export function createXTraceService(
       return result;
     },
   };
+}
+
+function requiredWorkspaceId(workspaceId: string): string {
+  const normalized = workspaceId?.trim();
+  if (!normalized) throw new Error("An XTrace workspace is required.");
+  return normalized;
 }
 
 function defaultXTraceRateLimiter(): XTraceRateLimiter {

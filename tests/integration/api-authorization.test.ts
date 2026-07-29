@@ -244,7 +244,7 @@ test("public run serializers never expose worker identity or leases", async () =
     mode: "structured",
     windowDays: 14,
   });
-  await client.updateRun(publicRun.id, {
+  await client.updateRun(publicRun.workspaceId, publicRun.id, {
     workerId: "private-worker",
     leaseExpiresAt: "2026-07-28T15:00:00.000Z",
     warningCount: 1,
@@ -290,14 +290,43 @@ test("uploaded-source serializers hide object keys and internal failure details"
     objectKey: "private/workspaces/workspace_one/secret",
     status: "failed",
     failureReason: "service-role=secret provider stack trace",
-    extractionPreview: null,
+    extractionPreview: {
+      candidateCompanyName: "Sentinel Company",
+      candidateHeadline: "Sentinel headline",
+      facts: [{
+        text: "Sentinel fact",
+        excerpt: "Sentinel excerpt",
+        locator: { kind: "text_range", start: 7, end: 23 },
+      }],
+      extractionMetadata: {
+        extractorId: "claude_vision_v1",
+        extractorVersion: "1",
+        extractedAt: "2026-07-28T12:00:30.000Z",
+        contentHash: "sentinel-internal-content-hash",
+        inputBytes: 987_654,
+        extractedCharacters: 123_456,
+        truncated: false,
+      },
+    },
     createdAt: "2026-07-28T12:00:00.000Z",
     updatedAt: "2026-07-28T12:01:00.000Z",
   });
 
   assert.equal("objectKey" in serialized, false);
   assert.equal(serialized.failureReason, "Document processing failed.");
-  assert.doesNotMatch(JSON.stringify(serialized), /service-role|stack trace/i);
+  assert.deepEqual(serialized.extractionPreview, {
+    candidateCompanyName: "Sentinel Company",
+    candidateHeadline: "Sentinel headline",
+    facts: [{
+      text: "Sentinel fact",
+      excerpt: "Sentinel excerpt",
+      locator: { kind: "text_range", start: 7, end: 23 },
+    }],
+  });
+  assert.doesNotMatch(
+    JSON.stringify(serialized),
+    /service-role|stack trace|extractor|content.hash|input.bytes|extracted.characters/i,
+  );
 });
 
 test("import serializers hide provider diagnostics", () => {

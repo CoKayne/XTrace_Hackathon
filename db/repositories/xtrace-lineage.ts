@@ -29,6 +29,7 @@ export interface XTraceMemoryLineage {
 export interface XTraceLineageRepository {
   recordSubmission(input: Omit<XTraceIngestLineage, "memoryIds">): Promise<void>;
   recordCompletion(input: {
+    workspaceId: string;
     jobId: string;
     status: XTraceIngestLineage["status"];
     memoryIds: string[];
@@ -54,23 +55,25 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
   const memories = new Map<string, XTraceMemoryLineage>();
   return {
     async recordSubmission(input) {
-      const existing = jobs.get(input.jobId);
-      jobs.set(input.jobId, {
+      const key = lineageKey(input.workspaceId, input.jobId);
+      const existing = jobs.get(key);
+      jobs.set(key, {
         ...structuredClone(input),
         memoryIds: existing?.memoryIds ?? [],
       });
     },
     async recordCompletion(input) {
-      const job = jobs.get(input.jobId);
+      const jobKey = lineageKey(input.workspaceId, input.jobId);
+      const job = jobs.get(jobKey);
       if (!job) throw new Error(`XTrace ingest job ${input.jobId} has no local lineage`);
       const next = {
         ...job,
         status: input.status,
         memoryIds: [...new Set(input.memoryIds)],
       };
-      jobs.set(input.jobId, next);
+      jobs.set(jobKey, next);
       for (const memoryId of next.memoryIds) {
-        memories.set(memoryId, {
+        memories.set(lineageKey(input.workspaceId, memoryId), {
           memoryId,
           workspaceId: next.workspaceId,
           dealId: next.dealId,
@@ -101,8 +104,8 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
       return job ? structuredClone(job) : null;
     },
     async resolve(input) {
-      const direct = memories.get(input.memoryId);
-      if (direct?.workspaceId === input.workspaceId) return structuredClone(direct);
+      const direct = memories.get(lineageKey(input.workspaceId, input.memoryId));
+      if (direct) return structuredClone(direct);
       const dealId = input.convId?.startsWith("deal:")
         ? input.convId.slice("deal:".length)
         : "";
@@ -181,7 +184,7 @@ export function createSupabaseXTraceLineageRepository(options: {
   }
   return {
     async recordSubmission(input) {
-      await request("/xtrace_ingest_jobs?on_conflict=job_id", {
+      await request("/xtrace_ingest_jobs?on_conflict=workspace_id,job_id", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
         body: JSON.stringify({
@@ -200,11 +203,15 @@ export function createSupabaseXTraceLineageRepository(options: {
     },
     async recordCompletion(input) {
       const jobs = await request(
-        `/xtrace_ingest_jobs?job_id=eq.${encodeURIComponent(input.jobId)}&limit=1`,
+        `/xtrace_ingest_jobs?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&job_id=eq.${encodeURIComponent(input.jobId)}&limit=1`,
       ) as Record<string, unknown>[];
       const job = jobs[0];
       if (!job) throw new Error(`XTrace ingest job ${input.jobId} has no local lineage`);
-      await request(`/xtrace_ingest_jobs?job_id=eq.${encodeURIComponent(input.jobId)}`, {
+      await request(
+        `/xtrace_ingest_jobs?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&job_id=eq.${encodeURIComponent(input.jobId)}`,
+        {
         method: "PATCH",
         headers: { Prefer: "return=minimal" },
         body: JSON.stringify({
@@ -212,9 +219,10 @@ export function createSupabaseXTraceLineageRepository(options: {
           memory_ids: input.memoryIds,
           updated_at: new Date().toISOString(),
         }),
-      });
+        },
+      );
       if (!input.memoryIds.length) return;
-      await request("/xtrace_memory_links?on_conflict=memory_id", {
+      await request("/xtrace_memory_links?on_conflict=workspace_id,memory_id", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
         body: JSON.stringify(input.memoryIds.map((memoryId) => ({
@@ -284,6 +292,10 @@ function sameStringSet(left: readonly string[], right: readonly string[]): boole
   if (left.length !== right.length) return false;
   const expected = new Set(right);
   return left.every((value) => expected.has(value));
+}
+
+function lineageKey(workspaceId: string, externalId: string): string {
+  return JSON.stringify([workspaceId, externalId]);
 }
 
 let singleton: XTraceLineageRepository | undefined;

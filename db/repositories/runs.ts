@@ -14,8 +14,8 @@ export function createRunsRepository(client: DataClient) {
     claimNext(workerId: string) {
       return client.claimNextRun(workerId);
     },
-    renewLease(runId: string, workerId: string) {
-      return client.renewRunLease(runId, workerId);
+    renewLease(workspaceId: string, runId: string, workerId: string) {
+      return client.renewRunLease(workspaceId, runId, workerId);
     },
     touchWorkerHeartbeat(workerId: string) {
       return client.touchWorkerHeartbeat(workerId);
@@ -24,31 +24,37 @@ export function createRunsRepository(client: DataClient) {
       return client.isWorkerHealthy(maxAgeMs);
     },
     async get(workspaceId: string, runId: string) {
-      return client.getRun(runId, workspaceId);
+      return client.getRun(workspaceId, runId);
     },
     list(workspaceId: string) {
       return client.listRuns(workspaceId);
     },
     async updateStage(input: {
+      workspaceId: string;
       runId: string;
       stage: string;
       status: "queued" | "running" | "skipped" | "completed" | "failed";
       warning?: string;
       workerId?: string;
     }) {
-      const run = await client.getRun(input.runId);
+      const run = await client.getRun(input.workspaceId, input.runId);
       if (!run) throw new Error(`Run ${input.runId} was not found`);
       if (input.workerId && run.workerId !== input.workerId) {
         throw new Error(`Worker ${input.workerId} no longer owns run ${input.runId}`);
       }
       if (
         input.workerId &&
-        !await client.renewRunLease(input.runId, input.workerId)
+        !await client.renewRunLease(
+          input.workspaceId,
+          input.runId,
+          input.workerId,
+        )
       ) {
         throw new Error(`Worker ${input.workerId} lost the lease for run ${input.runId}`);
       }
       const warnings = input.warning ? [...run.warnings, input.warning] : run.warnings;
       await client.insertRunStage({
+        workspaceId: input.workspaceId,
         runId: input.runId,
         stage: input.stage,
         status: input.status,
@@ -56,23 +62,24 @@ export function createRunsRepository(client: DataClient) {
         startedAt: new Date().toISOString(),
         completedAt: input.status === "running" ? null : new Date().toISOString(),
       });
-      return client.updateRun(input.runId, {
+      return client.updateRun(input.workspaceId, input.runId, {
         currentStage: input.stage,
         warningCount: warnings.length,
         warnings,
       });
     },
     async finish(input: {
+      workspaceId: string;
       runId: string;
       status: Extract<RunStatus, "partial" | "completed" | "failed">;
       workerId?: string;
     }) {
-      const run = await client.getRun(input.runId);
+      const run = await client.getRun(input.workspaceId, input.runId);
       if (!run) throw new Error(`Run ${input.runId} was not found`);
       if (input.workerId && run.workerId !== input.workerId) {
         throw new Error(`Worker ${input.workerId} no longer owns run ${input.runId}`);
       }
-      return client.updateRun(input.runId, {
+      return client.updateRun(input.workspaceId, input.runId, {
         status: input.status,
         completedAt: new Date().toISOString(),
         leaseExpiresAt: null,

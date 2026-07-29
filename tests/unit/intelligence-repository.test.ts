@@ -150,8 +150,11 @@ test("market event upserts are idempotent", async () => {
     now: () => new Date("2026-07-24T12:00:00.000Z"),
   });
 
-  await repository.saveMarketEvents([event("one")]);
-  await repository.saveMarketEvents([event("one"), event("two")]);
+  await repository.saveMarketEvents([event("one")], "workspace_demo");
+  await repository.saveMarketEvents(
+    [event("one"), event("two")],
+    "workspace_demo",
+  );
 
   assert.deepEqual(
     (await repository.listMarketEvents("workspace_demo")).map((item) => item.id).sort(),
@@ -167,7 +170,10 @@ test("Supabase market event upserts accept successful empty responses", async ()
         serviceRoleKey: string;
         fetchImpl: typeof fetch;
       }) => {
-        saveMarketEvents(events: NormalizedMarketEvent[]): Promise<void>;
+        saveMarketEvents(
+          events: NormalizedMarketEvent[],
+          workspaceId: string,
+        ): Promise<void>;
       };
     }
   ).createSupabaseIntelligenceRepository;
@@ -183,18 +189,24 @@ test("Supabase market event upserts accept successful empty responses", async ()
     fetchImpl: async () => new Response(null, { status: 201 }),
   });
 
-  await repository.saveMarketEvents([event("empty-write-response")]);
+  await repository.saveMarketEvents(
+    [event("empty-write-response")],
+    "workspace_demo",
+  );
 });
 
 test("market event reads use an inclusive latest-fourteen-day publication window", async () => {
   const repository = createMemoryIntelligenceRepository({
     now: () => new Date("2026-07-24T12:00:00.000Z"),
   });
-  await repository.saveMarketEvents([
-    event("at-lower-bound", "2026-07-10T12:00:00.000Z"),
-    event("recent", "2026-07-24T12:00:00.000Z"),
-    event("one-millisecond-old", "2026-07-10T11:59:59.999Z"),
-  ]);
+  await repository.saveMarketEvents(
+    [
+      event("at-lower-bound", "2026-07-10T12:00:00.000Z"),
+      event("recent", "2026-07-24T12:00:00.000Z"),
+      event("one-millisecond-old", "2026-07-10T11:59:59.999Z"),
+    ],
+    "workspace_demo",
+  );
 
   assert.deepEqual(
     (await repository.listMarketEvents("workspace_demo")).map((item) => item.id),
@@ -239,6 +251,53 @@ test("reports are stored newest first", async () => {
   assert.deepEqual(
     (await repository.listReports("workspace_demo")).map((item) => item.id),
     ["report_new", "report_old"],
+  );
+});
+
+test("report identity includes workspace and cannot be overwritten cross-tenant", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  const sharedId = "report_shared_external_id";
+
+  await repository.saveReport({
+    id: sharedId,
+    workspaceId: "workspace_one",
+    runId: "run_workspace_one",
+    createdAt: "2026-07-22T12:00:00.000Z",
+    marketSummary: "Workspace one",
+    opportunities: [],
+  });
+  await repository.saveReport({
+    id: sharedId,
+    workspaceId: "workspace_two",
+    runId: "run_workspace_two",
+    createdAt: "2026-07-23T12:00:00.000Z",
+    marketSummary: "Workspace two",
+    opportunities: [],
+  });
+
+  assert.equal(
+    (await repository.getReport("workspace_one", sharedId))?.marketSummary,
+    "Workspace one",
+  );
+  assert.equal(
+    (await repository.getReport("workspace_two", sharedId))?.marketSummary,
+    "Workspace two",
+  );
+});
+
+test("intelligence writes and resets reject a missing workspace", async () => {
+  const repository = createMemoryIntelligenceRepository();
+
+  await assert.rejects(
+    repository.saveMarketEvents(
+      [event("missing-workspace")],
+      undefined as never,
+    ),
+    /workspace.*required/i,
+  );
+  await assert.rejects(
+    repository.resetScanProducts(undefined as never),
+    /workspace.*required/i,
   );
 });
 
@@ -515,7 +574,7 @@ test("resetScanProducts wipes reports and market events but nothing else is reac
   const repository = createMemoryIntelligenceRepository({
     now: () => new Date("2026-07-24T12:00:00.000Z"),
   });
-  await repository.saveMarketEvents([event("wiped")]);
+  await repository.saveMarketEvents([event("wiped")], "workspace_demo");
   await repository.saveReport({
     id: "report_wiped",
     workspaceId: "workspace_demo",

@@ -77,7 +77,10 @@ export interface DemoDataStore {
   ensureDeal(input: DemoDealRecord): Promise<UpsertResult<DemoDealRecord>>;
   ensureEvidence(input: StoredEvidenceRecord): Promise<UpsertResult<StoredEvidenceRecord>>;
   ensureFixture(input: StoredFixtureRecord): Promise<UpsertResult<StoredFixtureRecord>>;
-  resetDemoData(options?: { includeHistory?: boolean }): Promise<void>;
+  resetDemoData(
+    workspaceId: string,
+    options?: { includeHistory?: boolean },
+  ): Promise<void>;
 }
 
 export interface DemoDataSnapshot {
@@ -148,7 +151,7 @@ export function createMemoryDemoDataStore(): MemoryDemoDataStore {
     ensureUser: (input) => ensureMemory(users, input.id, input),
     ensureMembership: (input) => ensureMemory(
       memberships,
-      `${input.workspaceId}:${input.userId}`,
+      workspaceExternalId(input.workspaceId, input.userId),
       input,
     ),
     ensureDocument: async (input) => {
@@ -160,7 +163,7 @@ export function createMemoryDemoDataStore(): MemoryDemoDataStore {
     },
     ensureWorkspaceDocument: (input) => ensureMemory(
       workspaceDocuments,
-      `${input.workspaceId}:${input.documentId}`,
+      workspaceExternalId(input.workspaceId, input.documentId),
       input,
     ),
     async listWorkspaceDocumentIds(workspaceId) {
@@ -169,20 +172,34 @@ export function createMemoryDemoDataStore(): MemoryDemoDataStore {
         .map((record) => record.documentId)
         .sort();
     },
-    ensureCompany: (input) => ensureMemory(companies, input.id, input),
-    ensureDeal: (input) => ensureMemory(deals, input.id, input),
-    ensureEvidence: (input) => ensureMemory(evidence, input.id, input),
-    ensureFixture: (input) => ensureMemory(fixtures, input.id, input),
-    async resetDemoData() {
-      workspaces.clear();
-      users.clear();
-      memberships.clear();
-      documents.clear();
-      workspaceDocuments.clear();
-      companies.clear();
-      deals.clear();
-      evidence.clear();
-      fixtures.clear();
+    ensureCompany: (input) => ensureMemory(
+      companies,
+      workspaceExternalId(input.workspaceId, input.id),
+      input,
+    ),
+    ensureDeal: (input) => ensureMemory(
+      deals,
+      workspaceExternalId(input.workspaceId, input.id),
+      input,
+    ),
+    ensureEvidence: (input) => ensureMemory(
+      evidence,
+      workspaceExternalId(input.workspaceId, input.id),
+      input,
+    ),
+    ensureFixture: (input) => ensureMemory(
+      fixtures,
+      workspaceExternalId(input.workspaceId, input.id),
+      input,
+    ),
+    async resetDemoData(workspaceId) {
+      const target = requiredWorkspaceId(workspaceId);
+      deleteWorkspaceRows(memberships, target);
+      deleteWorkspaceRows(workspaceDocuments, target);
+      deleteWorkspaceRows(companies, target);
+      deleteWorkspaceRows(deals, target);
+      deleteWorkspaceRows(evidence, target);
+      deleteWorkspaceRows(fixtures, target);
     },
     inspect() {
       return {
@@ -504,15 +521,15 @@ export function createSupabaseDemoDataStore(options: {
     },
     ensureCompany: (input) => upsert(
       "companies",
-      ["id"],
-      { id: input.id },
+      ["workspace_id", "id"],
+      { workspace_id: input.workspaceId, id: input.id },
       { id: input.id, workspace_id: input.workspaceId, name: input.name },
       input,
     ),
     ensureDeal: (input) => upsert(
       "deals",
-      ["id"],
-      { id: input.id },
+      ["workspace_id", "id"],
+      { workspace_id: input.workspaceId, id: input.id },
       {
         id: input.id,
         workspace_id: input.workspaceId,
@@ -523,8 +540,8 @@ export function createSupabaseDemoDataStore(options: {
     ),
     ensureEvidence: (input) => upsert(
       "source_evidence",
-      ["id"],
-      { id: input.id },
+      ["workspace_id", "id"],
+      { workspace_id: input.workspaceId, id: input.id },
       {
         id: input.id,
         workspace_id: input.workspaceId,
@@ -540,8 +557,8 @@ export function createSupabaseDemoDataStore(options: {
     ),
     ensureFixture: (input) => upsert(
       "deal_interactions",
-      ["id"],
-      { id: input.id },
+      ["workspace_id", "id"],
+      { workspace_id: input.workspaceId, id: input.id },
       {
         id: input.id,
         workspace_id: input.workspaceId,
@@ -559,29 +576,25 @@ export function createSupabaseDemoDataStore(options: {
       },
       input,
     ),
-    async resetDemoData(resetOptions = {}) {
+    async resetDemoData(workspaceId, resetOptions = {}) {
+      const target = requiredWorkspaceId(workspaceId);
+      const workspaceFilter = `eq.${target}`;
       const deletions: Array<[table: string, column: string, filter: string]> = [
-        ["xtrace_memory_links", "workspace_id", "eq.workspace_demo"],
-        ["xtrace_ingest_jobs", "workspace_id", "eq.workspace_demo"],
-        ["market_events", "workspace_id", "eq.workspace_demo"],
-        ["deal_interactions", "workspace_id", "eq.workspace_demo"],
-        ["source_evidence", "workspace_id", "eq.workspace_demo"],
-        ["workspace_documents", "workspace_id", "eq.workspace_demo"],
-        ["deals", "workspace_id", "eq.workspace_demo"],
-        ["companies", "workspace_id", "eq.workspace_demo"],
-        [
-          "source_documents",
-          "id",
-          `in.(${listPreloadedDocuments().map((document) => document.id).join(",")})`,
-        ],
-        ["workspace_members", "workspace_id", "eq.workspace_demo"],
-        ["users", "id", "eq.user_demo"],
-        ["workspaces", "id", "eq.workspace_demo"],
+        ["xtrace_memory_links", "workspace_id", workspaceFilter],
+        ["xtrace_ingest_jobs", "workspace_id", workspaceFilter],
+        ["market_events", "workspace_id", workspaceFilter],
+        ["deal_interactions", "workspace_id", workspaceFilter],
+        ["source_evidence", "workspace_id", workspaceFilter],
+        ["workspace_documents", "workspace_id", workspaceFilter],
+        ["deals", "workspace_id", workspaceFilter],
+        ["companies", "workspace_id", workspaceFilter],
+        ["workspace_members", "workspace_id", workspaceFilter],
       ];
       if (resetOptions.includeHistory) {
         deletions.unshift(
-          ["intelligence_reports", "workspace_id", "eq.workspace_demo"],
-          ["scan_runs", "workspace_id", "eq.workspace_demo"],
+          ["company_analyses", "workspace_id", workspaceFilter],
+          ["intelligence_reports", "workspace_id", workspaceFilter],
+          ["scan_runs", "workspace_id", workspaceFilter],
         );
       }
       for (const [table, column, filter] of deletions) {
@@ -690,6 +703,25 @@ async function ensureMemory<T>(
   const created = !target.has(key);
   target.set(key, structuredClone(input));
   return { value: structuredClone(input), created };
+}
+
+function workspaceExternalId(workspaceId: string, externalId: string): string {
+  return JSON.stringify([requiredWorkspaceId(workspaceId), externalId]);
+}
+
+function requiredWorkspaceId(workspaceId: string): string {
+  const normalized = workspaceId?.trim();
+  if (!normalized) throw new Error("A workspace is required.");
+  return normalized;
+}
+
+function deleteWorkspaceRows<T extends { workspaceId: string }>(
+  rows: Map<string, T>,
+  workspaceId: string,
+): void {
+  for (const [key, row] of rows) {
+    if (row.workspaceId === workspaceId) rows.delete(key);
+  }
 }
 
 function cloneValues<T>(values: Map<string, T>): T[] {

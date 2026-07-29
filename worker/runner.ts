@@ -52,7 +52,7 @@ export async function runNextQueuedScan(): Promise<boolean> {
   const heartbeat = setInterval(() => {
     void Promise.all([
       runs.touchWorkerHeartbeat(WORKER_ID),
-      runs.renewLease(claimed.id, WORKER_ID),
+      runs.renewLease(claimed.workspaceId, claimed.id, WORKER_ID),
     ]).then(async ([, leaseRenewed]) => {
       if (!leaseRenewed) {
         throw new Error(`Worker no longer owns scan ${claimed.id}`);
@@ -108,6 +108,7 @@ export async function runNextQueuedScan(): Promise<boolean> {
     const current = await runs.get(claimed.workspaceId, claimed.id);
     if (current?.status === "running" && current.workerId === WORKER_ID) {
       await runs.finish({
+        workspaceId: claimed.workspaceId,
         runId: claimed.id,
         status: "failed",
         workerId: WORKER_ID,

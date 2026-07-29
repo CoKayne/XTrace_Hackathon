@@ -1,8 +1,11 @@
 import { getDataClient } from "../../../../db/client";
 import { createRunsRepository } from "../../../../db/repositories/runs";
 import { errorResponse, jsonOk } from "../../../../lib/api/response";
+import {
+  resolveRouteRequestContext,
+  type RouteDependencies,
+} from "../../../../lib/api/route-dependencies";
 import { requirePermission } from "../../../../lib/api/safety";
-import { resolveRequestContext } from "../../../../lib/auth/request-context";
 import { getProductInputReadiness } from "../../../../lib/corpus/import-readiness";
 import { readMarketProviderConfiguration } from "../../../../lib/market/config";
 import { createDefaultDemoDataStore } from "../../../../lib/storage/service";
@@ -10,9 +13,13 @@ import { isXTraceConfigured } from "../../../../lib/xtrace/client";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  _routeContext?: unknown,
+  dependencies: RouteDependencies = {},
+) {
   try {
-    const context = await resolveRequestContext(request);
+    const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
     const market = readMarketProviderConfiguration();
     const corpus = await getProductInputReadiness(

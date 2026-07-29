@@ -1,7 +1,10 @@
 import { getUploadedDocumentsRepository } from "../../../../db/repositories/uploaded-documents";
 import { errorResponse, jsonCreated, jsonError, jsonOk } from "../../../../lib/api/response";
+import {
+  resolveRouteRequestContext,
+  type RouteDependencies,
+} from "../../../../lib/api/route-dependencies";
 import { rateLimitRequest, requirePermission } from "../../../../lib/api/safety";
-import { resolveRequestContext } from "../../../../lib/auth/request-context";
 import { createDefaultPrivateObjectStorage } from "../../../../lib/storage/service";
 import {
   MAX_UPLOAD_BYTES,
@@ -19,9 +22,13 @@ export const dynamic = "force-dynamic";
 
 // Uploads never join the fixed 14-document manifest or the 19-Deal scan
 // universe: they are stored separately and extracted by the background worker.
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  _routeContext?: unknown,
+  dependencies: RouteDependencies = {},
+) {
   try {
-    const context = await resolveRequestContext(request);
+    const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "mutateSources");
     const rate = await rateLimitRequest(
       request,
@@ -57,7 +64,8 @@ export async function POST(request: Request) {
     });
     const bytes = new Uint8Array(await file.arrayBuffer());
     const checksum = await sha256Hex(bytes);
-    const repository = getUploadedDocumentsRepository();
+    const repository = dependencies.uploadedDocuments
+      ?? getUploadedDocumentsRepository();
 
     const existing = await repository.findByChecksum(
       context.workspaceId,
@@ -74,7 +82,9 @@ export async function POST(request: Request) {
       uploadId: id,
       filename,
     });
-    await createDefaultPrivateObjectStorage().ensurePrivateObject({
+    await (
+      dependencies.privateObjectStorage ?? createDefaultPrivateObjectStorage()
+    ).ensurePrivateObject({
       key: objectKey,
       bytes,
       contentType,

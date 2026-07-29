@@ -94,7 +94,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
         leaseExpiresAt: null,
         workerId: null,
       };
-      rows.set(`${input.workspaceId}:${input.id}`, record);
+      rows.set(uploadIdentity(input.workspaceId, input.id), record);
       return strip(record);
     },
     async list(workspaceId) {
@@ -104,7 +104,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
         .map(strip);
     },
     async get(input) {
-      const row = rows.get(`${input.workspaceId}:${input.id}`);
+      const row = rows.get(uploadIdentity(input.workspaceId, input.id));
       return row ? strip(row) : null;
     },
     async findByChecksum(workspaceId, checksum) {
@@ -130,14 +130,14 @@ export function createMemoryUploadedDocumentsRepository(options: {
       return { ...strip(row), workerId };
     },
     async renewLease(input) {
-      const row = rows.get(`${input.workspaceId}:${input.id}`);
+      const row = rows.get(uploadIdentity(input.workspaceId, input.id));
       if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
       row.leaseExpiresAt = now().getTime() + LEASE_MS;
       row.updatedAt = now().toISOString();
       return true;
     },
     async savePreview(input) {
-      const row = rows.get(`${input.workspaceId}:${input.id}`);
+      const row = rows.get(uploadIdentity(input.workspaceId, input.id));
       if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
       Object.assign(row, {
         status: "awaiting_confirmation" as const,
@@ -149,7 +149,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
       return true;
     },
     async fail(input) {
-      const row = rows.get(`${input.workspaceId}:${input.id}`);
+      const row = rows.get(uploadIdentity(input.workspaceId, input.id));
       if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
       row.status = "failed";
       row.failureReason = input.reason;
@@ -172,6 +172,10 @@ function strip(
   delete record.leaseExpiresAt;
   delete record.workerId;
   return structuredClone(record as UploadedDocumentRecord);
+}
+
+function uploadIdentity(workspaceId: string, externalId: string): string {
+  return JSON.stringify([workspaceId, externalId]);
 }
 
 export function createSupabaseUploadedDocumentsRepository(options: {

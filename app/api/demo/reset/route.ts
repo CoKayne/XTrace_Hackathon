@@ -1,7 +1,10 @@
 import { getIntelligenceRepository } from "../../../../db/repositories/intelligence";
 import { errorResponse, jsonError, jsonOk } from "../../../../lib/api/response";
+import {
+  resolveRouteRequestContext,
+  type RouteDependencies,
+} from "../../../../lib/api/route-dependencies";
 import { rateLimitRequest, requirePermission } from "../../../../lib/api/safety";
-import { resolveRequestContext } from "../../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -10,9 +13,13 @@ export const dynamic = "force-dynamic";
 // clean-slate reveal. The corpus, XTrace lineage, and stored judgments are
 // untouched, and queued or running scans survive. Reset is always an
 // explicit human action; page loads never trigger it.
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  _routeContext?: unknown,
+  dependencies: RouteDependencies = {},
+) {
   try {
-    const context = await resolveRequestContext(request);
+    const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "mutateSources");
     const rate = await rateLimitRequest(
       request,

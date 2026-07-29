@@ -1,12 +1,16 @@
 import { getUploadedDocumentsRepository } from "../../../../db/repositories/uploaded-documents";
 import { errorResponse, jsonError } from "../../../../lib/api/response";
+import {
+  resolveRouteRequestContext,
+  type RouteDependencies,
+} from "../../../../lib/api/route-dependencies";
 import { requirePermission } from "../../../../lib/api/safety";
-import { resolveRequestContext } from "../../../../lib/auth/request-context";
 import { getPreloadedDocument } from "../../../../lib/corpus/manifest";
 import {
   createDefaultPrivateDocumentAccess,
   createDefaultPrivateObjectStorage,
   privateObjectKey,
+  type PrivateObjectStorage,
 } from "../../../../lib/storage/service";
 
 export const runtime = "nodejs";
@@ -14,9 +18,13 @@ export const runtime = "nodejs";
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
+  dependencies: RouteDependencies = {},
 ) {
   try {
-    const requestContext = await resolveRequestContext(request);
+    const requestContext = await resolveRouteRequestContext(
+      request,
+      dependencies,
+    );
     requirePermission(requestContext, "readWorkspace");
     const { id } = await context.params;
     const preloaded = getPreloadedDocument(id);
@@ -28,11 +36,13 @@ export async function GET(
         id,
         filename: preloaded!.filename,
         objectKey: privateObjectKey(preloaded!),
-      });
+      }, dependencies.privateObjectStorage);
     }
 
     requirePermission(requestContext, "readPrivateSources");
-    const capability = await createDefaultPrivateDocumentAccess()
+    const capability = await (
+      dependencies.documentAccess ?? createDefaultPrivateDocumentAccess()
+    )
       .authorizePrivateRead(request);
     if (
       capability.workspaceId !== requestContext.workspaceId
@@ -42,7 +52,10 @@ export async function GET(
     }
     const uploaded = preloaded
       ? null
-      : await getUploadedDocumentsRepository().get({
+      : await (
+          dependencies.uploadedDocuments
+            ?? getUploadedDocumentsRepository()
+        ).get({
           workspaceId: requestContext.workspaceId,
           id,
         });
@@ -55,7 +68,7 @@ export async function GET(
       filename: preloaded?.filename ?? uploaded!.filename,
       objectKey: preloaded ? privateObjectKey(preloaded) : uploaded!.objectKey,
       contentType: preloaded ? "application/pdf" : uploaded!.contentType,
-    });
+    }, dependencies.privateObjectStorage);
   } catch (error) {
     if (
       error instanceof Error
@@ -75,8 +88,10 @@ async function readDocumentObject(input: {
   filename: string;
   objectKey: string;
   contentType?: string;
-}): Promise<Response> {
-  const bytes = await createDefaultPrivateObjectStorage().readPrivateObject(
+}, storage?: PrivateObjectStorage): Promise<Response> {
+  const bytes = await (
+    storage ?? createDefaultPrivateObjectStorage()
+  ).readPrivateObject(
     input.objectKey,
   );
   if (!bytes) {

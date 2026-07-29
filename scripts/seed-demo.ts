@@ -55,7 +55,10 @@ export async function runDemoSeed(
   options: { reset?: boolean } = {},
 ): Promise<DemoSeedResult> {
   if (options.reset) {
-    await dependencies.dataStore.resetDemoData({ includeHistory: true });
+    await dependencies.dataStore.resetDemoData(
+      DEMO_WORKSPACE.id,
+      { includeHistory: true },
+    );
   }
 
   const created = emptyCreatedCounts();

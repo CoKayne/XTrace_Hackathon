@@ -112,3 +112,108 @@ decision, not an unauthenticated route bypass.
   future verified session provider.
 - Public-demo reset now returns 403 as explicitly required; any existing public
   reset control must tolerate that deployment policy.
+
+## Review round 1
+
+The rejected independent review of
+`6d4350072aee5ece129f5a107ba1d6a57d2aee7a` identified one Critical and three
+Important tenant-isolation gaps. This follow-up closes each finding:
+
+- **C1 — composite workspace identity:** memory corpus rows now use injective
+  JSON tuple keys rather than delimiter-concatenated strings, and Supabase
+  corpus lookup/upsert conflict targets use `(workspace_id,id)`. Migration
+  `0008_workspace_composite_identity.sql` changes every affected
+  workspace-owned external identity to a composite primary key and replaces
+  scalar parent relations with composite workspace foreign keys. It also
+  rewrites the report RPC to scope conflict, replacement, and return behavior
+  by workspace. Identical company, Deal, evidence, interaction, report,
+  analysis, XTrace, and upload IDs can therefore coexist across tenants.
+  `source_documents` intentionally remains a global immutable,
+  content-addressed catalog; `workspace_documents` is the tenant association.
+- **I1 — authenticated product boundary:** all 21 handlers use a server-only
+  dependency seam whose production default remains the real
+  `resolveRequestContext`. No query, header, cookie, body, or request-derived
+  hook can select the injected dependency. The product matrix invokes every
+  real handler for a trusted partner, every read handler for an associate, all
+  three source mutations for allowed/denied roles, and every handler for zero
+  and ambiguous membership failures. Every matrix request carries forged
+  query, header, and cookie selectors, and every POST also carries a forged
+  JSON/form selector. Adversarial handler tests cover cross-tenant
+  report/report-company/run/upload/Deal-analysis IDs, reset preservation for a
+  second tenant, and an actually issued private capability replayed with the
+  wrong workspace, source revision/path, object version, permission, expiry,
+  and route. The rate-limit regression compares exact hashes and proves
+  caller-controlled request metadata does not change a trusted
+  principal/workspace identity.
+- **I2 — mandatory repository scope:** run reads, updates, stages, lease
+  renewal, and finish operations require a workspace and always filter or
+  validate it. Market-event writes and destructive intelligence resets no
+  longer have a demo-workspace default. XTrace job completion and external job
+  and memory identities are also workspace-composite. `createXTraceService`
+  and the worker ingest stage now require an explicit workspace, and recall is
+  rejected when it does not match the service's scoped workspace. The only
+  intentionally global operations are explicitly documented worker queue
+  claims; every mutation after a claim carries the workspace returned by the
+  claimed row.
+- **I3 — public extraction projection:** uploaded-document serialization now
+  explicitly projects only candidate company name, candidate headline, facts,
+  excerpts, and locators. Extractor/provider identity, version, extraction
+  timestamp, content hash, byte/character accounting, and truncation metadata
+  are excluded. A non-null sentinel preview is exercised through the real
+  uploaded-documents handler.
+
+The three untracked duplicate fixtures named `* 2.ts` were compared with their
+canonical historical files by content hash, found byte-identical, and removed.
+No such duplicate remains.
+
+The first follow-up review then identified three additional Important gaps
+(the lower-level XTrace default, incomplete all-handler adversarial coverage,
+and migration instructions/tests) plus one Minor delimiter-collision risk.
+All four were closed before this commit: XTrace has no default tenant, the
+matrix and cross-tenant reset/analysis cases were expanded, the README now
+lists migrations `0000` through `0008`, the static cross-statement migration
+regex test was replaced with a live legacy-schema/catalog test, and tenant
+memory keys use JSON tuple encoding with delimiter-bearing regressions.
+
+The second read-only review found one remaining Important documentation gap
+and two Minor hardening gaps. Those are also closed: every README migration
+range, including the worker runbook, now ends at `0008`, and the documentation
+test rejects any stale `0000`–`0007` range; XTrace trims and then consistently
+uses the normalized scoped workspace for search, cache, candidate filtering,
+and lineage resolution; and `npm run test:migrations` makes PostgreSQL
+migration coverage mandatory for CI/release by failing rather than silently
+skipping when a disposable database cannot be created. The final concise
+re-review reported no remaining Critical or Important issues and `Ready: Yes`.
+
+### Review-round verification
+
+- Regression tests were observed failing before the corresponding persistence,
+  handler, repository, capability, rate-key, and serializer fixes.
+- Focused authorization, product-route, storage, run, intelligence, XTrace,
+  rate-limit, and memory-identity suite: **197 passed, 0 failed**.
+- Required live legacy migration and exact PostgreSQL catalog suite
+  (`npm run test:migrations`):
+  **2 passed, 0 failed**.
+- Full suite with loopback permission and local disposable PostgreSQL:
+  **422 tests, 421 passed, 0 failed, 1 intentionally skipped**.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `git diff --check`: passed.
+- The committed migration test applies `0000` through `0007`, seeds legacy
+  tenant rows, applies `0008`, inserts colliding external IDs for a second
+  workspace through both tables and the report RPC, verifies exact catalog
+  primary/foreign keys, and proves a mismatched parent is rejected.
+- Final read-only re-review found **0 Critical and 0 Important** issues and
+  reported `Ready: Yes`. The main task controller will perform the formal
+  independent acceptance review of the resulting commit.
+
+### Operational notes
+
+- Migration `0008` takes deterministic `ACCESS EXCLUSIVE` locks and should be
+  scheduled in a maintenance window.
+- The migration deliberately fails closed if legacy parent/child rows already
+  disagree on `workspace_id`; operators must repair those mismatches before
+  retrying it.
+- The follow-up commit message is
+  `fix(security): close tenant isolation review gaps`; its SHA is reported in
+  the handoff because a commit cannot embed its own content-derived SHA.

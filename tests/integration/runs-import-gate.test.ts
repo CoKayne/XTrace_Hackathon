@@ -12,7 +12,7 @@ test("POST /api/runs refuses to trust client state until all 13 product inputs a
   const previousAnthropicKey = process.env.ANTHROPIC_API_KEY;
   process.env.ANTHROPIC_API_KEY = "test-anthropic-key";
   const store = createDefaultDemoDataStore();
-  await store.resetDemoData();
+  await store.resetDemoData("workspace_demo");
   const productInputs = listPreloadedDocuments()
     .filter((document) => document.role !== "reference");
   const reference = listPreloadedDocuments()
@@ -60,7 +60,7 @@ test("POST /api/runs refuses to trust client state until all 13 product inputs a
     const readyResponse = await createRun(request());
     assert.equal(readyResponse.status, 201);
   } finally {
-    await store.resetDemoData();
+    await store.resetDemoData("workspace_demo");
     if (previousAnthropicKey === undefined) {
       delete process.env.ANTHROPIC_API_KEY;
     } else {
