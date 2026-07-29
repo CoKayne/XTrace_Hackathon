@@ -2,8 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createMemoryDataClient } from "../../db/client";
+import {
+  eligibleDealSnapshotFingerprint,
+  sourceRevisionFingerprint,
+  type RegisteredDeal,
+} from "../../db/repositories/deal-registry";
 import { createMemoryIntelligenceRepository } from "../../db/repositories/intelligence";
 import { createRunsRepository } from "../../db/repositories/runs";
+import type { DealMemoryBundle } from "../../lib/contracts/domain";
 import { buildPreloadedDealMemoryBundles } from "../../lib/corpus/service";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 import { processClaimedRun } from "../../worker/process-run";
@@ -11,8 +17,72 @@ import { processClaimedRun } from "../../worker/process-run";
 const READY_IMPORT_GATE = {
   async assertReady() {},
 };
-const ELIGIBLE_SNAPSHOT_FINGERPRINT =
-  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+function authoritativeDeals(bundles: DealMemoryBundle[]) {
+  const deals = new Map<string, RegisteredDeal>(
+    bundles.map((bundle) => {
+      const revisionIds = [`revision_${bundle.dealId}`];
+      return [bundle.dealId, {
+        id: bundle.dealId,
+        workspaceId: "workspace_demo",
+        companyId: `company_${bundle.dealId}`,
+        companyName: bundle.companyName,
+        status: bundle.status,
+        analysisEligibleAt: "2026-07-01T00:00:00.000Z",
+        activeSourceRevisionFingerprint:
+          sourceRevisionFingerprint(revisionIds),
+        activeSourceRevisionIds: revisionIds,
+      }];
+    }),
+  );
+  return {
+    dealRegistry: {
+      async listAnalysisEligibleBundles(workspaceId: string) {
+        assert.equal(workspaceId, "workspace_demo");
+        return structuredClone(bundles);
+      },
+      async findForWorkspace(input: {
+        workspaceId: string;
+        dealId: string;
+      }) {
+        assert.equal(input.workspaceId, "workspace_demo");
+        return structuredClone(deals.get(input.dealId) ?? null);
+      },
+      async getAnalysisEligibleSnapshot(workspaceId: string) {
+        assert.equal(workspaceId, "workspace_demo");
+        const values = [...deals.values()];
+        return {
+          count: values.length,
+          dealIds: values.map(({ id }) => id).sort(),
+          fingerprint: eligibleDealSnapshotFingerprint(values),
+        };
+      },
+    },
+    underwriting: {
+      async createBatchAndSelections(input: {
+        scanRun: { id: string; workspaceId: string };
+        analyses: DealMemoryBundle[] | unknown[];
+      }) {
+        return {
+          id: `batch_${input.scanRun.id}`,
+          workspaceId: input.scanRun.workspaceId,
+          scanRunId: input.scanRun.id,
+          status: "completed" as const,
+          batchInputFingerprint:
+            `sha256:${"a".repeat(64)}`,
+          fundPolicySnapshotId: "fund_policy_test",
+          rerunOfId: null,
+          createdAt: "2026-07-24T12:00:00.000Z",
+        };
+      },
+      async processCandidate() {
+        throw new Error(
+          "The process-run seam owns automatic candidate processing.",
+        );
+      },
+    },
+  };
+}
 
 function createTestIntelligenceRepository() {
   return createMemoryIntelligenceRepository({
@@ -64,8 +134,7 @@ test("a claimed run fails before market work when durable product-input confirma
     processClaimedRun(run, {
       runs,
       intelligence: createTestIntelligenceRepository(),
-      bundles: buildPreloadedDealMemoryBundles(),
-      eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
+      ...authoritativeDeals(buildPreloadedDealMemoryBundles()),
       importGate: {
         async assertReady(workspaceId) {
           assert.equal(workspaceId, "workspace_demo");
@@ -107,8 +176,7 @@ test("a failed stage persists its exact error in the durable run warnings", asyn
     processClaimedRun(run, {
       runs,
       intelligence: createTestIntelligenceRepository(),
-      bundles: buildPreloadedDealMemoryBundles(),
-      eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
+      ...authoritativeDeals(buildPreloadedDealMemoryBundles()),
       importGate: READY_IMPORT_GATE,
       market: {
         async scanMarketWindow() {
@@ -133,7 +201,7 @@ test("a failed stage persists its exact error in the durable run warnings", asyn
   );
 });
 
-test("a new analysis run requires the canonical eligible snapshot token", async () => {
+test("a new analysis run rejects registry bundles without immutable Deal revisions", async () => {
   const runs = createRunsRepository(createMemoryDataClient());
   await runs.create({
     workspaceId: "workspace_demo",
@@ -143,18 +211,28 @@ test("a new analysis run requires the canonical eligible snapshot token", async 
   const run = await runs.claimNext("test-worker");
   assert.ok(run);
   let marketCalled = false;
+  const authoritative = authoritativeDeals(
+    buildPreloadedDealMemoryBundles(),
+  );
 
   await assert.rejects(
     processClaimedRun(run, {
       runs,
       intelligence: createTestIntelligenceRepository(),
-      bundles: buildPreloadedDealMemoryBundles(),
-      eligibleSnapshotFingerprint: undefined as never,
+      ...authoritative,
+      dealRegistry: {
+        ...authoritative.dealRegistry,
+        async findForWorkspace() {
+          return null;
+        },
+      },
       importGate: READY_IMPORT_GATE,
       market: {
         async scanMarketWindow() {
           marketCalled = true;
-          throw new Error("Market work must not run without a snapshot token.");
+          throw new Error(
+            "Market work must not run without an immutable registry snapshot.",
+          );
         },
       },
       reasoner: {
@@ -163,8 +241,63 @@ test("a new analysis run requires the canonical eligible snapshot token", async 
         },
       },
     }),
-    /eligible snapshot.*required|canonical.*snapshot/i,
+    /missing its immutable registry revision snapshot/i,
   );
+  assert.equal(marketCalled, false);
+});
+
+test("a new analysis run rejects a Deal registry snapshot that changes during startup", async () => {
+  const runs = createRunsRepository(createMemoryDataClient());
+  await runs.create({
+    workspaceId: "workspace_demo",
+    mode: "structured",
+    windowDays: 14,
+  });
+  const run = await runs.claimNext("test-worker");
+  assert.ok(run);
+  const authoritative = authoritativeDeals(
+    buildPreloadedDealMemoryBundles(),
+  );
+  let snapshotReads = 0;
+  let marketCalled = false;
+
+  await assert.rejects(
+    processClaimedRun(run, {
+      runs,
+      intelligence: createTestIntelligenceRepository(),
+      ...authoritative,
+      dealRegistry: {
+        ...authoritative.dealRegistry,
+        async getAnalysisEligibleSnapshot(workspaceId) {
+          const snapshot = await authoritative.dealRegistry
+            .getAnalysisEligibleSnapshot(workspaceId);
+          snapshotReads += 1;
+          return snapshotReads === 1
+            ? snapshot
+            : {
+                ...snapshot,
+                fingerprint: `sha256:${"f".repeat(64)}`,
+              };
+        },
+      },
+      importGate: READY_IMPORT_GATE,
+      market: {
+        async scanMarketWindow() {
+          marketCalled = true;
+          throw new Error(
+            "Market work must not run against a torn registry snapshot.",
+          );
+        },
+      },
+      reasoner: {
+        async reason() {
+          throw new Error("Reasoning must not run against a torn snapshot.");
+        },
+      },
+    }),
+    /eligible Deal snapshot changed while the scan was starting/i,
+  );
+  assert.equal(snapshotReads, 2);
   assert.equal(marketCalled, false);
 });
 
@@ -183,8 +316,7 @@ test("a claimed run persists market evidence, an always-present summary, and ran
   const result = await processClaimedRun(run!, {
     runs,
     intelligence,
-    bundles,
-    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
+    ...authoritativeDeals(bundles),
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -287,8 +419,7 @@ test("persists a generic public item but excludes it from downstream analysis wi
   const result = await processClaimedRun(run, {
     runs,
     intelligence,
-    bundles: buildPreloadedDealMemoryBundles(),
-    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
+    ...authoritativeDeals(buildPreloadedDealMemoryBundles()),
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -370,8 +501,7 @@ test("XTrace recall failure never falls back to structured memory and marks the 
   const result = await processClaimedRun(run, {
     runs,
     intelligence: createTestIntelligenceRepository(),
-    bundles: buildPreloadedDealMemoryBundles(),
-    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
+    ...authoritativeDeals(buildPreloadedDealMemoryBundles()),
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -465,8 +595,7 @@ test("polls pending XTrace ingest jobs before recall", async () => {
   const result = await processClaimedRun(run, {
     runs,
     intelligence: createTestIntelligenceRepository(),
-    bundles: buildPreloadedDealMemoryBundles(),
-    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
+    ...authoritativeDeals(buildPreloadedDealMemoryBundles()),
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {
@@ -569,8 +698,7 @@ test("bounds market evidence before XTrace and Claude while preserving all event
   const result = await processClaimedRun(run, {
     runs,
     intelligence,
-    bundles,
-    eligibleSnapshotFingerprint: ELIGIBLE_SNAPSHOT_FINGERPRINT,
+    ...authoritativeDeals(bundles),
     importGate: READY_IMPORT_GATE,
     market: {
       async scanMarketWindow() {

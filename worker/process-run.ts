@@ -4,6 +4,11 @@ import type {
   IntelligenceReportWrite,
   IntelligenceRepository,
 } from "../db/repositories/intelligence";
+import {
+  eligibleDealSnapshotFingerprint,
+  type DealRegistry,
+  type RegisteredDeal,
+} from "../db/repositories/deal-registry";
 import type { createRunsRepository } from "../db/repositories/runs";
 import {
   OpportunityReportItemSchema,
@@ -35,6 +40,9 @@ import {
   buildCompanyAnalyses,
   countCompanyAnalyses,
 } from "../lib/reports/company-analysis";
+import type {
+  UnderwritingOrchestrator,
+} from "../lib/underwriting/orchestrator";
 import { recallAllDealContexts } from "./recall-deal-contexts";
 
 type RunsRepository = ReturnType<typeof createRunsRepository>;
@@ -42,8 +50,13 @@ type RunsRepository = ReturnType<typeof createRunsRepository>;
 export interface ProcessRunDependencies {
   runs: RunsRepository;
   intelligence: IntelligenceRepository;
-  bundles: DealMemoryBundle[];
-  eligibleSnapshotFingerprint: string;
+  dealRegistry: Pick<
+    DealRegistry,
+    | "getAnalysisEligibleSnapshot"
+    | "listAnalysisEligibleBundles"
+    | "findForWorkspace"
+  >;
+  underwriting: UnderwritingOrchestrator;
   importGate: ProductInputGate;
   market: Pick<MarketService, "scanMarketWindow">;
   reasoner: MatchingReasoner;
@@ -74,15 +87,9 @@ export async function processClaimedRun(
   const warnings: string[] = [];
   const workerId = claimedRun.workerId;
   if (!workerId) throw new Error(`Run ${claimedRun.id} has no owning worker`);
-  if (
-    !/^sha256:[0-9a-f]{64}$/.test(
-      dependencies.eligibleSnapshotFingerprint,
-    )
-  ) {
-    throw new Error(
-      "A canonical eligible snapshot fingerprint is required.",
-    );
-  }
+  let bundles: DealMemoryBundle[] = [];
+  let eligibleDeals: RegisteredDeal[] = [];
+  let eligibleSnapshotFingerprint = "";
   let activeStage = claimedRun.currentStage ?? "worker_setup";
   let activeStageStatus:
     | "running"
@@ -112,6 +119,48 @@ export async function processClaimedRun(
     await updateStage("import_confirmation", "running");
     try {
       await dependencies.importGate.assertReady(claimedRun.workspaceId);
+      const snapshotBefore = await dependencies.dealRegistry
+        .getAnalysisEligibleSnapshot(claimedRun.workspaceId);
+      bundles = structuredClone(
+        await dependencies.dealRegistry.listAnalysisEligibleBundles(
+          claimedRun.workspaceId,
+        ),
+      );
+      eligibleDeals = await Promise.all(
+        bundles.map(async ({ dealId }) => {
+          const deal = await dependencies.dealRegistry.findForWorkspace({
+            workspaceId: claimedRun.workspaceId,
+            dealId,
+          });
+          if (
+            !deal
+            || deal.analysisEligibleAt === null
+            || deal.activeSourceRevisionIds.length === 0
+            || !deal.activeSourceRevisionFingerprint
+          ) {
+            throw new Error(
+              `Analysis-eligible Deal ${dealId} is missing its immutable registry revision snapshot.`,
+            );
+          }
+          return structuredClone(deal);
+        }),
+      );
+      eligibleSnapshotFingerprint =
+        eligibleDealSnapshotFingerprint(eligibleDeals);
+      const snapshotAfter = await dependencies.dealRegistry
+        .getAnalysisEligibleSnapshot(claimedRun.workspaceId);
+      const bundleIds = bundles.map(({ dealId }) => dealId).sort();
+      if (
+        snapshotBefore.fingerprint !== snapshotAfter.fingerprint
+        || snapshotAfter.fingerprint !== eligibleSnapshotFingerprint
+        || snapshotAfter.count !== bundles.length
+        || JSON.stringify([...snapshotAfter.dealIds].sort())
+          !== JSON.stringify(bundleIds)
+      ) {
+        throw new Error(
+          "The eligible Deal snapshot changed while the scan was starting.",
+        );
+      }
       await updateStage("import_confirmation", "completed");
     } catch (error) {
       const warning = error instanceof Error
@@ -130,7 +179,7 @@ export async function processClaimedRun(
       market.events,
       claimedRun.workspaceId,
     );
-    const portfolioTexts = new Map(dependencies.bundles.map(
+    const portfolioTexts = new Map(bundles.map(
       (bundle) => [bundle.dealId, [
         bundle.companyName,
         ...bundle.facts.map((fact) => fact.text),
@@ -164,14 +213,14 @@ export async function processClaimedRun(
         : undefined,
     );
 
-    const allDeals = dependencies.bundles.map((bundle) => ({
+    const allDeals = bundles.map((bundle) => ({
       id: bundle.dealId,
       companyName: bundle.companyName,
       status: bundle.status,
     }));
     let contextsByDeal = claimedRun.mode === "xtrace"
       ? new Map<string, MemoryContext[]>()
-      : structuredContextsByDeal(dependencies.bundles);
+      : structuredContextsByDeal(bundles);
     const unavailableDealIds = new Set<string>();
 
     if (claimedRun.mode === "xtrace") {
@@ -228,14 +277,14 @@ export async function processClaimedRun(
       const recalled = await recallAllDealContexts({
         workspaceId: claimedRun.workspaceId,
         runId: claimedRun.id,
-        bundles: dependencies.bundles,
+        bundles,
         service: dependencies.xtrace,
       });
       contextsByDeal = recalled.contextsByDeal;
       for (const failure of recalled.failures) {
         unavailableDealIds.add(failure.dealId);
       }
-      for (const bundle of dependencies.bundles) {
+      for (const bundle of bundles) {
         if ((contextsByDeal.get(bundle.dealId)?.length ?? 0) === 0) {
           unavailableDealIds.add(bundle.dealId);
         }
@@ -256,7 +305,7 @@ export async function processClaimedRun(
     }
 
     await updateStage("opportunity_matching", "running");
-    const matchingBundles = dependencies.bundles.filter((bundle) =>
+    const matchingBundles = bundles.filter((bundle) =>
       (contextsByDeal.get(bundle.dealId)?.length ?? 0) > 0
     );
     const deals = allDeals.filter((deal) =>
@@ -295,7 +344,7 @@ export async function processClaimedRun(
       reportId: `report_${claimedRun.id}`,
       runId: claimedRun.id,
       createdAt,
-      bundles: dependencies.bundles,
+      bundles,
       contextsByDeal,
       recallFailures: unavailableDealIds,
       groundedMatches,
@@ -327,13 +376,28 @@ export async function processClaimedRun(
       },
       counts,
       priorityDealId,
-      eligibleDealCount: dependencies.bundles.length,
-      eligibleSnapshotFingerprint:
-        dependencies.eligibleSnapshotFingerprint,
+      eligibleDealCount: bundles.length,
+      eligibleSnapshotFingerprint,
       companyAnalyses,
     };
     const storedReport = await dependencies.intelligence.saveReport(report);
     await updateStage("report", "completed");
+    await updateStage("underwriting", "running");
+    try {
+      await dependencies.underwriting.createBatchAndSelections({
+        scanRun: claimedRun,
+        report: storedReport,
+        analyses: companyAnalyses,
+        eligibleDeals,
+        forceRefresh: false,
+      });
+      await updateStage("underwriting", "completed");
+    } catch {
+      const warning =
+        "Underwriting was partially unavailable; the legacy market report remains available.";
+      warnings.push(warning);
+      await updateStage("underwriting", "failed", warning);
+    }
     await updateStage("notification", "skipped");
 
     const finalRun = await dependencies.runs.finish({

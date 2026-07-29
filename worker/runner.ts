@@ -4,6 +4,13 @@ import { getDataClient } from "../db/client";
 import { getIntelligenceRepository } from "../db/repositories/intelligence";
 import { getReasonerJudgmentsRepository } from "../db/repositories/reasoner-judgments";
 import { getDealRegistry } from "../db/repositories/deal-registry";
+import {
+  createMemoryUnderwritingRunsRepository,
+  createSupabaseUnderwritingRunsRepository,
+} from "../db/repositories/underwriting-runs";
+import {
+  getUnderwritingReferencesRepository,
+} from "../db/repositories/underwriting-references";
 import { createRunsRepository } from "../db/repositories/runs";
 import { getUploadedDocumentsRepository } from "../db/repositories/uploaded-documents";
 import { createDefaultPrivateObjectStorage } from "../lib/storage/service";
@@ -14,6 +21,13 @@ import {
 import { getXTraceLineageRepository } from "../db/repositories/xtrace-lineage";
 import { createClaudeClient } from "../lib/claude/client";
 import { createClaudeMatchingReasoner } from "../lib/matching/claude-reasoner";
+import {
+  createFrameworkLensService,
+} from "../lib/underwriting/frameworks/service";
+import {
+  createSyntheticCandidateExecutor,
+  createUnderwritingOrchestrator,
+} from "../lib/underwriting/orchestrator";
 import { createProductInputGate } from "../lib/corpus/import-readiness";
 import { readMarketProviderConfiguration } from "../lib/market/config";
 import { createDefaultMarketProviders } from "../lib/market/providers";
@@ -73,26 +87,37 @@ export async function runNextQueuedScan(): Promise<boolean> {
     );
     const intelligence = getIntelligenceRepository();
     const dealRegistry = getDealRegistry();
-    const snapshotBefore = await dealRegistry.getAnalysisEligibleSnapshot(
-      claimed.workspaceId,
-    );
-    const bundles = await dealRegistry.listAnalysisEligibleBundles(
-      claimed.workspaceId,
-    );
-    const snapshotAfter = await dealRegistry.getAnalysisEligibleSnapshot(
-      claimed.workspaceId,
-    );
-    const bundleIds = bundles.map((bundle) => bundle.dealId).sort();
-    if (
-      snapshotBefore.fingerprint !== snapshotAfter.fingerprint
-      || snapshotBefore.count !== snapshotAfter.count
-      || JSON.stringify(bundleIds)
-        !== JSON.stringify([...snapshotAfter.dealIds].sort())
-    ) {
-      throw new Error(
-        "The eligible Deal snapshot changed while the scan was starting.",
-      );
-    }
+    const claude = createClaudeClient();
+    const underwritingRuns = createDefaultUnderwritingRunsRepository();
+    const references = getUnderwritingReferencesRepository();
+    const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
+    const underwriting = createUnderwritingOrchestrator({
+      runs: underwritingRuns,
+      activeFundPolicy: (workspaceId) =>
+        references.activeFundPolicy(workspaceId),
+      candidateExecutor: createSyntheticCandidateExecutor({
+        frameworkLenses: createFrameworkLensService({
+          client: claude,
+          execution: {
+            provider: "anthropic",
+            model,
+            promptVersion: "framework-lens-v1",
+            schemaVersion: "framework-judgment-v1",
+            settingsFingerprint: "balanced-underwriting-v1",
+            applicationCommit:
+              process.env.RAILWAY_GIT_COMMIT_SHA ?? "local-development",
+          },
+        }),
+        execution: {
+          providerModel: model,
+          promptVersion: "framework-lens-v1",
+          schemaVersion: "framework-judgment-v1",
+          settingsFingerprint: "balanced-underwriting-v1",
+          applicationCommit:
+            process.env.RAILWAY_GIT_COMMIT_SHA ?? "local-development",
+        },
+      }),
+    });
     const lineage = getXTraceLineageRepository();
     const xtraceService = isXTraceConfigured()
       ? createXTraceService(getXTraceClient(), {
@@ -116,11 +141,11 @@ export async function runNextQueuedScan(): Promise<boolean> {
     await processClaimedRun(claimed, {
       runs,
       intelligence,
-      bundles,
-      eligibleSnapshotFingerprint: snapshotAfter.fingerprint,
+      dealRegistry,
+      underwriting,
       importGate: createProductInputGate(createDefaultDemoDataStore()),
       market: createMarketService({ providers }),
-      reasoner: createClaudeMatchingReasoner(createClaudeClient(), {
+      reasoner: createClaudeMatchingReasoner(claude, {
         judgments: getReasonerJudgmentsRepository(),
         refreshJudgments: process.env.REASONER_JUDGMENT_REFRESH === "1",
       }),
@@ -149,6 +174,14 @@ export async function runNextQueuedScan(): Promise<boolean> {
     }
   }
   return true;
+}
+
+function createDefaultUnderwritingRunsRepository() {
+  const url = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  return url && serviceRoleKey
+    ? createSupabaseUnderwritingRunsRepository({ url, serviceRoleKey })
+    : createMemoryUnderwritingRunsRepository();
 }
 
 // Uploaded documents are staged here for explicit confirmation. They never
