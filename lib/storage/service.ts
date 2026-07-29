@@ -1,6 +1,10 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+import {
+  IntegrationTransportError,
+  isRetryableTransportStatus,
+} from "../api/errors";
 import type { DemoDealEvidence } from "../corpus/evidence";
 import type { DemoFixture } from "../corpus/fixtures";
 import {
@@ -329,7 +333,7 @@ export function createSupabasePrivateObjectStorage(options: {
   return {
     async ensurePrivateObject(input) {
       const objectUrl = `${base}/${encodeObjectPath(`${bucket}/${input.key}`)}`;
-      const existing = await fetchImpl(objectUrl, {
+      const existing = await storageFetch(fetchImpl, objectUrl, {
         headers,
         cache: "no-store",
       });
@@ -345,7 +349,7 @@ export function createSupabasePrivateObjectStorage(options: {
       if (!(await isStorageObjectMissing(existing))) {
         throw await storageHttpError("check", existing);
       }
-      const response = await fetchImpl(objectUrl, {
+      const response = await storageFetch(fetchImpl, objectUrl, {
         method: "POST",
         headers: {
           ...headers,
@@ -359,7 +363,7 @@ export function createSupabasePrivateObjectStorage(options: {
       return { value: { key: input.key }, created: true };
     },
     async readPrivateObject(key) {
-      const response = await fetchImpl(`${base}/${encodeObjectPath(`${bucket}/${key}`)}`, {
+      const response = await storageFetch(fetchImpl, `${base}/${encodeObjectPath(`${bucket}/${key}`)}`, {
         headers,
         cache: "no-store",
       });
@@ -384,14 +388,20 @@ export function createSupabaseDemoDataStore(options: {
   };
 
   async function request(pathname: string, init: RequestInit = {}): Promise<unknown> {
-    const response = await fetchImpl(`${base}${pathname}`, {
-      ...init,
-      headers: { ...headers, ...(init.headers ?? {}) },
-      cache: "no-store",
-    });
+    let response: Response;
+    try {
+      response = await fetchImpl(`${base}${pathname}`, {
+        ...init,
+        headers: { ...headers, ...(init.headers ?? {}) },
+        cache: "no-store",
+      });
+    } catch {
+      throw new IntegrationTransportError({ retryable: true });
+    }
     if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`PostgreSQL gateway ${response.status}: ${body.slice(0, 240)}`);
+      throw new IntegrationTransportError({
+        retryable: isRetryableTransportStatus(response.status),
+      });
     }
     if (response.status === 204) return null;
     const body = await response.text();
@@ -739,9 +749,22 @@ async function isStorageObjectMissing(response: Response): Promise<boolean> {
   }
 }
 
-async function storageHttpError(operation: string, response: Response): Promise<Error> {
-  const body = await response.text();
-  return new Error(`Private object ${operation} failed (${response.status}): ${body.slice(0, 240)}`);
+async function storageFetch(
+  fetchImpl: typeof fetch,
+  input: RequestInfo | URL,
+  init: RequestInit,
+): Promise<Response> {
+  try {
+    return await fetchImpl(input, init);
+  } catch {
+    throw new IntegrationTransportError({ retryable: true });
+  }
+}
+
+async function storageHttpError(_operation: string, response: Response): Promise<IntegrationTransportError> {
+  return new IntegrationTransportError({
+    retryable: isRetryableTransportStatus(response.status),
+  });
 }
 
 function toDocumentRow(input: StoredCorpusDocument): Record<string, unknown> {

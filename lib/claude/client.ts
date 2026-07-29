@@ -1,3 +1,8 @@
+import {
+  IntegrationTransportError,
+  isRetryableTransportStatus,
+} from "../api/errors";
+
 export type ClaudeContentBlock =
   | { type: "text"; text: string }
   | {
@@ -43,7 +48,6 @@ export function createClaudeClient(options: {
         throw new Error("Anthropic is not configured");
       }
       let response: Response | undefined;
-      let requestError: unknown;
       for (let attempt = 0; attempt < 2; attempt += 1) {
         if (attempt > 0) {
           await new Promise((resolve) => setTimeout(resolve, backoffMs));
@@ -64,9 +68,7 @@ export function createClaudeClient(options: {
             }),
             signal: AbortSignal.timeout(90_000),
           });
-          requestError = undefined;
-        } catch (error) {
-          requestError = error;
+        } catch {
           response = undefined;
           continue;
         }
@@ -74,12 +76,12 @@ export function createClaudeClient(options: {
         if (!retryable) break;
       }
       if (!response) {
-        throw requestError instanceof Error
-          ? requestError
-          : new Error("Anthropic request could not be completed");
+        throw new IntegrationTransportError({ retryable: true });
       }
       if (!response.ok) {
-        throw new Error(`Anthropic request failed with ${response.status}`);
+        throw new IntegrationTransportError({
+          retryable: isRetryableTransportStatus(response.status),
+        });
       }
       const body = await response.json() as {
         stop_reason?: string;

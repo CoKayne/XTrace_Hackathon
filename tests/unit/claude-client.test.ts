@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { IntegrationTransportError } from "../../lib/api/errors";
 import { createClaudeClient } from "../../lib/claude/client";
 
 test("Claude client defaults to Opus 4.8", async () => {
@@ -71,7 +72,7 @@ test("Claude client does not retry non-retryable request errors", async () => {
       system: "Return JSON.",
       messages: [{ role: "user", content: "Test" }],
     }),
-    /Anthropic request failed with 400/,
+    (error: unknown) => error instanceof IntegrationTransportError && !error.retryable,
   );
   assert.equal(calls, 1, "a 400 must not be retried");
 });
