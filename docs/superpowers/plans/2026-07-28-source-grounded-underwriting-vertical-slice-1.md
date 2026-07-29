@@ -89,9 +89,9 @@ npm test: 237 tests; 229 pass, 2 fail, 6 skip
 ### Migration order
 
 - `0007_uploaded_documents.sql`：只負責 upload staging、lease 與 preview。
-- `0008_source_revision_deal_registry.sql`：immutable source revision、assignment、eligible Deal。
-- `0009_underwriting_references.sql`：Policy／Benchmark／Framework／Router／Decision version registry。
-- `0010_underwriting_runs.sql`：batch、selection、candidate、checkpoint、artifact 與 atomic finalization。
+- `0009_source_revision_deal_registry.sql`：immutable source revision、assignment、eligible Deal。
+- `0010_underwriting_references.sql`：Policy／Benchmark／Framework／Router／Decision version registry。
+- `0011_underwriting_runs.sql`：batch、selection、candidate、checkpoint、artifact 與 atomic finalization。
 
 ---
 
@@ -1007,7 +1007,7 @@ git commit -m "feat(underwriting): add evidence and decimal contracts"
 ### Task 5: Build immutable Source Revision and unified Deal Registry
 
 **Files:**
-- Create: `drizzle/0008_source_revision_deal_registry.sql`
+- Create: `drizzle/0009_source_revision_deal_registry.sql`
 - Modify: `db/schema.ts`
 - Create: `db/repositories/source-registry.ts`
 - Create: `db/repositories/deal-registry.ts`
@@ -1095,7 +1095,7 @@ Expected: FAIL because registries, `analysis_eligible_at`, and dynamic report ca
 
 - [ ] **Step 3: Implement append-only migration, repositories, and backfill**
 
-`0008` creates `source_revisions`, `source_revision_annotations`,
+`0009` creates `source_revisions`, `source_revision_annotations`,
 `deal_source_assignments`; adds `analysis_eligible_at` and
 `active_source_revision_fingerprint` to Deals. `deal_source_assignments`
 stores `assigned_by_user_id`, reason, created time and optional superseded time.
@@ -1122,7 +1122,7 @@ Expected: all listed tests PASS; seed test reports 19 as fixture data, not a uni
 - [ ] **Step 5: Commit**
 
 ```bash
-git add drizzle/0008_source_revision_deal_registry.sql db/schema.ts \
+git add drizzle/0009_source_revision_deal_registry.sql db/schema.ts \
   db/repositories/source-registry.ts db/repositories/deal-registry.ts \
   scripts/backfill-source-registry.ts scripts/seed-demo.ts lib/corpus/service.ts \
   db/repositories/intelligence.ts tests/unit/source-registry.test.ts \
@@ -1240,7 +1240,7 @@ git commit -m "feat(upload): confirm sources before Deal memory ingestion"
 ### Task 7: Seed versioned Fund Policy, Benchmark, Context, Framework, and Decision registries
 
 **Files:**
-- Create: `drizzle/0009_underwriting_references.sql`
+- Create: `drizzle/0010_underwriting_references.sql`
 - Modify: `db/schema.ts`
 - Create: `db/repositories/underwriting-references.ts`
 - Create: `lib/underwriting/references/service.ts`
@@ -1510,7 +1510,7 @@ Expected: all listed checks PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add drizzle/0009_underwriting_references.sql db/schema.ts \
+git add drizzle/0010_underwriting_references.sql db/schema.ts \
   db/repositories/underwriting-references.ts lib/underwriting/references \
   seed/underwriting app/api/fund-policy tests/unit/underwriting-references.test.ts \
   tests/integration/underwriting-reference-migration.test.ts \
@@ -1523,7 +1523,7 @@ git commit -m "feat(policy): add versioned underwriting reference packs"
 ### Task 8: Persist idempotent batches, selections, candidates, checkpoints, and atomic artifacts
 
 **Files:**
-- Create: `drizzle/0010_underwriting_runs.sql`
+- Create: `drizzle/0011_underwriting_runs.sql`
 - Modify: `db/schema.ts`
 - Create: `db/repositories/underwriting-runs.ts`
 - Create: `db/repositories/underwriting-artifacts.ts`
@@ -1653,7 +1653,7 @@ Expected: all checks PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add drizzle/0010_underwriting_runs.sql db/schema.ts \
+git add drizzle/0011_underwriting_runs.sql db/schema.ts \
   db/repositories/underwriting-runs.ts db/repositories/underwriting-artifacts.ts \
   lib/underwriting/fingerprints.ts tests/unit/underwriting-fingerprints.test.ts \
   tests/unit/underwriting-runs.test.ts tests/integration/underwriting-finalization.test.ts
