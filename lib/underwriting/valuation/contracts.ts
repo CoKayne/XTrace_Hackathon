@@ -27,6 +27,11 @@ export interface FormulaValueRef {
   period: string | null;
 }
 
+export interface FormulaCalculationRef
+  extends Omit<FormulaValueRef, "type"> {
+  type: "calculation";
+}
+
 export type CalculationResult = Calculation;
 
 export type FormulaId =

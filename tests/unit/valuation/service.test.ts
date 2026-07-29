@@ -261,6 +261,50 @@ test("derives benchmark staleness from its immutable EvidencePack expiry", () =>
   assert.ok(result.blockerCodes.includes("benchmark_stale"));
 });
 
+test("rejects benchmark freshness that is not benchmark-origin", () => {
+  const pack = evidencePack();
+  pack.assumptions = pack.assumptions.map((item) =>
+    item.field === "compatible_benchmark_stale_after"
+      ? { ...item, provenanceOrigin: "recommended_policy" }
+      : item
+  );
+  const result = createValuationEngine().evaluate({
+    pack,
+    context: context(),
+    fundPolicy: policy(),
+  });
+
+  assert.deepEqual(
+    result.scenarios.map(({ valuation }) => valuation),
+    [null, null, null],
+  );
+  assert.equal(result.pricingPremium, null);
+  assert.ok(result.blockerCodes.includes("benchmark_freshness_missing"));
+});
+
+test("rejects calendar-invalid benchmark freshness dates", () => {
+  for (const staleAfter of ["2026-02-30", "2026-99-99"]) {
+    const pack = evidencePack();
+    pack.assumptions = pack.assumptions.map((item) =>
+      item.field === "compatible_benchmark_stale_after"
+        ? { ...item, value: staleAfter }
+        : item
+    );
+    const result = createValuationEngine().evaluate({
+      pack,
+      context: context(),
+      fundPolicy: policy(),
+    });
+
+    assert.deepEqual(
+      result.scenarios.map(({ valuation }) => valuation),
+      [null, null, null],
+    );
+    assert.equal(result.pricingPremium, null);
+    assert.ok(result.blockerCodes.includes("benchmark_freshness_missing"));
+  }
+});
+
 test("fails closed for EUR, missing, and mixed valuation currencies", () => {
   for (const currency of ["EUR", null] as const) {
     const pack = evidencePack();
@@ -336,6 +380,67 @@ test("uses persisted recommended-policy Assumptions for scenario multipliers", (
         itemId === "benchmark_stale_after" && type === "benchmark",
     ));
   }
+});
+
+test("persists exit proceeds and exact direct return calculation dependencies", () => {
+  const pack = evidencePack();
+  pack.facts = pack.facts.map((fact) =>
+    fact.field === "reported_valuation"
+      ? { ...fact, value: "18000000" }
+      : fact.field === "reported_valuation_basis"
+        ? { ...fact, value: "pre_money" }
+        : fact
+  );
+  const detailed = createValuationEngine({
+    now: () => new Date("2026-07-29T12:00:00.000Z"),
+  }).evaluateDetailed({
+    pack,
+    context: context(),
+    fundPolicy: policy(),
+  });
+  const scope = "calculation:valuation:pack_1";
+  const ids = {
+    exitEquity:
+      `${scope}:venture_return_method_v1:exit_equity_value`,
+    postDilution:
+      `${scope}:future_dilution_v1:post_dilution_ownership`,
+    exitProceeds:
+      `${scope}:gross_deal_moic_v1:exit_proceeds`,
+    grossMoic:
+      `${scope}:gross_deal_moic_v1:gross_moic`,
+    grossIrr:
+      `${scope}:annualized_gross_irr_v1:gross_irr`,
+  };
+  const calculation = (id: string) => {
+    const match = detailed.calculations.find((item) => item.id === id);
+    assert.ok(match, `${id} must be persisted`);
+    return match;
+  };
+  const dependencies = (id: string) =>
+    detailed.calculationClaimEdges
+      .filter(({ claimItemId }) => claimItemId === id)
+      .map(({ dependencyItemId }) => dependencyItemId)
+      .sort();
+
+  assert.equal(calculation(ids.exitProceeds).output, "5000000");
+  assert.deepEqual(calculation(ids.exitProceeds).inputRefs, []);
+  assert.deepEqual(dependencies(ids.exitProceeds), [
+    ids.postDilution,
+    ids.exitEquity,
+  ].sort());
+  assert.deepEqual(calculation(ids.grossMoic).inputRefs, [{
+    itemId: "policy:initialCheckMax",
+    value: "2000000",
+    type: "policy",
+  }]);
+  assert.equal(calculation(ids.grossMoic).output, "2.5");
+  assert.deepEqual(dependencies(ids.grossMoic), [ids.exitProceeds]);
+  assert.deepEqual(calculation(ids.grossIrr).inputRefs, [{
+    itemId: "policy:returnTargets.seed.horizonYears",
+    value: "8",
+    type: "policy",
+  }]);
+  assert.deepEqual(dependencies(ids.grossIrr), [ids.grossMoic]);
 });
 
 function evidencePack(

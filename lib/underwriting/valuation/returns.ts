@@ -10,6 +10,7 @@ import {
   calculationId,
   completedCalculation,
   type CalculationOptions,
+  type FormulaCalculationRef,
   type FormulaEvaluation,
   type FormulaValueRef,
 } from "./contracts";
@@ -48,9 +49,8 @@ export function computeGrossReturns(input: {
 
 export function evaluateGrossReturns(input: {
   invested: FormulaValueRef | null;
-  proceeds: FormulaValueRef | null;
+  proceeds: FormulaValueRef | FormulaCalculationRef | null;
   holdingYears: FormulaValueRef | null;
-  lineageInputRefs?: FormulaValueRef[];
 }, options: CalculationOptions = {}): FormulaEvaluation<
   ReturnType<typeof computeGrossReturns>
 > {
@@ -77,7 +77,14 @@ export function evaluateGrossReturns(input: {
       holdingYears: input.holdingYears.value,
     });
     const computedAt = (options.now ?? (() => new Date()))().toISOString();
-    const proceedsLineage = input.lineageInputRefs ?? [input.proceeds];
+    const grossMoicId = calculationId(
+      options.calculationScope ?? "standalone",
+      "gross_deal_moic_v1",
+      "gross_moic",
+    );
+    const proceedsCalculationId = input.proceeds.type === "calculation"
+      ? input.proceeds.itemId
+      : null;
     return {
       status: "completed",
       value,
@@ -85,7 +92,9 @@ export function evaluateGrossReturns(input: {
         completedCalculation({
           formulaId: "gross_deal_moic_v1",
           outputField: "gross_moic",
-          inputRefs: [input.invested, ...proceedsLineage],
+          inputRefs: proceedsCalculationId
+            ? [input.invested]
+            : [input.invested, input.proceeds as FormulaValueRef],
           output: value.moic,
           unit: "multiple",
           computedAt,
@@ -102,19 +111,24 @@ export function evaluateGrossReturns(input: {
           calculationScope: options.calculationScope,
         }),
       ],
-      claimEdges: [{
-        claimItemId: calculationId(
-          options.calculationScope ?? "standalone",
-          "annualized_gross_irr_v1",
-          "gross_irr",
-        ),
-        dependencyItemId: calculationId(
-          options.calculationScope ?? "standalone",
-          "gross_deal_moic_v1",
-          "gross_moic",
-        ),
-        dependencyType: "calculation",
-      }],
+      claimEdges: [
+        ...(proceedsCalculationId
+          ? [{
+            claimItemId: grossMoicId,
+            dependencyItemId: proceedsCalculationId,
+            dependencyType: "calculation" as const,
+          }]
+          : []),
+        {
+          claimItemId: calculationId(
+            options.calculationScope ?? "standalone",
+            "annualized_gross_irr_v1",
+            "gross_irr",
+          ),
+          dependencyItemId: grossMoicId,
+          dependencyType: "calculation",
+        },
+      ],
       blockerCodes: [],
     };
   } catch {

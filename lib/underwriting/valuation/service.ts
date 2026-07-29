@@ -10,18 +10,23 @@ import type {
   ResolvedUnderwritingContext,
   ValuationEvaluation,
 } from "../../contracts/underwriting";
+import { z } from "zod";
 import { multiplyDecimalStrings } from "../numbers";
-import type {
-  CalculationOptions,
-  FormulaValueRef,
-  ValuationArtifactSet,
-  ValuationEngine,
+import {
+  calculationId,
+  completedCalculation,
+  type CalculationOptions,
+  type FormulaValueRef,
+  type ValuationArtifactSet,
+  type ValuationEngine,
 } from "./contracts";
 import { evaluateMarketComps } from "./market-comps";
 import { evaluateOwnership } from "./ownership";
 import { evaluateGrossReturns } from "./returns";
 import { buildScenarioModel, validateProbabilityWeights } from "./scenarios";
 import { evaluateVentureMethod } from "./venture-method";
+
+const IsoCalendarDateSchema = z.iso.date();
 
 export function createValuationEngine(
   options: CalculationOptions = {},
@@ -56,7 +61,7 @@ export function evaluateValuationArtifacts(input: {
     "compatible_benchmark_value",
     "all",
   );
-  const benchmarkStaleAfter = assumption(
+  const benchmarkStaleAfter = benchmarkAssumption(
     input.pack,
     "compatible_benchmark_stale_after",
     "all",
@@ -187,16 +192,25 @@ export function evaluateValuationArtifacts(input: {
           exitEquityValue,
           postDilutionOwnership,
         );
+        const exitProceedsCalculation = completedCalculation({
+          formulaId: "gross_deal_moic_v1",
+          outputField: "exit_proceeds",
+          inputRefs: [],
+          output: proceeds,
+          unit: "currency",
+          currency: baseCurrency,
+          computedAt: (options.now ?? (() => new Date()))().toISOString(),
+          calculationScope,
+        });
         const returns = evaluateGrossReturns({
           invested: policyRef("initialCheckMax", investment, {
             unit: "currency",
             currency: baseCurrency,
           }),
           proceeds: {
-            itemId:
-              `${calculationScope}:derived_exit_proceeds`,
+            itemId: exitProceedsCalculation.id,
             value: proceeds,
-            type: "assumption",
+            type: "calculation",
             unit: "currency",
             currency: baseCurrency,
             period: null,
@@ -206,18 +220,33 @@ export function evaluateValuationArtifacts(input: {
             holdingYears,
             { unit: "years", period: holdingYears },
           ),
-          lineageInputRefs: [
-            baseExitArr!,
-            baseExitMultiple!,
-            factRef(currentAskFact),
-            policyRef("acceptableFutureDilution", dilution, {
-              unit: "decimal",
-            })!,
-          ],
         }, formulaOptions);
         blockerCodes.push(...returns.blockerCodes);
-        returnCalculations = returns.calculations;
-        returnClaimEdges = returns.claimEdges;
+        returnCalculations = [
+          exitProceedsCalculation,
+          ...returns.calculations,
+        ];
+        returnClaimEdges = [
+          {
+            claimItemId: exitProceedsCalculation.id,
+            dependencyItemId: calculationId(
+              calculationScope,
+              "venture_return_method_v1",
+              "exit_equity_value",
+            ),
+            dependencyType: "calculation",
+          },
+          {
+            claimItemId: exitProceedsCalculation.id,
+            dependencyItemId: calculationId(
+              calculationScope,
+              "future_dilution_v1",
+              "post_dilution_ownership",
+            ),
+            dependencyType: "calculation",
+          },
+          ...returns.claimEdges,
+        ];
         grossMoic = returns.value?.moic ?? null;
         grossIrr = returns.value?.irr ?? null;
       }
@@ -319,6 +348,19 @@ function recommendedPolicyAssumption(
       candidate.field === field
       && candidate.scenario === scenario
       && candidate.provenanceOrigin === "recommended_policy",
+  ) ?? null;
+}
+
+function benchmarkAssumption(
+  pack: EvidencePack,
+  field: string,
+  scenario: Assumption["scenario"],
+): Assumption | null {
+  return pack.assumptions.find(
+    (candidate) =>
+      candidate.field === field
+      && candidate.scenario === scenario
+      && candidate.provenanceOrigin === "benchmark",
   ) ?? null;
 }
 
@@ -427,10 +469,8 @@ function benchmarkIsStale(
   asOfDate: string,
   staleAfter: string,
 ): boolean | null {
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(asOfDate)
-    || !/^\d{4}-\d{2}-\d{2}$/.test(staleAfter)
-  ) {
+  if (!IsoCalendarDateSchema.safeParse(asOfDate).success
+    || !IsoCalendarDateSchema.safeParse(staleAfter).success) {
     return null;
   }
   return asOfDate > staleAfter;
