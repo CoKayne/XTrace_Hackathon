@@ -170,3 +170,116 @@ The repository-wide parallel run executed 585 tests and reached 581 passes,
 known cluster-global role creation race (`tuple concurrently updated`) caused
 by parallel migration tests. The exact two affected migration files passed
 all 15 tests when rerun serially.
+
+---
+
+## Fix round 1 — fail-closed PMF evidence and specialist dependency scope
+
+### Review findings addressed
+
+This round addresses both Important findings from the independent Task 12
+review.
+
+1. `stagePmfEvidenceIds()` now accepts only field-specific, positive,
+   parseable PMF evidence.
+2. Policy-listed specialist judgments with `not_applicable` or `unavailable`
+   applicability remain persisted and narrated, but are excluded from the
+   formal Company Quality rule references and final-decision claim edges.
+
+The existing rule that a missing, `not_applicable`, or `unavailable`
+**mandatory** framework judgment makes Company Quality unavailable was
+preserved and given an explicit regression test.
+
+### TDD record
+
+Regression tests were added before production changes.
+
+The first executable RED run produced three expected failures:
+
+```text
+Seed PMF evidence fails closed...
+  paying_customers=0: expected mixed, received pass
+
+Series A PMF evidence requires positive customer and performance values
+  expected mixed, received pass
+
+non-applicable and unavailable specialist judgments remain advisory...
+  specialist reference was present in the formal Company Quality rule
+```
+
+The Task 8 finalization compatibility test was already green in the RED run:
+the persistence boundary correctly stored advisory specialist judgments
+without requiring a decision claim edge to them.
+
+### PMF evidence semantics
+
+The PMF gate now fails closed by field type:
+
+- count fields (`paying_customers`, `production_customers`,
+  `design_partners`, and `customer_count`) require a parseable numeric value
+  greater than zero;
+- singular boolean/status fields (`paying_customer`,
+  `production_customer`, and `design_partner`) require an explicit normalized
+  positive value such as `true`, `active`, `confirmed`, or `signed`;
+- money/performance fields (`arr`, `revenue`, and `recurring_revenue`)
+  require a parseable numeric value greater than zero;
+- retention fields require a parseable value greater than zero and a valid
+  rate unit: decimal/rate/ratio values must be at most `1`, while
+  percent/percentage/pct/`%` values must be at most `100`;
+- generic `customer_evidence` text requires an explicit positive customer or
+  design-partner statement and rejects negated, future, target, potential, and
+  otherwise ambiguous statements.
+
+Series A still requires both a positive customer fact and a positive
+performance fact. Zero, false, `none`, ambiguous text, invalid units, and
+unparseable values no longer become formal PMF dependencies.
+
+Regression controls cover:
+
+- Seed values `0`, `false`, and `none`;
+- negated, ambiguous, and future-looking generic text;
+- positive count, boolean, status, and explicit-text examples;
+- a mixed sentence where an unrelated negated design-partner statement does
+  not hide an explicit positive paying-customer statement;
+- Series A zero customer plus zero ARR/retention;
+- positive Series A ARR and retention controls.
+
+### Specialist dependency semantics
+
+All policy-listed specialist judgments continue to flow through persistence
+and narrative rendering.
+
+Only specialist judgments with `applicability === "applicable"` are included
+in the Company Quality fired rule's `framework_judgment:*` inputs. Therefore,
+only those applicable specialist judgments can appear in the
+`DecisionResult.claimEdges` derived from formal fired-rule references.
+
+An applicable, high-confidence negative specialist remains a formal
+dependency, fails Company Quality, and produces a `Pass` decision. Advisory
+`not_applicable` and `unavailable` specialists do not affect the formal
+decision.
+
+### Task 8 compatibility
+
+A new memory-finalization integration regression proves that Task 8:
+
+- persists `not_applicable` and `unavailable` specialist judgments exactly;
+- persists their narrative representation;
+- does not require the final decision to claim either advisory judgment as a
+  dependency.
+
+The same finalization suite was run against a live temporary PostgreSQL
+database. Its atomic rollback, real Task 10 calculation-lineage finalization,
+and zero-candidate completion cases all passed.
+
+### Verification
+
+Passed after the final production change:
+
+- decision and narrative unit regressions: 18 passed, 0 failed;
+- Task 12, browser-local report compatibility, Task 8 memory runs, and
+  finalization: 37 passed, 0 failed, 3 PostgreSQL-only cases skipped;
+- live PostgreSQL Task 8 finalization suite: 10 passed, 0 failed;
+- `npm run typecheck`;
+- `npm run lint`;
+- `git diff --check`.

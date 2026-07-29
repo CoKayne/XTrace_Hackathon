@@ -12,6 +12,8 @@ import type {
 import {
   addDecimalStrings,
   multiplyDecimalStrings,
+  requireNonNegativeDecimalString,
+  requirePositiveDecimalString,
   subtractDecimalStrings,
 } from "../numbers";
 
@@ -423,9 +425,12 @@ function evaluateCompanyQuality(input: DecisionEngineInput): {
       candidate.frameworkCardId,
     )
   );
+  const applicableSpecialist = specialist.filter(
+    ({ applicability }) => applicability === "applicable",
+  );
   const judgmentIds = uniqueSorted([
     ...mandatory.flatMap((candidate) => candidate ? [candidate.id] : []),
-    ...specialist.map(({ id }) => id),
+    ...applicableSpecialist.map(({ id }) => id),
   ]);
   const evidenceIds = stagePmfEvidenceIds(input);
   const actionablePositiveSignal = mandatory.some(
@@ -443,9 +448,8 @@ function evaluateCompanyQuality(input: DecisionEngineInput): {
     };
   }
   const available = mandatory as FrameworkJudgment[];
-  const specialistNegative = specialist.some((candidate) =>
-    candidate.applicability === "applicable"
-    && candidate.conclusion === "negative"
+  const specialistNegative = applicableSpecialist.some((candidate) =>
+    candidate.conclusion === "negative"
     && candidate.confidence.judgment === "high"
   );
   if (
@@ -718,21 +722,16 @@ function stagePmfEvidenceIds(input: DecisionEngineInput): string[] {
   if (input.context.stage === "seed") {
     return acceptedFacts.filter((fact) =>
       input.decisionPolicy.seedPmfEvidenceFields.includes(fact.field)
-        && (
-          fact.field !== "customer_evidence"
-          || /\b(?:paying|production|design[- ]?partner)\b/i.test(fact.value)
-        )
+        && positiveCustomerEvidence(fact)
     ).map(({ id }) => id);
   }
   const customerFacts = acceptedFacts.filter((fact) =>
     input.decisionPolicy.seriesAPmfCustomerFields.includes(fact.field)
-    && (
-      fact.field !== "customer_evidence"
-      || /\b(?:paying|production|customer)\b/i.test(fact.value)
-    )
+    && positiveCustomerEvidence(fact)
   );
   const performanceFacts = acceptedFacts.filter((fact) =>
     input.decisionPolicy.seriesAPmfPerformanceFields.includes(fact.field)
+    && positivePerformanceEvidence(fact)
   );
   return customerFacts.length > 0 && performanceFacts.length > 0
     ? uniqueSorted([
@@ -740,6 +739,126 @@ function stagePmfEvidenceIds(input: DecisionEngineInput): string[] {
       ...performanceFacts.map(({ id }) => id),
     ])
     : [];
+}
+
+const CUSTOMER_COUNT_FIELDS = new Set([
+  "paying_customers",
+  "production_customers",
+  "design_partners",
+  "customer_count",
+]);
+
+const CUSTOMER_STATUS_FIELDS = new Set([
+  "paying_customer",
+  "production_customer",
+  "design_partner",
+]);
+
+const POSITIVE_CUSTOMER_STATUSES = new Set([
+  "active",
+  "confirmed",
+  "live",
+  "paying",
+  "production",
+  "signed",
+  "true",
+  "yes",
+]);
+
+const MONEY_PERFORMANCE_FIELDS = new Set([
+  "arr",
+  "revenue",
+  "recurring_revenue",
+]);
+
+const RETENTION_PERFORMANCE_FIELDS = new Set([
+  "retention",
+  "gross_retention",
+  "net_revenue_retention",
+]);
+
+function positiveCustomerEvidence(fact: EvidencePack["facts"][number]): boolean {
+  if (CUSTOMER_COUNT_FIELDS.has(fact.field)) {
+    return isPositiveDecimal(fact.value);
+  }
+  if (CUSTOMER_STATUS_FIELDS.has(fact.field)) {
+    return POSITIVE_CUSTOMER_STATUSES.has(normalizeStatus(fact.value));
+  }
+  return fact.field === "customer_evidence"
+    && hasExplicitPositiveCustomerText(fact.value);
+}
+
+function positivePerformanceEvidence(
+  fact: EvidencePack["facts"][number],
+): boolean {
+  if (MONEY_PERFORMANCE_FIELDS.has(fact.field)) {
+    return isPositiveDecimal(fact.value);
+  }
+  if (!RETENTION_PERFORMANCE_FIELDS.has(fact.field)) return false;
+  const unit = fact.unit?.trim().toLowerCase() ?? "";
+  if (["decimal", "rate", "ratio"].includes(unit)) {
+    return isPositiveDecimalAtMost(fact.value, "1");
+  }
+  if (["%", "pct", "percent", "percentage"].includes(unit)) {
+    return isPositiveDecimalAtMost(fact.value, "100");
+  }
+  return false;
+}
+
+function normalizeStatus(value: string): string {
+  return value.trim().toLowerCase().replace(/[- ]+/g, "_");
+}
+
+function isPositiveDecimal(value: string): boolean {
+  try {
+    requirePositiveDecimalString(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isPositiveDecimalAtMost(value: string, maximum: string): boolean {
+  try {
+    requirePositiveDecimalString(value);
+    requireNonNegativeDecimalString(subtractDecimalStrings(maximum, value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function hasExplicitPositiveCustomerText(value: string): boolean {
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, " ");
+  const positivePatterns = [
+    /\b(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)\s+(?:paying(?:\s+production)?|production)\s+customers?\b/g,
+    /\b(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)\s+(?:signed\s+|confirmed\s+|active\s+)?design[- ]?partners?\b/g,
+    /\b(?:has|have|serves?|serving|secured|signed|onboarded)\s+(?:(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)\s+)?(?:paying(?:\s+production)?|production)\s+customers?\b/g,
+    /\b(?:has|have|secured|signed|onboarded)\s+(?:(?:[1-9]\d*(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|several|multiple)\s+)?design[- ]?partners?\b/g,
+    /\b(?:paying|production)\s+customers?\s+(?:are\s+)?(?:active|live|signed|confirmed|in production)\b/g,
+    /\bdesign[- ]?partners?\s+(?:are\s+)?(?:active|live|signed|confirmed)\b/g,
+  ];
+  for (const pattern of positivePatterns) {
+    for (const match of normalized.matchAll(pattern)) {
+      const matchIndex = match.index ?? 0;
+      const prefix = normalized.slice(Math.max(0, matchIndex - 32), matchIndex);
+      const suffix = normalized.slice(
+        matchIndex + match[0].length,
+        matchIndex + match[0].length + 32,
+      );
+      if (
+        !/\b(?:no|none|not|without|zero|0|never)\s+(?:currently\s+)?$/
+          .test(prefix)
+        && !/\b(?:plan|planned|potential|prospective|target|future)(?:\s+(?:of|for))?\s*:?\s*$/
+          .test(prefix)
+        && !/^\s*(?:(?:are|is|remain|remains|will be|would be)\s+)?(?:planned|planning|potential|prospective|a target|future|not yet)\b/
+          .test(suffix)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function matchesMandate(

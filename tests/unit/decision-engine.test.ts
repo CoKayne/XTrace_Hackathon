@@ -91,6 +91,7 @@ const fact = (
   id: string,
   field: string,
   value: string,
+  overrides: Partial<Fact> = {},
 ): Fact => ({
   id,
   analysisType: "fact",
@@ -116,6 +117,7 @@ const fact = (
   verificationMethod: null,
   freshness: "current",
   acceptedForGate: true,
+  ...overrides,
 });
 
 const pack = (
@@ -143,6 +145,7 @@ const judgment = (
   frameworkCardId: string,
   conclusion: FrameworkJudgment["conclusion"] = "supportive",
   confidence: FrameworkJudgment["confidence"]["judgment"] = "high",
+  overrides: Partial<FrameworkJudgment> = {},
 ): FrameworkJudgment => ({
   id,
   analysisType: "framework_judgment",
@@ -174,6 +177,7 @@ const judgment = (
   },
   claimEdges: [],
   fingerprint: `fingerprint_${id}`,
+  ...overrides,
 });
 
 const positiveJudgments = (): FrameworkJudgment[] => [
@@ -400,6 +404,228 @@ test("excludes a persisted zero-weight experimental advisory even when its card 
       dependencyItemId === collidingAdvisory.id
     ),
     false,
+  );
+});
+
+test("Seed PMF evidence fails closed for zero, false, absent, negated, and ambiguous values", () => {
+  const rejectedFacts = [
+    fact("fact_zero_count", "paying_customers", "0", { unit: "count" }),
+    fact("fact_false_status", "paying_customer", "false", {
+      unit: "boolean",
+    }),
+    fact("fact_none", "production_customers", "none", { unit: "count" }),
+    fact(
+      "fact_negated_text",
+      "customer_evidence",
+      "No paying customers are in production and no design partners are signed.",
+    ),
+    fact(
+      "fact_ambiguous_text",
+      "customer_evidence",
+      "Customer conversations are progressing.",
+    ),
+    fact(
+      "fact_future_text",
+      "customer_evidence",
+      "Three paying customers are planned for next quarter.",
+    ),
+  ];
+
+  for (const rejectedFact of rejectedFacts) {
+    const result = createDecisionEngine().decide(input({
+      pack: pack(completeCoverage, [rejectedFact]),
+    }));
+
+    assert.equal(
+      result.companyQuality,
+      "mixed",
+      `${rejectedFact.field}=${rejectedFact.value} must not satisfy Seed PMF`,
+    );
+    assert.notEqual(result.decision, "Invest Candidate");
+    assert.equal(
+      result.firedRules.find(({ ruleId }) =>
+        ruleId === "decision.company_quality.v1"
+      )?.inputRefs.includes(`fact:${rejectedFact.id}`),
+      false,
+    );
+  }
+});
+
+test("Seed PMF evidence accepts only field-specific normalized positive values", () => {
+  const acceptedFacts = [
+    fact("fact_count", "paying_customers", "3", { unit: "count" }),
+    fact("fact_boolean", "paying_customer", "true", { unit: "boolean" }),
+    fact("fact_status", "design_partner", "confirmed", { unit: "status" }),
+    fact(
+      "fact_explicit_text",
+      "customer_evidence",
+      "Three paying customers are live in production.",
+    ),
+    fact(
+      "fact_mixed_text",
+      "customer_evidence",
+      "No design partners yet, but three paying customers are live.",
+    ),
+  ];
+
+  for (const acceptedFact of acceptedFacts) {
+    const result = createDecisionEngine().decide(input({
+      pack: pack(completeCoverage, [acceptedFact]),
+    }));
+
+    assert.equal(
+      result.companyQuality,
+      "pass",
+      `${acceptedFact.field}=${acceptedFact.value} should satisfy Seed PMF`,
+    );
+    assert.equal(result.decision, "Invest Candidate");
+    assert.equal(
+      result.firedRules.find(({ ruleId }) =>
+        ruleId === "decision.company_quality.v1"
+      )?.inputRefs.includes(`fact:${acceptedFact.id}`),
+      true,
+    );
+  }
+});
+
+test("Series A PMF evidence requires positive customer and performance values", () => {
+  const seriesAContext: ResolvedUnderwritingContext = {
+    ...context,
+    stage: "series_a",
+  };
+  const zeroFacts = [
+    fact("fact_customer_zero", "customer_count", "0", { unit: "count" }),
+    fact("fact_arr_zero", "arr", "0", {
+      unit: "USD",
+      currency: "USD",
+    }),
+    fact("fact_retention_zero", "retention", "0", { unit: "decimal" }),
+  ];
+  const zeroResult = createDecisionEngine().decide(input({
+    context: seriesAContext,
+    pack: pack(completeCoverage, zeroFacts),
+  }));
+
+  assert.equal(zeroResult.companyQuality, "mixed");
+  assert.notEqual(zeroResult.decision, "Invest Candidate");
+  assert.equal(
+    zeroResult.firedRules.find(({ ruleId }) =>
+      ruleId === "decision.company_quality.v1"
+    )?.inputRefs.some((reference) => reference.startsWith("fact:")),
+    false,
+  );
+
+  const positiveControls = [
+    [
+      fact("fact_customer_count", "customer_count", "12", { unit: "count" }),
+      fact("fact_positive_arr", "arr", "2400000", {
+        unit: "USD",
+        currency: "USD",
+      }),
+    ],
+    [
+      fact("fact_customer_status", "production_customer", "active", {
+        unit: "status",
+      }),
+      fact("fact_positive_retention", "retention", "0.85", {
+        unit: "decimal",
+      }),
+    ],
+  ];
+  for (const facts of positiveControls) {
+    const result = createDecisionEngine().decide(input({
+      context: seriesAContext,
+      pack: pack(completeCoverage, facts),
+    }));
+
+    assert.equal(result.companyQuality, "pass");
+    assert.equal(result.decision, "Invest Candidate");
+  }
+});
+
+test("non-applicable and unavailable specialist judgments remain advisory, not formal dependencies", () => {
+  const specialistCardId =
+    DECISION_POLICY_V1.specialistCriticalFrameworkCardIds[0]!;
+
+  for (const applicability of ["not_applicable", "unavailable"] as const) {
+    const specialist = judgment(
+      `judgment_specialist_${applicability}`,
+      specialistCardId,
+      "abstain",
+      "high",
+      {
+        applicability,
+        strongestSupport: null,
+        strongestCounterargument: null,
+        unknowns: [`Specialist lens is ${applicability}.`],
+      },
+    );
+    const result = createDecisionEngine().decide(input({
+      judgments: [...positiveJudgments(), specialist],
+    }));
+    const specialistRef = `framework_judgment:${specialist.id}`;
+
+    assert.equal(result.companyQuality, "pass");
+    assert.equal(result.decision, "Invest Candidate");
+    assert.equal(
+      result.firedRules.find(({ ruleId }) =>
+        ruleId === "decision.company_quality.v1"
+      )?.inputRefs.includes(specialistRef),
+      false,
+    );
+    assert.equal(
+      result.claimEdges.some(({ dependencyItemId, dependencyType }) =>
+        dependencyType === "framework_judgment"
+        && dependencyItemId === specialist.id
+      ),
+      false,
+    );
+  }
+});
+
+test("a non-applicable or unavailable mandatory judgment still makes Company Quality unavailable", () => {
+  for (const applicability of ["not_applicable", "unavailable"] as const) {
+    const judgments = positiveJudgments();
+    judgments[2] = {
+      ...judgments[2]!,
+      applicability,
+      conclusion: "abstain",
+      strongestSupport: null,
+      unknowns: [`Mandatory PMF judgment is ${applicability}.`],
+    };
+    const result = createDecisionEngine().decide(input({ judgments }));
+
+    assert.equal(result.companyQuality, "unavailable");
+    assert.notEqual(result.decision, "Invest Candidate");
+  }
+});
+
+test("an applicable high-confidence negative specialist is a formal dependency and fails Company Quality", () => {
+  const specialist = judgment(
+    "judgment_specialist_negative",
+    DECISION_POLICY_V1.specialistCriticalFrameworkCardIds[0]!,
+    "negative",
+    "high",
+  );
+  const result = createDecisionEngine().decide(input({
+    judgments: [...positiveJudgments(), specialist],
+  }));
+  const specialistRef = `framework_judgment:${specialist.id}`;
+
+  assert.equal(result.companyQuality, "fail");
+  assert.equal(result.decision, "Pass");
+  assert.equal(
+    result.firedRules.find(({ ruleId }) =>
+      ruleId === "decision.company_quality.v1"
+    )?.inputRefs.includes(specialistRef),
+    true,
+  );
+  assert.equal(
+    result.claimEdges.some(({ dependencyItemId, dependencyType }) =>
+      dependencyType === "framework_judgment"
+      && dependencyItemId === specialist.id
+    ),
+    true,
   );
 });
 

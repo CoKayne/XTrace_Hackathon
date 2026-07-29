@@ -15,6 +15,7 @@ import {
 import type { EvidencePack } from "../../lib/contracts/evidence";
 import {
   ScenarioInputFieldSchema,
+  type FrameworkJudgment,
   type FundPolicySnapshot,
   type ResolvedUnderwritingContext,
 } from "../../lib/contracts/underwriting";
@@ -241,6 +242,36 @@ function finalization(input: {
       settingsFingerprint: `sha256:${"b".repeat(64)}`,
       applicationCommit: "0002f6b",
     },
+  };
+}
+
+function advisorySpecialistJudgment(
+  applicability: "not_applicable" | "unavailable",
+  ordinal: number,
+): FrameworkJudgment {
+  return {
+    id: `judgment_specialist_${applicability}`,
+    analysisType: "framework_judgment",
+    frameworkCardId: `framework_card_synthetic_${ordinal}_v1`,
+    frameworkVersion: "1",
+    applicability,
+    conclusion: "abstain",
+    supportEvidenceItemIds: [],
+    counterEvidenceItemIds: [],
+    unusedEvidenceItemIds: [],
+    strongestSupport: null,
+    strongestCounterargument: null,
+    unknowns: [`Specialist judgment is ${applicability}.`],
+    limitations: ["This judgment is advisory and not a formal decision input."],
+    confidence: {
+      sourceReliability: "medium",
+      evidenceStrength: "low",
+      evidenceCoverage: "low",
+      applicability: "high",
+      judgment: "high",
+    },
+    claimEdges: [],
+    fingerprint: `fingerprint_specialist_${applicability}`,
   };
 }
 
@@ -599,6 +630,42 @@ test("finalization rejects a foreign lease and stores exact immutable snapshots 
   assert.deepEqual(stored.versionSnapshot, payload.versionSnapshot);
   await assert.rejects(runs.finalizeCandidate(payload), /completed|lease/i);
   assert.equal(artifacts.inspect().rowCounts.evidencePacks, 1);
+});
+
+test("Task8 finalization preserves advisory specialist judgments without requiring formal decision edges", async () => {
+  const { artifacts, runs, first } = await twoClaimedCandidates();
+  const payload = finalization({
+    candidateRunId: first.candidate.id,
+    dealId: first.candidate.dealId,
+    workerId: "worker_1",
+    leaseToken: first.leaseToken,
+  });
+  payload.judgments = [
+    advisorySpecialistJudgment("not_applicable", 4),
+    advisorySpecialistJudgment("unavailable", 5),
+  ];
+  payload.narrative = [
+    payload.narrative,
+    "framework_card_synthetic_4_v1: not_applicable",
+    "framework_card_synthetic_5_v1: unavailable",
+  ].join("\n");
+
+  await runs.finalizeCandidate(payload);
+  const stored = await artifacts.getByCandidateRunId({
+    workspaceId: "workspace_1",
+    candidateRunId: first.candidate.id,
+  });
+
+  assert.ok(stored);
+  assert.deepEqual(stored.judgments, payload.judgments);
+  assert.equal(stored.narrative, payload.narrative);
+  assert.equal(
+    stored.decision.claimEdges.some(({ dependencyItemId }) =>
+      payload.judgments.some(({ id }) => id === dependencyItemId)
+    ),
+    false,
+  );
+  assert.equal(artifacts.inspect().rowCounts.judgments, 2);
 });
 
 test("finalization persists the real valuation artifact graph without losing Task10 references", async () => {

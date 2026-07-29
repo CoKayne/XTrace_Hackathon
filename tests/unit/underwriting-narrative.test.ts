@@ -401,3 +401,44 @@ function experimentalJudgment(input: {
     fingerprint: `sha256:${input.id}`,
   };
 }
+
+test("narrates persisted non-applicable and unavailable specialist judgments", () => {
+  const specialistJudgments: FrameworkJudgment[] = [
+    {
+      ...experimentalAdvisoryJudgment,
+      id: "judgment_specialist_not_applicable",
+      frameworkCardId: "framework_card_synthetic_4_v1",
+      applicability: "not_applicable",
+      conclusion: "abstain",
+      strongestSupport: null,
+      strongestCounterargument: null,
+      unknowns: ["The specialist lens does not apply to this business model."],
+      fingerprint: "fingerprint_specialist_not_applicable",
+    },
+    {
+      ...experimentalAdvisoryJudgment,
+      id: "judgment_specialist_unavailable",
+      frameworkCardId: "framework_card_synthetic_5_v1",
+      applicability: "unavailable",
+      conclusion: "abstain",
+      strongestSupport: null,
+      strongestCounterargument: null,
+      unknowns: ["Required specialist evidence is unavailable."],
+      fingerprint: "fingerprint_specialist_unavailable",
+    },
+  ];
+  const narrative = buildUnderwritingNarrative({
+    ...input,
+    judgments: [...input.judgments, ...specialistJudgments],
+  });
+
+  assert.match(narrative, /framework_card_synthetic_4_v1/);
+  assert.match(narrative, /Applicability: not_applicable; conclusion: abstain/);
+  assert.match(narrative, /framework_card_synthetic_5_v1/);
+  assert.match(narrative, /Applicability: unavailable; conclusion: abstain/);
+  assert.match(
+    narrative,
+    /The specialist lens does not apply to this business model/,
+  );
+  assert.match(narrative, /Required specialist evidence is unavailable/);
+});
