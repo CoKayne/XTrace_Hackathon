@@ -63,6 +63,7 @@ export interface CandidateFinalization {
   context: ResolvedUnderwritingContext;
   scenarioModel: ScenarioModel;
   calculations: Calculation[];
+  calculationClaimEdges: ClaimEdge[];
   judgments: FrameworkJudgment[];
   disagreements: FrameworkDisagreement[];
   valuation: ValuationEvaluation;
@@ -123,6 +124,7 @@ export interface MemoryUnderwritingArtifactsRepository
       id: string;
       workspaceId: string;
       dealId: string;
+      fundPolicySnapshotId: string;
     };
     finalization: CandidateFinalization;
   }): CandidateArtifactBundle;
@@ -302,7 +304,8 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
         workspace_id: `eq.${workspaceId}`,
         id: `eq.${candidateRunId}`,
         status: "eq.completed",
-        select: "id,workspace_id,deal_id,candidate_analysis_fingerprint",
+        select:
+          "id,batch_id,workspace_id,deal_id,candidate_analysis_fingerprint",
         limit: "1",
       });
       const candidates = await request(
@@ -310,6 +313,20 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
       ) as Array<Record<string, unknown>>;
       const candidate = candidates[0];
       if (!candidate) return null;
+      const batchQuery = new URLSearchParams({
+        workspace_id: `eq.${workspaceId}`,
+        id: `eq.${String(candidate.batch_id)}`,
+        select: "fund_policy_snapshot_id",
+        limit: "1",
+      });
+      const batchRows = await request(
+        `/underwriting_batches?${batchQuery}`,
+      ) as Array<Record<string, unknown>>;
+      if (!batchRows[0]) {
+        throw new Error(
+          "Completed candidate artifacts are missing their pinned Fund Policy.",
+        );
+      }
 
       const [
         evidenceRows,
@@ -396,11 +413,29 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
           "Completed candidate artifacts are incomplete or inconsistent.",
         );
       }
+      const persistedEdges = edgeRows.map((row) =>
+        ClaimEdgeSchema.parse({
+          claimItemId: row.claim_item_id,
+          dependencyItemId: row.dependency_item_id,
+          dependencyType: row.dependency_type,
+        })
+      );
+      const persistedCalculationIds = new Set(
+        calculationRows.map((row) => String(row.artifact_id)),
+      );
+      const calculationClaimEdges = persistedEdges.filter((edge) =>
+        edge.dependencyType === "calculation"
+        && persistedCalculationIds.has(edge.claimItemId)
+        && persistedCalculationIds.has(edge.dependencyItemId)
+      );
       const prepared = validateFinalization(
         {
           id: candidateRunId,
           workspaceId,
           dealId: String(candidate.deal_id),
+          fundPolicySnapshotId: String(
+            batchRows[0].fund_policy_snapshot_id,
+          ),
         },
         {
           workerId: "persisted",
@@ -415,6 +450,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
           calculations: calculationRows.map((row) =>
             row.payload as Calculation
           ),
+          calculationClaimEdges,
           judgments: judgmentRows.map((row) =>
             row.payload as FrameworkJudgment
           ),
@@ -428,13 +464,6 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
           versionSnapshot:
             versionRows[0].payload as CandidateVersionSnapshot,
         },
-      );
-      const persistedEdges = edgeRows.map((row) =>
-        ClaimEdgeSchema.parse({
-          claimItemId: row.claim_item_id,
-          dependencyItemId: row.dependency_item_id,
-          dependencyType: row.dependency_type,
-        })
       );
       if (
         JSON.stringify(sortedClaimEdges(persistedEdges))
@@ -450,7 +479,12 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
 }
 
 function validateFinalization(
-  candidate: { id: string; workspaceId: string; dealId: string },
+  candidate: {
+    id: string;
+    workspaceId: string;
+    dealId: string;
+    fundPolicySnapshotId: string;
+  },
   input: CandidateFinalization,
 ): CandidateArtifactBundle {
   const candidateRunId = requiredText(input.candidateRunId, "A candidate run");
@@ -464,6 +498,9 @@ function validateFinalization(
   const scenarioModel = ScenarioModelSchema.parse(input.scenarioModel);
   const calculations = input.calculations.map((value) =>
     CalculationSchema.parse(value)
+  );
+  const calculationClaimEdges = input.calculationClaimEdges.map((value) =>
+    ClaimEdgeSchema.parse(value)
   );
   const judgments = input.judgments.map((value) =>
     FrameworkJudgmentSchema.parse(value)
@@ -506,6 +543,7 @@ function validateFinalization(
       !== versionSnapshot.valuationMethodPolicyId
     || context.decisionPolicyId !== versionSnapshot.decisionPolicyId
     || context.frameworkPackId !== versionSnapshot.frameworkPackId
+    || candidate.fundPolicySnapshotId !== versionSnapshot.fundPolicyId
   ) {
     throw new Error(
       "The candidate version snapshot must match the resolved context.",
@@ -559,6 +597,22 @@ function validateFinalization(
       ? [versionSnapshot.benchmarkPackId]
       : [],
   );
+  const calculationPolicyIds = new Set([
+    ...policyIds,
+    "policy:initialCheckMax",
+    "policy:acceptableFutureDilution",
+    `policy:returnTargets.${context.stage}.grossMoic`,
+    `policy:returnTargets.${context.stage}.horizonYears`,
+  ]);
+  const benchmarkAssumptions = new Map(
+    evidencePack.assumptions
+      .filter((assumption) =>
+        assumption.provenanceOrigin === "benchmark"
+        && assumption.inputRefIds.length === 1
+        && assumption.inputRefIds[0] === versionSnapshot.benchmarkPackId
+      )
+      .map((assumption) => [assumption.id, assumption]),
+  );
   const frameworkIds = new Set([
     versionSnapshot.frameworkPackId,
     ...judgments.map(({ frameworkCardId }) => frameworkCardId),
@@ -579,6 +633,7 @@ function validateFinalization(
   }
 
   const claimEdges = [
+    ...calculationClaimEdges,
     ...judgments.flatMap((judgment) => judgment.claimEdges),
     ...decision.claimEdges,
   ].map((edge) => ClaimEdgeSchema.parse(edge));
@@ -598,6 +653,17 @@ function validateFinalization(
     framework_ref: frameworkIds,
   };
   if (
+    calculationClaimEdges.some((edge) =>
+      edge.dependencyType !== "calculation"
+      || !calculationIds.has(edge.claimItemId)
+      || !calculationIds.has(edge.dependencyItemId)
+    )
+  ) {
+    throw new Error(
+      "Calculation claim edges must connect two saved calculations.",
+    );
+  }
+  if (
     claimEdges.some((edge) =>
       !dependencySets[edge.dependencyType].has(edge.dependencyItemId)
     )
@@ -614,9 +680,12 @@ function validateFinalization(
           : reference.type === "assumption"
           ? assumptionIds
           : reference.type === "policy"
-          ? policyIds
-          : benchmarkIds;
-        return !dependencies.has(reference.itemId);
+          ? calculationPolicyIds
+          : null;
+        if (dependencies) return !dependencies.has(reference.itemId);
+        const benchmarkAssumption = benchmarkAssumptions.get(reference.itemId);
+        return !benchmarkAssumption
+          || benchmarkAssumption.value !== reference.value;
       })
     )
   ) {
@@ -634,6 +703,7 @@ function validateFinalization(
     context,
     scenarioModel,
     calculations,
+    calculationClaimEdges,
     judgments,
     disagreements,
     valuation,

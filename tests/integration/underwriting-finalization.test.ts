@@ -12,7 +12,13 @@ import {
   createMemoryUnderwritingRunsRepository,
   type CandidateFinalization,
 } from "../../db/repositories/underwriting-runs";
-import { ScenarioInputFieldSchema } from "../../lib/contracts/underwriting";
+import type { EvidencePack } from "../../lib/contracts/evidence";
+import {
+  ScenarioInputFieldSchema,
+  type FundPolicySnapshot,
+  type ResolvedUnderwritingContext,
+} from "../../lib/contracts/underwriting";
+import { createValuationEngine } from "../../lib/underwriting/valuation/service";
 
 const migrationPath = fileURLToPath(
   new URL("../../drizzle/0011_underwriting_runs.sql", import.meta.url),
@@ -109,6 +115,7 @@ function finalization(input: {
   dealId: string;
   workerId: string;
   leaseToken: string;
+  fundPolicyId?: string;
 }): CandidateFinalization {
   const scenarioInputs = (scenario: "bear" | "base" | "bull") =>
     ScenarioInputFieldSchema.options.map((field) => ({
@@ -173,6 +180,7 @@ function finalization(input: {
       probabilityWeighted: false,
     },
     calculations: [],
+    calculationClaimEdges: [],
     judgments: [],
     disagreements: [],
     valuation: {
@@ -219,7 +227,7 @@ function finalization(input: {
       updatedAt: "2026-07-29T12:00:00.000Z",
     }],
     versionSnapshot: {
-      fundPolicyId: "fund_policy_1",
+      fundPolicyId: input.fundPolicyId ?? "fund_policy_1",
       benchmarkPackId: "benchmark_1",
       frameworkPackId: "framework_pack_1",
       routerVersion: "router-v1",
@@ -234,6 +242,230 @@ function finalization(input: {
       applicationCommit: "0002f6b",
     },
   };
+}
+
+function valuationEvidencePack(): EvidencePack {
+  const fact = (
+    id: string,
+    field: string,
+    value: string,
+    unit: string | null,
+    currency: string | null,
+  ): EvidencePack["facts"][number] => ({
+    id,
+    analysisType: "fact",
+    provenanceOrigin: "management",
+    field,
+    value,
+    unit,
+    currency,
+    periodStart: null,
+    periodEnd: null,
+    publishedAt: null,
+    eventAt: null,
+    retrievedAt: "2026-07-29T10:00:00.000Z",
+    sourceRevisionId: "revision_1",
+    locator: {
+      kind: "text_range",
+      start: 0,
+      end: 10,
+      excerpt: `${field}: ${value}`,
+    },
+    sourceRole: "management",
+    assertionStatus: "reported",
+    verificationMethod: null,
+    freshness: "current",
+    acceptedForGate: true,
+  });
+  const assumption = (
+    id: string,
+    scenario: "bear" | "base" | "bull" | "all",
+    field: string,
+    value: string,
+  ): EvidencePack["assumptions"][number] => ({
+    id,
+    analysisType: "assumption",
+    provenanceOrigin: field.startsWith("compatible_benchmark_")
+      ? "benchmark"
+      : "recommended_policy",
+    scenario,
+    field,
+    value,
+    unit: field === "compatible_benchmark_value" || field === "arr_path"
+      ? "USD"
+      : field === "compatible_benchmark_stale_after"
+        ? "date"
+        : field === "scenario_price_multiplier"
+          ? "decimal"
+          : null,
+    rationale: `Explicit ${field} input`,
+    inputRefIds: field.startsWith("compatible_benchmark_")
+      ? ["benchmark_pack_synthetic_us_software_v1"]
+      : [],
+    sensitivity: "medium",
+    requiresConfirmation: false,
+  });
+  return {
+    id: "pack_1",
+    version: 1,
+    workspaceId: "workspace_1",
+    dealId: "deal_1",
+    asOfDate: "2026-07-29",
+    sourceRevisionIds: ["revision_1"],
+    facts: [
+      fact(
+        "fact_current_ask",
+        "reported_valuation",
+        "18000000",
+        "currency",
+        "USD",
+      ),
+      fact(
+        "fact_valuation_basis",
+        "reported_valuation_basis",
+        "pre_money",
+        null,
+        null,
+      ),
+    ],
+    assumptions: [
+      assumption(
+        "benchmark_seed",
+        "all",
+        "compatible_benchmark_value",
+        "20000000",
+      ),
+      assumption(
+        "benchmark_stale_after",
+        "all",
+        "compatible_benchmark_stale_after",
+        "2026-12-31",
+      ),
+      assumption(
+        "multiplier_bear",
+        "bear",
+        "scenario_price_multiplier",
+        "0.75",
+      ),
+      assumption(
+        "multiplier_base",
+        "base",
+        "scenario_price_multiplier",
+        "1",
+      ),
+      assumption(
+        "multiplier_bull",
+        "bull",
+        "scenario_price_multiplier",
+        "1.25",
+      ),
+      assumption("exit_arr_base", "base", "arr_path", "20000000"),
+      assumption("exit_multiple_base", "base", "exit_multiple", "5"),
+    ],
+    conflicts: [],
+    coverage: {
+      minimumModelInputsComplete: true,
+      criticalEvidenceComplete: false,
+      missingFieldIds: [],
+      blockingConflictIds: [],
+      decisionCeiling: "Advance",
+      underwritingStatus: "available",
+      reasonCodes: [],
+    },
+    createdAt: "2026-07-29T10:05:00.000Z",
+  };
+}
+
+function valuationContext(): ResolvedUnderwritingContext {
+  return {
+    id: "context_seed_saas_us",
+    contextVersion: "1",
+    stage: "seed",
+    businessModel: "b2b_saas",
+    geography: "us",
+    securityType: "preferred",
+    asOfDate: "2026-07-29",
+    criticalEvidenceProfileId: "critical_evidence_seed_b2b_saas_v1",
+    benchmarkPackId: "benchmark_pack_synthetic_us_software_v1",
+    benchmarkCompatibility: "exact",
+    valuationMethodPolicyId: "valuation_method_seed_b2b_saas_v1",
+    decisionPolicyId: "decision_policy_seed_b2b_saas_v1",
+    frameworkPackId: "framework_pack_synthetic_universal_saas_ai_v1",
+  };
+}
+
+function valuationFundPolicy(): FundPolicySnapshot {
+  return {
+    id: "fund_policy:workspace_1:v1",
+    workspaceId: "workspace_1",
+    version: 1,
+    source: "recommended_policy",
+    values: {
+      baseCurrency: "USD",
+      initialCheckMax: "8000000",
+      acceptableFutureDilution: "0.50",
+      scenarioPriceMultipliers: {
+        bear: "0.75",
+        base: "1",
+        bull: "1.25",
+      },
+      returnTargets: {
+        seed: {
+          grossMoic: "5",
+          grossIrr: "0.2228445449938519",
+          horizonYears: "8",
+        },
+      },
+      probabilityWeighted: false,
+    },
+    createdByUserId: null,
+    createdAt: "2026-07-29T09:00:00.000Z",
+  };
+}
+
+function realValuationFinalization(input: {
+  workerId: string;
+  leaseToken: string;
+}): CandidateFinalization {
+  const pack = valuationEvidencePack();
+  const context = valuationContext();
+  const policy = valuationFundPolicy();
+  const detailed = createValuationEngine({
+    now: () => new Date("2026-07-29T12:00:00.000Z"),
+  }).evaluateDetailed({ pack, context, fundPolicy: policy });
+  const base = finalization({
+    candidateRunId: detailed.scenarioModel.candidateRunId,
+    dealId: pack.dealId,
+    workerId: input.workerId,
+    leaseToken: input.leaseToken,
+    fundPolicyId: policy.id,
+  });
+  return {
+    ...base,
+    evidencePack: pack,
+    context,
+    scenarioModel: detailed.scenarioModel,
+    calculations: detailed.calculations,
+    calculationClaimEdges: detailed.calculationClaimEdges,
+    valuation: detailed.evaluation,
+    versionSnapshot: {
+      ...base.versionSnapshot,
+      fundPolicyId: policy.id,
+      benchmarkPackId: context.benchmarkPackId,
+      frameworkPackId: context.frameworkPackId,
+      criticalEvidenceProfileId: context.criticalEvidenceProfileId,
+      valuationMethodPolicyId: context.valuationMethodPolicyId,
+      decisionPolicyId: context.decisionPolicyId,
+      formulaVersions: [
+        "market_comps_v1",
+        "venture_return_method_v1",
+        "simple_pre_post_ownership_v1",
+        "future_dilution_v1",
+        "gross_deal_moic_v1",
+        "annualized_gross_irr_v1",
+      ],
+    },
+  } as CandidateFinalization;
 }
 
 test("failed finalization leaves no partial artifacts and retains the active lease", async () => {
@@ -369,6 +601,69 @@ test("finalization rejects a foreign lease and stores exact immutable snapshots 
   assert.equal(artifacts.inspect().rowCounts.evidencePacks, 1);
 });
 
+test("finalization persists the real valuation artifact graph without losing Task10 references", async () => {
+  const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => new Date("2026-07-29T12:00:00.000Z"),
+    idGenerator: (kind) =>
+      kind === "batch" ? "batch_real" : "valuation:pack_1",
+    leaseTokenGenerator: () => "lease_real",
+    artifacts,
+  });
+  const batch = await runs.createOrReuseBatch({
+    workspaceId: "workspace_1",
+    scanRunId: "scan_1",
+    batchInputFingerprint: `sha256:${"c".repeat(64)}`,
+    fundPolicySnapshotId: valuationFundPolicy().id,
+    forceRefresh: false,
+    refreshNonce: null,
+    rerunOfId: null,
+  });
+  await runs.saveSelections({
+    batchId: batch.id,
+    selections: [{
+      dealId: "deal_1",
+      status: "selected",
+      rank: 1,
+      reason: "Real valuation artifact fixture",
+    }],
+  });
+  await runs.createSelectedCandidates({
+    batchId: batch.id,
+    dealIds: ["deal_1"],
+  });
+  const claimed = await runs.claimNextCandidate({
+    workerId: "worker_real",
+    leaseSeconds: 60,
+  });
+  assert.ok(claimed);
+  const payload = realValuationFinalization({
+    workerId: "worker_real",
+    leaseToken: claimed.leaseToken,
+  });
+
+  await runs.finalizeCandidate(payload);
+  const stored = await artifacts.getByCandidateRunId({
+    workspaceId: "workspace_1",
+    candidateRunId: claimed.candidate.id,
+  });
+  assert.ok(stored);
+  assert.deepEqual(
+    stored.calculationClaimEdges,
+    payload.calculationClaimEdges,
+  );
+  assert.ok(stored.calculationClaimEdges.some(
+    ({ claimItemId, dependencyItemId }) =>
+      claimItemId.endsWith(":gross_moic")
+      && dependencyItemId.endsWith(":exit_proceeds"),
+  ));
+  assert.ok(stored.calculationClaimEdges.some(
+    ({ claimItemId, dependencyItemId }) =>
+      claimItemId.endsWith(":gross_irr")
+      && dependencyItemId.endsWith(":gross_moic"),
+  ));
+});
+
 test("0011 declares an atomic finalization RPC without calling legacy report persistence", () => {
   const migration = readFileSync(migrationPath, "utf8");
   assert.match(
@@ -461,6 +756,7 @@ test(
         dealId: "deal_1",
         workerId: "worker_db",
         leaseToken: "lease_db",
+        fundPolicyId: "fund_policy:workspace_1:v1",
       });
       payload.actionDrafts.push({ ...payload.actionDrafts[0] });
       assert.throws(() =>
@@ -546,6 +842,176 @@ test(
     });
   },
 );
+
+test(
+  "0011 finalizes the real Task10 valuation artifact set with its complete calculation lineage",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      setupSqlUnderwritingWorkspace(database);
+      executeSql(database, `
+        insert into public.underwriting_batches (
+          id, workspace_id, scan_run_id, status,
+          batch_input_fingerprint, fund_policy_snapshot_id,
+          force_refresh, refresh_nonce, rerun_of_id
+        ) values (
+          'batch_real',
+          'workspace_1',
+          '00000000-0000-4000-8000-000000000801',
+          'running',
+          'sha256:${"c".repeat(64)}',
+          'fund_policy:workspace_1:v1',
+          false,
+          null,
+          null
+        );
+        insert into public.candidate_runs (
+          id, batch_id, workspace_id, deal_id, status,
+          candidate_analysis_fingerprint, worker_id, lease_token,
+          lease_expires_at
+        ) values (
+          'valuation:pack_1',
+          'batch_real',
+          'workspace_1',
+          'deal_1',
+          'running',
+          'pending:valuation:pack_1',
+          'worker_db',
+          'lease_db',
+          now() + interval '5 minutes'
+        );
+      `);
+      const payload = realValuationFinalization({
+        workerId: "worker_db",
+        leaseToken: "lease_db",
+      });
+
+      executeSql(database, `
+        set role service_role;
+        select public.finalize_candidate_underwriting(${sqlJson(payload)});
+      `);
+      assert.equal(
+        executeSql(database, `
+          select status from public.candidate_runs
+          where id = 'valuation:pack_1';
+        `),
+        "completed",
+      );
+      assert.equal(
+        executeSql(database, `
+          select count(*)::text
+          from public.underwriting_claim_edges
+          where candidate_run_id = 'valuation:pack_1'
+            and dependency_type = 'calculation';
+        `),
+        String(payload.calculationClaimEdges.length),
+      );
+    });
+  },
+);
+
+test(
+  "0011 completes a batch when persisted selections produce zero candidates",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      setupSqlUnderwritingWorkspace(database);
+      executeSql(database, `
+        insert into public.underwriting_batches (
+          id, workspace_id, scan_run_id, status,
+          batch_input_fingerprint, fund_policy_snapshot_id,
+          force_refresh, refresh_nonce, rerun_of_id
+        ) values (
+          'batch_empty',
+          'workspace_1',
+          '00000000-0000-4000-8000-000000000801',
+          'queued',
+          'sha256:${"d".repeat(64)}',
+          'fund_policy:workspace_1:v1',
+          false,
+          null,
+          null
+        );
+      `);
+      executeSql(database, `
+        set role service_role;
+        select public.save_underwriting_selections(jsonb_build_object(
+          'batchId', 'batch_empty',
+          'selections', jsonb_build_array(jsonb_build_object(
+            'dealId', 'deal_1',
+            'status', 'selected',
+            'rank', 6,
+            'reason', 'Outside Top 5'
+          ))
+        ));
+      `);
+
+      assert.equal(
+        executeSql(database, `
+          select status
+          from public.underwriting_batches
+          where id = 'batch_empty';
+        `),
+        "completed",
+      );
+      assert.equal(
+        executeSql(database, `
+          select status || '|' || coalesce(rank::text, 'null')
+          from public.underwriting_selections
+          where batch_id = 'batch_empty' and deal_id = 'deal_1';
+        `),
+        "not_selected|null",
+      );
+    });
+  },
+);
+
+function setupSqlUnderwritingWorkspace(database: string): void {
+  executeSql(database, `
+    do $$
+    begin
+      create role service_role nologin noinherit bypassrls;
+    exception when duplicate_object then null;
+    end;
+    $$;
+  `);
+  for (const migration of migrations) applySql(database, migration);
+  executeSql(database, `
+    insert into public.workspaces (id, name)
+    values ('workspace_1', 'Workspace 1');
+    insert into public.scan_runs (
+      id, workspace_id, mode, status
+    ) values (
+      '00000000-0000-4000-8000-000000000801',
+      'workspace_1',
+      'structured',
+      'completed'
+    );
+    select public.activate_fund_policy_version(jsonb_build_object(
+      'workspaceId', 'workspace_1',
+      'actorId', null,
+      'expectedActiveVersionId', null,
+      'action', 'recommended'
+    ));
+    insert into public.companies (workspace_id, id, name)
+    values ('workspace_1', 'company_1', 'Company 1');
+    insert into public.deals (
+      workspace_id, id, company_id, company_name, status
+    ) values (
+      'workspace_1', 'deal_1', 'company_1', 'Company 1', 'screening'
+    );
+  `);
+}
 
 function withTemporaryDatabase(run: (database: string) => void): void {
   const database =

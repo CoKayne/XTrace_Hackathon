@@ -377,6 +377,8 @@ declare
   terminal_count integer;
   completed_count integer;
   failed_count integer;
+  selection_count integer;
+  selected_count integer;
 begin
   select
     count(*)::integer,
@@ -389,8 +391,19 @@ begin
   from public.candidate_runs
   where batch_id = p_batch_id;
 
+  select
+    count(*)::integer,
+    count(*) filter (where status = 'selected')::integer
+  into selection_count, selected_count
+  from public.underwriting_selections
+  where batch_id = p_batch_id;
+
   update public.underwriting_batches
   set status = case
+    when candidate_count = 0
+      and selection_count > 0
+      and selected_count = 0
+      then 'completed'
     when candidate_count = 0 then status
     when terminal_count < candidate_count then 'running'
     when completed_count = candidate_count then 'completed'
@@ -548,6 +561,7 @@ begin
       rank = excluded.rank,
       reason = excluded.reason;
   end loop;
+  perform public.refresh_underwriting_batch_status(target_batch.id);
 end;
 $$;
 
@@ -882,6 +896,7 @@ as $$
 declare
   p_payload alias for $1;
   target public.candidate_runs%rowtype;
+  target_batch public.underwriting_batches%rowtype;
   target_fingerprint text := btrim(
     p_payload ->> 'candidateAnalysisFingerprint'
   );
@@ -895,6 +910,7 @@ declare
   edge jsonb;
   input_ref jsonb;
   input_ref_exists boolean;
+  fund_policy_values jsonb;
 begin
   select * into target
   from public.candidate_runs
@@ -908,6 +924,13 @@ begin
   then
     raise exception 'Candidate finalization lease does not match';
   end if;
+  select * into target_batch
+  from public.underwriting_batches
+  where id = target.batch_id
+    and workspace_id = target.workspace_id;
+  if not found then
+    raise exception 'Candidate batch does not exist';
+  end if;
   if target_fingerprint !~ '^sha256:[0-9a-f]{64}$' then
     raise exception 'A canonical candidate fingerprint is required';
   end if;
@@ -916,6 +939,7 @@ begin
     or evidence_pack ->> 'dealId' <> target.deal_id
     or jsonb_typeof(context_snapshot) <> 'object'
     or jsonb_typeof(scenario_model) <> 'object'
+    or jsonb_typeof(p_payload -> 'calculationClaimEdges') <> 'array'
     or scenario_model ->> 'candidateRunId' <> target.id
     or jsonb_typeof(valuation) <> 'object'
     or jsonb_typeof(decision_result) <> 'object'
@@ -934,8 +958,17 @@ begin
       <> version_snapshot ->> 'decisionPolicyId'
     or context_snapshot ->> 'frameworkPackId'
       <> version_snapshot ->> 'frameworkPackId'
+    or target_batch.fund_policy_snapshot_id
+      <> version_snapshot ->> 'fundPolicyId'
   then
     raise exception 'Version snapshot does not match resolved context';
+  end if;
+  select values into fund_policy_values
+  from public.fund_policy_versions
+  where workspace_id = target.workspace_id
+    and id = version_snapshot ->> 'fundPolicyId';
+  if not found then
+    raise exception 'Pinned Fund Policy snapshot does not exist';
   end if;
 
   insert into public.evidence_packs (
@@ -992,14 +1025,68 @@ begin
           ) as dependency
           where dependency ->> 'id' = btrim(input_ref ->> 'itemId')
         )
-        when 'policy' then btrim(input_ref ->> 'itemId') in (
-          version_snapshot ->> 'fundPolicyId',
-          version_snapshot ->> 'criticalEvidenceProfileId',
-          version_snapshot ->> 'valuationMethodPolicyId',
-          version_snapshot ->> 'decisionPolicyId'
-        )
-        when 'benchmark' then btrim(input_ref ->> 'itemId') =
-          version_snapshot ->> 'benchmarkPackId'
+        when 'policy' then
+          btrim(input_ref ->> 'itemId') in (
+            version_snapshot ->> 'fundPolicyId',
+            version_snapshot ->> 'criticalEvidenceProfileId',
+            version_snapshot ->> 'valuationMethodPolicyId',
+            version_snapshot ->> 'decisionPolicyId'
+          )
+          or (
+            btrim(input_ref ->> 'itemId') = 'policy:initialCheckMax'
+            and fund_policy_values ->> 'initialCheckMax'
+              = input_ref ->> 'value'
+          )
+          or (
+            btrim(input_ref ->> 'itemId')
+              = 'policy:acceptableFutureDilution'
+            and fund_policy_values ->> 'acceptableFutureDilution'
+              = input_ref ->> 'value'
+          )
+          or (
+            btrim(input_ref ->> 'itemId')
+              = (
+                'policy:returnTargets.'
+                || (context_snapshot ->> 'stage')
+                || '.grossMoic'
+              )
+            and fund_policy_values #>> array[
+              'returnTargets',
+              (context_snapshot ->> 'stage'),
+              'grossMoic'
+            ] = input_ref ->> 'value'
+          )
+          or (
+            btrim(input_ref ->> 'itemId')
+              = (
+                'policy:returnTargets.'
+                || (context_snapshot ->> 'stage')
+                || '.horizonYears'
+              )
+            and fund_policy_values #>> array[
+              'returnTargets',
+              (context_snapshot ->> 'stage'),
+              'horizonYears'
+            ] = input_ref ->> 'value'
+          )
+        when 'benchmark' then
+          exists (
+            select 1
+            from jsonb_array_elements(
+              coalesce(evidence_pack -> 'assumptions', '[]'::jsonb)
+            ) as dependency
+            where dependency ->> 'id' = btrim(input_ref ->> 'itemId')
+              and dependency ->> 'value' = input_ref ->> 'value'
+              and dependency ->> 'provenanceOrigin' = 'benchmark'
+              and dependency -> 'inputRefIds' = jsonb_build_array(
+                version_snapshot ->> 'benchmarkPackId'
+              )
+          )
+          and exists (
+            select 1
+            from public.benchmark_packs
+            where id = version_snapshot ->> 'benchmarkPackId'
+          )
         else false
       end;
       if not input_ref_exists then
@@ -1009,6 +1096,40 @@ begin
           btrim(input_ref ->> 'type');
       end if;
     end loop;
+  end loop;
+  for edge in select value from jsonb_array_elements(
+    coalesce(p_payload -> 'calculationClaimEdges', '[]'::jsonb)
+  )
+  loop
+    if btrim(edge ->> 'dependencyType') <> 'calculation'
+      or not exists (
+        select 1
+        from jsonb_array_elements(
+          coalesce(p_payload -> 'calculations', '[]'::jsonb)
+        ) as calculation
+        where calculation ->> 'id' = btrim(edge ->> 'claimItemId')
+      )
+      or not exists (
+        select 1
+        from jsonb_array_elements(
+          coalesce(p_payload -> 'calculations', '[]'::jsonb)
+        ) as calculation
+        where calculation ->> 'id' = btrim(edge ->> 'dependencyItemId')
+      )
+    then
+      raise exception
+        'Calculation claim edge must connect two saved calculations';
+    end if;
+    insert into public.underwriting_claim_edges (
+      workspace_id, candidate_run_id, claim_item_id,
+      dependency_item_id, dependency_type
+    ) values (
+      target.workspace_id,
+      target.id,
+      btrim(edge ->> 'claimItemId'),
+      btrim(edge ->> 'dependencyItemId'),
+      'calculation'
+    );
   end loop;
   for item in select value from jsonb_array_elements(
     coalesce(p_payload -> 'judgments', '[]'::jsonb)
@@ -1183,8 +1304,15 @@ end;
 $$;
 
 grant usage on schema public to vsee_underwriting_owner;
-grant select on public.scan_runs, public.deals,
+grant select on public.scan_runs, public.deals, public.benchmark_packs,
   public.fund_policy_versions to vsee_underwriting_owner;
+drop policy if exists fund_policy_versions_underwriting_owner
+  on public.fund_policy_versions;
+create policy fund_policy_versions_underwriting_owner
+  on public.fund_policy_versions
+  for select
+  to vsee_underwriting_owner
+  using (true);
 grant execute on function public.canonical_utc_iso_milliseconds(timestamptz)
   to vsee_underwriting_owner;
 grant execute on function public.refresh_underwriting_batch_status(text)

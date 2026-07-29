@@ -450,7 +450,11 @@ export function createMemoryUnderwritingRunsRepository(
         throw new Error("The candidate finalization lease does not match.");
       }
       const prepared = artifacts.prepareFinalization({
-        candidate,
+        candidate: {
+          ...candidate,
+          fundPolicySnapshotId:
+            batchById(candidate.batchId).value.fundPolicySnapshotId,
+        },
         finalization: input,
       });
       const completed = CandidateRunSchema.parse({
