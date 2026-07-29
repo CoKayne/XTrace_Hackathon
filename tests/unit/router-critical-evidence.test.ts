@@ -121,6 +121,38 @@ test("router precedence is confirmed, source-explicit, then derived", () => {
   assert.equal(result.analysisMode, "full");
 });
 
+test("equal winning claims preserve all evidence IDs independent of input order", () => {
+  const router = createContextRouter();
+  const stageA = {
+    value: " Seed ",
+    basis: "source_explicit" as const,
+    evidenceItemId: "stage:a",
+  };
+  const stageB = {
+    value: "seed",
+    basis: "source_explicit" as const,
+    evidenceItemId: "stage:b",
+  };
+  const first = router.resolve(identity({
+    stage: [stageA, stageB, stageA],
+  }));
+  const second = router.resolve(identity({
+    stage: [stageB, stageA, stageA],
+  }));
+
+  assert.deepEqual(first, second);
+  assert.equal(first.kind, "resolved");
+  if (first.kind !== "resolved") assert.fail("Expected a resolved context");
+  assert.deepEqual(first.evidenceItemIds, [
+    "evidence:confirmed:company_1",
+    "evidence:source_explicit:b2b_saas",
+    "evidence:source_explicit:preferred",
+    "evidence:source_explicit:us",
+    "stage:a",
+    "stage:b",
+  ]);
+});
+
 test("conflicting primary context values require confirmation instead of nearest-cohort routing", () => {
   const router = createContextRouter();
   const result = router.resolve(identity({
@@ -150,6 +182,90 @@ test("missing company identity is unavailable and unsupported context is Core-on
   assert.equal(unsupported.analysisMode, "core_only");
   assert.equal(unsupported.decisionCeiling, "Advance");
   assert.equal(unsupported.context, null);
+});
+
+test("full routing requires published matching critical and valuation dependencies", () => {
+  const selectedContext = {
+    id: "underwriting_context_seed_b2b_saas_review_v1",
+    contextVersion: "1" as const,
+    stage: "seed" as const,
+    businessModel: "b2b_saas" as const,
+    criticalEvidenceProfileId: "critical_profile_review_v1",
+    usBenchmarkPackId: "benchmark_pack_review_v1",
+    usBenchmarkCompatibility: "exact" as const,
+    valuationMethodPolicyId: "valuation_policy_review_v1",
+    decisionPolicyId: "decision_policy_review_v1",
+    frameworkPackId: "framework_pack_review_v1",
+  };
+  const publishedCritical = {
+    id: selectedContext.criticalEvidenceProfileId,
+    stage: "seed" as const,
+    businessModel: "b2b_saas" as const,
+    publicationStatus: "published" as const,
+  };
+  const publishedValuation = {
+    id: selectedContext.valuationMethodPolicyId,
+    stage: "seed" as const,
+    businessModel: "b2b_saas" as const,
+    publicationStatus: "published" as const,
+  };
+
+  const withoutAvailability = createContextRouter({
+    contexts: [{
+      ...selectedContext,
+      criticalEvidenceProfileId: "critical_evidence_seed_b2b_saas_v1",
+      valuationMethodPolicyId: "valuation_method_seed_b2b_saas_v1",
+    }],
+  }).resolve(identity());
+  assert.equal(withoutAvailability.kind, "resolved");
+  if (withoutAvailability.kind !== "resolved") {
+    assert.fail("Expected resolved routing");
+  }
+  assert.equal(withoutAvailability.analysisMode, "core_only");
+  assert.equal(withoutAvailability.decisionCeiling, "Advance");
+
+  for (const referenceAvailability of [
+    {
+      criticalEvidenceProfiles: [],
+      valuationMethodPolicies: [publishedValuation],
+    },
+    {
+      criticalEvidenceProfiles: [publishedCritical],
+      valuationMethodPolicies: [{
+        ...publishedValuation,
+        publicationStatus: "draft" as const,
+      }],
+    },
+    {
+      criticalEvidenceProfiles: [publishedCritical],
+      valuationMethodPolicies: [{
+        ...publishedValuation,
+        stage: "series_a" as const,
+      }],
+    },
+  ]) {
+    const result = createContextRouter({
+      contexts: [selectedContext],
+      referenceAvailability,
+    }).resolve(identity());
+    assert.equal(result.kind, "resolved");
+    if (result.kind !== "resolved") assert.fail("Expected resolved routing");
+    assert.equal(result.context?.id, selectedContext.id);
+    assert.equal(result.analysisMode, "core_only");
+    assert.equal(result.decisionCeiling, "Advance");
+  }
+
+  const supported = createContextRouter({
+    contexts: [selectedContext],
+    referenceAvailability: {
+      criticalEvidenceProfiles: [publishedCritical],
+      valuationMethodPolicies: [publishedValuation],
+    },
+  }).resolve(identity());
+  assert.equal(supported.kind, "resolved");
+  if (supported.kind !== "resolved") assert.fail("Expected resolved routing");
+  assert.equal(supported.analysisMode, "full");
+  assert.equal(supported.decisionCeiling, "Invest Candidate");
 });
 
 test("coverage makes identity absence unavailable and round-price absence Advance-only", () => {

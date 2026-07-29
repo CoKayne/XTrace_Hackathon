@@ -8,7 +8,9 @@ import type {
 } from "../contracts/underwriting";
 import {
   SLICE_ONE_CONTEXTS,
+  type SliceOneBusinessModel,
   type SliceOneContextProfile,
+  type SliceOneStage,
 } from "../../seed/underwriting/slice-one-contexts-v1";
 
 export type RouterEvidenceBasis =
@@ -73,10 +75,33 @@ export interface ContextRouter {
   }): EvidenceCoverageResult;
 }
 
+export interface RouterDependencyReference {
+  readonly id: string;
+  readonly stage: SliceOneStage;
+  readonly businessModel: SliceOneBusinessModel;
+  readonly publicationStatus: "draft" | "published" | "retired";
+}
+
+export interface RouterReferenceAvailability {
+  readonly criticalEvidenceProfiles: readonly RouterDependencyReference[];
+  readonly valuationMethodPolicies: readonly RouterDependencyReference[];
+}
+
 export function createContextRouter(options: {
   contexts?: SliceOneContextProfile[];
+  referenceAvailability?: RouterReferenceAvailability;
 } = {}): ContextRouter {
   const contexts = options.contexts ?? SLICE_ONE_CONTEXTS;
+  const referenceAvailability = options.referenceAvailability
+    ?? (options.contexts
+      ? EMPTY_REFERENCE_AVAILABILITY
+      : SLICE_ONE_REFERENCE_AVAILABILITY);
+  const publishedCriticalProfiles = publishedReferenceKeys(
+    referenceAvailability.criticalEvidenceProfiles,
+  );
+  const publishedValuationPolicies = publishedReferenceKeys(
+    referenceAvailability.valuationMethodPolicies,
+  );
   return {
     resolve(input) {
       const companyIdentity = selectPrimary(input.companyIdentity);
@@ -152,7 +177,17 @@ export function createContextRouter(options: {
       const full = context.benchmarkPackId !== null
         && ["exact", "broad_compatible"].includes(
           context.benchmarkCompatibility,
-        );
+        )
+        && publishedCriticalProfiles.has(referenceKey(
+          context.criticalEvidenceProfileId,
+          context.stage,
+          context.businessModel,
+        ))
+        && publishedValuationPolicies.has(referenceKey(
+          context.valuationMethodPolicyId,
+          context.stage,
+          context.businessModel,
+        ));
       return {
         kind: "resolved",
         context,
@@ -234,8 +269,52 @@ export function createContextRouter(options: {
   };
 }
 
+const EMPTY_REFERENCE_AVAILABILITY: RouterReferenceAvailability = {
+  criticalEvidenceProfiles: [],
+  valuationMethodPolicies: [],
+};
+
+const SLICE_ONE_REFERENCE_AVAILABILITY: RouterReferenceAvailability = {
+  criticalEvidenceProfiles: SLICE_ONE_CONTEXTS.map((context) => ({
+    id: context.criticalEvidenceProfileId,
+    stage: context.stage,
+    businessModel: context.businessModel,
+    publicationStatus: "published",
+  })),
+  valuationMethodPolicies: SLICE_ONE_CONTEXTS.map((context) => ({
+    id: context.valuationMethodPolicyId,
+    stage: context.stage,
+    businessModel: context.businessModel,
+    publicationStatus: "published",
+  })),
+};
+
+function publishedReferenceKeys(
+  references: readonly RouterDependencyReference[],
+): Set<string> {
+  return new Set(
+    references
+      .filter(({ publicationStatus }) => publicationStatus === "published")
+      .map(({ id, stage, businessModel }) =>
+        referenceKey(id, stage, businessModel)
+      ),
+  );
+}
+
+function referenceKey(
+  id: string,
+  stage: string,
+  businessModel: string,
+): string {
+  return JSON.stringify([id, stage, businessModel]);
+}
+
 type Selection =
-  | { kind: "selected"; claim: RouterEvidenceValue }
+  | {
+    kind: "selected";
+    value: string;
+    evidenceItemIds: string[];
+  }
   | { kind: "missing" }
   | { kind: "ambiguous" };
 
@@ -253,25 +332,34 @@ function selectPrimary(values: RouterEvidenceValue[]): Selection {
       candidates.map(({ value }) => value.trim().toLowerCase()),
     );
     if (distinctValues.size !== 1) return { kind: "ambiguous" };
-    return { kind: "selected", claim: candidates[0]! };
+    return {
+      kind: "selected",
+      value: [...distinctValues][0]!,
+      evidenceItemIds: uniqueSorted(
+        candidates.map(({ evidenceItemId }) => evidenceItemId),
+      ),
+    };
   }
   return { kind: "missing" };
 }
 
 function selectedValue(selection: Selection): string {
   return selection.kind === "selected"
-    ? selection.claim.value.trim().toLowerCase()
+    ? selection.value
     : "";
 }
 
 function selectedEvidenceIds(...selections: Selection[]): string[] {
-  return selections
+  return uniqueSorted(selections
     .flatMap((selection) =>
       selection.kind === "selected"
-        ? [selection.claim.evidenceItemId]
+        ? selection.evidenceItemIds
         : []
-    )
-    .sort(compareUtf8);
+    ));
+}
+
+function uniqueSorted(values: readonly string[]): string[] {
+  return [...new Set(values)].sort(compareUtf8);
 }
 
 function acceptedFor(
