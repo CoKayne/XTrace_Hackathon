@@ -16,6 +16,22 @@ import { decisionReasonLabel } from "../lib/demo/decision-label";
 import { SAMPLE_DEAL_PROFILES } from "./deal-profiles";
 import type { ChatMemoryStatus } from "../lib/chat/service";
 
+interface UploadedDocument {
+  id: string;
+  filename: string;
+  contentType: string;
+  byteSize: number;
+  status: "queued" | "extracting" | "ready" | "failed";
+  failureReason: string | null;
+  companyName: string | null;
+  headline: string | null;
+  extractedFacts: Array<{ text: string; excerpt: string }>;
+  memoryTexts: string[];
+  memoryIds: string[];
+  dealId: string | null;
+  createdAt: string;
+}
+
 type View =
   | "overview"
   | "deals"
@@ -157,9 +173,13 @@ const statusLabels: Record<DealStatus, string> = {
 };
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
+  // FormData sets its own multipart boundary; forcing JSON would corrupt it.
+  const isFormData = init?.body instanceof FormData;
   const response = await fetch(url, {
     ...init,
-    headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
+    headers: isFormData
+      ? (init?.headers ?? {})
+      : { "content-type": "application/json", ...(init?.headers ?? {}) },
   });
   const body = await response.json();
   if (!response.ok) throw new Error(body.error?.message ?? `Request failed: ${response.status}`);
@@ -201,24 +221,27 @@ export default function Home() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [uploads, setUploads] = useState<UploadedDocument[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [activeRun, setActiveRun] = useState<Run | null>(null);
   const [scanProgressOpen, setScanProgressOpen] = useState(false);
 
   const load = useCallback(async () => {
-    const [model, runRows, marketRows, reportRows, healthState] =
+    const [model, runRows, marketRows, reportRows, healthState, uploadRows] =
       await Promise.allSettled([
         api<Overview>("/api/overview"),
         api<Run[]>("/api/runs"),
         api<MarketEvent[]>("/api/market/events"),
         api<Report[]>("/api/reports"),
         api<Health>("/api/settings/health"),
+        api<UploadedDocument[]>("/api/documents/uploaded"),
       ]);
     if (model.status === "fulfilled") setOverview(model.value);
     else setError(model.reason instanceof Error ? model.reason.message : "Unable to load the fixed corpus");
     if (runRows.status === "fulfilled") setRuns(runRows.value);
     if (marketRows.status === "fulfilled") setEvents(marketRows.value);
     if (reportRows.status === "fulfilled") setReports(reportRows.value);
+    if (uploadRows.status === "fulfilled") setUploads(uploadRows.value);
     if (healthState.status === "fulfilled") {
       setHealth(healthState.value);
       if (!xtraceInitialized.current) {
@@ -263,6 +286,18 @@ export default function Home() {
     const timer = window.setInterval(() => void load(), 2_500);
     return () => window.clearInterval(timer);
   }, [runs, load]);
+
+  useEffect(() => {
+    if (!uploads.some((item) => item.status === "queued" || item.status === "extracting")) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      void api<UploadedDocument[]>("/api/documents/uploaded")
+        .then(setUploads)
+        .catch(() => undefined);
+    }, 3_000);
+    return () => window.clearInterval(timer);
+  }, [uploads]);
 
   useEffect(() => {
     if (activeRunId) return;
@@ -409,6 +444,33 @@ export default function Home() {
       setNotice(`14-day scan ${run.status}. Progress is durable while the worker runs.`);
     } catch (scanError) {
       setError(scanError instanceof Error ? scanError.message : "Could not start scan");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function uploadDocument(file: File) {
+    setBusy("upload");
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const record = await api<UploadedDocument>("/api/documents/upload", {
+        method: "POST",
+        headers: {},
+        body,
+      });
+      setUploads((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      setNotice(
+        record.status === "ready"
+          ? `${record.filename} was already extracted into XTrace memory.`
+          : `${record.filename} uploaded. The agent is extracting it into XTrace memory.`,
+      );
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Could not upload the document");
     } finally {
       setBusy(null);
     }
@@ -637,10 +699,18 @@ export default function Home() {
               />
             )}
             {view === "deals" && (
-              <DealsView deals={filteredDeals} query={query} onQuery={setQuery} />
+              <DealsView
+                deals={filteredDeals}
+                uploads={uploads}
+                query={query}
+                onQuery={setQuery}
+              />
             )}
             {view === "import" && (
               <SourcesView
+                uploads={uploads}
+                onUpload={uploadDocument}
+                uploading={busy === "upload"}
                 documents={overview.documents}
                 selected={selectedDocuments}
                 preview={importPreview}
@@ -794,10 +864,75 @@ function Metric({ label, value, note }: { label: string; value: string; note: st
   return <article className="vsee-metric"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>;
 }
 
-function DealsView({ deals, query, onQuery }: { deals: Deal[]; query: string; onQuery(value: string): void }) {
+function UploadedDealCards({ uploads }: { uploads: UploadedDocument[] }) {
+  const ready = uploads.filter((upload) => upload.status === "ready");
+  const pending = uploads.filter((upload) =>
+    upload.status === "queued" || upload.status === "extracting"
+  );
+  if (!ready.length && !pending.length) return null;
+  return (
+    <section className="vsee-uploaded-deals" aria-label="Deals extracted from uploaded documents">
+      <span className="vsee-eyebrow">EXTRACTED BY XTRACE FROM YOUR UPLOADS</span>
+      {pending.map((upload) => (
+        <article className="vsee-uploaded-deal pending" key={upload.id}>
+          <div>
+            <strong>{upload.filename}</strong>
+            <small>{uploadStatusCopy[upload.status]}…</small>
+          </div>
+        </article>
+      ))}
+      {ready.map((upload) => (
+        <article className="vsee-uploaded-deal" key={upload.id}>
+          <header>
+            <div>
+              <strong>{upload.companyName}</strong>
+              <small>{upload.filename}</small>
+            </div>
+            <span className="vsee-status screening">screening</span>
+          </header>
+          <p className="vsee-uploaded-headline">{upload.headline}</p>
+          {upload.extractedFacts.length > 0 && (
+            <dl className="vsee-context-grid">
+              {upload.extractedFacts.map((fact) => (
+                <div key={fact.excerpt}>
+                  <dt>{fact.text}</dt>
+                  <dd>“{fact.excerpt}”</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {upload.memoryTexts.length > 0 && (
+            <details className="vsee-details">
+              <summary>
+                Recalled from XTrace · {upload.memoryIds.length}{" "}
+                {upload.memoryIds.length === 1 ? "memory" : "memories"}
+              </summary>
+              {upload.memoryTexts.slice(0, 6).map((text, index) => (
+                <p key={`${upload.id}-memory-${index}`}>{text}</p>
+              ))}
+            </details>
+          )}
+        </article>
+      ))}
+    </section>
+  );
+}
+
+function DealsView({
+  deals,
+  uploads,
+  query,
+  onQuery,
+}: {
+  deals: Deal[];
+  uploads: UploadedDocument[];
+  query: string;
+  onQuery(value: string): void;
+}) {
   return (
     <div className="vsee-content">
       <SectionTitle eyebrow="HISTORICAL MEMORY" title="Every Deal you have already met." copy="Company facts come from the supplied pitch decks. Investment state and prior decision context are synthetic demo fixtures only when explicitly labeled." />
+      <UploadedDealCards uploads={uploads} />
       <input
         className="vsee-search"
         value={query}
@@ -877,12 +1012,91 @@ function DealsView({ deals, query, onQuery }: { deals: Deal[]; query: string; on
   );
 }
 
+const uploadStatusCopy: Record<UploadedDocument["status"], string> = {
+  queued: "Queued for extraction",
+  extracting: "XTrace is extracting",
+  ready: "In XTrace memory",
+  failed: "Extraction failed",
+};
+
+function UploadPanel({
+  uploads,
+  onUpload,
+  uploading,
+}: {
+  uploads: UploadedDocument[];
+  onUpload(file: File): void;
+  uploading: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <section className="vsee-upload-panel" aria-labelledby="upload-title">
+      <header>
+        <div>
+          <span className="vsee-eyebrow">ADD YOUR OWN</span>
+          <h2 id="upload-title">Upload a document into memory.</h2>
+          <p>
+            PDF, DOCX, TXT, or MD. The agent reads the file, extracts what it
+            states, and stores it in XTrace as a new Deal memory. Uploads never
+            join the fixed corpus or change the 14-day scan.
+          </p>
+        </div>
+        <button
+          className="primary"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? "UPLOADING…" : "UPLOAD DOCUMENT"}
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".pdf,.docx,.txt,.md"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) onUpload(file);
+            event.target.value = "";
+          }}
+        />
+      </header>
+      {uploads.length > 0 && (
+        <div className="vsee-upload-list">
+          {uploads.map((upload) => (
+            <article key={upload.id}>
+              <div>
+                <strong>{upload.companyName ?? upload.filename}</strong>
+                <small>
+                  {upload.filename} · {formatBytes(upload.byteSize)}
+                </small>
+              </div>
+              <span className={`vsee-upload-status ${upload.status}`}>
+                {uploadStatusCopy[upload.status]}
+              </span>
+              <p>
+                {upload.status === "ready"
+                  ? `${upload.memoryIds.length} XTrace ${upload.memoryIds.length === 1 ? "memory" : "memories"} · ${upload.extractedFacts.length} extracted facts`
+                  : upload.status === "failed"
+                  ? upload.failureReason ?? "The document could not be extracted."
+                  : "The background agent is reading this document."}
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function SourcesView({
   documents,
   selected,
   preview,
   confirmedDealAssignments,
   deals,
+  uploads,
+  onUpload,
+  uploading,
   onSelected,
   onPreview,
   onConfirm,
@@ -894,6 +1108,9 @@ function SourcesView({
   preview: ImportPreviewItem[] | null;
   confirmedDealAssignments: string[];
   deals: Deal[];
+  uploads: UploadedDocument[];
+  onUpload(file: File): void;
+  uploading: boolean;
   onSelected(ids: string[]): void;
   onPreview(): void;
   onConfirm(): void;
@@ -932,6 +1149,8 @@ function SourcesView({
   return (
     <div className="vsee-content">
       <SectionTitle eyebrow="PRELOADED SOURCES" title="Confirm the evidence corpus." copy="The MVP uses exactly the supplied 9 pitch decks and 4 market reports. The VC Brain remains reference-only and never enters runtime memory." />
+
+      <UploadPanel uploads={uploads} onUpload={onUpload} uploading={uploading} />
       <div className="vsee-source-actions">
         <span>{selected.length} selected</span>
         <button onClick={() => onSelected(importableIds)}>SELECT 13 PRODUCT INPUTS</button>

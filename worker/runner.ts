@@ -4,6 +4,15 @@ import { getDataClient } from "../db/client";
 import { getIntelligenceRepository } from "../db/repositories/intelligence";
 import { getReasonerJudgmentsRepository } from "../db/repositories/reasoner-judgments";
 import { createRunsRepository } from "../db/repositories/runs";
+import { getUploadedDocumentsRepository } from "../db/repositories/uploaded-documents";
+import { createDefaultPrivateObjectStorage } from "../lib/storage/service";
+import { uploadedDealId } from "../lib/uploads/service";
+import {
+  buildUploadedDealBundle,
+  extractDealProfile,
+  extractDocumentText,
+  uploadRecallQuery,
+} from "./extract-upload";
 import { getXTraceLineageRepository } from "../db/repositories/xtrace-lineage";
 import { createClaudeClient } from "../lib/claude/client";
 import { buildPreloadedDealMemoryBundles } from "../lib/corpus/service";
@@ -122,10 +131,104 @@ export async function runNextQueuedScan(): Promise<boolean> {
   return true;
 }
 
+// Uploaded documents are extracted, ingested into XTrace, and recalled here.
+// They never join the fixed corpus or the 19-Deal scan universe: this is a
+// separate memory-building path that only feeds the Deals view.
+export async function runNextQueuedUpload(): Promise<boolean> {
+  if (!isXTraceConfigured()) return false;
+  const uploads = getUploadedDocumentsRepository();
+  const claimed = await uploads.claimNext(WORKER_ID);
+  if (!claimed) return false;
+
+  try {
+    const bytes = await createDefaultPrivateObjectStorage()
+      .readPrivateObject(claimed.objectKey);
+    if (!bytes) throw new Error("The uploaded file is no longer readable.");
+
+    const claude = createClaudeClient();
+    const documentText = await extractDocumentText({
+      bytes,
+      contentType: claimed.contentType,
+      filename: claimed.filename,
+      client: claude,
+    });
+    const profile = await extractDealProfile({
+      client: claude,
+      documentText,
+      filename: claimed.filename,
+    });
+    const dealId = uploadedDealId(claimed.checksum);
+    const bundle = buildUploadedDealBundle({
+      record: claimed,
+      dealId,
+      companyName: profile.companyName,
+      headline: profile.headline,
+      facts: profile.facts,
+    });
+
+    // XTrace lineage rows reference deals(id), so the uploaded Deal needs its
+    // own company and deal rows. The Deals page and the scan universe both
+    // read the fixed manifest, so these rows never widen either one.
+    const dataStore = createDefaultDemoDataStore();
+    const companyId = `company_${dealId}`;
+    await dataStore.ensureCompany({
+      id: companyId,
+      workspaceId: claimed.workspaceId,
+      name: profile.companyName,
+    });
+    await dataStore.ensureDeal({
+      id: dealId,
+      workspaceId: claimed.workspaceId,
+      companyId,
+      companyName: profile.companyName,
+    });
+
+    const xtrace = createXTraceService(getXTraceClient(), {
+      workspaceId: claimed.workspaceId,
+      lineageRepository: getXTraceLineageRepository(),
+    });
+    const submitted = await xtrace.ingestDealMemory(bundle);
+    const settled = submitted.status === "succeeded" || submitted.status === "failed"
+      ? submitted
+      : await xtrace.pollIngestJob(submitted.jobId, { dealId });
+    if (settled.status !== "succeeded") {
+      throw new Error("XTrace could not store this document's memory.");
+    }
+
+    const contexts = await xtrace.recallDealContext({
+      workspaceId: claimed.workspaceId,
+      runId: `upload:${claimed.id}`,
+      query: uploadRecallQuery(profile),
+      candidateDealIds: [dealId],
+      limit: 20,
+    });
+
+    await uploads.complete({
+      id: claimed.id,
+      companyName: profile.companyName,
+      headline: profile.headline,
+      extractedFacts: profile.facts,
+      memoryTexts: contexts.map((context) => context.text),
+      memoryIds: settled.memoryIds,
+      xtraceJobId: settled.jobId,
+      dealId,
+    });
+    console.log(
+      `[${WORKER_ID}] extracted upload ${claimed.id} into ${settled.memoryIds.length} XTrace memories`,
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await uploads.fail(claimed.id, message);
+    console.error(`[${WORKER_ID}] upload ${claimed.id} failed: ${message}`);
+  }
+  return true;
+}
+
 export async function runWorkerIteration(
   dependencies: WorkerIterationDependencies = {},
 ): Promise<void> {
-  const runNext = dependencies.runNext ?? runNextQueuedScan;
+  const runNext = dependencies.runNext
+    ?? (async () => (await runNextQueuedUpload()) || runNextQueuedScan());
   const sleepImpl = dependencies.sleepImpl ?? sleep;
   try {
     const handled = await runNext();

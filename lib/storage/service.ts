@@ -92,10 +92,21 @@ export interface MemoryDemoDataStore extends DemoDataStore {
   inspect(): DemoDataSnapshot;
 }
 
+// The fixed corpus is PDF-only; user uploads widen this to the document types
+// the extraction worker can read.
+export const UPLOADABLE_CONTENT_TYPES = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+  "text/markdown",
+] as const;
+
+export type UploadableContentType = typeof UPLOADABLE_CONTENT_TYPES[number];
+
 export interface PrivateObjectInput {
   key: string;
   bytes: Uint8Array;
-  contentType: "application/pdf";
+  contentType: UploadableContentType;
 }
 
 export interface PrivateObjectStorage {

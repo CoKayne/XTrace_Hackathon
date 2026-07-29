@@ -233,3 +233,31 @@
 .vsee-priority-grid>section>p.vsee-priority-lead{margin:0 0 16px;color:#e6ebe7;font:400 17px/1.55 var(--serif)}
 .vsee-priority-grid li a.vsee-event-source-link{color:inherit;text-decoration:none}
 .vsee-priority-grid li a.vsee-event-source-link:hover strong,.vsee-priority-grid li a.vsee-event-source-link:focus-visible strong{color:var(--lime)}
+
+/* Uploaded documents: extraction panel (Sources) and extracted Deal cards. */
+.vsee-upload-panel{margin-bottom:26px;border:1px solid rgba(199,255,74,.28);background:linear-gradient(140deg,rgba(199,255,74,.05),rgba(10,13,11,.9) 60%)}
+.vsee-upload-panel>header{padding:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:22px}
+.vsee-upload-panel h2{margin:8px 0 7px;font:400 26px var(--serif)}
+.vsee-upload-panel header p{max-width:640px;margin:0;color:#98a29c;font-size:13px;line-height:1.6}
+.vsee-upload-panel header button{height:40px;flex:0 0 auto;padding:0 15px;border:1px solid var(--lime);background:var(--lime);color:#080b09;cursor:pointer;font:700 10px var(--mono);letter-spacing:.09em}
+.vsee-upload-panel header button:disabled{cursor:not-allowed;opacity:.5}
+.vsee-upload-list{border-top:1px solid var(--line)}
+.vsee-upload-list>article{padding:15px 22px;border-bottom:1px solid #1d221f;display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:8px 18px;align-items:center}
+.vsee-upload-list>article:last-child{border-bottom:0}
+.vsee-upload-list strong{display:block;font:400 18px var(--serif)}
+.vsee-upload-list small{color:#7c8680;font:600 10px var(--mono)}
+.vsee-upload-list p{grid-column:1/-1;margin:0;color:#8d9791;font-size:12px;line-height:1.55}
+.vsee-upload-status{width:fit-content;justify-self:end;padding:6px 9px;border:1px solid #39413c;color:#99a29c;font:700 9px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.vsee-upload-status.ready{border-color:rgba(199,255,74,.42);color:var(--lime)}
+.vsee-upload-status.extracting,.vsee-upload-status.queued{border-color:#736240;color:#d7a66e}
+.vsee-upload-status.failed{border-color:#8b5146;color:#d98e78}
+.vsee-uploaded-deals{margin-bottom:22px;display:grid;gap:12px}
+.vsee-uploaded-deal{padding:20px 22px;border:1px solid rgba(199,255,74,.28);background:linear-gradient(140deg,rgba(199,255,74,.045),rgba(10,13,11,.9) 62%)}
+.vsee-uploaded-deal.pending{opacity:.72}
+.vsee-uploaded-deal>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.vsee-uploaded-deal strong{display:block;font:400 24px var(--serif)}
+.vsee-uploaded-deal small{color:#7c8680;font:600 10px var(--mono)}
+.vsee-uploaded-headline{margin:14px 0 16px;color:#e6ebe7;font:400 17px/1.55 var(--serif)}
+.vsee-uploaded-deal .vsee-context-grid dd{color:#98a29c;font-style:italic}
+.vsee-uploaded-deal .vsee-details>p{margin:0 0 12px}
+@media(max-width:680px){.vsee-upload-panel>header{align-items:stretch;flex-direction:column}.vsee-upload-list>article{grid-template-columns:1fr}.vsee-upload-status{justify-self:start}}
