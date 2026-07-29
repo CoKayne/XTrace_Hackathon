@@ -1373,6 +1373,8 @@ begin
     grant select on table public.deal_source_assignments to service_role;
     grant select on table public.intelligence_reports to service_role;
     grant select on table public.company_analyses to service_role;
+    revoke delete, truncate on table public.companies from service_role;
+    revoke delete, truncate on table public.deals from service_role;
     revoke insert, update on table public.deals from service_role;
     grant insert (
       id, workspace_id, company_id, company_name, status, created_at

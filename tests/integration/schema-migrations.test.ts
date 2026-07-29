@@ -1369,6 +1369,173 @@ test(
 );
 
 test(
+  "0009 denies service_role destructive Deal registry writes while controlled confirmation succeeds",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      executeSql(database, `
+        do $$
+        begin
+          create role service_role nologin noinherit bypassrls;
+        exception when duplicate_object then null;
+        end;
+        $$;
+      `);
+      const migrations = [
+        "0000_vsee_postgres.sql",
+        "0001_remove_report_delivery.sql",
+        "0002_durable_decision_lineage.sql",
+        "0003_sanitize_report_next_steps.sql",
+        "0004_company_analyses.sql",
+        "0005_sample_decision_label.sql",
+        "0006_reasoner_judgments.sql",
+        "0007_uploaded_documents.sql",
+        "0008_workspace_composite_identity.sql",
+        "0009_source_revision_deal_registry.sql",
+      ];
+      for (const migration of migrations) {
+        applySql(
+          database,
+          fileURLToPath(new URL(`../../drizzle/${migration}`, import.meta.url)),
+        );
+      }
+
+      executeSql(database, `
+        insert into public.workspaces (id, name)
+        values ('workspace_privilege_boundary', 'Privilege boundary');
+        select id
+        from public.create_initial_source_revision(jsonb_build_object(
+          'id', 'revision_privilege_boundary',
+          'workspaceId', 'workspace_privilege_boundary',
+          'sourceId', 'source_privilege_boundary',
+          'contentHash', 'hash_privilege_boundary',
+          'objectKey', 'private/privilege-boundary.pdf',
+          'objectVersion', 'hash_privilege_boundary',
+          'contentType', 'application/pdf',
+          'extractorId', 'pdf-text',
+          'extractorVersion', '1',
+          'extractedAt', '2026-07-28T10:00:00.000Z',
+          'createdAt', '2026-07-28T10:00:01.000Z'
+        ));
+      `);
+      assert.doesNotThrow(() =>
+        executeSql(database, `
+          set role service_role;
+          select public.confirm_source_assignment(jsonb_build_object(
+            'requestId', 'request_privilege_boundary',
+            'workspaceId', 'workspace_privilege_boundary',
+            'dealId', 'deal_privilege_boundary',
+            'companyId', 'company_privilege_boundary',
+            'companyName', 'Privilege Boundary Company',
+            'status', 'screening',
+            'sourceRevisionId', 'revision_privilege_boundary',
+            'assignedByUserId', 'user_privilege_boundary',
+            'reason', 'Controlled confirmation remains available.',
+            'confirmedAt', '2026-07-28T10:15:00.000Z'
+          ));
+          reset role;
+        `)
+      );
+
+      const privilegeMatrix = executeSql(database, `
+        select table_name || '|'
+          || has_table_privilege(
+            'service_role', 'public.' || table_name, 'SELECT'
+          )::text || '|'
+          || has_table_privilege(
+            'service_role', 'public.' || table_name, 'DELETE'
+          )::text || '|'
+          || has_table_privilege(
+            'service_role', 'public.' || table_name, 'TRUNCATE'
+          )::text
+        from (values ('companies'), ('deals')) as registry_tables(table_name)
+        order by table_name;
+      `);
+      const exploitResults = [
+        {
+          label: "delete-companies",
+          statement: `
+            delete from public.companies
+            where workspace_id = 'workspace_privilege_boundary'
+              and id = 'company_privilege_boundary'
+          `,
+        },
+        {
+          label: "delete-deals",
+          statement: `
+            delete from public.deals
+            where workspace_id = 'workspace_privilege_boundary'
+              and id = 'deal_privilege_boundary'
+          `,
+        },
+        {
+          label: "truncate-companies",
+          statement: "truncate public.companies cascade",
+        },
+        {
+          label: "truncate-deals",
+          statement: "truncate public.deals cascade",
+        },
+      ].map(({ label, statement }) => {
+        try {
+          executeSql(database, `
+            begin;
+            set role service_role;
+            ${statement};
+            rollback;
+          `);
+          return `${label}|allowed`;
+        } catch (error) {
+          const stderr = error && typeof error === "object" && "stderr" in error
+            ? String((error as { stderr?: unknown }).stderr ?? "")
+            : String(error);
+          return `${label}|${
+            /permission denied for table (companies|deals)/i.test(stderr)
+              ? "permission-denied"
+              : "other-error"
+          }`;
+        }
+      });
+
+      assert.deepEqual(
+        { privilegeMatrix, exploitResults },
+        {
+          privilegeMatrix: [
+            "companies|true|false|false",
+            "deals|true|false|false",
+          ].join("\n"),
+          exploitResults: [
+            "delete-companies|permission-denied",
+            "delete-deals|permission-denied",
+            "truncate-companies|permission-denied",
+            "truncate-deals|permission-denied",
+          ],
+        },
+      );
+      assert.equal(
+        executeSql(database, `
+          select
+            (select count(*) from public.companies
+              where workspace_id = 'workspace_privilege_boundary')
+            || '|'
+            || (select count(*) from public.deals
+              where workspace_id = 'workspace_privilege_boundary')
+            || '|'
+            || (select count(*) from public.deal_source_assignments
+              where workspace_id = 'workspace_privilege_boundary');
+        `),
+        "1|1|1",
+      );
+    });
+  },
+);
+
+test(
   "forward migration backfills legacy rows without treating synthetic rationale as a source fact",
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   () => {
