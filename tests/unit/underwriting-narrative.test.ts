@@ -10,11 +10,17 @@ import type {
   DecisionResult,
   FrameworkDisagreement,
   FrameworkJudgment,
+  ResolvedUnderwritingContext,
 } from "../../lib/contracts/underwriting";
+import {
+  authorizedResearchComposites,
+  loadResearchFrameworkCatalog,
+} from "../../lib/underwriting/frameworks/research-loader";
 import {
   buildUnderwritingNarrative,
   type UnderwritingNarrativeInput,
 } from "../../lib/underwriting/narrative";
+import { SYNTHETIC_FRAMEWORK_PACK } from "../../seed/underwriting/framework-pack-v1";
 
 const fact: Fact = {
   id: "fact_arr",
@@ -190,3 +196,208 @@ test("cannot introduce an injected LLM number or override the formal result", ()
     );
   }
 });
+
+test("renders authorized persisted advisory lineage and independent conflicts as zero-weight product synthesis", async () => {
+  const {
+    billGurleyJudgment,
+    peterThielJudgment,
+    independentConflict,
+  } = await persistedAdvisoryFixture();
+  const narrative = buildUnderwritingNarrative({
+    ...input,
+    judgments: [
+      judgment,
+      billGurleyJudgment,
+      peterThielJudgment,
+    ],
+    disagreements: [independentConflict],
+  });
+
+  assert.match(narrative, /COMPANY UNDERWRITING/);
+  assert.match(narrative, /EXPERIMENTAL ADVISORY OPINIONS/);
+  assert.match(
+    narrative,
+    /Peter Thiel Public Frameworks — Research Draft/,
+  );
+  assert.match(
+    narrative,
+    /Pack ID: peter_thiel_public_frameworks_v0_1; version: 0\.1\.0/,
+  );
+  assert.match(
+    narrative,
+    /Source catalog ID: peter_thiel_public_sources_v0_1; research cutoff: 2026-07-28/,
+  );
+  assert.match(
+    narrative,
+    /Based on Peter Thiel and Blake Masters public writings, course materials, and interviews/,
+  );
+  assert.match(
+    narrative,
+    /Formal decision weight: 0 \(experimental advisory; not a published formal decision factor\)/,
+  );
+  assert.match(
+    narrative,
+    /This experimental product synthesis is not an endorsement by any named person or organization\./,
+  );
+  assert.match(
+    narrative,
+    /does not claim or reconstruct private reasoning or hidden chain of thought\./,
+  );
+  assert.match(narrative, /PT-01 @ 0\.1\.0 — Contrarian Truth \/ Secret/);
+  assert.match(
+    narrative,
+    /PT-P2-CS183-01 \| https:\/\/blakemasters\.tumblr\.com\/post\/20400301508\/cs183class1 \| web_section: Three questions and contrarian\/business question/,
+  );
+  assert.match(
+    narrative,
+    /title: CS183 Class 1: The Challenge of the Future/,
+  );
+  assert.match(
+    narrative,
+    /A differentiated wedge is supported by saved customer evidence\./,
+  );
+  assert.match(
+    narrative,
+    /The cohort evidence may instead support the consensus explanation\./,
+  );
+  assert.match(narrative, /fact_customer_wedge/);
+  assert.match(narrative, /assumption_cohort_quality/);
+  assert.match(
+    narrative,
+    /Independent customer calls remain unknown\./,
+  );
+  assert.match(
+    narrative,
+    /Public-source synthesis cannot establish private investor reasoning\./,
+  );
+  assert.match(narrative, /INDEPENDENT ADVISORY CONFLICTS/);
+  assert.match(
+    narrative,
+    /Bill Gurley Public Frameworks — Research Draft[\s\S]*Peter Thiel Public Frameworks — Research Draft/,
+  );
+  assert.match(
+    narrative,
+    /The named lenses preserve opposing conclusions without averaging them\./,
+  );
+  assert.match(narrative, /Formal decision: Advance/);
+});
+
+async function persistedAdvisoryFixture(): Promise<{
+  billGurleyJudgment: FrameworkJudgment;
+  peterThielJudgment: FrameworkJudgment;
+  independentConflict: FrameworkDisagreement;
+}> {
+  const context: ResolvedUnderwritingContext = {
+    id: "underwriting_context_seed_b2b_saas_v1",
+    contextVersion: "1",
+    stage: "seed",
+    businessModel: "b2b_saas",
+    geography: "us",
+    securityType: "preferred",
+    asOfDate: "2026-07-29",
+    criticalEvidenceProfileId: "critical_evidence_seed_b2b_saas_v1",
+    benchmarkPackId: "benchmark_pack_synthetic_us_software_v1",
+    benchmarkCompatibility: "exact",
+    valuationMethodPolicyId: "valuation_method_seed_b2b_saas_v1",
+    decisionPolicyId: "decision_policy_seed_b2b_saas_v1",
+    frameworkPackId: SYNTHETIC_FRAMEWORK_PACK.id,
+  };
+  const catalog = await loadResearchFrameworkCatalog({ context });
+  const cards = authorizedResearchComposites(catalog);
+  const billGurley = cards.find(({ experimentalAdvisory }) =>
+    experimentalAdvisory.packId === "bill_gurley_public_frameworks_v0_1"
+  );
+  const peterThiel = cards.find(({ experimentalAdvisory }) =>
+    experimentalAdvisory.packId === "peter_thiel_public_frameworks_v0_1"
+  );
+  assert.ok(billGurley);
+  assert.ok(peterThiel);
+
+  const billGurleyJudgment: FrameworkJudgment = {
+    ...experimentalJudgment({
+      id: "judgment_bill_gurley_narrative",
+      frameworkCardId: billGurley.id,
+      frameworkVersion: billGurley.version,
+      conclusion: "negative",
+      supportEvidenceItemIds: ["fact_retention_risk"],
+      counterEvidenceItemIds: ["assumption_sales_efficiency"],
+      strongestSupport:
+        "Saved retention evidence identifies a material durability risk.",
+      strongestCounterargument:
+        "Sales efficiency could offset part of the retention concern.",
+    }),
+    frameworkMetadata: billGurley.experimentalAdvisory,
+  };
+  const peterThielJudgment: FrameworkJudgment = {
+    ...experimentalJudgment({
+      id: "judgment_peter_thiel_narrative",
+      frameworkCardId: peterThiel.id,
+      frameworkVersion: peterThiel.version,
+      conclusion: "supportive",
+      supportEvidenceItemIds: ["fact_customer_wedge"],
+      counterEvidenceItemIds: ["assumption_cohort_quality"],
+      strongestSupport:
+        "A differentiated wedge is supported by saved customer evidence.",
+      strongestCounterargument:
+        "The cohort evidence may instead support the consensus explanation.",
+    }),
+    unknowns: ["Independent customer calls remain unknown."],
+    limitations: [
+      "Public-source synthesis cannot establish private investor reasoning.",
+    ],
+    frameworkMetadata: peterThiel.experimentalAdvisory,
+  };
+  return {
+    billGurleyJudgment,
+    peterThielJudgment,
+    independentConflict: {
+      id: "disagreement_named_advisory_narrative",
+      leftJudgmentId: billGurleyJudgment.id,
+      rightJudgmentId: peterThielJudgment.id,
+      topic: "independent_framework_conflict",
+      explanation:
+        "The named lenses preserve opposing conclusions without averaging them.",
+      evidenceItemIds: [
+        "assumption_cohort_quality",
+        "fact_customer_wedge",
+        "fact_retention_risk",
+      ],
+    },
+  };
+}
+
+function experimentalJudgment(input: {
+  id: string;
+  frameworkCardId: string;
+  frameworkVersion: string;
+  conclusion: "supportive" | "negative";
+  supportEvidenceItemIds: string[];
+  counterEvidenceItemIds: string[];
+  strongestSupport: string;
+  strongestCounterargument: string;
+}): FrameworkJudgment {
+  return {
+    id: input.id,
+    analysisType: "framework_judgment",
+    frameworkCardId: input.frameworkCardId,
+    frameworkVersion: input.frameworkVersion,
+    applicability: "applicable",
+    conclusion: input.conclusion,
+    supportEvidenceItemIds: input.supportEvidenceItemIds,
+    counterEvidenceItemIds: input.counterEvidenceItemIds,
+    unusedEvidenceItemIds: [],
+    strongestSupport: input.strongestSupport,
+    strongestCounterargument: input.strongestCounterargument,
+    unknowns: ["One material advisory unknown remains."],
+    limitations: ["One advisory limitation remains."],
+    confidence: {
+      sourceReliability: "medium",
+      evidenceStrength: "medium",
+      evidenceCoverage: "medium",
+      applicability: "high",
+      judgment: "medium",
+    },
+    claimEdges: [],
+    fingerprint: `sha256:${input.id}`,
+  };
+}

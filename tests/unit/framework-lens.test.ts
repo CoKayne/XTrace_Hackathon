@@ -15,6 +15,8 @@ import type {
 import {
   createFrameworkLensService,
   createMemoryFrameworkLensCache,
+  type FrameworkLensCache,
+  type FrameworkLensCacheRecord,
 } from "../../lib/underwriting/frameworks/service";
 import type {
   FrameworkCard,
@@ -296,11 +298,182 @@ test("replays the same fingerprint without a Claude call and caches metadata wit
   });
   assert.deepEqual(
     Object.keys(records[0] ?? {}).sort(),
-    ["fingerprint", "judgment", "providerMetadata"],
+    ["binding", "fingerprint", "judgment", "providerMetadata"],
   );
+  assert.deepEqual(records[0]?.binding, {
+    candidateId: candidate.id,
+    candidateAnalysisFingerprint:
+      candidate.candidateAnalysisFingerprint,
+    evidencePackId: pack.id,
+    evidencePackVersion: pack.version,
+    contextId: context.id,
+    contextVersion: context.contextVersion,
+    frameworkCardId: card.id,
+    frameworkVersion: card.version,
+    authorizationMode: "ordinary_framework_card",
+    catalogFingerprint: null,
+    corpusDigest: null,
+    compositeAuthorizationDigest: null,
+  });
   assert.equal("system" in (records[0] ?? {}), false);
   assert.equal("messages" in (records[0] ?? {}), false);
   assert.equal("rawResponse" in (records[0] ?? {}), false);
+});
+
+test("fails closed when a caller cache rebinds a record to another candidate", async () => {
+  const card = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
+  const seededCache = createMemoryFrameworkLensCache();
+  await createFrameworkLensService({
+    cards: [card],
+    cache: seededCache,
+    execution,
+    client: {
+      async complete() {
+        return JSON.stringify(lensOutput(card));
+      },
+    },
+  }).runAll(input());
+  const corrupt = seededCache.inspect()[0];
+  assert.ok(corrupt);
+  corrupt.binding.candidateId = "candidate_from_another_execution";
+  let providerCalls = 0;
+  const replay = createFrameworkLensService({
+    cards: [card],
+    cache: {
+      async find() {
+        return corrupt;
+      },
+      async save() {
+        throw new Error("A mismatched replay must not be replaced.");
+      },
+    },
+    execution,
+    client: {
+      async complete() {
+        providerCalls += 1;
+        return JSON.stringify(lensOutput(card));
+      },
+    },
+  });
+
+  await assert.rejects(
+    replay.runAll(input()),
+    /cache record does not match.*execution request/i,
+  );
+  assert.equal(providerCalls, 0);
+});
+
+test("coalesces concurrent execution for the same composite fingerprint", async () => {
+  const card = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
+  let modelCalls = 0;
+  const service = createFrameworkLensService({
+    cards: [card],
+    execution,
+    client: {
+      async complete() {
+        modelCalls += 1;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return JSON.stringify(lensOutput(card));
+      },
+    },
+  });
+
+  const [first, second] = await Promise.all([
+    service.runAll(input()),
+    service.runAll(input()),
+  ]);
+
+  assert.equal(modelCalls, 1);
+  assert.deepEqual(second, first);
+});
+
+test("cleans a failed in-flight cache write so the exact fingerprint can retry", async () => {
+  const card = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
+  let modelCalls = 0;
+  let saveCalls = 0;
+  let saved: FrameworkLensCacheRecord | null = null;
+  const cache: FrameworkLensCache = {
+    async find() {
+      return saved;
+    },
+    async save(record) {
+      saveCalls += 1;
+      if (saveCalls === 1) {
+        throw new Error("Synthetic cache write failure.");
+      }
+      saved = structuredClone(record);
+    },
+  };
+  const service = createFrameworkLensService({
+    cards: [card],
+    cache,
+    execution,
+    client: {
+      async complete() {
+        modelCalls += 1;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return JSON.stringify(lensOutput(card));
+      },
+    },
+  });
+
+  const failed = await Promise.allSettled([
+    service.runAll(input()),
+    service.runAll(input()),
+  ]);
+  assert.deepEqual(
+    failed.map(({ status }) => status),
+    ["rejected", "rejected"],
+  );
+  assert.equal(modelCalls, 1);
+  assert.equal(saveCalls, 1);
+
+  await service.runAll(input());
+  assert.equal(modelCalls, 2);
+  assert.equal(saveCalls, 2);
+});
+
+test("never shares cached judgments across candidate or context identities", async () => {
+  const card = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
+  let modelCalls = 0;
+  const service = createFrameworkLensService({
+    cards: [card],
+    execution,
+    client: {
+      async complete() {
+        modelCalls += 1;
+        return JSON.stringify(lensOutput(card));
+      },
+    },
+  });
+
+  const baseline = await service.runAll(input());
+  const otherCandidate = await service.runAll({
+    ...input(),
+    candidate: {
+      ...candidate,
+      id: "candidate_2",
+      candidateAnalysisFingerprint: "candidate-fingerprint-2",
+    },
+  });
+  const otherContext = await service.runAll({
+    ...input(),
+    context: {
+      ...context,
+      id: "underwriting_context_seed_b2b_saas_v2",
+      contextVersion: "2",
+    },
+  });
+
+  assert.equal(modelCalls, 3);
+  assert.notEqual(
+    baseline.judgments[0]?.fingerprint,
+    otherCandidate.judgments[0]?.fingerprint,
+  );
+  assert.notEqual(
+    baseline.judgments[0]?.fingerprint,
+    otherContext.judgments[0]?.fingerprint,
+  );
 });
 
 test("only exact Task 7 cards run; draft, lookalike, and non-applicable cards abstain without Claude", async () => {

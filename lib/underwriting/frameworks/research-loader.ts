@@ -13,6 +13,7 @@ import {
   resolve,
   sep,
 } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   ResolvedUnderwritingContextSchema,
@@ -47,8 +48,25 @@ export interface ResearchFrameworkCatalog {
     eligibleCardCount: number;
     excludedCardCount: number;
   }>;
+  readonly authorization: Readonly<{
+    mode: "canonical_audited" | "validation_only";
+    corpusDigest: string;
+  }>;
   readonly fingerprint: string;
 }
+
+type ResearchFrameworkCatalogInput = {
+  context: ResolvedUnderwritingContext;
+} & (
+  | {
+    researchRoot?: never;
+    authorizationMode?: "canonical_audited";
+  }
+  | {
+    researchRoot: string;
+    authorizationMode: "validation_only";
+  }
+);
 
 interface LoadedPack {
   manifest: FrameworkPackAuthoring;
@@ -57,10 +75,18 @@ interface LoadedPack {
 }
 
 const MAX_RESEARCH_PACKS = 20;
-const DEFAULT_RESEARCH_ROOT = resolve(
-  process.cwd(),
-  "research/framework-authoring",
+const CANONICAL_RESEARCH_ROOT = fileURLToPath(
+  new URL("../../../research/framework-authoring", import.meta.url),
 );
+const EXPECTED_CANONICAL_STATS = {
+  packCount: 20,
+  cardCount: 199,
+  sourceCount: 270,
+  eligibleCardCount: 180,
+  excludedCardCount: 19,
+} as const;
+const EXPECTED_CANONICAL_CORPUS_DIGEST =
+  "sha256:5144000c0f34c5c352f9bc886460cd561a52b45da31049f00d7fbf6115e3a8bb";
 const NO_ENDORSEMENT_NOTICE =
   "This experimental product synthesis is not an endorsement by any named person or organization.";
 const NO_PRIVATE_REASONING_NOTICE =
@@ -78,10 +104,9 @@ const authorizedCatalogs = new WeakMap<
   ReadonlySet<ExperimentalAdvisoryFrameworkCard>
 >();
 
-export async function loadResearchFrameworkCatalog(input: {
-  context: ResolvedUnderwritingContext;
-  researchRoot?: string;
-}): Promise<ResearchFrameworkCatalog> {
+export async function loadResearchFrameworkCatalog(
+  input: ResearchFrameworkCatalogInput,
+): Promise<ResearchFrameworkCatalog> {
   const parsedContext = ResolvedUnderwritingContextSchema.parse(input.context);
   const context: ResearchContext = {
     stage: parsedContext.stage,
@@ -89,7 +114,17 @@ export async function loadResearchFrameworkCatalog(input: {
     geography: parsedContext.geography,
     securityType: parsedContext.securityType,
   };
-  const researchRoot = resolve(input.researchRoot ?? DEFAULT_RESEARCH_ROOT);
+  const validationOnly = input.authorizationMode === "validation_only";
+  if (
+    validationOnly !== (typeof input.researchRoot === "string")
+  ) {
+    throw new Error(
+      "Custom research roots require explicit validation_only mode and can never authorize execution.",
+    );
+  }
+  const researchRoot = validationOnly
+    ? resolve(input.researchRoot)
+    : CANONICAL_RESEARCH_ROOT;
   const rootStats = await lstat(researchRoot);
   if (!rootStats.isDirectory() || rootStats.isSymbolicLink()) {
     throw new Error("Research root must be a real directory, not a symlink.");
@@ -146,19 +181,44 @@ export async function loadResearchFrameworkCatalog(input: {
     eligibleCardCount,
     excludedCardCount: cardCount - eligibleCardCount,
   };
+  const corpusDigest = sha256({
+    kind: "audited-research-corpus-v1",
+    packs: loadedPacks,
+  });
+  if (
+    !validationOnly
+    && (
+      canonicalJson(stats) !== canonicalJson(EXPECTED_CANONICAL_STATS)
+      || corpusDigest !== EXPECTED_CANONICAL_CORPUS_DIGEST
+    )
+  ) {
+    throw new Error(
+      "Canonical research authorization requires the pinned 20/199/270 corpus, exact 180/19 eligibility split, and audited content digest.",
+    );
+  }
+  const authorization = {
+    mode: validationOnly
+      ? "validation_only" as const
+      : "canonical_audited" as const,
+    corpusDigest,
+  };
   const fingerprint = sha256({
     kind: "research-framework-catalog-v1",
     context,
     composites,
     stats,
+    authorization,
   });
   const catalog = deepFreeze({
     context,
     composites,
     stats,
+    authorization,
     fingerprint,
   }) satisfies ResearchFrameworkCatalog;
-  authorizedCatalogs.set(catalog, new Set(catalog.composites));
+  if (!validationOnly) {
+    authorizedCatalogs.set(catalog, new Set(catalog.composites));
+  }
   return catalog;
 }
 
@@ -167,7 +227,7 @@ export function authorizedResearchComposites(
 ): readonly ExperimentalAdvisoryFrameworkCard[] {
   if (!authorizedCatalogs.has(catalog)) {
     throw new Error(
-      "The supplied value is not an authorized research catalog emitted by this loader instance.",
+      "The supplied value is validation-only or is not an authorized research catalog from the canonical audited loader instance.",
     );
   }
   return catalog.composites;

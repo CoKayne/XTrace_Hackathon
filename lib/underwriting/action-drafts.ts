@@ -1,11 +1,20 @@
 import {
   ActionDraftSchema,
   DecisionResultSchema,
+  FrameworkDisagreementSchema,
+  FrameworkJudgmentSchema,
   MissingEvidenceItemSchema,
   type ActionDraft,
   type DecisionResult,
+  type FrameworkDisagreement,
+  type FrameworkJudgment,
   type MissingEvidenceItem,
 } from "../contracts/underwriting";
+import {
+  renderAdvisoryDiligenceRequests,
+  renderExperimentalAdvisoryOpinions,
+  renderIndependentAdvisoryConflicts,
+} from "./advisory-rendering";
 
 export interface ActionDraftGenerator {
   generate(input: {
@@ -13,6 +22,8 @@ export interface ActionDraftGenerator {
     decision: DecisionResult;
     missingEvidence: MissingEvidenceItem[];
     recommendedNextSteps: string[];
+    judgments?: FrameworkJudgment[];
+    disagreements?: FrameworkDisagreement[];
   }): ActionDraft[];
 }
 
@@ -35,6 +46,12 @@ export function createActionDraftGenerator(options: {
       const recommendedNextSteps = rawInput.recommendedNextSteps.map(
         (step) => requireText(step, "recommendedNextStep"),
       );
+      const judgments = (rawInput.judgments ?? []).map((judgment) =>
+        FrameworkJudgmentSchema.parse(judgment)
+      );
+      const disagreements = (rawInput.disagreements ?? []).map(
+        (disagreement) => FrameworkDisagreementSchema.parse(disagreement),
+      );
       const timestamp = now().toISOString();
       const decisionLabel = decision.decision ?? "Unavailable";
       const missing = missingEvidenceText(missingEvidence);
@@ -47,6 +64,21 @@ export function createActionDraftGenerator(options: {
         `Decision ceiling: ${decision.decisionCeiling ?? "Unavailable"}`,
         `Confidence: ${decision.confidence}`,
       ].join("\n");
+      const advisoryDraftSections = judgments.some(
+          ({ frameworkMetadata }) => frameworkMetadata !== undefined,
+        )
+        ? [
+          "",
+          "EXPERIMENTAL ADVISORY OPINIONS — DRAFT ONLY",
+          renderExperimentalAdvisoryOpinions(judgments),
+          "",
+          "INDEPENDENT ADVISORY CONFLICTS",
+          renderIndependentAdvisoryConflicts(disagreements, judgments),
+          "",
+          "ADVISORY DILIGENCE REQUESTS",
+          renderAdvisoryDiligenceRequests(judgments),
+        ]
+        : [];
       const definitions = [
         {
           channel: "email" as const,
@@ -99,6 +131,7 @@ export function createActionDraftGenerator(options: {
             "",
             "Recommended internal work:",
             nextSteps,
+            ...advisoryDraftSections,
           ].join("\n"),
         },
         {
@@ -113,6 +146,7 @@ export function createActionDraftGenerator(options: {
             "",
             "Review sequence:",
             nextSteps,
+            ...advisoryDraftSections,
           ].join("\n"),
         },
       ];

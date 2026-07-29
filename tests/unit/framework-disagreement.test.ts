@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import type {
@@ -120,12 +119,8 @@ test("preserves every opposing named advisory opinion as an independent framewor
     decisionPolicyId: "decision_policy_seed_b2b_saas_v1",
     frameworkPackId: SYNTHETIC_FRAMEWORK_PACK.id,
   };
-  const researchRoot = fileURLToPath(
-    new URL("../../research/framework-authoring", import.meta.url),
-  );
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   const cards = authorizedResearchComposites(catalog).filter(
     ({ experimentalAdvisory }) => experimentalAdvisory.applicable,

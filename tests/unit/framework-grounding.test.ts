@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import type {
@@ -137,10 +136,6 @@ const context: ResolvedUnderwritingContext = {
   decisionPolicyId: "decision_policy_seed_b2b_saas_v1",
   frameworkPackId: "framework_pack_synthetic_universal_saas_ai_v1",
 };
-
-const researchRoot = fileURLToPath(
-  new URL("../../research/framework-authoring", import.meta.url),
-);
 
 function output() {
   const card = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
@@ -286,7 +281,6 @@ test("only the Valuation lens may cite an already-saved Calculation", () => {
 test("persists complete loader-owned advisory metadata beside a grounded real pack opinion", async () => {
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   const card = authorizedResearchComposites(catalog).find(
     ({ experimentalAdvisory }) =>

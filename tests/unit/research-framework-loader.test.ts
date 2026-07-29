@@ -66,11 +66,9 @@ const pendingReviewIds = [
 test("loads the audited corpus into twenty immutable pack composites and excludes all pending-review cards", async () => {
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   const deterministicReplay = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
 
   assert.deepEqual(catalog.stats, {
@@ -79,6 +77,11 @@ test("loads the audited corpus into twenty immutable pack composites and exclude
     sourceCount: 270,
     eligibleCardCount: 180,
     excludedCardCount: 19,
+  });
+  assert.deepEqual(catalog.authorization, {
+    mode: "canonical_audited",
+    corpusDigest:
+      "sha256:5144000c0f34c5c352f9bc886460cd561a52b45da31049f00d7fbf6115e3a8bb",
   });
   assert.equal(catalog.composites.length, 20);
   assert.equal(new Set(catalog.composites.map(({ id }) => id)).size, 20);
@@ -169,14 +172,12 @@ test("loads the audited corpus into twenty immutable pack composites and exclude
 
 test("filters component cards by all four immutable context dimensions before authorization", async () => {
   const [seed, seriesA, global] = await Promise.all([
-    loadResearchFrameworkCatalog({ context, researchRoot }),
+    loadResearchFrameworkCatalog({ context }),
     loadResearchFrameworkCatalog({
       context: { ...context, stage: "series_a" },
-      researchRoot,
     }),
     loadResearchFrameworkCatalog({
       context: { ...context, geography: "global" },
-      researchRoot,
     }),
   ]);
   const billSeed = packComponentIds(seed, "bill_gurley_public_frameworks_v0_1");
@@ -203,7 +204,6 @@ test("filters component cards by all four immutable context dimensions before au
 test("authorizes only exact composite objects emitted by this loader instance", async () => {
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   const authorized = authorizedResearchComposites(catalog);
   const exact = authorized.find(({ experimentalAdvisory }) =>
@@ -222,6 +222,40 @@ test("authorizes only exact composite objects emitted by this loader instance", 
   );
 });
 
+test("custom research roots are validation-only and can never authorize execution", async (t) => {
+  const fixture = await copyPeterThielFixture(t);
+  const catalog = await loadResearchFrameworkCatalog({
+    context,
+    researchRoot: fixture,
+    authorizationMode: "validation_only",
+  });
+
+  assert.deepEqual(catalog.stats, {
+    packCount: 1,
+    cardCount: 10,
+    sourceCount: 23,
+    eligibleCardCount: 10,
+    excludedCardCount: 0,
+  });
+  assert.ok(catalog.authorization);
+  assert.deepEqual(catalog.authorization, {
+    mode: "validation_only",
+    corpusDigest: catalog.authorization.corpusDigest,
+  });
+  assert.match(
+    catalog.authorization.corpusDigest,
+    /^sha256:[a-f0-9]{64}$/,
+  );
+  assert.throws(
+    () => authorizedResearchComposites(catalog),
+    /validation-only|not an authorized research catalog/i,
+  );
+  assert.equal(
+    isAuthorizedResearchComposite(catalog, catalog.composites[0]!),
+    false,
+  );
+});
+
 test("rejects unknown manifest fields from the authoring JSON contract", async (t) => {
   const fixture = await copyPeterThielFixture(t);
   const manifestPath = join(
@@ -233,7 +267,11 @@ test("rejects unknown manifest fields from the authoring JSON contract", async (
   await writeJson(manifestPath, manifest);
 
   await assert.rejects(
-    loadResearchFrameworkCatalog({ context, researchRoot: fixture }),
+    loadResearchFrameworkCatalog({
+      context,
+      researchRoot: fixture,
+      authorizationMode: "validation_only",
+    }),
     /pack manifest.*invalid/i,
   );
 });
@@ -250,7 +288,11 @@ test("rejects a manifest Card path that escapes the author directory", async (t)
   await writeJson(manifestPath, manifest);
 
   await assert.rejects(
-    loadResearchFrameworkCatalog({ context, researchRoot: fixture }),
+    loadResearchFrameworkCatalog({
+      context,
+      researchRoot: fixture,
+      authorizationMode: "validation_only",
+    }),
     /pack manifest.*invalid|safe relative card path/i,
   );
 });
@@ -267,7 +309,11 @@ test("rejects duplicate source identities inside one pack", async (t) => {
   await writeJson(sourcesPath, catalog);
 
   await assert.rejects(
-    loadResearchFrameworkCatalog({ context, researchRoot: fixture }),
+    loadResearchFrameworkCatalog({
+      context,
+      researchRoot: fixture,
+      authorizationMode: "validation_only",
+    }),
     /source identities must be unique/i,
   );
 });
@@ -284,7 +330,11 @@ test("rejects a Card source reference that does not resolve in its own pack", as
   await writeJson(cardPath, card);
 
   await assert.rejects(
-    loadResearchFrameworkCatalog({ context, researchRoot: fixture }),
+    loadResearchFrameworkCatalog({
+      context,
+      researchRoot: fixture,
+      authorizationMode: "validation_only",
+    }),
     /source reference.*does not resolve/i,
   );
 });

@@ -14,6 +14,11 @@ import {
   type FrameworkDisagreement,
   type FrameworkJudgment,
 } from "../contracts/underwriting";
+import {
+  renderAdvisoryDiligenceRequests,
+  renderExperimentalAdvisoryOpinions,
+  renderIndependentAdvisoryConflicts,
+} from "./advisory-rendering";
 
 export interface UnderwritingNarrativeInput {
   facts: Fact[];
@@ -39,6 +44,7 @@ export function buildUnderwritingNarrative(
     `Hard veto: ${input.decision.hardVeto ? "active" : "not active"}`,
     `Decision confidence: ${input.decision.confidence}`,
     "",
+    "COMPANY UNDERWRITING",
     "INDEPENDENT DIMENSIONS",
     `Company Quality: ${input.decision.companyQuality}`,
     `Price Attractiveness: ${input.decision.priceAttractiveness}`,
@@ -58,6 +64,18 @@ export function buildUnderwritingNarrative(
     "",
     "FRAMEWORK DISAGREEMENTS",
     renderDisagreements(input.disagreements),
+    "",
+    "EXPERIMENTAL ADVISORY OPINIONS",
+    renderExperimentalAdvisoryOpinions(input.judgments),
+    "",
+    "INDEPENDENT ADVISORY CONFLICTS",
+    renderIndependentAdvisoryConflicts(
+      input.disagreements,
+      input.judgments,
+    ),
+    "",
+    "ADVISORY UNKNOWNS AND DILIGENCE REQUESTS",
+    renderAdvisoryDiligenceRequests(input.judgments),
     "",
     "DECISION TRACE",
     renderDecisionTrace(input.decision),

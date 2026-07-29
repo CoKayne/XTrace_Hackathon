@@ -199,3 +199,147 @@ Task 11b changes are limited to:
 Research JSON, deterministic Decision Policy code, Task 12 decision-engine
 code, finalization repositories, migrations, narrative code, and external
 action code were not modified.
+
+## Independent-review fix round 1
+
+The release-blocking findings in
+`.superpowers/sdd/2026-07-29-experimental-advisory-framework-execution/task-11b-review.md`
+were reproduced before correction and are now addressed.
+
+### Canonical corpus authorization
+
+Production authorization is now pinned to the checked-in
+`research/framework-authoring` directory resolved from the loader module, not
+the process working directory or a caller path. Authorization requires all of:
+
+```text
+packs:      20
+Cards:     199
+sources:   270
+eligible:  180
+excluded:   19
+corpus:    sha256:5144000c0f34c5c352f9bc886460cd561a52b45da31049f00d7fbf6115e3a8bb
+```
+
+The corpus digest covers every parsed manifest, every Card including excluded
+Cards, and every complete source catalog. Custom roots require explicit
+`validation_only` mode and are never entered into the module-private
+authorization registry. The one-pack Peter Thiel adversarial fixture still
+validates as 1 / 10 / 23 / 10 / 0, but both authorization APIs reject it.
+
+### Authorization-first, bound cache replay
+
+An unauthorized experimental Card now abstains before cache lookup, cache
+write, or provider I/O. Every authorized replay is strict-schema parsed and
+must exactly match:
+
+- the requested fingerprint and judgment fingerprint;
+- Candidate ID and Candidate analysis fingerprint;
+- Evidence Pack ID/version;
+- context ID/version;
+- Framework Card ID/version and deterministic judgment ID;
+- execution provider/model/prompt/schema/settings/application commit;
+- authorization mode, catalog fingerprint, complete-corpus digest, and
+  composite authorization digest;
+- the exact loader-owned advisory metadata; and
+- the complete Evidence Pack partition and typed claim-edge set.
+
+Malformed or mismatched records fail closed. Framework fingerprints now bind
+Candidate identity as well as the full Evidence Pack, context, Card,
+calculation scope, execution settings, and authorization material.
+
+### Enforced decision isolation
+
+The decision boundary now positively admits only exact ID/version pairs from
+the published product-owned synthetic Framework Pack and excludes every
+judgment carrying experimental advisory metadata before rule selection. This
+is the narrowly authorized Task 12 change required by the review.
+
+The regression uses real loader-produced advisory metadata with literal formal
+weight `"0"` and deliberately collides its `frameworkCardId` with a mandatory
+founder rule while retaining the original formal judgment. The result remains
+byte-for-byte equal to the fixed `Invest Candidate` baseline, and the advisory
+judgment is absent from formal claim edges.
+
+### Concurrent same-fingerprint execution
+
+A service-local in-flight registry now coalesces cache lookup, provider
+execution, grounding, and cache persistence by the complete fingerprint. It
+cleans up after both success and failure. Focused regressions prove:
+
+```text
+two concurrent identical one-Card runs: 1 provider call
+two concurrent full-catalog runs:       19 calls, not 38
+shared failed cache write:              both callers reject
+retry after failed shared write:        succeeds with one new provider call
+different Candidate/context identities: distinct fingerprints and calls
+```
+
+### Report and draft-only rendering
+
+Company Underwriting narrative output now has explicit experimental advisory
+opinion, independent advisory conflict, and advisory diligence sections.
+Internal memo and diligence-request drafts consume the same persisted
+judgments and disagreements. They visibly retain:
+
+- pack, source-catalog, component Card, and source/locator lineage;
+- pack/component versions and named attribution;
+- support, counterevidence, Evidence Pack IDs, unknowns, limitations, and
+  independent conflicts;
+- product-synthesis, no-endorsement, and no-private-reasoning notices; and
+- literal formal decision weight zero.
+
+Email, SMS, and LinkedIn bodies are regression-tested unchanged. The generator
+still creates editable drafts only and adds no addressing, delivery, send,
+publish, or provider capability.
+
+### Task 13 integration seam
+
+Worker/orchestrator commit `caf95aa` was intentionally not merged into this
+isolated fix branch. On integration with that commit:
+
+1. replace the worker's context-free `createFrameworkLensService(...)`
+   construction with a context-keyed service/catalog factory that calls
+   `loadResearchFrameworkCatalog({ context })` and reuses a service for the
+   same immutable context;
+2. preserve the existing `lensResult.judgments` and
+   `lensResult.disagreements` arguments already passed to
+   `buildUnderwritingNarrative`; and
+3. add those same two arguments to the Task 13
+   `createActionDraftGenerator(...).generate(...)` call.
+
+Task 13 already persists judgments, disagreements, narrative, and action
+drafts in its finalization payload. No send or publish action should be added
+at this seam.
+
+### Fix-round verification
+
+Observed RED before implementation:
+
+```text
+custom one-pack corpus authorized for execution
+unauthorized advisory caller-cache lookup count: 1
+corrupt advisory metadata replayed without rejection
+mandatory-ID advisory collision threw/changed formal selection
+two concurrent identical runs made 2 provider calls
+one failed concurrent cache write rejected only 1 of 2 callers
+required narrative/draft advisory sections absent
+```
+
+Fresh GREEN verification:
+
+```text
+Focused loader, advisory, grounding, lens, disagreement,
+decision, narrative, and action-draft suite:
+48 passed
+0 failed
+
+npm run typecheck:
+passed
+
+npm run lint:
+passed with zero errors or warnings
+
+git diff --check:
+passed
+```

@@ -107,7 +107,7 @@ export function groundFrameworkLensOutput(input: {
     "counterargument",
   );
 
-  const judgmentId = frameworkJudgmentId(
+  const judgmentId = createFrameworkJudgmentId(
     candidate.id,
     card.id,
     input.fingerprint,
@@ -171,7 +171,7 @@ export function buildFrameworkAbstention(input: {
   const calculationIds = isValuationFrameworkCard(card)
     ? input.calculations.map((item) => CalculationSchema.parse(item).id)
     : [];
-  const judgmentId = frameworkJudgmentId(
+  const judgmentId = createFrameworkJudgmentId(
     candidate.id,
     card.id,
     input.fingerprint,
@@ -214,7 +214,7 @@ export function buildFrameworkAbstention(input: {
   });
 }
 
-function frameworkJudgmentId(
+export function createFrameworkJudgmentId(
   candidateId: string,
   cardId: string,
   fingerprint: string,

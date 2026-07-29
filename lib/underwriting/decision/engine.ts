@@ -10,6 +10,7 @@ import {
   ResolvedUnderwritingContextSchema,
   ValuationEvaluationSchema,
   type DecisionResult,
+  type FrameworkJudgment,
 } from "../../contracts/underwriting";
 import {
   applyDecisionCeiling,
@@ -18,6 +19,11 @@ import {
   matrixRule,
   type DecisionEngineInput,
 } from "./rules";
+import { SYNTHETIC_FRAMEWORK_PACK } from "../../../seed/underwriting/framework-pack-v1";
+
+const FORMAL_FRAMEWORK_VERSIONS = new Map(
+  SYNTHETIC_FRAMEWORK_PACK.cards.map(({ id, version }) => [id, version]),
+);
 
 export interface DecisionEngine {
   decide(input: DecisionEngineInput): DecisionResult;
@@ -103,9 +109,9 @@ export function createDecisionEngine(): DecisionEngine {
 function parseInput(input: DecisionEngineInput): DecisionEngineInput {
   const pack = EvidencePackSchema.parse(input.pack);
   const coverage = EvidenceCoverageResultSchema.parse(input.coverage);
-  const judgments = input.judgments.map((item) =>
-    FrameworkJudgmentSchema.parse(item)
-  );
+  const judgments = input.judgments
+    .map((item) => FrameworkJudgmentSchema.parse(item))
+    .filter(isFormalDecisionJudgment);
   const valuation = ValuationEvaluationSchema.parse(input.valuation);
   const fundPolicy = FundPolicySnapshotSchema.parse(input.fundPolicy);
   const context = ResolvedUnderwritingContextSchema.parse(input.context);
@@ -144,6 +150,14 @@ function parseInput(input: DecisionEngineInput): DecisionEngineInput {
     context,
     decisionPolicy: input.decisionPolicy,
   };
+}
+
+function isFormalDecisionJudgment(
+  judgment: FrameworkJudgment,
+): boolean {
+  return judgment.frameworkMetadata === undefined
+    && FORMAL_FRAMEWORK_VERSIONS.get(judgment.frameworkCardId)
+      === judgment.frameworkVersion;
 }
 
 function claimEdges(

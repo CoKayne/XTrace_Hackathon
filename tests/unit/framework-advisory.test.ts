@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
@@ -23,6 +22,8 @@ import {
 import {
   createFrameworkLensService,
   createMemoryFrameworkLensCache,
+  type FrameworkLensCache,
+  type FrameworkLensCacheRecord,
 } from "../../lib/underwriting/frameworks/service";
 import type {
   ExperimentalAdvisoryFrameworkCard,
@@ -149,10 +150,6 @@ const execution = {
   applicationCommit: "task-11b-test",
 } as const;
 
-const researchRoot = fileURLToPath(
-  new URL("../../research/framework-authoring", import.meta.url),
-);
-
 const pendingReviewIds = [
   "BVC-02",
   "BVC-03",
@@ -178,7 +175,6 @@ const pendingReviewIds = [
 test("executes each applicable real pack once through a stable four-worker pool and persists complete opinions", async () => {
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   const requests: Array<Parameters<ClaudeClient["complete"]>[0]> = [];
   let active = 0;
@@ -304,7 +300,6 @@ test("executes each applicable real pack once through a stable four-worker pool 
 test("replays advisory fingerprints without calls and never stores prompts or raw model responses", async () => {
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   const cache = createMemoryFrameworkLensCache();
   let calls = 0;
@@ -330,7 +325,20 @@ test("replays advisory fingerprints without calls and never stores prompts or ra
   for (const record of cache.inspect()) {
     assert.deepEqual(
       Object.keys(record).sort(),
-      ["fingerprint", "judgment", "providerMetadata"],
+      ["binding", "fingerprint", "judgment", "providerMetadata"],
+    );
+    assert.equal(
+      record.binding.authorizationMode,
+      "authorized_research_catalog",
+    );
+    assert.equal(record.binding.catalogFingerprint, catalog.fingerprint);
+    assert.equal(
+      record.binding.corpusDigest,
+      catalog.authorization.corpusDigest,
+    );
+    assert.equal(
+      record.binding.compositeAuthorizationDigest,
+      record.judgment.frameworkMetadata?.authorizationDigest,
     );
     assert.equal("system" in record, false);
     assert.equal("messages" in record, false);
@@ -338,10 +346,34 @@ test("replays advisory fingerprints without calls and never stores prompts or ra
   }
 });
 
+test("coalesces two concurrent full-catalog runs to one call per applicable pack", async () => {
+  const catalog = await loadResearchFrameworkCatalog({ context });
+  let calls = 0;
+  const service = createFrameworkLensService({
+    cards: [],
+    advisoryCatalog: catalog,
+    execution,
+    client: {
+      async complete(request) {
+        calls += 1;
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        return JSON.stringify(advisoryOutput(promptCard(request)));
+      },
+    },
+  });
+
+  const [first, second] = await Promise.all([
+    service.runAll(runInput()),
+    service.runAll(runInput()),
+  ]);
+
+  assert.equal(calls, 19);
+  assert.deepEqual(second, first);
+});
+
 test("runs the exact core pack first and appends no more than twenty advisory pack judgments", async () => {
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   const coreCard = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
   let calls = 0;
@@ -376,7 +408,6 @@ test("runs the exact core pack first and appends no more than twenty advisory pa
 test("stops advisory failures after one attempt and records unavailable abstentions, never negative evidence", async () => {
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   const callsByPack = new Map<string, number>();
   const malformedPack = "peter_thiel_public_frameworks_v0_1";
@@ -432,7 +463,6 @@ test("stops advisory failures after one attempt and records unavailable abstenti
 test("rejects cloned catalogs and keeps caller-created advisory lookalikes inert", async () => {
   const catalog = await loadResearchFrameworkCatalog({
     context,
-    researchRoot,
   });
   assert.throws(
     () =>
@@ -492,6 +522,112 @@ test("rejects cloned catalogs and keeps caller-created advisory lookalikes inert
       conclusion: "abstain",
       frameworkMetadata: undefined,
     },
+  );
+});
+
+test("rejects an unauthorized advisory lookalike before consulting a caller cache", async () => {
+  const catalog = await loadResearchFrameworkCatalog({ context });
+  const lookalike = structuredClone(
+    authorizedResearchComposites(catalog).find(
+      ({ experimentalAdvisory }) => experimentalAdvisory.applicable,
+    )!,
+  );
+  let findCalls = 0;
+  let saveCalls = 0;
+  const hostileCache: FrameworkLensCache = {
+    async find(fingerprint) {
+      findCalls += 1;
+      return {
+        fingerprint,
+        judgment: poisonedAdvisoryJudgment(lookalike, fingerprint),
+        providerMetadata: {
+          ...execution,
+          attempts: 1,
+          repaired: false,
+        },
+      } as unknown as FrameworkLensCacheRecord;
+    },
+    async save() {
+      saveCalls += 1;
+    },
+  };
+  let providerCalls = 0;
+  const result = await createFrameworkLensService({
+    cards: [lookalike],
+    cache: hostileCache,
+    execution,
+    client: {
+      async complete() {
+        providerCalls += 1;
+        throw new Error("Unauthorized input must be rejected before I/O.");
+      },
+    },
+  }).runAll(runInput());
+
+  assert.equal(findCalls, 0);
+  assert.equal(saveCalls, 0);
+  assert.equal(providerCalls, 0);
+  assert.deepEqual(
+    {
+      applicability: result.judgments[0]?.applicability,
+      conclusion: result.judgments[0]?.conclusion,
+      frameworkMetadata: result.judgments[0]?.frameworkMetadata,
+    },
+    {
+      applicability: "unavailable",
+      conclusion: "abstain",
+      frameworkMetadata: undefined,
+    },
+  );
+});
+
+test("fails closed when cached advisory metadata does not exactly match the authorized composite", async () => {
+  const catalog = await loadResearchFrameworkCatalog({ context });
+  const cache = createMemoryFrameworkLensCache();
+  const seeded = createFrameworkLensService({
+    cards: [],
+    advisoryCatalog: catalog,
+    cache,
+    execution,
+    client: {
+      async complete(request) {
+        return JSON.stringify(advisoryOutput(promptCard(request)));
+      },
+    },
+  });
+  await seeded.runAll(runInput());
+  const valid = cache.inspect().find(
+    ({ judgment }) =>
+      judgment.frameworkMetadata?.packId
+        === "peter_thiel_public_frameworks_v0_1",
+  );
+  assert.ok(valid);
+  const validMetadata = valid.judgment.frameworkMetadata;
+  assert.ok(validMetadata);
+  const corrupt = structuredClone(valid);
+  corrupt.judgment.frameworkMetadata!.authorizationDigest =
+    `sha256:${"0".repeat(64)}`;
+  const corruptCache: FrameworkLensCache = {
+    async find(fingerprint) {
+      return fingerprint === valid.fingerprint ? corrupt : null;
+    },
+    async save() {},
+  };
+  const replay = createFrameworkLensService({
+    cards: [],
+    advisoryCatalog: catalog,
+    cache: corruptCache,
+    execution,
+    client: {
+      async complete(request) {
+        return JSON.stringify(advisoryOutput(promptCard(request)));
+      },
+    },
+  });
+
+  await assert.rejects(
+    replay.runAll(runInput()),
+    /cache record.*authorized|cache record.*metadata|cache.*mismatch/i,
   );
 });
 
@@ -564,4 +700,45 @@ function promptAnyCard(
     throw new Error("Framework prompt must be text-only.");
   }
   return (JSON.parse(content) as { card: FrameworkCard }).card;
+}
+
+function poisonedAdvisoryJudgment(
+  card: ExperimentalAdvisoryFrameworkCard,
+  fingerprint: string,
+) {
+  const id = [
+    "framework_judgment",
+    candidate.id,
+    card.id,
+    fingerprint.replace(/^sha256:/, ""),
+  ].join(":");
+  return {
+    id,
+    analysisType: "framework_judgment" as const,
+    frameworkCardId: card.id,
+    frameworkVersion: card.version,
+    applicability: "applicable" as const,
+    conclusion: "supportive" as const,
+    supportEvidenceItemIds: [fact.id],
+    counterEvidenceItemIds: [assumption.id],
+    unusedEvidenceItemIds: [],
+    strongestSupport: "A caller cache tried to inject support.",
+    strongestCounterargument: "A caller cache tried to inject counterevidence.",
+    unknowns: ["This record was not loader-authorized."],
+    limitations: ["Hostile cache probe."],
+    confidence: {
+      sourceReliability: "high" as const,
+      evidenceStrength: "high" as const,
+      evidenceCoverage: "high" as const,
+      applicability: "high" as const,
+      judgment: "high" as const,
+    },
+    claimEdges: [{
+      claimItemId: id,
+      dependencyItemId: card.id,
+      dependencyType: "framework_ref" as const,
+    }],
+    frameworkMetadata: card.experimentalAdvisory,
+    fingerprint,
+  };
 }

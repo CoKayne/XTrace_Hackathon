@@ -19,6 +19,10 @@ import {
   DECISION_POLICY_V1,
   type DecisionEngineInput,
 } from "../../lib/underwriting/decision/rules";
+import {
+  authorizedResearchComposites,
+  loadResearchFrameworkCatalog,
+} from "../../lib/underwriting/frameworks/research-loader";
 import { BALANCED_POLICY_VALUES } from "../../seed/underwriting/balanced-policy-v1";
 
 const context: ResolvedUnderwritingContext = {
@@ -361,6 +365,39 @@ test("does not let an unselected named advisory lens override the matrix", () =>
       inputRefs.includes(
         "framework_judgment:judgment_named_advisory",
       )
+    ),
+    false,
+  );
+});
+
+test("excludes a persisted zero-weight experimental advisory even when its card ID collides with a mandatory rule", async () => {
+  const catalog = await loadResearchFrameworkCatalog({ context });
+  const advisoryCard = authorizedResearchComposites(catalog).find(
+    ({ experimentalAdvisory }) => experimentalAdvisory.applicable,
+  );
+  assert.ok(advisoryCard);
+  const collidingAdvisory: FrameworkJudgment = {
+    ...judgment(
+      "judgment_colliding_experimental_advisory",
+      DECISION_POLICY_V1.mandatoryFrameworkCardIds.founderUniqueInsight,
+      "negative",
+    ),
+    frameworkMetadata: advisoryCard.experimentalAdvisory,
+  };
+  const baseline = createDecisionEngine().decide(input());
+
+  const withAdvisory = createDecisionEngine().decide(input({
+    judgments: [...positiveJudgments(), collidingAdvisory],
+  }));
+
+  assert.deepEqual(withAdvisory, baseline);
+  assert.equal(
+    collidingAdvisory.frameworkMetadata?.formalDecisionWeight,
+    "0",
+  );
+  assert.equal(
+    withAdvisory.claimEdges.some(({ dependencyItemId }) =>
+      dependencyItemId === collidingAdvisory.id
     ),
     false,
   );
