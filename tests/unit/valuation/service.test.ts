@@ -280,6 +280,130 @@ test("rejects benchmark freshness that is not benchmark-origin", () => {
   );
   assert.equal(result.pricingPremium, null);
   assert.ok(result.blockerCodes.includes("benchmark_freshness_missing"));
+  assert.ok(result.blockerCodes.includes("benchmark_pair_invalid"));
+});
+
+test("fails closed unless benchmark value and expiry form one exact immutable-pack pair", () => {
+  const invalidCases: {
+    name: string;
+    configure: (
+      pack: EvidencePack,
+      resolvedContext: ResolvedUnderwritingContext,
+    ) => void;
+  }[] = [
+    {
+      name: "missing resolved benchmark pack",
+      configure: (_pack, resolvedContext) => {
+        resolvedContext.benchmarkPackId = null;
+      },
+    },
+    {
+      name: "missing benchmark value",
+      configure: (pack) => {
+        pack.assumptions = pack.assumptions.filter(
+          ({ field }) => field !== "compatible_benchmark_value",
+        );
+      },
+    },
+    {
+      name: "missing benchmark expiry",
+      configure: (pack) => {
+        pack.assumptions = pack.assumptions.filter(
+          ({ field }) => field !== "compatible_benchmark_stale_after",
+        );
+      },
+    },
+    {
+      name: "duplicate benchmark value",
+      configure: (pack) => {
+        const value = pack.assumptions.find(
+          ({ field }) => field === "compatible_benchmark_value",
+        )!;
+        pack.assumptions.push({ ...value, id: "benchmark_seed_duplicate" });
+      },
+    },
+    {
+      name: "duplicate benchmark expiry",
+      configure: (pack) => {
+        const expiry = pack.assumptions.find(
+          ({ field }) => field === "compatible_benchmark_stale_after",
+        )!;
+        pack.assumptions.push({
+          ...expiry,
+          id: "benchmark_stale_after_duplicate",
+        });
+      },
+    },
+    {
+      name: "benchmark value has policy provenance",
+      configure: (pack) => {
+        pack.assumptions = pack.assumptions.map((item) =>
+          item.field === "compatible_benchmark_value"
+            ? { ...item, provenanceOrigin: "recommended_policy" }
+            : item
+        );
+      },
+    },
+    {
+      name: "benchmark value references a different pack",
+      configure: (pack) => {
+        pack.assumptions = pack.assumptions.map((item) =>
+          item.field === "compatible_benchmark_value"
+            ? { ...item, inputRefIds: ["other_benchmark_pack"] }
+            : item
+        );
+      },
+    },
+    {
+      name: "benchmark expiry references a different pack",
+      configure: (pack) => {
+        pack.assumptions = pack.assumptions.map((item) =>
+          item.field === "compatible_benchmark_stale_after"
+            ? { ...item, inputRefIds: ["other_benchmark_pack"] }
+            : item
+        );
+      },
+    },
+    {
+      name: "benchmark value has an ambiguous pack binding",
+      configure: (pack) => {
+        pack.assumptions = pack.assumptions.map((item) =>
+          item.field === "compatible_benchmark_value"
+            ? {
+              ...item,
+              inputRefIds: [
+                "benchmark_pack_seed",
+                "other_benchmark_pack",
+              ],
+            }
+            : item
+        );
+      },
+    },
+  ];
+
+  for (const invalidCase of invalidCases) {
+    const pack = evidencePack();
+    const resolvedContext = context();
+    invalidCase.configure(pack, resolvedContext);
+
+    const result = createValuationEngine().evaluate({
+      pack,
+      context: resolvedContext,
+      fundPolicy: policy(),
+    });
+
+    assert.deepEqual(
+      result.scenarios.map(({ valuation }) => valuation),
+      [null, null, null],
+      invalidCase.name,
+    );
+    assert.equal(result.pricingPremium, null, invalidCase.name);
+    assert.ok(
+      result.blockerCodes.includes("benchmark_pair_invalid"),
+      invalidCase.name,
+    );
+  }
 });
 
 test("rejects calendar-invalid benchmark freshness dates", () => {
@@ -605,7 +729,9 @@ function assumption(
           ? "decimal"
           : null,
     rationale: `Explicit ${field} input`,
-    inputRefIds: [],
+    inputRefIds: field.startsWith("compatible_benchmark_")
+      ? ["benchmark_pack_seed"]
+      : [],
     sensitivity: "medium",
     requiresConfirmation: false,
   };

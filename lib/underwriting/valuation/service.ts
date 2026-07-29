@@ -56,16 +56,12 @@ export function evaluateValuationArtifacts(input: {
     input.pack,
     "reported_valuation_basis",
   )?.value ?? null;
-  const benchmark = assumption(
+  const benchmarkPair = resolveBenchmarkPair(
     input.pack,
-    "compatible_benchmark_value",
-    "all",
+    input.context.benchmarkPackId,
   );
-  const benchmarkStaleAfter = benchmarkAssumption(
-    input.pack,
-    "compatible_benchmark_stale_after",
-    "all",
-  );
+  const benchmark = benchmarkPair?.value ?? null;
+  const benchmarkStaleAfter = benchmarkPair?.staleAfter ?? null;
   const benchmarkStale = benchmarkStaleAfter
     ? benchmarkIsStale(
       input.pack.asOfDate,
@@ -154,6 +150,7 @@ export function evaluateValuationArtifacts(input: {
   const blockerCodes = [
     ...market.blockerCodes,
     ...venture.blockerCodes,
+    ...(benchmarkPair === null ? ["benchmark_pair_invalid"] : []),
   ];
 
   const investment = policyString(input.fundPolicy, "initialCheckMax");
@@ -326,16 +323,40 @@ function acceptedFact(pack: EvidencePack, field: string): Fact | null {
   ) ?? null;
 }
 
-function assumption(
+function resolveBenchmarkPair(
   pack: EvidencePack,
-  field: string,
-  scenario: Assumption["scenario"],
-): Assumption | null {
-  return pack.assumptions.find(
-    (candidate) =>
-      candidate.field === field
-      && candidate.scenario === scenario,
-  ) ?? null;
+  benchmarkPackId: string | null,
+): {
+  value: Assumption;
+  staleAfter: Assumption;
+} | null {
+  if (benchmarkPackId === null) return null;
+  const values = pack.assumptions.filter(
+    ({ field }) => field === "compatible_benchmark_value",
+  );
+  const staleAfterValues = pack.assumptions.filter(
+    ({ field }) => field === "compatible_benchmark_stale_after",
+  );
+  if (values.length !== 1 || staleAfterValues.length !== 1) return null;
+  const value = values[0];
+  const staleAfter = staleAfterValues[0];
+  if (
+    !isExactBenchmarkPackAssumption(value, benchmarkPackId)
+    || !isExactBenchmarkPackAssumption(staleAfter, benchmarkPackId)
+  ) {
+    return null;
+  }
+  return { value, staleAfter };
+}
+
+function isExactBenchmarkPackAssumption(
+  candidate: Assumption,
+  benchmarkPackId: string,
+): boolean {
+  return candidate.scenario === "all"
+    && candidate.provenanceOrigin === "benchmark"
+    && candidate.inputRefIds.length === 1
+    && candidate.inputRefIds[0] === benchmarkPackId;
 }
 
 function recommendedPolicyAssumption(
@@ -348,19 +369,6 @@ function recommendedPolicyAssumption(
       candidate.field === field
       && candidate.scenario === scenario
       && candidate.provenanceOrigin === "recommended_policy",
-  ) ?? null;
-}
-
-function benchmarkAssumption(
-  pack: EvidencePack,
-  field: string,
-  scenario: Assumption["scenario"],
-): Assumption | null {
-  return pack.assumptions.find(
-    (candidate) =>
-      candidate.field === field
-      && candidate.scenario === scenario
-      && candidate.provenanceOrigin === "benchmark",
   ) ?? null;
 }
 
