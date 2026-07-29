@@ -1,6 +1,11 @@
 import { z } from "zod";
 
 import { ClaimEdgeSchema } from "./evidence";
+import {
+  FrameworkCardAuthoringSchema,
+  FrameworkPackAuthoringSchema,
+  ResearchSourceRecordSchema,
+} from "../underwriting/frameworks/research-schemas";
 
 const IdSchema = z.string().min(1).refine(
   (value) => value.trim() === value,
@@ -65,6 +70,85 @@ export const FrameworkConfidenceSchema = z.strictObject({
   judgment: ConfidenceSchema,
 });
 
+export const FrameworkAdvisoryMetadataSchema = z.strictObject({
+  packId: IdSchema,
+  packName: z.string().min(1),
+  packVersion: z.string().min(1),
+  packDescription: z.string().min(1),
+  packReview: FrameworkPackAuthoringSchema.shape.review,
+  sourceCatalogId: IdSchema,
+  researchCutoff: IsoDateSchema,
+  context: z.strictObject({
+    stage: z.enum(["seed", "series_a"]),
+    businessModel: z.enum(["b2b_saas", "enterprise_ai"]),
+    geography: z.enum(["us", "global"]),
+    securityType: z.literal("preferred"),
+  }),
+  applicable: z.boolean(),
+  componentCardIds: z.array(IdSchema),
+  components: z.array(FrameworkCardAuthoringSchema),
+  sources: z.array(ResearchSourceRecordSchema),
+  notices: z.strictObject({
+    noEndorsement: z.string().min(1),
+    noPrivateReasoning: z.string().min(1),
+    experimentalOnly: z.string().min(1),
+  }),
+  formalDecisionWeight: z.literal("0"),
+  authorizationDigest: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+}).superRefine((metadata, context) => {
+  const componentIds = metadata.components.map(({ frameworkId }) =>
+    frameworkId
+  );
+  if (
+    componentIds.length !== metadata.componentCardIds.length
+    || componentIds.some(
+      (frameworkId, index) =>
+        frameworkId !== metadata.componentCardIds[index],
+    )
+    || new Set(componentIds).size !== componentIds.length
+  ) {
+    context.addIssue({
+      code: "custom",
+      message:
+        "Advisory component Card IDs must uniquely match component records",
+    });
+  }
+  if (metadata.applicable !== (metadata.components.length > 0)) {
+    context.addIssue({
+      code: "custom",
+      message:
+        "Advisory applicability must match whether components were selected",
+    });
+  }
+  const sourceIds = metadata.sources.map(({ sourceId }) => sourceId);
+  const sourceIdSet = new Set(sourceIds);
+  if (
+    sourceIdSet.size !== sourceIds.length
+    || metadata.components.some((component) =>
+      component.sourceRefs.some(({ sourceId }) => !sourceIdSet.has(sourceId))
+    )
+  ) {
+    context.addIssue({
+      code: "custom",
+      message:
+        "Every advisory component source reference must resolve uniquely",
+    });
+  }
+  if (
+    metadata.components.some((component) =>
+      component.rights.status !== "public_source_paraphrase"
+      || component.review.contentStatus !== "draft"
+      || component.review.publicationStatus !== "unpublished"
+      || component.decisionUtility.formalDecisionWeight !== 0
+    )
+  ) {
+    context.addIssue({
+      code: "custom",
+      message: "Advisory components must satisfy every eligibility gate",
+    });
+  }
+});
+
 export const FrameworkJudgmentSchema = z.strictObject({
   id: IdSchema,
   analysisType: z.literal("framework_judgment"),
@@ -81,6 +165,7 @@ export const FrameworkJudgmentSchema = z.strictObject({
   limitations: z.array(z.string().min(1)),
   confidence: FrameworkConfidenceSchema,
   claimEdges: z.array(ClaimEdgeSchema),
+  frameworkMetadata: FrameworkAdvisoryMetadataSchema.optional(),
   fingerprint: z.string().min(1),
 }).superRefine((judgment, context) => {
   if (
@@ -103,6 +188,7 @@ export const FrameworkDisagreementSchema = z.strictObject({
     "tam_vs_willingness_to_pay",
     "company_quality_vs_price",
     "contrarian_insight_vs_adoption",
+    "independent_framework_conflict",
   ]),
   explanation: z.string().min(1),
   evidenceItemIds: z.array(IdSchema),
@@ -379,6 +465,9 @@ export type ResolvedUnderwritingContext = z.infer<
   typeof ResolvedUnderwritingContextSchema
 >;
 export type FrameworkConfidence = z.infer<typeof FrameworkConfidenceSchema>;
+export type FrameworkAdvisoryMetadata = z.infer<
+  typeof FrameworkAdvisoryMetadataSchema
+>;
 export type FrameworkJudgment = z.infer<typeof FrameworkJudgmentSchema>;
 export type FrameworkDisagreement = z.infer<
   typeof FrameworkDisagreementSchema

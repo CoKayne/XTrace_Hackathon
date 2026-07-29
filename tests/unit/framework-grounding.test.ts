@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import type {
@@ -7,10 +8,18 @@ import type {
   EvidencePack,
   Fact,
 } from "../../lib/contracts/evidence";
-import type { CandidateRun } from "../../lib/contracts/underwriting";
+import type {
+  CandidateRun,
+  ResolvedUnderwritingContext,
+} from "../../lib/contracts/underwriting";
 import {
+  buildFrameworkAbstention,
   groundFrameworkLensOutput,
 } from "../../lib/underwriting/frameworks/grounding";
+import {
+  authorizedResearchComposites,
+  loadResearchFrameworkCatalog,
+} from "../../lib/underwriting/frameworks/research-loader";
 import {
   ClaudeFrameworkLensOutputSchema,
 } from "../../lib/underwriting/frameworks/schemas";
@@ -112,6 +121,26 @@ const candidate: CandidateRun = {
   createdAt: "2026-07-29T10:02:00.000Z",
   finalizedAt: null,
 };
+
+const context: ResolvedUnderwritingContext = {
+  id: "underwriting_context_seed_b2b_saas_v1",
+  contextVersion: "1",
+  stage: "seed",
+  businessModel: "b2b_saas",
+  geography: "us",
+  securityType: "preferred",
+  asOfDate: "2026-07-29",
+  criticalEvidenceProfileId: "critical_evidence_seed_b2b_saas_v1",
+  benchmarkPackId: "benchmark_pack_synthetic_us_software_v1",
+  benchmarkCompatibility: "exact",
+  valuationMethodPolicyId: "valuation_method_seed_b2b_saas_v1",
+  decisionPolicyId: "decision_policy_seed_b2b_saas_v1",
+  frameworkPackId: "framework_pack_synthetic_universal_saas_ai_v1",
+};
+
+const researchRoot = fileURLToPath(
+  new URL("../../research/framework-authoring", import.meta.url),
+);
 
 function output() {
   const card = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
@@ -252,4 +281,107 @@ test("only the Valuation lens may cite an already-saved Calculation", () => {
     ),
     true,
   );
+});
+
+test("persists complete loader-owned advisory metadata beside a grounded real pack opinion", async () => {
+  const catalog = await loadResearchFrameworkCatalog({
+    context,
+    researchRoot,
+  });
+  const card = authorizedResearchComposites(catalog).find(
+    ({ experimentalAdvisory }) =>
+      experimentalAdvisory.packId
+        === "peter_thiel_public_frameworks_v0_1",
+  );
+  assert.ok(card);
+  const judgment = groundFrameworkLensOutput({
+    candidate,
+    pack,
+    card,
+    calculations: [calculation],
+    fingerprint: "sha256:real-pack-grounded",
+    output: {
+      ...output(),
+      strongestSupport:
+        "fact_arr supports a testable, value-linked company premise.",
+      strongestCounterargument:
+        "assumption_benchmark remains an unverified external comparison.",
+      unknowns: [
+        "Whether customer evidence falsifies the core company premise.",
+      ],
+      limitations: [
+        "This opinion is experimental and cannot alter the formal decision.",
+      ],
+      frameworkRuleRefs: [card.id],
+    },
+  });
+
+  assert.deepEqual(
+    judgment.frameworkMetadata,
+    card.experimentalAdvisory,
+  );
+  assert.equal(
+    judgment.frameworkMetadata?.componentCardIds.includes("PT-01"),
+    true,
+  );
+  assert.match(
+    judgment.frameworkMetadata?.components.find(
+      ({ frameworkId }) => frameworkId === "PT-01",
+    )?.neutralParaphrase ?? "",
+    /testable/i,
+  );
+  assert.deepEqual(
+    judgment.frameworkMetadata?.components.find(
+      ({ frameworkId }) => frameworkId === "PT-01",
+    )?.sourceRefs[0]?.locator,
+    {
+      kind: "web_section",
+      value: "Three questions and contrarian/business question",
+    },
+  );
+  assert.equal(
+    judgment.frameworkMetadata?.sources.some(
+      ({ sourceId, url }) =>
+        sourceId === "PT-P2-CS183-01"
+        && url.includes("blakemasters.tumblr.com"),
+    ),
+    true,
+  );
+  assert.deepEqual(judgment.supportEvidenceItemIds, [fact.id]);
+  assert.deepEqual(judgment.counterEvidenceItemIds, [assumption.id]);
+  assert.deepEqual(judgment.unknowns, [
+    "Whether customer evidence falsifies the core company premise.",
+  ]);
+  assert.equal(
+    judgment.limitations.some((item) =>
+      item.includes("cannot alter the formal decision")
+    ),
+    true,
+  );
+  assert.deepEqual(
+    judgment.claimEdges.filter(
+      ({ dependencyType }) => dependencyType === "framework_ref",
+    ),
+    [{
+      claimItemId: judgment.id,
+      dependencyItemId: card.id,
+      dependencyType: "framework_ref",
+    }],
+  );
+
+  const unavailable = buildFrameworkAbstention({
+    candidate,
+    pack,
+    card,
+    calculations: [calculation],
+    fingerprint: "sha256:real-pack-unavailable",
+    applicability: "unavailable",
+    reason: "The one permitted advisory attempt returned invalid JSON.",
+    retainAdvisoryMetadata: true,
+  });
+  assert.deepEqual(
+    unavailable.frameworkMetadata,
+    card.experimentalAdvisory,
+  );
+  assert.equal(unavailable.conclusion, "abstain");
 });

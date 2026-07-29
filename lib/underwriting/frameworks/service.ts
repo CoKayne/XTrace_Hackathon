@@ -24,7 +24,13 @@ import {
   isValuationFrameworkCard,
 } from "./grounding";
 import {
+  authorizedResearchComposites,
+  isAuthorizedResearchComposite,
+  type ResearchFrameworkCatalog,
+} from "./research-loader";
+import {
   FrameworkCardSchema,
+  isExperimentalAdvisoryFrameworkCard,
   type FrameworkCard,
 } from "./schemas";
 
@@ -100,6 +106,8 @@ export function createFrameworkLensService(options: {
   client: ClaudeClient;
   execution: FrameworkLensExecutionSettings;
   cards?: readonly FrameworkCard[];
+  advisoryCatalog?: ResearchFrameworkCatalog;
+  concurrency?: number;
   cache?: FrameworkLensCache;
   isApplicable?: (
     card: FrameworkCard,
@@ -110,8 +118,17 @@ export function createFrameworkLensService(options: {
     },
   ) => boolean;
 }): FrameworkLensService {
-  const cards = (options.cards ?? SYNTHETIC_FRAMEWORK_PACK.cards)
+  const ordinaryCards = (options.cards ?? SYNTHETIC_FRAMEWORK_PACK.cards)
     .map((card) => FrameworkCardSchema.parse(card));
+  const advisoryCards = options.advisoryCatalog
+    ? authorizedResearchComposites(options.advisoryCatalog)
+    : [];
+  const cards: readonly FrameworkCard[] = [
+    ...ordinaryCards,
+    ...advisoryCards,
+  ];
+  assertUniqueCardIds(cards);
+  const concurrency = validateConcurrency(options.concurrency ?? 4);
   const cache = options.cache ?? createMemoryFrameworkLensCache();
   const execution = validateExecutionSettings(options.execution);
 
@@ -134,81 +151,163 @@ export function createFrameworkLensService(options: {
           "Framework lenses require one matching Candidate, Evidence Pack, and context.",
         );
       }
+      if (
+        options.advisoryCatalog
+        && !catalogMatchesContext(options.advisoryCatalog, context)
+      ) {
+        throw new Error(
+          "The authorized research catalog was composed for a different immutable underwriting context.",
+        );
+      }
 
-      const judgments: FrameworkJudgment[] = [];
-      for (const card of cards) {
-        const scopedCalculations = isValuationFrameworkCard(card)
-          ? calculations
-          : [];
-        const fingerprint = createFrameworkLensFingerprint({
-          pack,
-          context,
-          card,
-          calculations: scopedCalculations,
-          execution,
-        });
-        const replayed = await cache.find(fingerprint);
-        if (replayed) {
-          judgments.push(replayed.judgment);
-          continue;
-        }
-
-        let judgment: FrameworkJudgment;
-        let attempts = 0;
-        let repaired = false;
-        if (
-          context.frameworkPackId !== SYNTHETIC_FRAMEWORK_PACK.id
-          || !isExecutableFrameworkCard(card)
-        ) {
-          judgment = buildFrameworkAbstention({
-            candidate,
-            pack,
-            card,
-            calculations: scopedCalculations,
-            fingerprint,
-            applicability: "unavailable",
-            reason:
-              "Framework Card is not an executable published product-owned synthetic fixture.",
-          });
-        } else if (
-          options.isApplicable
-          && !options.isApplicable(card, { pack, context, calculations })
-        ) {
-          judgment = buildFrameworkAbstention({
-            candidate,
-            pack,
-            card,
-            calculations: scopedCalculations,
-            fingerprint,
-            applicability: "not_applicable",
-            reason:
-              "Framework Card is not applicable to this immutable context.",
-          });
-        } else {
-          const result = await runClaudeFrameworkLens({
-            client: options.client,
-            candidate,
+      const judgments = await stableConcurrentMap(
+        cards,
+        concurrency,
+        async (card): Promise<FrameworkJudgment> => {
+          const scopedCalculations = isValuationFrameworkCard(card)
+            ? calculations
+            : [];
+          const authorizedAdvisory = options.advisoryCatalog
+            ? isAuthorizedResearchComposite(options.advisoryCatalog, card)
+            : false;
+          const fingerprint = createFrameworkLensFingerprint({
             pack,
             context,
-            calculations: scopedCalculations,
             card,
-            fingerprint,
+            calculations: scopedCalculations,
+            execution,
+            authorization: authorizedAdvisory
+              ? {
+                mode: "authorized_research_catalog",
+                catalogFingerprint: options.advisoryCatalog!.fingerprint,
+              }
+              : isExperimentalAdvisoryFrameworkCard(card)
+              ? {
+                mode: "unauthorized_advisory_input",
+                catalogFingerprint: null,
+              }
+              : {
+                mode: "ordinary_framework_card",
+                catalogFingerprint: null,
+              },
           });
-          judgment = result.judgment;
-          attempts = result.attempts;
-          repaired = result.repaired;
-        }
-        await cache.save({
-          fingerprint,
-          judgment,
-          providerMetadata: {
-            ...execution,
-            attempts,
-            repaired,
-          },
-        });
-        judgments.push(judgment);
-      }
+          const replayed = await cache.find(fingerprint);
+          if (replayed) return replayed.judgment;
+
+          let judgment: FrameworkJudgment;
+          let attempts = 0;
+          let repaired = false;
+          if (isExperimentalAdvisoryFrameworkCard(card)) {
+            if (!authorizedAdvisory) {
+              judgment = buildFrameworkAbstention({
+                candidate,
+                pack,
+                card,
+                calculations: scopedCalculations,
+                fingerprint,
+                applicability: "unavailable",
+                reason:
+                  "Experimental advisory Card is not authorized by the exact loader catalog object.",
+              });
+            } else if (!card.experimentalAdvisory.applicable) {
+              judgment = buildFrameworkAbstention({
+                candidate,
+                pack,
+                card,
+                calculations: scopedCalculations,
+                fingerprint,
+                applicability: "not_applicable",
+                reason:
+                  "No eligible component Card applies to this immutable underwriting context.",
+                retainAdvisoryMetadata: true,
+              });
+            } else if (
+              options.isApplicable
+              && !options.isApplicable(card, {
+                pack,
+                context,
+                calculations,
+              })
+            ) {
+              judgment = buildFrameworkAbstention({
+                candidate,
+                pack,
+                card,
+                calculations: scopedCalculations,
+                fingerprint,
+                applicability: "not_applicable",
+                reason:
+                  "Framework Card is not applicable to this immutable context.",
+                retainAdvisoryMetadata: true,
+              });
+            } else {
+              const result = await runClaudeFrameworkLens({
+                client: options.client,
+                candidate,
+                pack,
+                context,
+                calculations: scopedCalculations,
+                card,
+                fingerprint,
+              });
+              judgment = result.judgment;
+              attempts = result.attempts;
+              repaired = result.repaired;
+            }
+          } else if (
+            context.frameworkPackId !== SYNTHETIC_FRAMEWORK_PACK.id
+            || !isExecutableFrameworkCard(card)
+          ) {
+            judgment = buildFrameworkAbstention({
+              candidate,
+              pack,
+              card,
+              calculations: scopedCalculations,
+              fingerprint,
+              applicability: "unavailable",
+              reason:
+                "Framework Card is not an executable published product-owned synthetic fixture.",
+            });
+          } else if (
+            options.isApplicable
+            && !options.isApplicable(card, { pack, context, calculations })
+          ) {
+            judgment = buildFrameworkAbstention({
+              candidate,
+              pack,
+              card,
+              calculations: scopedCalculations,
+              fingerprint,
+              applicability: "not_applicable",
+              reason:
+                "Framework Card is not applicable to this immutable context.",
+            });
+          } else {
+            const result = await runClaudeFrameworkLens({
+              client: options.client,
+              candidate,
+              pack,
+              context,
+              calculations: scopedCalculations,
+              card,
+              fingerprint,
+            });
+            judgment = result.judgment;
+            attempts = result.attempts;
+            repaired = result.repaired;
+          }
+          await cache.save({
+            fingerprint,
+            judgment,
+            providerMetadata: {
+              ...execution,
+              attempts,
+              repaired,
+            },
+          });
+          return judgment;
+        },
+      );
       return {
         judgments,
         disagreements: buildFrameworkDisagreements({ judgments, cards }),
@@ -217,12 +316,68 @@ export function createFrameworkLensService(options: {
   };
 }
 
+async function stableConcurrentMap<T, R>(
+  values: readonly T[],
+  concurrency: number,
+  worker: (value: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(values.length);
+  let nextIndex = 0;
+  const workers = Array.from(
+    { length: Math.min(concurrency, values.length) },
+    async () => {
+      while (nextIndex < values.length) {
+        const index = nextIndex;
+        nextIndex += 1;
+        results[index] = await worker(values[index]!, index);
+      }
+    },
+  );
+  await Promise.all(workers);
+  return results;
+}
+
+function validateConcurrency(value: number): number {
+  if (!Number.isInteger(value) || value < 1 || value > 20) {
+    throw new Error(
+      "Framework lens concurrency must be an integer between 1 and 20.",
+    );
+  }
+  return value;
+}
+
+function assertUniqueCardIds(cards: readonly FrameworkCard[]): void {
+  const ids = cards.map(({ id }) => id);
+  if (new Set(ids).size !== ids.length) {
+    throw new Error(
+      "Framework lens execution requires unique Framework Card IDs.",
+    );
+  }
+}
+
+function catalogMatchesContext(
+  catalog: ResearchFrameworkCatalog,
+  context: ResolvedUnderwritingContext,
+): boolean {
+  return catalog.context.stage === context.stage
+    && catalog.context.businessModel === context.businessModel
+    && catalog.context.geography === context.geography
+    && catalog.context.securityType === context.securityType;
+}
+
 function createFrameworkLensFingerprint(input: {
   pack: EvidencePack;
   context: ResolvedUnderwritingContext;
   card: FrameworkCard;
   calculations: Calculation[];
   execution: FrameworkLensExecutionSettings;
+  authorization: {
+    mode:
+      | "ordinary_framework_card"
+      | "authorized_research_catalog"
+      | "unauthorized_advisory_input";
+    catalogFingerprint: string | null;
+  };
 }): string {
   const canonical = canonicalJson({
     kind: "framework-lens-execution-v1",
@@ -230,6 +385,7 @@ function createFrameworkLensFingerprint(input: {
     card: input.card,
     context: input.context,
     calculations: input.calculations,
+    authorization: input.authorization,
     provider: input.execution.provider,
     model: input.execution.model,
     promptVersion: input.execution.promptVersion,

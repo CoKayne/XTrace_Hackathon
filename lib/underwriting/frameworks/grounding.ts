@@ -17,6 +17,7 @@ import { SYNTHETIC_FRAMEWORK_PACK } from "../../../seed/underwriting/framework-p
 import {
   ClaudeFrameworkLensOutputSchema,
   FrameworkCardSchema,
+  isExperimentalAdvisoryFrameworkCard,
   type ClaudeFrameworkLensOutput,
   type FrameworkCard,
 } from "./schemas";
@@ -147,6 +148,9 @@ export function groundFrameworkLensOutput(input: {
     ]),
     confidence: output.confidence,
     claimEdges,
+    ...(isExperimentalAdvisoryFrameworkCard(card)
+      ? { frameworkMetadata: card.experimentalAdvisory }
+      : {}),
     fingerprint: input.fingerprint,
   });
 }
@@ -159,6 +163,7 @@ export function buildFrameworkAbstention(input: {
   fingerprint: string;
   applicability: "not_applicable" | "unavailable";
   reason: string;
+  retainAdvisoryMetadata?: boolean;
 }): FrameworkJudgment {
   const candidate = CandidateRunSchema.parse(input.candidate);
   const pack = EvidencePackSchema.parse(input.pack);
@@ -201,6 +206,10 @@ export function buildFrameworkAbstention(input: {
       dependencyItemId: card.id,
       dependencyType: "framework_ref",
     }],
+    ...(input.retainAdvisoryMetadata
+      && isExperimentalAdvisoryFrameworkCard(card)
+      ? { frameworkMetadata: card.experimentalAdvisory }
+      : {}),
     fingerprint: input.fingerprint,
   });
 }

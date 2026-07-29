@@ -8,6 +8,7 @@ import {
 } from "../../contracts/underwriting";
 import {
   FrameworkCardSchema,
+  isExperimentalAdvisoryFrameworkCard,
   type FrameworkCard,
 } from "./schemas";
 
@@ -93,6 +94,62 @@ export function buildFrameworkDisagreements(input: {
           evidenceItemIds,
         }));
       }
+    }
+  }
+  const advisoryCardsById = new Map(
+    cards
+      .filter(isExperimentalAdvisoryFrameworkCard)
+      .map((card) => [card.id, card] as const),
+  );
+  const advisoryJudgments = judgments
+    .filter((judgment) =>
+      judgment.frameworkMetadata !== undefined
+      && advisoryCardsById.has(judgment.frameworkCardId)
+      && judgment.applicability === "applicable"
+      && (
+        judgment.conclusion === "supportive"
+        || judgment.conclusion === "negative"
+      )
+    )
+    .sort((left, right) =>
+      compareUtf8(
+        `${left.frameworkCardId}\u0000${left.id}`,
+        `${right.frameworkCardId}\u0000${right.id}`,
+      )
+    );
+  for (let leftIndex = 0; leftIndex < advisoryJudgments.length; leftIndex += 1) {
+    const left = advisoryJudgments[leftIndex]!;
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < advisoryJudgments.length;
+      rightIndex += 1
+    ) {
+      const right = advisoryJudgments[rightIndex]!;
+      if (
+        left.frameworkCardId === right.frameworkCardId
+        || !areOpposingApplicableJudgments(left, right)
+      ) {
+        continue;
+      }
+      const leftCard = advisoryCardsById.get(left.frameworkCardId)!;
+      const rightCard = advisoryCardsById.get(right.frameworkCardId)!;
+      const topic = "independent_framework_conflict";
+      disagreements.push(FrameworkDisagreementSchema.parse({
+        id: createDisagreementId(topic, left.id, right.id),
+        leftJudgmentId: left.id,
+        rightJudgmentId: right.id,
+        topic,
+        explanation:
+          `${leftCard.title} remains ${left.conclusion}, while `
+          + `${rightCard.title} remains ${right.conclusion}; both independent `
+          + "named advisory judgments and their source-grounded reasoning are preserved without averaging.",
+        evidenceItemIds: uniqueSorted([
+          ...left.supportEvidenceItemIds,
+          ...left.counterEvidenceItemIds,
+          ...right.supportEvidenceItemIds,
+          ...right.counterEvidenceItemIds,
+        ]),
+      }));
     }
   }
 
