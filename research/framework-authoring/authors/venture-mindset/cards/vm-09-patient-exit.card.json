@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-09",
+  "slug": "patient-exit",
+  "name": "Great Things Take Time",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether continued patience is supported by value-creation milestones rather than short-termism or indefinite hope.",
+    "productLabel": "Patient Exit Lens — based on The Venture Mindset public materials",
+    "notAClaimOf": [
+      "holding indefinitely",
+      "ignoring fund life or liquidity",
+      "author endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ilya Strebulaev's public nine-principle keynote",
+    "scope": "person_direct",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Important company value may take years to build, so exit timing should be compared with remaining value creation, risk, liquidity, fund life, ownership, and opportunity cost. Long-term orientation requires milestones and evidence; it does not justify waiting without progress.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-010"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF page 14"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "growth",
+      "pre_exit",
+      "secondary",
+      "fund_extension"
+    ],
+    "businessModels": [
+      "venture_scale_business"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "secondary"
+    ]
+  },
+  "requiredConditions": [
+    "A hold, partial liquidity, secondary, acquisition, or exit decision exists.",
+    "Remaining value creation and downside can be modeled.",
+    "Fund life, LP liquidity, and opportunity cost are explicit."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "remaining_value_creation",
+      "description": "Milestones, market, economics, and strategic position that could increase value after the current date.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company plan",
+        "scenario valuation",
+        "board materials",
+        "market evidence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_liquidity_option",
+      "description": "Price, terms, taxes, transaction probability, and partial-liquidity alternatives.",
+      "necessity": "required",
+      "acceptableSources": [
+        "offer",
+        "secondary indication",
+        "M&A process",
+        "public-market plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fund_constraints",
+      "description": "Fund life, LP obligations, concentration, reserves, and opportunity cost.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Fund Policy",
+        "LPA summary",
+        "portfolio model"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "hold_risks",
+      "description": "Competitive, technical, governance, financing, key-person, and liquidity risks over the remaining horizon.",
+      "necessity": "required",
+      "acceptableSources": [
+        "risk register",
+        "company evidence",
+        "market evidence"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which concrete milestones can increase value, and by when?",
+    "What is the risk-adjusted value of holding versus current liquidity?",
+    "How do fund life and LP obligations constrain patience?",
+    "Would partial liquidity preserve upside while reducing concentration?",
+    "Is waiting based on evidence or avoidance of recognizing a loss?",
+    "What event forces a re-review?"
+  ],
+  "positiveSignals": [
+    "Remaining milestones have clear evidence, timing, and funding.",
+    "Durable competitive power supports continued value creation.",
+    "Fund structure can support the horizon.",
+    "Partial liquidity can rebalance risk without destroying upside.",
+    "Hold and exit scenarios are compared using consistent assumptions."
+  ],
+  "redFlags": [
+    "Long term is used to excuse missed milestones.",
+    "The fund lacks time or liquidity for the proposed horizon.",
+    "Holding relies on multiple expansion without operating progress.",
+    "Management avoids credible acquisition or secondary options for non-economic reasons.",
+    "The same optimistic terminal narrative persists despite deteriorating evidence."
+  ],
+  "disconfirmingEvidence": [
+    "Key value-creation milestones repeatedly slip.",
+    "Competitive or technical erosion accelerates.",
+    "Current liquidity is attractive relative to conservative hold scenarios.",
+    "Fund extension cost or LP constraints dominate remaining upside.",
+    "Concentration prevents better new investments."
+  ],
+  "contraindications": [
+    "Do not treat patience as a virtue independent of evidence.",
+    "Do not ignore fiduciary, legal, tax, or fund-life constraints.",
+    "Do not use a single point valuation for hold-versus-exit."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Model hold, partial liquidity, and exit scenarios.",
+      "Attach evidence and milestones to remaining value creation.",
+      "Apply fund-life and portfolio constraints.",
+      "Identify loss-avoidance and short-term pressure separately.",
+      "Set a dated re-review trigger."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationsOwnedBy": "Scenario valuation and Fund Policy services"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a secondary long-termism slogan is available.",
+      "medium": "The official keynote supports the principle.",
+      "high": "Hashed keynote and reviewed chapter locators converge."
+    },
+    "evidenceStrength": {
+      "low": "Management optimism and headline market trend only.",
+      "medium": "Milestones and current liquidity are documented.",
+      "high": "Milestones, scenarios, risks, fund constraints, and alternatives converge."
+    },
+    "evidenceCoverage": {
+      "low": "Current liquidity or hold scenario is missing.",
+      "medium": "Both exist but fund constraints or risks are incomplete.",
+      "high": "All scenarios, assumptions, and constraints are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "No liquidity or horizon decision exists.",
+      "medium": "A decision exists but alternatives are preliminary.",
+      "high": "Hold-versus-exit materially affects fund and company value."
+    },
+    "judgmentConfidence": {
+      "low": "Only the need for patience can be stated.",
+      "medium": "One option appears stronger with unresolved horizon risk.",
+      "high": "Scenario, milestone, liquidity, and fund evidence support a clear action."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-04",
+    "FUND-LIFE-POLICY",
+    "SCENARIO-VALUATION"
+  ],
+  "conflictingFrameworkIds": [
+    "QUICK-FLIP",
+    "HOLD-FOREVER"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Define deterministic hold-versus-liquidity scenarios.",
+      "Validate re-review and fund-life policies.",
+      "Backtest original decision-time assumptions without outcome leakage."
+    ],
+    "empiricalQualifications": [
+      "Exit timing is endogenous and options are not randomly available.",
+      "Long holding periods can reflect quality or inability to exit.",
+      "Fund-level constraints can dominate company-level value."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Only a neutral paraphrase of the public keynote principle is stored."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash the keynote revision.",
+      "Align with PT-04, scenario valuation, and fund-life policy."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft separates evidence-backed patience from indefinite hope."
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-10",
+  "slug": "versioned-narrative-ledger",
+  "name": "Versioned Narrative and Decision Ledger",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Stores each story, evidence set, driver map, valuation result, disagreement, update, and action as a reproducible version instead of hidden reasoning.",
+    "productLabel": "Versioned Narrative Ledger — product synthesis from Aswath Damodaran's public feedback-loop practice",
+    "notAClaimOf": [
+      "capturing private chain of thought",
+      "a changed thesis being automatically better",
+      "narrative history replacing source documents"
+    ]
+  },
+  "attribution": {
+    "display": "Product synthesis from Aswath Damodaran's public feedback-loop practice",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Record the evidence available at a decision date, the story and competing stories derived from it, the driver assumptions sent to deterministic models, the resulting values, the conclusion reached, and the conditions that would change it. When new evidence arrives, append a delta and a new version rather than rewriting history.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-BRIDGE-2014",
+      "claimIds": [
+        "NN-CLM-012",
+        "NN-CLM-013",
+        "NN-CLM-020"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Step 5 feedback loop and implications for yardsticks, narrative revision, value, and investor action"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-RESETS-2015",
+      "claimIds": [
+        "NN-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Prior narratives, subsequent evidence, updated valuations, and actions for Apple, Facebook, and Twitter"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-TOOLS",
+      "claimIds": [
+        "NN-CLM-020"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Narrative-linked valuation spreadsheet and presentation guidance"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Every version has an effective date, evidence cutoff, source set, framework versions, and author or process identity.",
+    "Narrative output is an auditable Decision Trace, not hidden chain of thought.",
+    "Calculations and deterministic decisions are stored as referenced artifacts.",
+    "Updates are append-only and retain disagreement."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "versioned_evidence_pack",
+      "description": "Immutable source references, extraction results, dates, and evidence-quality fields.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Evidence Pack",
+        "cloud object metadata",
+        "XTrace memory",
+        "verified public sources"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "versioned_framework_outputs",
+      "description": "Independent lens outputs containing evidence, rule, judgment, counterevidence, unknowns, conclusion, and next evidence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Framework Registry execution",
+        "reviewed analyst note",
+        "Decision Trace"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "calculation_and_decision_artifacts",
+      "description": "Scenario inputs, valuation outputs, price/terms bridge, policy version, decision result, and action drafts.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation service",
+        "terms service",
+        "deterministic Decision Policy",
+        "report generator"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What was known at the time of the original judgment?",
+    "Which story, framework versions, and driver assumptions produced it?",
+    "What disagreement and unknowns remained?",
+    "What new evidence caused the update?",
+    "Which nodes, drivers, values, or actions changed—and which did not?",
+    "Is the update evidence-driven or an ex-post rationalization?"
+  ],
+  "positiveSignals": [
+    "Every conclusion is reproducible from pinned inputs and versions.",
+    "Source, inference, calculation, and deterministic decision are separated.",
+    "Prior stories and dissent remain visible.",
+    "Milestones and falsifiers are checked at each update.",
+    "Action drafts cite the exact evidence and current policy."
+  ],
+  "redFlags": [
+    "The old thesis disappears after an update.",
+    "Framework or model versions are not pinned.",
+    "An LLM narrative is stored without claim-level source references.",
+    "A changed valuation lacks a driver delta.",
+    "The system stores or displays private chain-of-thought."
+  ],
+  "disconfirmingEvidence": [
+    "The update uses evidence available before the stated cutoff.",
+    "A source was corrected, removed, or assigned to the wrong company.",
+    "Model-version change, not business evidence, caused the value delta.",
+    "The new story changes unrelated assumptions to fit the outcome.",
+    "A dissenting lens was dropped rather than resolved."
+  ],
+  "contraindications": [
+    "Do not store hidden chain-of-thought.",
+    "Do not overwrite prior versions.",
+    "Do not conflate model output with deterministic decision.",
+    "Do not auto-send external actions; generate drafts under current product policy."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Pin evidence cutoff, source set, framework pack versions, model version, and policy version.",
+      "Store each independent lens Decision Trace.",
+      "Store deterministic calculations and decisions by artifact reference.",
+      "Append narrative and driver deltas when new evidence arrives.",
+      "Generate a sourced report and action draft without exposing hidden reasoning."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "appendOnly": true,
+      "requiredVersionPins": [
+        "evidence_pack",
+        "framework_pack",
+        "model",
+        "decision_policy"
+      ],
+      "hiddenChainOfThoughtStored": false,
+      "automaticExternalAction": false,
+      "calculationOwner": "framework_registry_and_decision_ledger",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Sources are mutable, unpinned, or unattributed.",
+      "medium": "URLs, dates, and source classes are stored but immutable capture is incomplete.",
+      "high": "Primary sources and immutable revisions or hashes are pinned."
+    },
+    "evidenceStrength": {
+      "low": "Only a narrative summary is stored.",
+      "medium": "Claims, drivers, and sources are linked but some calculation artifacts are missing.",
+      "high": "Evidence, frameworks, drivers, calculations, decisions, and deltas are reproducible."
+    },
+    "evidenceCoverage": {
+      "low": "Only the current conclusion is visible.",
+      "medium": "Current and prior conclusions exist but dissent or unknowns are partial.",
+      "high": "All versions, sources, dissent, assumptions, model outputs, policy, and actions are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Identity or version lineage is unresolved.",
+      "medium": "The deal is resolved but some legacy artifacts are unversioned.",
+      "high": "Company, deal, evidence, framework, model, and policy versions are resolved."
+    },
+    "judgmentConfidence": {
+      "low": "The decision cannot be reproduced.",
+      "medium": "The main rationale is reproducible with known gaps.",
+      "high": "An independent reviewer can reproduce and audit the complete trace."
+    }
+  },
+  "overlapFrameworkIds": [
+    "NN-07",
+    "EI-09",
+    "VM-08",
+    "SHR-10"
+  ],
+  "conflictingFrameworkIds": [
+    "HIDDEN-CHAIN-OF-THOUGHT-STORE",
+    "OVERWRITE-PRIOR-THESIS",
+    "UNPINNED-MODEL-DECISION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Validate the ledger schema with legal, security, and investment reviewers.",
+      "Test reproducibility and version migration.",
+      "Confirm privacy and retention controls."
+    ],
+    "empiricalQualifications": [
+      "Versioning improves auditability but does not improve judgment by itself.",
+      "A complete trace may still use biased or low-quality evidence.",
+      "Legacy records may be impossible to reconstruct fully."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Feedback-loop doctrine is paraphrased; registry, ledger, and privacy rules are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Align fields with the main system's Framework Registry and Evidence Pack.",
+      "Define retention and immutable-source policies."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source product synthesis draft."
+    }
+  ]
+}

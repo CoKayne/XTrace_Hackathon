@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "hamilton_helmer_7_powers_public_frameworks_v0_1",
+  "name": "Hamilton Helmer / 7 Powers Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten independently reviewable Power qualification, seven-mechanism, timing, and audit cards based on Hamilton Helmer's public materials with external empirical qualification.",
+  "cardFiles": [
+    "cards/h7p-01-power-qualification.card.json",
+    "cards/h7p-02-scale-economies.card.json",
+    "cards/h7p-03-network-economies.card.json",
+    "cards/h7p-04-counter-positioning.card.json",
+    "cards/h7p-05-switching-costs.card.json",
+    "cards/h7p-06-branding.card.json",
+    "cards/h7p-07-cornered-resource.card.json",
+    "cards/h7p-08-process-power.card.json",
+    "cards/h7p-09-power-progression.card.json",
+    "cards/h7p-10-power-claim-audit.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Complete licensed first-edition chapter and page review for all seven Benefit and Barrier definitions.",
+      "Verify official interview audio at every cited timestamp.",
+      "Complete Power Progression timing and no-longer-available window mapping from a lawful complete edition.",
+      "Review market-boundary and mechanism-overlap rules with a strategy subject-matter reviewer.",
+      "Test Decision Utility by stage, business model, and decision date without hindsight leakage.",
+      "Complete content and rights review before seed conversion."
+    ]
+  }
+}

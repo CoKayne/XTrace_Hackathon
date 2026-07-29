@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-05",
+  "slug": "equity-vesting-alignment",
+  "name": "Founder Equity, Vesting, and Contribution Alignment",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether founder ownership and departure terms remain aligned with contribution, commitment, risk, and company needs.",
+    "productLabel": "Founder Equity-Alignment Lens — based on Noam Wasserman's public work",
+    "notAClaimOf": ["equal splits always being wrong", "unequal splits proving rigor", "later reallocation being frictionless"]
+  },
+  "attribution": {
+    "display": "Based on Noam Wasserman's public work",
+    "scope": "person_direct",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School", "Kauffman Entrepreneurs"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Review when and how founder equity was allocated, using past contribution, expected future contribution, opportunity cost, and relationship context. Test whether vesting, repurchase, departure, and adjustment mechanisms protect the company when roles or commitment change.",
+  "claimTypes": ["direct_doctrine", "empirical_association", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-NOAM-EQUITY-2020",
+      "claimIds": ["FD-CLM-010", "FD-CLM-011", "FD-CLM-012", "FD-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Ockham versus Zipcar; four split factors; dynamic agreement; hold-up"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P1-HBS-SINK-2012",
+      "claimIds": ["FD-CLM-010", "FD-CLM-012", "FD-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Interview discussion of early static splits, equal splits, and vesting"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P1-KAUFFMAN-EQUITY-2016",
+      "claimIds": ["FD-CLM-010", "FD-CLM-011", "FD-CLM-012"],
+      "locator": {"kind": "web_section", "value": "Equity Splits transcript, documentation, communication, and vesting sections"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["common_equity", "preferred_equity", "safe", "convertible", "all"]
+  },
+  "requiredConditions": [
+    "Two or more founders or early contributors hold material ownership.",
+    "Current cap-table and governing documents are available.",
+    "Legal interpretation is performed by qualified counsel, not this lens."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "founder_equity_history",
+      "description": "Initial and current ownership, timing, consideration, grants, transfers, dilution, and rationale.",
+      "necessity": "required",
+      "acceptableSources": ["cap table", "stock purchase agreements", "board consents", "founder interviews"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "contribution_commitment",
+      "description": "Past and expected contribution, role, time commitment, capital, IP, and opportunity cost.",
+      "necessity": "required",
+      "acceptableSources": ["founder agreement", "employment record", "work artifacts", "role plan"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "vesting_departure_terms",
+      "description": "Vesting, cliffs, repurchase, acceleration, good/bad leaver, dead equity, and departure implementation.",
+      "necessity": "required",
+      "acceptableSources": ["equity documents", "legal diligence", "cap-table system"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "When was the split fixed and what was known then?",
+    "How were past contribution, future contribution, opportunity cost, and relationship considered?",
+    "What happens if a founder reduces commitment, changes role, or leaves?",
+    "Does current ownership create motivation, governance, financing, or hold-up risk?"
+  ],
+  "positiveSignals": [
+    "The allocation has an explicit, mutually understood rationale.",
+    "Vesting and departure terms protect against unearned dead equity.",
+    "Current ownership remains broadly consistent with contribution and responsibility.",
+    "The team handled a role or commitment change without destructive renegotiation."
+  ],
+  "redFlags": [
+    "The split was fixed immediately to avoid a difficult conversation.",
+    "Material founder equity is fully vested despite limited current participation.",
+    "Different founders describe inconsistent terms or promises.",
+    "Financing depends on resolving founder hold-up or disputed IP."
+  ],
+  "disconfirmingEvidence": [
+    "An equal split reflects genuinely equal expected contribution and robust vesting.",
+    "An unequal split is arbitrary, coercive, or disconnected from contribution.",
+    "A static split remains aligned because roles and commitment evolved as expected.",
+    "A departed founder's equity is economically immaterial and legally resolved."
+  ],
+  "contraindications": [
+    "Do not declare a split fair from percentages alone.",
+    "Do not calculate ownership or vesting in the language model.",
+    "Do not provide legal advice or reinterpret contracts."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconstruct the equity and contribution timeline.",
+      "Reconcile cap table, grants, vesting, and departure terms.",
+      "Compare current economics and authority with contribution and future role.",
+      "Test equal-split, unequal-split, and departed-founder alternatives.",
+      "Conclude aligned, conditionally aligned, material risk, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "founder_equity_and_vesting_analysis",
+      "requiredOutputs": ["fully_diluted_ownership", "vesting_schedule", "vested_unvested_balance", "departure_scenarios", "voting_and_control_effects"],
+      "prohibition": "The language model must not calculate ownership, vesting, dilution, or legal outcomes."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Oral account only.", "medium": "Cap table with partial agreements.", "high": "Cap table, signed agreements, board consents, and payment records reconcile."},
+    "evidenceStrength": {"low": "Unusual percentage only.", "medium": "Specific misalignment or protection is documented.", "high": "Terms and actual contribution demonstrate alignment or material risk."},
+    "evidenceCoverage": {"low": "Current percentages only.", "medium": "History and some vesting covered.", "high": "History, rationale, contribution, vesting, departure, voting, dilution, and disputes covered."},
+    "applicabilityConfidence": {"low": "Founder equity immaterial.", "medium": "Some motivation or control effect.", "high": "Founder equity materially affects execution, governance, or financing."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Specific but bounded concern.", "high": "Reconciled evidence supports alignment or material risk."}
+  },
+  "overlapFrameworkIds": ["FD-03", "FD-04", "VD-05", "MY-07"],
+  "conflictingFrameworkIds": ["EQUAL-SPLIT-ALWAYS-BAD", "UNEQUAL-SPLIT-PROVES-RIGOR"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate cap-table service.", "Require counsel-reviewed contract facts.", "Backtest alignment flags."],
+    "empiricalQualifications": ["Split choices are endogenous to relationships and venture needs.", "Fairness and incentive effects cannot be inferred from percentages alone."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author material is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Align deterministic outputs with counsel-reviewed cap-table schema."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

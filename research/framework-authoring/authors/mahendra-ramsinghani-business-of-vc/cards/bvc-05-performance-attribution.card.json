@@ -1,0 +1,283 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-05",
+  "slug": "performance-attribution",
+  "name": "Fund Performance and Attribution",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates realized cash, unrealized marks, return multiples, timing, benchmark, deal contribution, and team attribution before claiming fund skill.",
+    "productLabel": "Fund Performance Lens — product synthesis anchored to Ramsinghani's performance-analysis chapter",
+    "notAClaimOf": [
+      "IRR alone measuring performance",
+      "unrealized marks equaling cash returns",
+      "one successful deal proving repeatable skill"
+    ]
+  },
+  "attribution": {
+    "display": "Product synthesis anchored to Mahendra Ramsinghani's third-edition performance-analysis chapter",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "low"
+  },
+  "neutralParaphrase": "Evaluate fund and investor performance with multiple complementary views: invested and distributed cash, residual value, timing, vintage and benchmark context, company concentration, source and decision attribution, and realized versus unrealized status. State uncertainty and data limitations before inferring repeatable edge.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH1",
+      "claimIds": [
+        "BVC-CLM-001",
+        "BVC-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary identifying rate of return and cash-on-cash return as primary measures"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH13-14",
+      "claimIds": [
+        "BVC-CLM-008",
+        "BVC-CLM-020"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Chapter 14 pp. 137-153; metric definitions and attribution pending lawful review"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH10",
+      "claimIds": [
+        "BVC-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary: performance, team stability, and strategy consistency in LP diligence"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "fundraising",
+      "investment_period",
+      "portfolio_management",
+      "harvest_period"
+    ],
+    "businessModels": [
+      "venture_fund"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "fund_interests"
+    ]
+  },
+  "requiredConditions": [
+    "Cash flows, valuations, dates, fees, carry, and ownership are consistently defined.",
+    "Realized and unrealized results remain separate.",
+    "Benchmark and vintage choices are disclosed.",
+    "Attribution distinguishes sourcing, selection, ownership, support, timing, and luck without overstating causality."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "fund_cash_flows_and_marks",
+      "description": "Dated contributions, distributions, NAV, valuation policy, fees, carry, and currency.",
+      "necessity": "required",
+      "acceptableSources": [
+        "fund administrator",
+        "audited financials",
+        "capital accounts",
+        "valuation reports"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "deal_level_attribution",
+      "description": "Investments, follow-ons, proceeds, marks, source, sponsor, decision record, and ownership by deal.",
+      "necessity": "required",
+      "acceptableSources": [
+        "portfolio ledger",
+        "IC records",
+        "cap tables",
+        "exit documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "benchmark_context",
+      "description": "Vintage, geography, stage, strategy, public-market cash-flow benchmark, and methodology.",
+      "necessity": "required",
+      "acceptableSources": [
+        "institutional benchmark dataset",
+        "public market index",
+        "audited peer sample",
+        "LP report"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "How much value is realized versus marked?",
+    "What do multiple and timing measures each reveal?",
+    "Which companies drive the result and how concentrated is it?",
+    "What benchmark and vintage are appropriate?",
+    "Which team members sourced, led, followed on, and supported each outcome?",
+    "What evidence supports repeatable edge rather than outcome luck?"
+  ],
+  "positiveSignals": [
+    "Cash flows and NAV reconcile to audited records.",
+    "Realized and unrealized contributions are separate.",
+    "Multiple timing and benchmark views agree directionally.",
+    "Deal and team attribution has contemporaneous records.",
+    "Edge claims survive losses and missed-deal analysis."
+  ],
+  "redFlags": [
+    "IRR is shown without cash-flow timing or multiple.",
+    "Marked-up private rounds are treated as distributions.",
+    "A top deal hides weak remaining portfolio performance.",
+    "Benchmark or vintage is selected after seeing the result.",
+    "Attribution credits only successes and ignores misses."
+  ],
+  "disconfirmingEvidence": [
+    "Valuation policy changes explain performance.",
+    "Results are dominated by one unrealized mark.",
+    "Public-market equivalent or matched vintage reverses the conclusion.",
+    "Winning deals came through unrepeatable access.",
+    "Team attribution records conflict with current claims."
+  ],
+  "contraindications": [
+    "Do not infer future returns from past performance alone.",
+    "Do not conflate gross and net performance.",
+    "Do not treat NAV as cash.",
+    "Do not publish author-attributed metric rules before Chapter 14 review."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Normalize dated fund and deal cash flows.",
+      "Calculate approved performance metrics deterministically.",
+      "Separate realized, unrealized, gross, and net views.",
+      "Compare with disclosed benchmark and vintage.",
+      "Produce deal/team attribution with uncertainty and counterevidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredViews": [
+        "cash_flows",
+        "multiple",
+        "timing",
+        "realized_vs_unrealized",
+        "benchmark",
+        "deal_attribution"
+      ],
+      "metricDefinitionsVersionPinned": true,
+      "calculationOwner": "fund_performance_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Performance uses self-reported summary numbers.",
+      "medium": "Administrator data exists but marks or attribution are unaudited.",
+      "high": "Audited cash flows, policy-consistent marks, and contemporaneous attribution records reconcile."
+    },
+    "evidenceStrength": {
+      "low": "One metric or one deal drives the claim.",
+      "medium": "Multiple views agree but realizations or benchmarks are limited.",
+      "high": "Realized results, benchmarks, and repeated attribution support the conclusion."
+    },
+    "evidenceCoverage": {
+      "low": "Only gross IRR or TVPI is available.",
+      "medium": "Fund metrics are complete but deal attribution or benchmark is partial.",
+      "high": "Cash flows, marks, gross/net, benchmarks, deals, team, misses, and vintage are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Fund vehicle or cash flows are incompatible with the metric set.",
+      "medium": "Metrics apply with disclosed adjustments.",
+      "high": "Vehicle, currency, vintage, and benchmark are normalized."
+    },
+    "judgmentConfidence": {
+      "low": "No skill inference is supportable.",
+      "medium": "Performance can be described but repeatability remains uncertain.",
+      "high": "A bounded, evidence-based edge claim is defensible."
+    }
+  },
+  "overlapFrameworkIds": [
+    "BVC-01",
+    "VM-02",
+    "VCFI-09",
+    "SHR-01"
+  ],
+  "conflictingFrameworkIds": [
+    "IRR-ONLY-PERFORMANCE",
+    "NAV-EQUALS-CASH",
+    "WINNER-ONLY-ATTRIBUTION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapter 14 review.",
+      "Validate metric definitions with fund administrators and LPs.",
+      "Test attribution reliability."
+    ],
+    "empiricalQualifications": [
+      "Private valuations are subjective and stale.",
+      "Venture outcomes are highly skewed.",
+      "Team attribution is observational and can be politically biased."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public sources establish topic and high-level objectives; detailed metric and attribution rules await licensed review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Highest-priority licensed review gap: Chapter 14.",
+      "Align with system performance schemas."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source and product-synthesis draft."
+    }
+  ]
+}

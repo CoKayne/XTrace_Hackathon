@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-08",
+  "slug": "founder-ceo-succession",
+  "name": "Founder-CEO Succession and Post-Succession Design",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Assesses CEO role fit, succession triggers, process, and the founder's post-succession authority without assuming replacement is success or failure.",
+    "productLabel": "Founder-CEO Succession Lens — based on Noam Wasserman's public research",
+    "notAClaimOf": ["successful founders needing removal", "outside CEOs always improving outcomes", "a founder title determining actual control"]
+  },
+  "attribution": {
+    "display": "Based on Noam Wasserman's public research",
+    "scope": "person_direct",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School", "INFORMS"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Evaluate whether current CEO capabilities fit the company's next stage, which milestones or governance events could trigger succession, and how any transition would allocate role, board position, reporting, authority, information, and founder involvement. Treat founder success as potentially increasing complexity, not as a reason by itself to replace the founder.",
+  "claimTypes": ["direct_doctrine", "empirical_association", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-ORGSCI-2003",
+      "claimIds": ["FD-CLM-018", "FD-CLM-019", "FD-CLM-023"],
+      "locator": {"kind": "chapter_page", "value": "Organization Science 14(2):149-172; abstract, theory, results, and limitations"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P1-HBS-SUCCESSION-2005",
+      "claimIds": ["FD-CLM-018", "FD-CLM-019", "FD-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Succession triggers and post-succession founder role discussion"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P1-STANFORD-2012",
+      "claimIds": ["FD-CLM-018", "FD-CLM-020"],
+      "locator": {"kind": "video_timestamp", "value": "When Founders are Replaced segment, 6:21; exact transcript timestamps pending review"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth", "late_stage"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Founder-CEO role fit or succession is material to the next stage.",
+    "Board, founder, and leadership evidence can be reviewed.",
+    "The analysis distinguishes empirical association from individual causal judgment."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "ceo_role_scorecard",
+      "description": "Stage-specific CEO outcomes, required capabilities, demonstrated strengths, gaps, and development plan.",
+      "necessity": "required",
+      "acceptableSources": ["board-approved scorecard", "operating results", "360 references", "leadership plan"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "succession_governance",
+      "description": "Authority, triggers, process, candidate criteria, board votes, founder involvement, and emergency succession.",
+      "necessity": "required",
+      "acceptableSources": ["board charter", "succession plan", "governance documents", "board interviews"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "post_succession_design",
+      "description": "Founder title, scope, reporting, board role, information rights, decision authority, and transition behavior.",
+      "necessity": "recommended",
+      "acceptableSources": ["transition plan", "employment terms", "board minutes", "successor references"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which next-stage outcomes require CEO capabilities not yet demonstrated?",
+    "What evidence would trigger role redesign or succession?",
+    "Who controls the process and how is the founder involved?",
+    "Can the founder hold a valuable non-CEO role without shadow leadership or ambiguity?"
+  ],
+  "positiveSignals": [
+    "CEO role fit is assessed against explicit stage outcomes.",
+    "The board and founder discuss succession before a crisis.",
+    "A transition plan defines authority, reporting, and board roles.",
+    "The founder has demonstrated ability to delegate or change scope."
+  ],
+  "redFlags": [
+    "Succession is framed as loyalty versus betrayal.",
+    "The company has no credible process despite visible role gaps.",
+    "A successor would report to a board chaired and operationally overridden by the former CEO.",
+    "The founder threatens departure, customer disruption, or team division to preserve title."
+  ],
+  "disconfirmingEvidence": [
+    "The founder is demonstrably growing into the next-stage role.",
+    "An outside-CEO proposal lacks company-specific capability or cultural fit.",
+    "A dual founder/successor arrangement has clear authority and successful precedent.",
+    "Board concern reflects an investor control objective rather than company role evidence."
+  ],
+  "contraindications": [
+    "Do not infer replacement necessity from financing or product success alone.",
+    "Do not apply sample associations as a company-level causal rule.",
+    "Do not equate title, board seat, and actual control."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define next-stage CEO outcomes and compare with demonstrated evidence.",
+      "Review succession authority, triggers, and candidate criteria.",
+      "Model post-succession role and shadow-leadership risks.",
+      "Test founder-development, investor-control, and outside-candidate alternatives.",
+      "Conclude current fit, develop-and-monitor, planned transition, acute risk, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "One stakeholder opinion.", "medium": "Board and operating evidence with partial references.", "high": "Scorecard, results, board, founder, executives, and candidate evidence converge."},
+    "evidenceStrength": {"low": "Generic scaling concern.", "medium": "Specific role gap or adaptive behavior.", "high": "Repeated stage outcomes and transition behavior demonstrate fit or risk."},
+    "evidenceCoverage": {"low": "Title and opinion only.", "medium": "Capabilities and governance covered.", "high": "Outcomes, capability, process, candidates, post-role, authority, and disconfirmers covered."},
+    "applicabilityConfidence": {"low": "Succession not decision-relevant.", "medium": "Some next-stage role risk.", "high": "CEO role or transition materially affects investment outcome."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Specific but uncertain transition issue.", "high": "Well-supported role-fit or succession judgment."}
+  },
+  "overlapFrameworkIds": ["FD-04", "FD-06", "FD-09", "SK-08"],
+  "conflictingFrameworkIds": ["SUCCESSFUL-FOUNDER-MUST-BE-REPLACED", "OUTSIDE-CEO-ALWAYS-BETTER"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate stage-specific CEO scorecards.", "Require multi-stakeholder evidence.", "Backtest succession judgments."],
+    "empiricalQualifications": ["The original study sample and period limit external validity.", "Succession is endogenous to performance, financing, and governance."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public research and interviews are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define stage-specific CEO evidence and post-succession conflict checks."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

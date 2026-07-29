@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-07",
+  "slug": "enterprise-whale-dependency",
+  "name": "Enterprise Whale Dependency",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates the probability, timing, economics, and concentration risk of a transformative large-enterprise deal without counting it before commitment.",
+    "productLabel": "Enterprise Whale Dependency Lens — based on Marc Andreessen's public enterprise-selling essay",
+    "notAClaimOf": ["a logo or pilot being booked revenue", "all customer concentration being bad", "one large deal being a complete go-to-market strategy"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public enterprise-selling essay",
+    "scope": "person_direct",
+    "people": ["Marc Andreessen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Treat a large-enterprise opportunity as a staged, multi-stakeholder probability distribution until contractual commitment and economic evidence exist. Continue operating the core business and evaluate both the upside and the dependency created by the deal.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-014", "MA-CLM-015"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 37-44, Part 5: internal stakeholders, hurry-up-and-wait, closing evidence, experienced enterprise sales, and maintaining the core business"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-012"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 45-49: financing and setback risk"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["enterprise", "saas", "infrastructure", "hardware_enabled", "regulated_b2b"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A single customer, partner, or contract can materially change revenue, credibility, product scope, or survival.",
+    "Pipeline stages and commitment types are defined.",
+    "Revenue recognition and concentration math are handled separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "stakeholder_and_process_map",
+      "description": "Economic buyer, user, champion, procurement, security, legal, finance, executive sponsor, budget, and approval path.",
+      "necessity": "required",
+      "acceptableSources": ["CRM", "meeting notes", "procurement checklist", "mutual action plan", "buyer confirmation"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "commitment_state",
+      "description": "Verbal interest, pilot, LOI, signed contract, cancellation rights, payment, implementation, acceptance, and renewal state.",
+      "necessity": "required",
+      "acceptableSources": ["contracts", "purchase orders", "bank records", "implementation records", "customer correspondence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "deal_economics",
+      "description": "ARR or transaction value, gross margin, implementation cost, customization, service burden, payment timing, and renewal economics.",
+      "necessity": "required",
+      "acceptableSources": ["contract model", "cost records", "billing", "delivery plan", "unit economics"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "dependency_and_alternatives",
+      "description": "Revenue concentration, roadmap dependence, exclusivity, reputational leverage, opportunity cost, and pipeline outside the deal.",
+      "necessity": "required",
+      "acceptableSources": ["customer concentration report", "roadmap", "pipeline", "contract terms", "resource plan"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which internal approvals remain and who can stop the deal?",
+    "What commitment is legally and economically real today?",
+    "What customization, margin, payment, and implementation burden accompanies the headline value?",
+    "What happens if the deal is delayed, reduced, or cancelled?",
+    "Does the deal create a repeatable reference path or a bespoke dependency?"
+  ],
+  "positiveSignals": [
+    "The buyer process and blockers are explicitly mapped.",
+    "Contract, payment, implementation, and renewal evidence support the revenue claim.",
+    "The product requirements benefit a broader customer segment.",
+    "The company maintains alternative pipeline and does not stop core execution."
+  ],
+  "redFlags": [
+    "A meeting, pilot, LOI, or verbal promise is presented as closed revenue.",
+    "One champion is the only source of support inside the customer.",
+    "Customization destroys margin or turns the company into a services provider.",
+    "Survival depends on a closing date outside the company's control."
+  ],
+  "disconfirmingEvidence": [
+    "Concentration can be rational in an early enterprise beachhead when commitments and expansion evidence are strong.",
+    "A paid pilot may be valuable evidence even if it is not recurring revenue.",
+    "A strategic customer can accelerate certification, distribution, or product learning.",
+    "A slow process may reflect standard enterprise procurement rather than weak demand."
+  ],
+  "contraindications": [
+    "Do not apply to diversified self-serve demand without a material enterprise dependency.",
+    "Do not count unaudited pipeline as contracted economics.",
+    "Do not ignore confidentiality, cancellation, acceptance, and revenue-recognition terms."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Map stakeholders, approvals, commitment states, and remaining blockers.",
+      "Compute probability-weighted timing and economics outside the narrative lens.",
+      "Assess customization, concentration, and core-business opportunity cost.",
+      "Identify repeatability and reference value.",
+      "Conclude validated strategic customer, promising but contingent, dangerous dependency, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Contract value, probability-weighted pipeline, concentration, margin, runway, and cash timing must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder pipeline assertion.", "medium": "CRM and customer correspondence.", "high": "Executed contracts, payment, implementation, and independent buyer confirmation."},
+    "evidenceStrength": {"low": "Logo or verbal interest.", "medium": "Defined buyer process and paid pilot or negotiated terms.", "high": "Binding economics plus successful implementation and repeatability evidence."},
+    "evidenceCoverage": {"low": "Headline deal value.", "medium": "Stakeholders, terms, and economics.", "high": "Commitment, cash, delivery, renewal, concentration, alternatives, and downside covered."},
+    "applicabilityConfidence": {"low": "Deal immaterial.", "medium": "Material revenue or reference value.", "high": "Deal materially determines survival, product, or financing."},
+    "judgmentConfidence": {"low": "Pipeline narrative.", "medium": "Bounded contingent assessment.", "high": "Contractual and operating evidence support a clear dependency judgment."}
+  },
+  "overlapFrameworkIds": ["MA-02", "MA-06", "OA2-05", "DSV-02"],
+  "conflictingFrameworkIds": ["LOGO-EQUALS-REVENUE", "PIPELINE-EQUALS-CONTRACT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define contract-state taxonomy.", "Integrate deterministic concentration and cash models.", "Backtest conversion and renewal."],
+    "empiricalQualifications": ["Enterprise sales cycles vary widely.", "Strategic value and concentration risk can coexist."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public enterprise-selling essay is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define evidence states for pilots, LOIs, contracts, payment, acceptance, and renewal."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

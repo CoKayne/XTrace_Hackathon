@@ -1,0 +1,306 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-06",
+  "slug": "power-law-fund-return",
+  "name": "Power-Law Fund Return Potential",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a plausible successful outcome can materially affect this specific fund after ownership, dilution, follow-on, and terms.",
+    "productLabel": "Power-Law Fund Return Lens — based on public CS183 materials with empirical qualification",
+    "notAClaimOf": [
+      "a prediction of company success",
+      "a universal recommendation to hold only seven to ten companies",
+      "Peter Thiel endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Blake Masters' CS183 course notes, with AngelList empirical qualification",
+    "scope": "product_synthesis",
+    "people": [
+      "Peter Thiel",
+      "Blake Masters"
+    ],
+    "organizations": [
+      "AngelList"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Venture outcomes are heavy-tailed, so a candidate's upside must be large enough to matter to the fund at realistic ownership and dilution. Heavy-tailed returns do not by themselves prove that a highly concentrated portfolio is optimal; concentration requires a demonstrated selection edge, access, ownership strategy, and risk capacity.",
+  "claimTypes": [
+    "affiliated_doctrine",
+    "empirical_association",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P2-CS183-07",
+      "claimIds": [
+        "PT-CLM-014",
+        "PT-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Power law, fund-return potential, and portfolio discussion"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-E1-POWERLAW-ANGELLIST",
+      "claimIds": [
+        "PT-EQ-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "1,808-investment sample, alpha estimate, and 10-investment portfolio simulations"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "venture_scale_business"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The active Fund Policy provides committed fund size, check strategy, target ownership, reserve policy, and concentration constraints.",
+    "Entry price or ownership and future dilution assumptions are explicit.",
+    "Bear, base, and bull exit outcomes are modeled without treating the bull case as a forecast."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "fund_policy",
+      "description": "Versioned fund size, remaining capital, check range, ownership target, reserves, concentration, and return target.",
+      "necessity": "required",
+      "acceptableSources": [
+        "active Fund Policy snapshot"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "entry_terms",
+      "description": "Check size, pre/post-money valuation, security, option pool, ownership, and material terms.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "cap table",
+        "financing proposal"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "dilution_and_reserves",
+      "description": "Future financing, pro rata, follow-on reserve, option pool, and dilution assumptions by scenario.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table model",
+        "Fund Policy",
+        "scenario model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "exit_scenarios",
+      "description": "Evidence-linked bear, base, and bull exit values, timing, and probability-free scenario rationale.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation model",
+        "market comparables",
+        "DCF",
+        "scenario narrative"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "selection_edge",
+      "description": "Evidence that the fund has access, information, judgment, support, or ownership edge sufficient to justify concentration.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "historical fund attribution",
+        "deal access data",
+        "follow-on records",
+        "out-of-sample selection analysis"
+      ],
+      "missingEffect": "no_effect"
+    }
+  ],
+  "decisionQuestions": [
+    "At realistic diluted ownership, what company exit value is required to return 0.5x, 1x, or more of the fund?",
+    "Does the bull case depend on a plausible market and value-capture path or only an enormous TAM?",
+    "How do option pools, future rounds, pro rata, and liquidation terms change proceeds?",
+    "What additional capital is required to preserve ownership?",
+    "Does the check fit portfolio and concentration policy?",
+    "What evidence shows this fund has a selection or access edge sufficient to justify concentration?"
+  ],
+  "positiveSignals": [
+    "A source-backed bull outcome materially returns the fund at conservative diluted ownership.",
+    "The entry price leaves room for fund-target returns across more than one scenario.",
+    "Follow-on reserve and pro-rata assumptions fit actual fund capacity.",
+    "The company can reach venture-scale value without implausible market share or margins.",
+    "Concentration, if proposed, is supported by measured fund edge rather than doctrine alone."
+  ],
+  "redFlags": [
+    "Fund-return potential is calculated using current ownership without dilution.",
+    "Exit proceeds ignore liquidation preference, option pool, follow-on capital, or timing.",
+    "The only attractive scenario assumes dominant share of an overbroad TAM.",
+    "A high-quality company cannot affect the fund because ownership is too small.",
+    "Concentration is justified only by the existence of power-law returns.",
+    "A market default is presented as company fact."
+  ],
+  "disconfirmingEvidence": [
+    "Realistic dilution reduces proceeds below fund targets.",
+    "The required exit value implies implausible revenue, margin, or market share.",
+    "Reserve needs exceed available capital.",
+    "Terms allocate a material portion of upside away from the fund.",
+    "Historical selection analysis does not show an edge over a diversified baseline."
+  ],
+  "contraindications": [
+    "Do not use fund-return potential as company success probability.",
+    "Do not use the seven-to-eight-company doctrine as a deterministic allocation rule.",
+    "Do not recommend concentration without a versioned Fund Policy and selection-edge evidence.",
+    "Do not mix gross company return, deal MOIC, and fund return."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Load immutable Fund Policy, entry terms, and scenario assumptions.",
+      "Calculate ownership and proceeds deterministically for each scenario.",
+      "Compare proceeds with fund size, deployed capital, reserves, and return targets.",
+      "Evaluate company-scale plausibility separately from fund-fit arithmetic.",
+      "Present concentration doctrine as an advisory conflict unless selection edge is validated."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "inputs": [
+        "fund_size",
+        "initial_check",
+        "post_money_valuation",
+        "initial_ownership",
+        "follow_on_investment",
+        "future_dilution",
+        "exit_equity_value",
+        "terms_adjustment",
+        "holding_period"
+      ],
+      "calculations": [
+        "initial_ownership = explicit_cap_table_value or initial_check / post_money_valuation",
+        "diluted_ownership = ownership_after_follow_on * (1 - future_dilution)",
+        "gross_proceeds = diluted_ownership * exit_equity_value * terms_adjustment",
+        "fund_return_contribution = gross_proceeds / committed_fund_size",
+        "deal_moic = gross_proceeds / total_invested_capital"
+      ],
+      "formalDecisionRule": "Owned by deterministic valuation and Fund Fit services, not this authoring card."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only anecdotal power-law claims are available.",
+      "medium": "Course notes and platform analysis are available with known limitations.",
+      "high": "Licensed book locator, approved course attribution, and multiple authorized empirical sources converge."
+    },
+    "evidenceStrength": {
+      "low": "TAM and headline exit analogies only.",
+      "medium": "Terms and scenario model exist but dilution or market assumptions are weak.",
+      "high": "Cap table, terms, scenarios, market mechanics, and reserve assumptions are source-backed."
+    },
+    "evidenceCoverage": {
+      "low": "Fund Policy, ownership, dilution, or exit assumptions are missing.",
+      "medium": "Arithmetic is complete but one major scenario assumption is a market default.",
+      "high": "All inputs, formulas, sources, and sensitivity ranges are complete."
+    },
+    "applicabilityConfidence": {
+      "low": "The business or fund does not use venture-scale return objectives.",
+      "medium": "The deal is venture-scale but ownership or terms remain uncertain.",
+      "high": "The company and fund context make fund-return contribution a central decision constraint."
+    },
+    "judgmentConfidence": {
+      "low": "Only a qualitative statement about upside is possible.",
+      "medium": "Fund-return arithmetic is available but scenario plausibility is uncertain.",
+      "high": "Arithmetic, scenario mechanics, terms, and fund policy converge under sensitivity testing."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VC-METHOD",
+    "METRICK-VC-FINANCE",
+    "KUPOR-FUND-ECONOMICS",
+    "DAM-VENTURE-VALUATION"
+  ],
+  "conflictingFrameworkIds": [
+    "DIVERSIFIED-VENTURE-INDEX",
+    "EQUAL-WEIGHT-PORTFOLIO"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Obtain exact licensed locator for the formal Zero to One power-law statement if public sources remain insufficient.",
+      "Validate scenario and ownership calculations independently.",
+      "Separate company fund-return potential from portfolio-concentration policy in runtime.",
+      "Test concentration policy against actual selection edge and diversified baselines."
+    ],
+    "empiricalQualifications": [
+      "AngelList data support heavy-tailed returns but challenge concentrated portfolios absent selection edge.",
+      "Platform marks and selection limit generalization.",
+      "Large upside is necessary for some funds but not sufficient for investment."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No copyrighted formula sheet or book text is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Confirm exact attribution boundaries in the multi-contributor course session.",
+      "Resolve final book-locator need only after the full public-source audit.",
+      "Map deterministic calculation ownership to Task 7/11 services."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft separating heavy-tail doctrine, fund-return arithmetic, and concentration policy."
+    }
+  ]
+}
+

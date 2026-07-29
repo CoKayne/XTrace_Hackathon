@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-05",
+  "slug": "pass-revisit-without-anchoring",
+  "name": "Pass Revisit Without Anchoring",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Re-evaluates a previously passed company from current evidence and explicit pass conditions without protecting the original decision.",
+    "productLabel": "Anti-Anchoring Revisit Pattern — based on Mallaby's public historical description",
+    "notAClaimOf": ["every pass needing reversal", "later funding proving the pass wrong", "Sequoia endorsing this implementation"]
+  },
+  "attribution": {
+    "display": "Product synthesis based on Sebastian Mallaby's public description of anti-anchoring practice",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Sequoia Capital"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Retrieve the immutable original pass reason, define the evidence that would have changed it, assess current information independently, and only then compare the new conclusion with the old one. A later round or famous investor is evidence to inspect, not proof.",
+  "claimTypes": ["historical_description", "normative_guidance", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P1-HBR-2022",
+      "claimIds": ["PL-CLM-007", "PL-CLM-008"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of anchoring after a Series A pass and explicit upside sections"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-E1-EXPERIMENT-2014",
+      "claimIds": ["PL-CLM-004", "PL-CLM-005"],
+      "locator": {"kind": "pdf_page", "value": "pp. 7-12, new information, staged investment, and continuation decisions"},
+      "attributionScope": "external_empirical",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The original pass or watch record is timestamped and immutable.",
+    "Current evidence is collected before exposing the evaluator to the prior conclusion when feasible.",
+    "The original pass reason is decomposed into testable conditions."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "original_decision",
+      "description": "Original evidence, pass status, concerns, assumptions, and change conditions.",
+      "necessity": "required",
+      "acceptableSources": ["XTrace memory", "IC memo", "meeting note"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "current_company_evidence",
+      "description": "Current product, customer, team, financing, market, and operating evidence.",
+      "necessity": "required",
+      "acceptableSources": ["company update", "public source", "new meeting", "customer evidence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "independent_reassessment",
+      "description": "Current assessment completed without copying the old conclusion.",
+      "necessity": "recommended",
+      "acceptableSources": ["blind analyst review", "independent lens execution"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exactly caused the original pass?",
+    "Which evidence would have changed that decision?",
+    "What does current evidence show before considering the old conclusion?",
+    "Which pass conditions resolved, worsened, or remain unknown?",
+    "Would the current terms and fund fit justify advancing now?"
+  ],
+  "positiveSignals": [
+    "A named original concern is resolved by primary evidence.",
+    "Current analysis reaches its conclusion independently.",
+    "The company improved on customer or product evidence, not only fundraising.",
+    "Unresolved concerns remain visible in the new report."
+  ],
+  "redFlags": [
+    "The system defends the original pass to maintain consistency.",
+    "A prestigious investor's participation is treated as validation.",
+    "The original reason is reconstructed after seeing the outcome.",
+    "A new sector trend overrides company evidence."
+  ],
+  "disconfirmingEvidence": [
+    "Original execution, team, or governance concerns persist.",
+    "Improved financing did not improve customer evidence.",
+    "Current valuation removed the economic upside.",
+    "The company changed so materially that it should be analyzed as a new thesis."
+  ],
+  "contraindications": [
+    "Do not label the original pass wrong solely from later success.",
+    "Do not overwrite the old memory.",
+    "Do not advance without current company and deal evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Freeze and parse original decision conditions.",
+      "Produce an independent current evidence summary.",
+      "Compare each old condition with new evidence.",
+      "Evaluate current price, terms, and fund fit separately.",
+      "Conclude no change, revisit, advance with conditions, or new thesis required."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Original or current evidence is reconstructed.", "medium": "Timestamped notes and credible updates exist.", "high": "Immutable original record and primary current evidence are complete."},
+    "evidenceStrength": {"low": "Only market or funding news changed.", "medium": "One material pass condition changed.", "high": "Material conditions changed and current company evidence independently supports advancement."},
+    "evidenceCoverage": {"low": "Old status and new headline only.", "medium": "Reasons and current evidence covered; terms or countercase partial.", "high": "Original evidence, conditions, current evidence, independent review, terms, and fund fit complete."},
+    "applicabilityConfidence": {"low": "Company identity or original decision uncertain.", "medium": "Records match but conditions are vague.", "high": "Entity, date, decision, reasons, and current round are explicit."},
+    "judgmentConfidence": {"low": "Only watch reminder.", "medium": "Revisit is justified.", "high": "A changed conclusion is supported without anchoring or authority substitution."}
+  },
+  "overlapFrameworkIds": ["BVC-06", "MMI-09", "NN-10"],
+  "conflictingFrameworkIds": ["PASS-ANCHORING", "FOLLOW-ON-INVESTOR-AS-PROOF"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Implement immutable decision memories.", "Evaluate blind-versus-unblinded reassessment.", "Define entity resolution controls."],
+    "empiricalQualifications": ["Revisit candidates are selected by observed later signals.", "A revised decision can still have a worse economic outcome."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public historical description is paraphrased; workflow is product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Test whether blind reassessment is operationally useful in the product."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

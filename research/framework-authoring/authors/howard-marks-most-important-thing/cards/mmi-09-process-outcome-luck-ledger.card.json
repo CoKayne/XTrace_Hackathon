@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-09",
+  "slug": "process-outcome-luck-ledger",
+  "name": "Process–Outcome–Luck Ledger",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Preserves the ex-ante thesis and alternatives so a later outcome cannot rewrite decision quality or turn luck into a false rule.",
+    "productLabel": "Process–Outcome–Luck Ledger — based on Howard Marks's public materials",
+    "notAClaimOf": ["outcomes being irrelevant", "luck being exactly measurable", "one win or loss proving investment skill"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public materials; ledger structure is product synthesis",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Record the information, alternatives, probabilities or ranges, decision, dissent, and expected milestones before the outcome. Later compare process and realization separately, including plausible paths that did not occur, before updating a framework.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-LUCK-2014",
+      "claimIds": ["MMI-CLM-007", "MMI-CLM-017", "MMI-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Memo discussion of randomness, alternative outcomes, and evaluating skill"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-MATTERS-2022",
+      "claimIds": ["MMI-CLM-017", "MMI-CLM-018"],
+      "locator": {"kind": "web_section", "value": "What Doesn't Matter: Short-Term Performance"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "MMI-P1-HOOD-2025",
+      "claimIds": ["MMI-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Full-cycle performance-assessment discussion"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The original decision record is immutable and timestamped.",
+    "Outcome evidence is stored separately from ex-ante evidence.",
+    "Framework updates require more than one selectively chosen result."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "ex_ante_record",
+      "description": "Timestamped evidence, thesis, scenarios, dissent, decision, and next milestones from the decision date.",
+      "necessity": "required",
+      "acceptableSources": ["investment memo", "IC record", "XTrace memory", "model snapshot"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "outcome_record",
+      "description": "Dated realized operating, financing, governance, and return outcomes.",
+      "necessity": "required",
+      "acceptableSources": ["company updates", "portfolio records", "exit records", "public source"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "alternative_paths",
+      "description": "Plausible material states that could have occurred given the original information.",
+      "necessity": "recommended",
+      "acceptableSources": ["original scenarios", "industry base rates", "premortem"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Was the original process evidence-complete and internally consistent?",
+    "Which expected milestones occurred, failed, or became irrelevant?",
+    "Which result reflects thesis quality, execution, external shock, or favorable/unfavorable randomness?",
+    "Is there enough repeated evidence to change a framework or only this case?"
+  ],
+  "positiveSignals": [
+    "The original thesis and dissent were recorded before the result.",
+    "Process evaluation does not change with outcome direction.",
+    "Framework updates use repeated cases or causal evidence.",
+    "Unexpected outcomes become new questions rather than retroactive certainty."
+  ],
+  "redFlags": [
+    "A winner is labeled a good decision without examining price or process.",
+    "A failed company causes a sound thesis to be rewritten as obviously wrong.",
+    "The original memo is edited after the outcome.",
+    "One vivid case becomes a universal rule."
+  ],
+  "disconfirmingEvidence": [
+    "The purported ex-ante record was created or edited after material events.",
+    "The decision ignored information available at the time.",
+    "Repeated outcomes contradict the claimed causal mechanism.",
+    "Reported success depends on leverage, timing, or beta rather than the stated edge."
+  ],
+  "contraindications": [
+    "Do not assign a numerical luck percentage without a validated model.",
+    "Do not use process quality to excuse repeated adverse evidence.",
+    "Do not compare managers or frameworks over only one market regime."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Freeze and load the ex-ante decision snapshot.",
+      "Build a separate dated outcome timeline.",
+      "Compare expected, observed, and plausible alternative paths.",
+      "Classify lessons as case-specific, process, model, or unresolved.",
+      "Propose no framework change unless the evidence threshold is met."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "The original record is reconstructed from memory.", "medium": "Timestamped memo and outcome sources exist.", "high": "Immutable evidence, models, dissent, and realized records are complete."},
+    "evidenceStrength": {"low": "Outcome alone.", "medium": "Process and outcome can be compared but alternatives are incomplete.", "high": "Prospective record and multiple plausible paths support a causal review."},
+    "evidenceCoverage": {"low": "Final return only.", "medium": "Thesis, decision, and outcome are covered; dissent or alternatives partial.", "high": "Evidence, scenarios, decision, dissent, milestones, outcomes, and alternatives are complete."},
+    "applicabilityConfidence": {"low": "No reliable ex-ante snapshot.", "medium": "Snapshot exists but was not fully immutable.", "high": "Decision and outcome boundaries are technically enforced."},
+    "judgmentConfidence": {"low": "No process lesson is supportable.", "medium": "A case-specific lesson is supportable.", "high": "A repeated causal process lesson survives outcome and alternative-path review."}
+  },
+  "overlapFrameworkIds": ["VM-07", "NN-10", "BVC-05"],
+  "conflictingFrameworkIds": ["OUTCOME-BIAS", "HINDSIGHT-REWRITE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "portfolio_policy"],
+    "promotionRequirements": ["Implement immutable decision snapshots.", "Define framework-update evidence thresholds.", "Validate with blind retrospective review."],
+    "empiricalQualifications": ["Luck cannot be cleanly separated from skill in small venture samples.", "A full venture outcome cycle can take many years."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public process and luck principles are paraphrased; the ledger design is product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define immutable XTrace decision-snapshot semantics."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

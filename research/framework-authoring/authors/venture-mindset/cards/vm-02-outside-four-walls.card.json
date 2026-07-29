@@ -1,0 +1,235 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-02",
+  "slug": "outside-four-walls",
+  "name": "Get Outside the Four Walls",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether sourcing reaches genuinely different opportunity networks rather than repeatedly sampling the same social graph.",
+    "productLabel": "Diverse Sourcing Lens — based on The Venture Mindset public materials",
+    "notAClaimOf": [
+      "quality from network size alone",
+      "a demographic inference about any founder",
+      "author endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ilya Strebulaev's public nine-principle keynote",
+    "scope": "person_direct",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "A sourcing system should deliberately reach beyond the firm's existing internal and social network. Diversity is evaluated by independent channels, novel opportunity coverage, conversion, and decision quality—not by raw contact count.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-002"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF page 14"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "deal_sourcing"
+    ],
+    "businessModels": [
+      "venture_investing",
+      "corporate_innovation"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible",
+      "internal_innovation_budget"
+    ]
+  },
+  "requiredConditions": [
+    "The firm can identify source channel and referral lineage for candidates.",
+    "Sourcing outcomes can be evaluated without using founder demographics as quality proxies."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "source_lineage",
+      "description": "Channel, referrer, network cluster, geography, sector, and first-contact metadata.",
+      "necessity": "required",
+      "acceptableSources": [
+        "CRM",
+        "event records",
+        "referral data",
+        "inbound source"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "pipeline_coverage",
+      "description": "Share and quality of candidates from distinct channels and previously undercovered opportunity sets.",
+      "necessity": "required",
+      "acceptableSources": [
+        "pipeline analytics",
+        "market map",
+        "anti-portfolio"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "source_outcomes",
+      "description": "Stage progression, decision, and later outcome by source, adjusted for stage and sector.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "CRM history",
+        "investment decisions",
+        "outcome tracking"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which channels repeatedly produce the same network cluster?",
+    "Which markets, geographies, and founder communities are undercovered?",
+    "Do new channels add independent opportunities or duplicate known deals?",
+    "How does source quality change after controlling for stage and sector?",
+    "Which missed companies reveal a sourcing blind spot?"
+  ],
+  "positiveSignals": [
+    "New channels add nonduplicative, mandate-relevant opportunities.",
+    "The firm tracks anti-portfolio and source blind spots.",
+    "Source performance is evaluated over time without prestige proxies.",
+    "External experts and customers contribute opportunities beyond investor circles."
+  ],
+  "redFlags": [
+    "Most deals come through the same small referral cluster.",
+    "Network size is treated as diversity.",
+    "Source prestige substitutes for company evidence.",
+    "The firm only studies sourced deals that reached partner meetings.",
+    "New channels generate volume but no mandate-relevant coverage."
+  ],
+  "disconfirmingEvidence": [
+    "A supposedly diverse channel duplicates existing opportunities.",
+    "After cohort adjustment, the new channel provides no new coverage or quality.",
+    "Source expansion increases noise enough to crowd out high-value diligence.",
+    "Missed winners consistently arise from a channel the firm ignores."
+  ],
+  "contraindications": [
+    "Do not infer founder quality from demographics or social proximity.",
+    "Do not maximize raw pipeline size without attention capacity.",
+    "Do not use source performance without selection and censoring caveats."
+  ],
+  "decisionMethod": {
+    "kind": "ordinal_anchors",
+    "instructions": [
+      "Map source lineage and network-cluster overlap.",
+      "Measure incremental mandate-relevant coverage.",
+      "Review anti-portfolio and rejected outcomes.",
+      "Separate pipeline quantity from independent quality.",
+      "Identify the next undercovered source experiment."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only secondary summaries support the principle.",
+      "medium": "The official keynote supports the principle without chapter detail.",
+      "high": "Hashed keynote and reviewed chapter locators converge."
+    },
+    "evidenceStrength": {
+      "low": "Anecdotal claims of network reach.",
+      "medium": "Source lineage and coverage are measured.",
+      "high": "Lineage, independence, conversion, anti-portfolio, and adjusted outcomes converge."
+    },
+    "evidenceCoverage": {
+      "low": "Source lineage is missing.",
+      "medium": "Lineage exists but outcomes or blind spots are incomplete.",
+      "high": "Coverage, outcomes, duplicates, and misses are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "The task is not opportunity sourcing.",
+      "medium": "Sourcing matters but the firm has limited outcome history.",
+      "high": "Opportunity access and network blind spots are material constraints."
+    },
+    "judgmentConfidence": {
+      "low": "Only channel counts are known.",
+      "medium": "Independent coverage is visible but quality is uncertain.",
+      "high": "Incremental coverage and outcome patterns are robust."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DEAL-SOURCING",
+    "ANTI-PORTFOLIO",
+    "VC-ACCESS-EDGE"
+  ],
+  "conflictingFrameworkIds": [
+    "WARM-INTRO-ONLY"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Define network-cluster and incremental-coverage metrics.",
+      "Control source outcome comparisons for stage, sector, and selection.",
+      "Avoid protected-characteristic inference."
+    ],
+    "empiricalQualifications": [
+      "Observed source outcomes are selected by downstream screening.",
+      "Large networks can be redundant.",
+      "Access and investor skill are endogenous."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Only neutral paraphrase of the keynote principle is stored."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash the keynote revision.",
+      "Define safe source-diversity metrics with legal review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft focused on independent coverage rather than contact count."
+    }
+  ]
+}
+

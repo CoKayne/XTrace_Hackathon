@@ -1,0 +1,158 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-09",
+  "slug": "next-product-and-company-building",
+  "name": "Next Product and Company Building",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether a post-PMF company can renew its product advantage while building the operating capabilities needed to survive scale.",
+    "productLabel": "Next Product and Company-Building Lens — based on Marc Andreessen's public post-PMF interview",
+    "notAClaimOf": ["diversification always being good", "process volume proving maturity", "one successful product being permanently defensible"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public interview with Elad Gil",
+    "scope": "coauthored_work",
+    "people": ["Marc Andreessen", "Elad Gil"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "After PMF, assess two independent renewal tasks: maintaining a credible next-product pipeline as technology and competition change, and developing finance, people, legal, marketing, recruiting, and other capabilities without losing customer focus.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-POSTPMF-2018",
+      "claimIds": ["MA-CLM-019", "MA-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Lines 120-142: next product and the company-building functions that prevent self-inflicted failure"},
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-POSTPMF-2018",
+      "claimIds": ["MA-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Lines 160-170: distribution advantage and the possibility that network effects unwind"},
+      "attributionScope": "coauthored_work",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "MA-P1-SOFTWARE-2011",
+      "claimIds": ["MA-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Lines 163-170: culture, customer delight, competitive advantage, and valuation proof burden"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has credible PMF evidence for at least one product.",
+    "Technology, competition, or scale creates material renewal and operating demands.",
+    "Product renewal and organizational maturity are evaluated separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "core_product_health",
+      "description": "Retention, customer value, economics, reliability, competitive position, and remaining growth runway of the current product.",
+      "necessity": "required",
+      "acceptableSources": ["cohort data", "billing", "product analytics", "customer interviews", "competitive analysis"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "next_product_pipeline",
+      "description": "Customer problem, strategic relationship to the core, experiments, technical progress, resource allocation, and stop conditions for future products.",
+      "necessity": "required",
+      "acceptableSources": ["product roadmap", "research records", "customer discovery", "experiment results", "portfolio plan"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "company_capability",
+      "description": "Finance, hiring, management, legal, security, compliance, marketing, communications, and recruiting mechanisms proportional to scale.",
+      "necessity": "required",
+      "acceptableSources": ["organization chart", "controls", "operating reviews", "audit records", "policy and incident records"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "self_inflicted_failure",
+      "description": "Material incidents, control gaps, leadership bottlenecks, legal exposure, customer harm, and remediation outcomes.",
+      "necessity": "required",
+      "acceptableSources": ["postmortems", "legal review", "audit findings", "customer incidents", "board records"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "How long can the current product remain valuable under technical and competitive change?",
+    "Does the next-product pipeline solve verified customer problems or reflect unfocused expansion?",
+    "Which company capability is the current scaling constraint?",
+    "Are operating mechanisms proportional and outcome-linked?",
+    "What self-inflicted failure could destroy customer trust or the product advantage?"
+  ],
+  "positiveSignals": [
+    "The core product remains healthy while renewal experiments are staged.",
+    "Next products share customer, capability, data, or distribution advantages with the core.",
+    "Operating capabilities are added in response to demonstrated scale risk.",
+    "Incidents generate accountable remediation and measurable improvement."
+  ],
+  "redFlags": [
+    "The company diversifies to hide slowing core-product evidence.",
+    "A roadmap lists themes but lacks customer problems, tests, and stop conditions.",
+    "Finance, legal, security, people, or customer-support risk is treated as administrative detail.",
+    "Process expands while decision quality, delivery, or customer outcomes deteriorate."
+  ],
+  "disconfirmingEvidence": [
+    "A focused single-product company may have substantial remaining runway and no immediate need to diversify.",
+    "A small post-PMF team may rationally retain lightweight operations.",
+    "A failed adjacent-product experiment can be evidence of disciplined renewal if stopped promptly.",
+    "Temporary operating gaps may be tolerable when explicitly owned, time-bounded, and controlled."
+  ],
+  "contraindications": [
+    "Do not apply before credible PMF evidence.",
+    "Do not reward roadmap breadth or process volume.",
+    "Do not infer organizational capability from headcount, prestige hires, or policy documents alone."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Establish current-product health and likely durability.",
+      "Map next-product hypotheses, evidence, resource gates, and stop conditions.",
+      "Identify operating capabilities required by present complexity.",
+      "Review incidents and whether mechanisms improve outcomes.",
+      "Conclude renewing and scaling coherently, strong core but renewal gap, operating-risk gap, distracted expansion, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Roadmap and policy claims.", "medium": "Operating artifacts and product evidence.", "high": "Customer, product, financial, incident, and governance evidence converge."},
+    "evidenceStrength": {"low": "Future-product narrative.", "medium": "Tested pipeline or improving operating mechanism.", "high": "Repeated renewal and operating outcomes support capability."},
+    "evidenceCoverage": {"low": "Roadmap only.", "medium": "Core, pipeline, and organization.", "high": "Core durability, experiments, controls, incidents, costs, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Pre-PMF or no scale pressure.", "medium": "One post-PMF renewal or capability need.", "high": "Renewal and operating competence materially determine survival."},
+    "judgmentConfidence": {"low": "Company-building story.", "medium": "Bounded product and operating evidence.", "high": "Observed renewal and operating outcomes support a clear judgment."}
+  },
+  "overlapFrameworkIds": ["SP-01", "SP-10", "BVC-09", "H7P-09", "MA-08"],
+  "conflictingFrameworkIds": ["ROADMAP-BREADTH-SCORE", "PROCESS-VOLUME-SCORE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define post-PMF stage anchors.", "Backtest renewal and operating-risk judgments.", "Integrate safety, legal, and governance review."],
+    "empiricalQualifications": ["Renewal cycles differ by sector.", "Observed operating maturity can be a response to prior failure rather than its cause."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The edited interview is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define sector-specific renewal cycles and operating-risk evidence."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

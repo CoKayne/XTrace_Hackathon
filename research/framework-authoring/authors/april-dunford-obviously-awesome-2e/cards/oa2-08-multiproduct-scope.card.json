@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-08",
+  "slug": "multiproduct-scope",
+  "name": "Multi-product Positioning Scope",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Determines whether customers should understand a lead product, individual products, a platform, a suite, or the company and prevents evidence from being blended across them.",
+    "productLabel": "Multi-product Scope Lens — based on April Dunford's 2026 public materials",
+    "notAClaimOf": ["platform positioning always being superior", "cross-sell creating one shared positioning", "company brand replacing product evidence"]
+  },
+  "attribution": {
+    "display": "Based on April Dunford's 2026 public materials; exact decision tree pending licensed review",
+    "scope": "product_synthesis",
+    "people": ["April Dunford"],
+    "organizations": ["Positioning with April Dunford"],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "For companies with multiple offerings, choose the customer-facing unit of positioning—lead wedge, individual product, platform, suite, or company—based on how buyers enter, evaluate, purchase, deploy, and expand. Keep component evidence separate when buyers, alternatives, or value differ.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-DECISIONS-2026",
+      "claimIds": ["OA2-CLM-007", "OA2-CLM-008", "OA2-CLM-019"],
+      "locator": {"kind": "video_timestamp", "value": "13:00-22:26, customer vs. investor, single product, wedge/platform/suite, champion"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-ANNOUNCE-2026",
+      "claimIds": ["OA2-CLM-004", "OA2-CLM-019"],
+      "locator": {"kind": "web_section", "value": "New multi-product sections in updated edition"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-BOOKS-2026",
+      "claimIds": ["OA2-CLM-019"],
+      "locator": {"kind": "web_section", "value": "Official updated-edition description; detailed decision rules unavailable publicly"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth", "late_stage"],
+    "businessModels": ["multi_product_b2b", "platform", "suite", "b2b_saas", "enterprise_software", "technology_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has multiple products, modules, use cases, or a platform claim.",
+    "Buyer journeys and product-level outcomes can be separated.",
+    "The output is labeled product synthesis pending licensed review."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "offering_architecture",
+      "description": "Products, modules, shared capabilities, dependencies, packaging, pricing, and brand hierarchy.",
+      "necessity": "required",
+      "acceptableSources": ["product catalog", "architecture", "pricing", "contracts", "roadmap"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "buyer_entry_and_expansion",
+      "description": "Initial purchase unit, champion, budget, alternatives, deployment path, cross-sell, and expansion.",
+      "necessity": "required",
+      "acceptableSources": ["CRM", "billing", "sales calls", "implementation data", "customer interviews"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "component_overlap",
+      "description": "Whether alternatives, capabilities, value, best-fit customers, and category are shared or distinct by offering.",
+      "necessity": "required",
+      "acceptableSources": ["product-level positioning chains", "win/loss", "segment analysis"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What does the customer initially evaluate and buy?",
+    "Do products share a champion, alternatives, value, and category?",
+    "Does platform or suite framing help the initial purchase or only describe future expansion?",
+    "Which evidence belongs to each product and must not be pooled?"
+  ],
+  "positiveSignals": [
+    "Positioning scope matches the buyer's entry decision.",
+    "Shared platform or suite value is evidenced across products.",
+    "Individual-product differences remain visible where needed.",
+    "Expansion is supported by observed customer paths rather than architecture alone."
+  ],
+  "redFlags": [
+    "Platform language obscures which product customers buy first.",
+    "Evidence from one successful product is generalized to the suite.",
+    "Different champions and alternatives are forced into one chain.",
+    "Company positioning is used to avoid weak product value."
+  ],
+  "disconfirmingEvidence": [
+    "Customers buy and value an integrated suite from the first decision.",
+    "A wedge product consistently expands into a shared platform outcome.",
+    "Separate product positioning creates confusion for one buying committee.",
+    "A platform claim has technical integration but no customer-level value."
+  ],
+  "contraindications": [
+    "Do not publish exact decision rules until licensed second-edition review.",
+    "Do not pool product evidence.",
+    "Do not infer customer platform value from technical architecture."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map offering architecture and buyer entry.",
+      "Compare five components by product.",
+      "Review actual cross-sell and expansion paths.",
+      "Test wedge, individual-product, platform, suite, and company scopes.",
+      "Conclude shared scope, product-specific scope, staged scope, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Architecture or brand plan only.", "medium": "Buyer and product evidence for some offerings.", "high": "CRM, billing, product use, customers, and product chains converge."},
+    "evidenceStrength": {"low": "Platform assertion.", "medium": "Observed shared purchase or expansion in some customers.", "high": "Repeated buyer behavior validates the selected scope."},
+    "evidenceCoverage": {"low": "Product list only.", "medium": "Buyer entry and some component overlap.", "high": "All offerings, buyers, alternatives, value, category, packaging, entry, and expansion covered."},
+    "applicabilityConfidence": {"low": "Single offering.", "medium": "Some scope complexity.", "high": "Scope choice materially changes customer understanding and GTM."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Conditional or staged scope.", "high": "Well-evidenced multi-product scope."}
+  },
+  "overlapFrameworkIds": ["OA2-01", "OA2-07", "PT-03", "H7P-07"],
+  "conflictingFrameworkIds": ["PLATFORM-ARCHITECTURE-EQUALS-PLATFORM-VALUE", "ONE-PRODUCT-PROVES-SUITE"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Review licensed multi-product sections.", "Define product-level evidence partitioning.", "Backtest scope decisions."],
+    "empiricalQualifications": ["Multi-product buying patterns vary by segment and sales motion.", "Expansion can reflect bundling or discount rather than shared value."]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public materials establish the domain; exact second-edition multi-product guidance requires licensed review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Obtain and review exact multi-product sections and decision tree."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

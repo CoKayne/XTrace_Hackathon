@@ -1,0 +1,300 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-08",
+  "slug": "event-to-story-update",
+  "name": "Event-to-Story Update",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Routes a verified market or company event through company exposure, a pinned story node, and a value driver before recommending re-evaluation.",
+    "productLabel": "Event-to-Story Update Lens — product adaptation of Aswath Damodaran's public news-and-narrative framework",
+    "notAClaimOf": [
+      "sector momentum proving company progress",
+      "news sentiment determining impact",
+      "a market event resolving a company-specific concern"
+    ]
+  },
+  "attribution": {
+    "display": "Product adaptation of Aswath Damodaran's public news-and-narrative framework",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Verify an event and its date, establish how the historical company is exposed, find the affected node in the prior story, classify the narrative delta, and map it to a bounded driver revision. If company-specific transmission or materiality is missing, report only that the company may merit renewed research.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-NEWS-2014",
+      "claimIds": [
+        "NN-CLM-014",
+        "NN-CLM-015",
+        "NN-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Narrative effects and their dependence on the initial narrative"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-NEWS-SUPPORT",
+      "claimIds": [
+        "NN-CLM-016",
+        "NN-CLM-017"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "News Effects and Macro Stories chapter index"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "NN-P1-SLIDES-2020",
+      "claimIds": [
+        "NN-CLM-016",
+        "NN-CLM-017"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Company, competition/sector, and macro environment flowing through business story to valuation inputs; exact slide number pending"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_with_identifiable_event_exposure"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "The event is deduplicated, dated, and supported by credible sources.",
+    "Historical company identity and prior interaction are resolved.",
+    "A company-specific exposure and prior narrative node exist.",
+    "Only medium-confidence or higher matches generate proactive alerts under current product policy."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "verified_event",
+      "description": "Event, publication date, event date, source lineage, geography, entities, and event class.",
+      "necessity": "required",
+      "acceptableSources": [
+        "regulator",
+        "company filing",
+        "official announcement",
+        "credible news source",
+        "VC official announcement"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "company_exposure",
+      "description": "Causal connection through customer, supplier, geography, technology, regulation, competition, or capital.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company document",
+        "customer evidence",
+        "product description",
+        "contract",
+        "regulatory scope"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "prior_story_and_concern",
+      "description": "Pinned prior narrative, decision status, original concern, and milestone that would alter it.",
+      "necessity": "required",
+      "acceptableSources": [
+        "XTrace memory",
+        "investment memo",
+        "meeting note",
+        "user-confirmed record"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "driver_transmission",
+      "description": "Affected node, driver, direction, lag, bounded magnitude hypothesis, and counterevidence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "NN-07 output",
+        "NN-04 output",
+        "NN-05 output",
+        "deterministic sensitivity"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What happened and which primary or independent sources support it?",
+    "How is this exact company exposed?",
+    "Which prior story node or original concern is affected?",
+    "Is the update a confirmation, shift, change, or break?",
+    "Which driver changes, with what direction, lag, and capacity constraint?",
+    "Should this produce a market-summary item, Watch alert, or Advance rationale?"
+  ],
+  "positiveSignals": [
+    "Primary evidence verifies event, entity, and date.",
+    "Company exposure is direct and source-linked.",
+    "The event affects a pinned story node and material driver.",
+    "The path addresses a previously recorded concern or milestone.",
+    "Counterevidence and lag are explicit."
+  ],
+  "redFlags": [
+    "Keyword similarity is the only match.",
+    "Competitor funding is assumed to benefit the company.",
+    "Macro sentiment substitutes for a driver path.",
+    "The prior concern is declared resolved without company evidence.",
+    "The event is duplicated, stale, or circularly sourced."
+  ],
+  "disconfirmingEvidence": [
+    "The company serves a different customer, geography, or regulatory scope.",
+    "Competitors capture the event benefit first.",
+    "Capacity, certification, funding, or distribution blocks transmission.",
+    "The event was already assumed in the prior story.",
+    "The original concern concerned team, governance, or economics unaffected by the event."
+  ],
+  "contraindications": [
+    "Do not alert from sector similarity alone.",
+    "Do not claim current company performance from market evidence.",
+    "Do not suppress negative or mixed impacts.",
+    "Do not generate an Invest Candidate from this card."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Verify, date, classify, and deduplicate the event.",
+      "Retrieve all exposed historical companies regardless of prior status.",
+      "Require company exposure and a pinned story node.",
+      "Run NN-07 and map the delta to a driver.",
+      "Alert at medium confidence or above; include weaker events only in the market summary."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "alertGates": [
+        "event_verified",
+        "company_identity_resolved",
+        "company_exposure_supported",
+        "prior_story_node_found",
+        "driver_path_complete",
+        "confidence_at_least_medium"
+      ],
+      "calculationOwner": "opportunity_matching_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "A single secondary or unattributed source supports the event.",
+      "medium": "A credible source plus an independent corroborator support it.",
+      "high": "Primary evidence and independent corroboration agree on event and date."
+    },
+    "evidenceStrength": {
+      "low": "Only sector overlap exists.",
+      "medium": "Exposure and direction are supported but concern resolution or magnitude is uncertain.",
+      "high": "Event, exposure, story node, driver path, and company evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Event is known but prior company story is absent.",
+      "medium": "Event, company, exposure, and story node are covered but lag or counterevidence is partial.",
+      "high": "Event, identity, exposure, prior, delta, driver, lag, materiality, and counterevidence are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The company has no demonstrated exposure.",
+      "medium": "Exposure exists but transmission depends on unresolved conditions.",
+      "high": "The event directly affects a verified company story node."
+    },
+    "judgmentConfidence": {
+      "low": "Market-summary mention only.",
+      "medium": "A proactive Watch or re-evaluation alert is defensible.",
+      "high": "A bounded story revision and specific diligence action are well supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "EI-09",
+    "NN-07",
+    "VM-07",
+    "SHR-09"
+  ],
+  "conflictingFrameworkIds": [
+    "KEYWORD-MATCH-EQUALS-OPPORTUNITY",
+    "SECTOR-NEWS-EQUALS-COMPANY-PROGRESS",
+    "EVENT-EQUALS-CONCERN-RESOLVED"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Backtest event matching, alert precision, and alert fatigue.",
+      "Validate narrative-node mapping with VC reviewers.",
+      "Calibrate confidence gates and source hierarchy."
+    ],
+    "empiricalQualifications": [
+      "Public information can arrive after market participants react.",
+      "Market events often have ambiguous or second-order company effects.",
+      "Private-company performance may remain unverifiable."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public news-and-narrative doctrine is paraphrased; alert gates and product workflow are synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Validate event taxonomy and confidence gates.",
+      "Define company-exposure evidence schema."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source product adaptation draft."
+    }
+  ]
+}

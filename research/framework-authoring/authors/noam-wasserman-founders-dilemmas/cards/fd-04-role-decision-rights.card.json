@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-04",
+  "slug": "role-decision-rights",
+  "name": "Founder Roles and Decision Rights",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether titles, responsibilities, authority, and escalation match current capability and stage.",
+    "productLabel": "Founder Role-and-Rights Lens — product synthesis from Noam Wasserman's public work",
+    "notAClaimOf": ["consensus always failing", "one dominant founder always being superior", "the idea originator deserving the CEO role"]
+  },
+  "attribution": {
+    "display": "Product synthesis from Noam Wasserman's public Founder's Dilemmas materials",
+    "scope": "product_synthesis",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School"],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Compare each founder's role and authority with demonstrated capability, time commitment, company needs, and the next stage. Determine who decides, who advises, how conflicts escalate, and how roles change without turning titles into permanent entitlements.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P2-HBS-COURSE-2011",
+      "claimIds": ["FD-CLM-008", "FD-CLM-009"],
+      "locator": {"kind": "web_section", "value": "Building the Team—role, CEO, and equity questions"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P1-KAUFFMAN-2016",
+      "claimIds": ["FD-CLM-008", "FD-CLM-009"],
+      "locator": {"kind": "web_section", "value": "Relationships and team-choice transcripts"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P2-GBOOKS-2012",
+      "claimIds": ["FD-CLM-008", "FD-CLM-009"],
+      "locator": {"kind": "chapter_page", "value": "Limited-preview contents: Chapter 5, Founding Team Roles; full locator pending licensed review"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Two or more leaders share material execution or governance.",
+    "Role ambiguity or future scaling is relevant to the next milestone.",
+    "Actual decision behavior can be compared with formal titles."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "role_authority_map",
+      "description": "Accountabilities, decision domains, reporting lines, approval thresholds, and escalation.",
+      "necessity": "required",
+      "acceptableSources": ["role charter", "organization chart", "founder agreement", "board materials"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "decision_examples",
+      "description": "Concrete high-stakes decisions and how information, disagreement, and final authority operated.",
+      "necessity": "required",
+      "acceptableSources": ["decision records", "board minutes", "founder interviews", "independent references"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "future_role_plan",
+      "description": "Planned role and capability changes for the next organizational stage.",
+      "necessity": "recommended",
+      "acceptableSources": ["hiring plan", "succession plan", "operating plan"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who has final authority in each material domain?",
+    "Do titles and authority match demonstrated capability and commitment?",
+    "How does the team resolve a high-stakes disagreement?",
+    "What role changes are expected at the next milestone and who can trigger them?"
+  ],
+  "positiveSignals": [
+    "Decision domains and escalation are explicit.",
+    "Founders delegate based on capability and update roles as needs change.",
+    "A final decision owner exists without suppressing useful dissent.",
+    "The team has executed a difficult role change constructively."
+  ],
+  "redFlags": [
+    "All founders have equal vetoes over routine decisions.",
+    "CEO title follows idea ownership rather than role evidence.",
+    "Formal and actual authority differ materially.",
+    "Role changes are postponed until a financing or execution crisis."
+  ],
+  "disconfirmingEvidence": [
+    "Consensus governance is fast and effective within clearly bounded domains.",
+    "A young or first-time CEO demonstrates stage-appropriate delegation and hiring.",
+    "A title mismatch is temporary and governed by a dated transition plan.",
+    "Concentrated authority is balanced by information access and board oversight."
+  ],
+  "contraindications": [
+    "Do not prefer a dominant-leader model by default.",
+    "Do not infer competence from title or seniority.",
+    "Do not expose confidential personnel judgments outside approved diligence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map formal and actual decision rights.",
+      "Reconstruct two or more material decisions.",
+      "Compare roles with current and next-stage capability needs.",
+      "Test both consensus-deadlock and unchecked-authority risks.",
+      "Conclude clear and adaptive, conditionally workable, misaligned, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Titles or one narrative.", "medium": "Multiple narratives and partial records.", "high": "Role documents, decision records, board evidence, and references converge."},
+    "evidenceStrength": {"low": "Hypothetical role concern.", "medium": "One material decision demonstrates the pattern.", "high": "Repeated decisions and role changes demonstrate the pattern."},
+    "evidenceCoverage": {"low": "Titles only.", "medium": "Core domains and decisions covered.", "high": "All material domains, escalation, actual behavior, and future transitions covered."},
+    "applicabilityConfidence": {"low": "No shared authority risk.", "medium": "Some ambiguity exists.", "high": "Next-stage execution materially depends on role evolution."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Specific but unresolved alignment issue.", "high": "Well-supported adaptive design or material misalignment."}
+  },
+  "overlapFrameworkIds": ["FD-03", "FD-06", "FD-08"],
+  "conflictingFrameworkIds": ["CONSENSUS-IS-ALWAYS-BAD", "IDEA-PERSON-MUST-BE-CEO"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Complete licensed Chapter 5 review.", "Define decision-record evidence standard.", "Backtest role-risk flags."],
+    "empiricalQualifications": ["Effective decision designs vary by team and stage.", "Role outcomes are endogenous to company performance."]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public materials support the domain; full Chapter 5 review is required for publication."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review licensed Chapter 5 and define actual-versus-formal authority evidence."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

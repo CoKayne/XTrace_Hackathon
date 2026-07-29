@@ -1,0 +1,312 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-09",
+  "slug": "financing-accelerator-signal",
+  "name": "Financing and Accelerator Signal Deconfounding",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates company evidence from investor access, financing selection, accelerator treatment, and market heat.",
+    "productLabel": "Ecosystem Signal Lens — based on Super Founders public findings with accelerator evidence",
+    "notAClaimOf": [
+      "large rounds causing startup success",
+      "brand-name investors certifying company quality",
+      "accelerator participation or absence being a quality score"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public fundraising and accelerator observations with external accelerator qualification",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "The author's cohort often raised larger early rounds, raised faster, and included brand-name investors, yet he explicitly rejects interpreting those observations as financing causing success. Low accelerator prevalence also does not estimate program treatment. The product decomposes each ecosystem signal into underlying company evidence, founder access, investor or program selection, program value added, financing terms, and market heat before using it as a research cue.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_association",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P2-BOOK-2021",
+      "claimIds": [
+        "SF-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official publisher description: less than 15 percent accelerator prevalence"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-SANDHILL-2022",
+      "claimIds": [
+        "SF-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 35:37-38:25: larger and faster early rounds, brand VC prevalence, and explicit no-causation interpretation"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-E1-ACCELERATOR-RFS",
+      "claimIds": [
+        "SF-EQ-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: regression-discontinuity evidence separating basic services and entrepreneurship schooling"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "SF-E1-ACCELERATOR-NBER-2026",
+      "claimIds": [
+        "SF-EQ-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: systematic sorting and heterogeneous accelerator value added"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "venture_backed_startup"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Financing events are separated from operating progress.",
+    "Investor and accelerator labels are not formal company-quality fields.",
+    "Round terms, timing, and market conditions are available."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "financing_timeline",
+      "description": "Round dates, amounts, investors, security terms, valuations, fundraising duration, use of proceeds, and milestones.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financing documents",
+        "cap table",
+        "company records",
+        "public filings"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "operating_progress",
+      "description": "Product, customer, revenue, unit-economic, regulatory, or technical progress before and after financing.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating metrics",
+        "customer evidence",
+        "product milestones",
+        "technical records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "selection_and_access",
+      "description": "Founder network, prior track record, investor process, syndicate behavior, and other factors affecting access to capital.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "founder history",
+        "investor references",
+        "fundraising records",
+        "deal process"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "accelerator_treatment",
+      "description": "Program identity, selection process, services received, mentorship or schooling, capital, and observable changes.",
+      "necessity": "optional",
+      "acceptableSources": [
+        "accelerator records",
+        "program documents",
+        "mentor references",
+        "pre-post operating evidence"
+      ],
+      "missingEffect": "no_effect"
+    },
+    {
+      "evidenceKey": "market_financing_context",
+      "description": "Stage- and sector-matched financing volume, pricing, round cadence, and capital availability at each date.",
+      "necessity": "required",
+      "acceptableSources": [
+        "market dataset",
+        "funding announcements",
+        "valuation comps",
+        "industry reports"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What operating evidence preceded the financing signal?",
+    "Does the investor or program label add information beyond that evidence?",
+    "How much of the round reflects access, selection, market heat, or structured terms?",
+    "What changed because of accelerator services rather than selection into the program?",
+    "Did capital produce the stated milestone, and at what dilution or preference cost?",
+    "Would the company case remain attractive with investor and accelerator names hidden?"
+  ],
+  "positiveSignals": [
+    "Operating progress predates or independently corroborates financing.",
+    "Use of proceeds produces explicit milestones.",
+    "Financing terms and dilution are transparent.",
+    "An accelerator's specific treatment is connected to a measured change.",
+    "Name-blind review preserves the company assessment."
+  ],
+  "redFlags": [
+    "Brand-name investor or accelerator logo is the primary evidence.",
+    "Round size is presented as customer validation.",
+    "Faster fundraising is treated as causal without access or market context.",
+    "Headline valuation hides structured protections.",
+    "Capital raised grows while operating milestones remain unchanged."
+  ],
+  "disconfirmingEvidence": [
+    "The round depended on unusually investor-favorable terms.",
+    "Operating performance did not improve after financing.",
+    "Market heat explains most of the cadence or valuation.",
+    "Accelerator selection occurred after strong prior traction.",
+    "Name-blind reviewers materially lower the assessment."
+  ],
+  "contraindications": [
+    "Do not award points for investor prestige, round size, fundraising speed, or accelerator attendance.",
+    "Do not award points for avoiding accelerators.",
+    "Do not infer treatment effect from participation prevalence.",
+    "Do not treat financing valuation as intrinsic value."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Build a dated financing and operating-progress timeline.",
+      "Hide investor and accelerator names for the initial company review.",
+      "Decompose access, selection, treatment, terms, and market context.",
+      "Compare capital use with achieved milestones and dilution.",
+      "Conclude on the informational content of ecosystem signals, not company investability."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only funding announcements and logos are available.",
+      "medium": "Author public caveats and financing records are reviewed.",
+      "high": "Licensed findings, complete round terms, operating records, and program evidence are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Headline funding signal only.",
+      "medium": "Round records and some operating progress are available.",
+      "high": "Terms, progress, market context, access, and treatment evidence are separated."
+    },
+    "evidenceCoverage": {
+      "low": "Round terms or operating timeline is missing.",
+      "medium": "Financing and progress are known but selection or context is incomplete.",
+      "high": "Financing, terms, operating progress, access, selection, treatment, and market context are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The company has no relevant external financing or accelerator signal.",
+      "medium": "Financing exists but is not central to the thesis.",
+      "high": "The investment case relies materially on financing cadence, investor identity, or program affiliation."
+    },
+    "judgmentConfidence": {
+      "low": "The ecosystem signal cannot be separated from company quality.",
+      "medium": "Some deconfounding is possible with unresolved access or treatment.",
+      "high": "Name-blind company evidence and complete financing context converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SHR-04",
+    "SHR-05",
+    "SF-01",
+    "SF-10",
+    "VENTURE-DEALS-TERMS"
+  ],
+  "conflictingFrameworkIds": [
+    "BRAND-VC-SCORE",
+    "ROUND-SIZE-TRACTION",
+    "ACCELERATOR-BINARY-SCORE"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Review licensed fundraising and accelerator findings.",
+      "Validate name-blind deconfounding protocol.",
+      "Model security terms and market heat independently.",
+      "Track revisions and peer review of 2026 accelerator evidence."
+    ],
+    "empiricalQualifications": [
+      "Funding variables are highly endogenous to founder access, investor selection, and market conditions.",
+      "Accelerator prevalence does not identify program treatment.",
+      "Program value added is heterogeneous.",
+      "Brand investor participation may certify, select, or influence rather than cause outcomes."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book, interview, accelerator, or financing passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete licensed fundraising-table review.",
+      "Review 2026 accelerator working-paper revisions.",
+      "Reconcile with deterministic cap-table and term services."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial financing and accelerator deconfounding card."
+    }
+  ]
+}
+

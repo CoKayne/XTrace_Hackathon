@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-01",
+  "slug": "power-qualification",
+  "name": "Power Qualification",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a company has both a material Benefit and a durable Barrier within an explicit competitive boundary.",
+    "productLabel": "Power Qualification Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "product-market fit being Power",
+      "operational excellence being sufficient for durability",
+      "a Power claim proving the company is worth its current price"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public 7 Powers doctrine",
+    "scope": "product_synthesis",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A Power claim requires a material economic Benefit and a Barrier that prevents motivated, capable rivals from arbitraging that Benefit away. Customer value, growth, good management, execution, current margins, and product-market fit can be necessary or valuable without establishing Power. The product therefore records present Power, candidate Power, a path to Power, or insufficient evidence rather than assigning a moat score.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-SYNOPSIS",
+      "claimIds": [
+        "H7P-CLM-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official synopsis, lines 13-16: Power, persistent differential returns, invention, and progression"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "claimIds": [
+        "H7P-CLM-001",
+        "H7P-CLM-002"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Official audio 00:01:31-00:06:28: Power, Benefit, Barrier, and early-stage barrier formation"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Interview sections lines 84-123 and 246-255: customer value, durability, product-market fit, and operational excellence"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The relevant customer, product, geography, and competitor set are explicit.",
+    "Benefit and Barrier are evaluated separately.",
+    "Present evidence is separated from a future path to Power.",
+    "Investment price and terms are evaluated outside this card."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "benefit_mechanism",
+      "description": "A causal description of the economic Benefit, its recipient, materiality, and observable metric.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer data",
+        "unit economics",
+        "cohort analysis",
+        "pricing evidence",
+        "cost evidence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "barrier_mechanism",
+      "description": "A causal description of what prevents named motivated and capable rivals from taking the Benefit.",
+      "necessity": "required",
+      "acceptableSources": [
+        "competitive diligence",
+        "replication analysis",
+        "customer workflow",
+        "market structure",
+        "legal evidence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "persistence_and_decay",
+      "description": "Observed duration, reinforcement, bypass paths, technology change, regulation, and decay conditions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "time series",
+        "competitor response history",
+        "scenario analysis",
+        "industry evidence"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "valuation_separation",
+      "description": "A separate valuation and terms analysis showing whether expected earning power is already priced.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "valuation service",
+        "cap table",
+        "term sheet",
+        "scenario model"
+      ],
+      "missingEffect": "no_effect"
+    }
+  ],
+  "decisionQuestions": [
+    "What material Benefit exists, for whom, and how is it measured?",
+    "Which motivated and capable rivals would attempt to capture it?",
+    "What exact Barrier stops or disadvantages each rival class?",
+    "What evidence shows persistence rather than a temporary lead?",
+    "Is this observed Power, candidate Power, only a path to Power, or no supported Power?",
+    "What evidence would falsify either the Benefit or Barrier?"
+  ],
+  "positiveSignals": [
+    "Independent customer or cost evidence demonstrates a material Benefit.",
+    "Competitor behavior or economics directly demonstrates the Barrier.",
+    "The mechanism strengthens or persists across multiple periods.",
+    "The company can name realistic bypass routes and evidence against them.",
+    "The claim remains valid within an explicit narrow market boundary."
+  ],
+  "redFlags": [
+    "Growth, margins, market share, user count, patents, or retention are presented as self-proving Power.",
+    "Barrier language does not name the constrained competitor.",
+    "The mechanism depends only on superior execution that peers can hire or copy.",
+    "A future plan is described as a current moat.",
+    "Power is used as a substitute for valuation."
+  ],
+  "disconfirmingEvidence": [
+    "Well-funded rivals reproduce the Benefit without structural disadvantage.",
+    "Customer value does not translate into company-level economic capture.",
+    "The advantage disappears outside one temporary subsidy, contract, or regulation.",
+    "Relevant customers multi-home or switch without meaningful loss.",
+    "The market boundary must be broadened until the claimed advantage disappears."
+  ],
+  "contraindications": [
+    "Do not assign a numeric moat score from the count of Power labels.",
+    "Do not infer durable returns from product-market fit.",
+    "Do not use future Power plans as current evidence.",
+    "Do not output an investment decision from this card."
+  ],
+  "decisionMethod": {
+    "kind": "ordinal_anchors",
+    "instructions": [
+      "Define the competitive boundary and relevant rival classes.",
+      "Write the Benefit and Barrier as separate causal hypotheses.",
+      "Map evidence, counterevidence, persistence, and decay to each hypothesis.",
+      "Classify the claim as observed_power, candidate_power, path_to_power, no_supported_power, or not_applicable.",
+      "Send price, terms, ownership, dilution, and return questions to deterministic services."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only unsourced moat labels or retrospective founder claims are available.",
+      "medium": "Public doctrine and internal company evidence are available.",
+      "high": "Licensed doctrine and independent customer, competitor, and economic evidence are verified."
+    },
+    "evidenceStrength": {
+      "low": "Benefit or Barrier is asserted but not measured.",
+      "medium": "Benefit is measured and Barrier has indirect evidence.",
+      "high": "Benefit and Barrier have independent causal and longitudinal evidence."
+    },
+    "evidenceCoverage": {
+      "low": "The company or mechanism is described without a competitor boundary.",
+      "medium": "Benefit, Barrier, and current competitors are covered but decay or entrants are incomplete.",
+      "high": "Benefit, incumbent and entrant barriers, persistence, bypass, and decay are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The analysis concerns a feature or market with no durable economic claim.",
+      "medium": "A plausible mechanism exists but stage or market boundaries are unsettled.",
+      "high": "The company's long-term economics materially depend on the named mechanism."
+    },
+    "judgmentConfidence": {
+      "low": "Only a path or unsupported label can be stated.",
+      "medium": "Candidate Power is supported with unresolved persistence.",
+      "high": "Observed material Benefit and Barrier persist under realistic counterfactuals."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SF-08",
+    "PT-02",
+    "PT-07"
+  ],
+  "conflictingFrameworkIds": [
+    "MOAT-LABEL-SCORE",
+    "POWER-COUNT-SCORE",
+    "PMF-EQUALS-POWER"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed Benefit and Barrier definition review.",
+      "Validate status labels against time-stamped company and competitor outcomes.",
+      "Demonstrate incremental predictive or decision value beyond margins, growth, and market share."
+    ],
+    "empiricalQualifications": [
+      "Public examples are illustrative rather than a validated prediction dataset.",
+      "Observed profitability can cause retrospective Power attribution.",
+      "Market definition, stage, and decision date materially affect the result."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book or interview passage is reproduced; doctrine is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete lawful first-edition page review.",
+      "Verify official interview timestamps against audio."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial Benefit-plus-Barrier qualification and stage-safe status card."
+    }
+  ]
+}

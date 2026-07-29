@@ -1,0 +1,519 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "expectations_investing_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport"
+    ],
+    "organizations": [
+      "Columbia University Press",
+      "Columbia Business School",
+      "Expectations Investing",
+      "Morgan Stanley Investment Management"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "EI-P2-BOOK-2021",
+      "title": "Expectations Investing: Reading Stock Prices for Better Returns, Revised and Updated",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Columbia University Press",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_catalog_record",
+      "url": "https://cup.columbia.edu/book/expectations-investing/9780231203043/",
+      "edition": "Revised and updated edition; hardcover ISBN 978-0-231-20304-3; ebook ISBN 978-0-231-55484-8; 272 pages",
+      "publishedAt": "2021-10",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_metadata_and_public_description_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Canonical publisher record for edition, date, scope, and chapter architecture. It supports the high-level inversion from price to implied operating expectations, not undisclosed chapter detail.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P2-FRONTMATTER-2021",
+      "title": "Expectations Investing — Front Matter",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Columbia University Press",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_frontmatter",
+      "url": "https://www.degruyter.com/document/doi/10.7312/maub20304-fm/pdf",
+      "edition": "Revised and updated edition front matter, copyright 2021",
+      "publishedAt": "2021",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_excerpt_metadata_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Confirms authorship, publisher, edition, copyright, and ISBN metadata.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-CBS-ABSTRACT",
+      "title": "Expectations Investing: Reading Stock Prices for Better Returns, Revised and Updated",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Columbia Business School",
+      "sourceClass": "P1",
+      "sourceType": "author_faculty_research_record",
+      "url": "https://business.columbia.edu/faculty/research/expectations-investing-reading-stock-prices-better-returns-revised-and-updated",
+      "edition": "Faculty research abstract accessed July 28, 2026",
+      "publishedAt": "2021",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports inverse DCF and the expectations infrastructure that links basic economic forces to sales, costs, and investment.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-CHAPTER-SUMMARIES",
+      "title": "Expectations Investing — Chapter Summaries",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_book_companion",
+      "url": "https://www.expectationsinvesting.com/chapter-summaries",
+      "edition": "Official revised-edition companion page accessed July 28, 2026",
+      "publishedAt": "2021",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports the chapter-level sequence: present value, expectations infrastructure, strategy, price-implied expectations, revision opportunities, expected value, real options, business-model differences, and event analysis.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-ABOUT-FAQ",
+      "title": "About Expectations Investing",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_book_companion_faq",
+      "url": "https://www.expectationsinvesting.com/about-expectations-investing",
+      "edition": "Official FAQ accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports the three-step process, cash-flow focus, value triggers, strategy analysis, intangible-investment adjustment, and real-options boundary.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-1",
+      "title": "Online Tutorial 1 — Present Value",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-1",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports present-value dependence on cash-flow amount, risk-adjusted required return, and time.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-2",
+      "title": "Online Tutorial 2 — Sales Growth",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-2",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports sourced historical sales, company guidance, independent research, and low/base/high sales cases.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-3",
+      "title": "Online Tutorial 3 — Operating Profit Margin",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-3",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports operating-margin analysis and economic mechanisms such as economies of scale, mix, and cost efficiency.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-4",
+      "title": "Online Tutorial 4 — Incremental Working Capital Investment",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-4",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports explicit modeling of cash tied up in incremental revenue through working capital.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-5",
+      "title": "Online Tutorial 5 — Incremental Fixed Capital Investment",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-5",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports a fixed-capital bridge that includes capital expenditures, capitalized software, other investment, acquisitions, and depreciation.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-6",
+      "title": "Online Tutorial 6 — Cash Tax Rate",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-6",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports distinction between book tax expense and unlevered cash taxes, including deferred-tax and leverage effects.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-7",
+      "title": "Online Tutorial 7 — Cost of Capital",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-7",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports WACC as an opportunity cost for all capital and its public-company debt/equity construction. Private-company transfer requires separate policy.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-8",
+      "title": "Online Tutorial 8 — Price-Implied Expectations",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-8",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports the four deterministic steps: free cash flow, non-operating assets, market equity, and market-implied forecast period.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-10",
+      "title": "Online Tutorial 10 — Real Options",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "publisher": "Expectations Investing",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tutorial",
+      "url": "https://www.expectationsinvesting.com/online-tutorial-10",
+      "edition": "Online tutorial accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports separating the value of the existing business from uncertain growth opportunities represented as real options.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-A1-MOAT-2024",
+      "title": "Measuring the Moat: Assessing the Magnitude and Sustainability of Value Creation",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Dan Callahan"
+      ],
+      "publisher": "Morgan Stanley Investment Management",
+      "sourceClass": "A1",
+      "sourceType": "author_affiliated_research",
+      "url": "https://www.morganstanley.com/im/en-us/individual-investor/insights/articles/measuring-the-moat.html",
+      "edition": "Research article, July 2024",
+      "publishedAt": "2024-07",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "affiliated_doctrine",
+      "attributionNotes": "Post-book, coauthored affiliated doctrine. Supports ROIC-cost-of-capital spread, reinvestment, and duration as value-creation dimensions; it is not attributed to Rappaport or the 2021 book without separate support.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-A1-ROIC-2022",
+      "title": "Return on Invested Capital: How to Calculate ROIC and Handle Common Issues",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Dan Callahan"
+      ],
+      "publisher": "Morgan Stanley Investment Management",
+      "sourceClass": "A1",
+      "sourceType": "author_affiliated_research",
+      "url": "https://www.morganstanley.com/im/publication/insights/articles/article_returnoninvestedcapital.pdf",
+      "edition": "Research report, November 2022",
+      "publishedAt": "2022-11",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_pdf_neutral_paraphrase_only",
+      "attributionScope": "affiliated_doctrine",
+      "attributionNotes": "Supports value creation when investment returns exceed capital cost, growth qualification, and thoughtful treatment of intangible investment.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-A1-BASE-RATES-2026",
+      "title": "Bayes and Base Rates 2.0",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Dan Callahan"
+      ],
+      "publisher": "Morgan Stanley Investment Management",
+      "sourceClass": "A1",
+      "sourceType": "author_affiliated_research",
+      "url": "https://www.morganstanley.com/im/publication/insights/articles/article_bayesandbaserates20.pdf",
+      "edition": "Research report, 2026",
+      "publishedAt": "2026",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_pdf_neutral_paraphrase_only",
+      "attributionScope": "affiliated_doctrine",
+      "attributionNotes": "Supports choosing an appropriate reference class, treating its distribution as a prior, and updating rather than mechanically copying it.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-A1-EXPECTED-VALUE-2025",
+      "title": "Probabilities and Payoffs",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Dan Callahan"
+      ],
+      "publisher": "Morgan Stanley Investment Management",
+      "sourceClass": "A1",
+      "sourceType": "author_affiliated_research",
+      "url": "https://www.morganstanley.com/im/publication/insights/articles/article_probabilitiesandpayoffs.pdf",
+      "edition": "Research report, 2025",
+      "publishedAt": "2025",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_pdf_neutral_paraphrase_only",
+      "attributionScope": "affiliated_doctrine",
+      "attributionNotes": "Supports keeping probabilities, payoffs, expected value, edge, and position sizing distinct.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-A1-CAP-2026",
+      "title": "Competitive Advantage Period",
+      "authorOrSpeaker": [
+        "Michael J. Mauboussin",
+        "Dan Callahan"
+      ],
+      "publisher": "Morgan Stanley Investment Management",
+      "sourceClass": "A1",
+      "sourceType": "author_affiliated_research",
+      "url": "https://www.morganstanley.com/im/publication/insights/articles/article_competitiveadvantageperiod.pdf",
+      "edition": "Research report, 2026",
+      "publishedAt": "2026",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_pdf_neutral_paraphrase_only",
+      "attributionScope": "affiliated_doctrine",
+      "attributionNotes": "Supports separating the spread between return and capital cost, reinvestment amount, and duration of competitive advantage.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "EI-E1-PRIVATE-VALUATIONS-2017",
+      "title": "Squaring Venture Capital Valuations with Reality",
+      "authorOrSpeaker": [
+        "Will Gornall",
+        "Ilya A. Strebulaev"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_empirical_working_paper",
+      "url": "https://www.nber.org/papers/w23895",
+      "edition": "NBER Working Paper 23895, October 2017",
+      "publishedAt": "2017-10",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "External qualification: preferred-stock contractual protections can make the latest round price an unreliable estimate of common-equity or company value. Sample estimates cannot be transplanted to an individual deal.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-01",
+  "slug": "heavy-tail-portfolio-assumption",
+  "name": "Heavy-Tail Portfolio Assumption Test",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests rather than assumes that a fund's relevant deal outcomes are sufficiently skewed for power-law portfolio logic.",
+    "productLabel": "Heavy-Tail Portfolio Pattern — derived from Mallaby's public historical analysis and external research",
+    "notAClaimOf": ["an exact 80/20 rule", "every venture segment having the same tail", "tail winners being identifiable in advance"]
+  },
+  "attribution": {
+    "display": "Historical pattern derived from Sebastian Mallaby's public materials, qualified by external research",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Council on Foreign Relations", "Penguin Press"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Treat highly skewed outcomes as a testable fund and market hypothesis. Measure the relevant cohort, missing observations, and concentration of realized and unrealized value before using heavy-tail logic to justify portfolio construction.",
+  "claimTypes": ["historical_description", "empirical_association", "empirical_qualification", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P2-BOOK-2022",
+      "claimIds": ["PL-CLM-001", "PL-CLM-002"],
+      "locator": {"kind": "web_section", "value": "Official description of extreme success and failure in venture portfolios"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-E1-EXPERIMENT-2014",
+      "claimIds": ["PL-CLM-001", "PL-CLM-004", "PL-CLM-016"],
+      "locator": {"kind": "pdf_page", "value": "pp. 8-11, skewed gross returns and weak ex-ante score correlation"},
+      "attributionScope": "external_empirical",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PL-E1-SKILL-2014",
+      "claimIds": ["PL-CLM-016", "PL-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Abstract on noisy VC performance and limited investable persistence"},
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A defined cohort, vintage range, stage, geography, and return measure exist.",
+    "Missing, stale, and unrealized outcomes are labeled.",
+    "The result is used as portfolio context, not company proof."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "cohort_returns",
+      "description": "Deal-level invested capital, proceeds, marks, dates, and exit status for a relevant cohort.",
+      "necessity": "required",
+      "acceptableSources": ["fund ledger", "audited returns", "credible research dataset"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "data_quality",
+      "description": "Coverage, valuation policy, survivorship, stale marks, and missing-outcome analysis.",
+      "necessity": "required",
+      "acceptableSources": ["data dictionary", "valuation policy", "audit notes"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "comparison_cohort",
+      "description": "Comparable distribution by stage, sector, geography, or vintage.",
+      "necessity": "recommended",
+      "acceptableSources": ["benchmark dataset", "academic study"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "How concentrated are gross and net returns in the relevant cohort?",
+    "How sensitive is concentration to marks, write-offs, and missing exits?",
+    "Does the distribution support winner-dependent portfolio logic for this fund?",
+    "What cannot be inferred about identifying the tail ex ante?"
+  ],
+  "positiveSignals": [
+    "A small observed tail dominates returns across defensible data treatments.",
+    "The pattern persists across more than one vintage or comparison cohort.",
+    "Fund policy explicitly reflects winner-dependent economics.",
+    "Unrealized marks and missing outcomes do not drive the entire result."
+  ],
+  "redFlags": [
+    "The system hardcodes 80/20 as a fact.",
+    "One famous portfolio is treated as a base rate.",
+    "Gross company outcomes are confused with net fund returns.",
+    "Power-law rhetoric is used to excuse indiscriminate investing."
+  ],
+  "disconfirmingEvidence": [
+    "Returns are broadly distributed after write-downs and fees.",
+    "The apparent tail comes from stale or selected marks.",
+    "The target strategy has capped outcomes or capital intensity that limits tail payoff.",
+    "Fund ownership is too small for outliers to matter."
+  ],
+  "contraindications": [
+    "Do not infer company attractiveness from portfolio skew.",
+    "Do not use a fixed Pareto exponent without statistical validation.",
+    "Do not infer manager skill from one tail realization."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define cohort and return measure before calculation.",
+      "Run deterministic concentration and sensitivity analysis.",
+      "Audit missing and unrealized outcomes.",
+      "Compare with relevant cohorts.",
+      "Conclude supported heavy tail, weakly supported, unsupported, or unmeasurable."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "portfolio_distribution_analysis",
+      "requiredOutputs": ["return_concentration_curve", "top_decile_share", "loss_rate", "mark_sensitivity", "coverage"],
+      "prohibition": "The language model must not calculate distribution statistics."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Anecdotes or self-selected fund claims.", "medium": "Credible but incomplete cohort data.", "high": "Audited deal-level data with explicit valuation policy."},
+    "evidenceStrength": {"low": "Skew is asserted.", "medium": "Skew is measured but sensitive to missing data.", "high": "Skew persists across treatments and cohorts."},
+    "evidenceCoverage": {"low": "Winners only.", "medium": "Most deals covered; fees or stale marks partial.", "high": "Complete capital, proceeds, marks, dates, failures, and fees."},
+    "applicabilityConfidence": {"low": "Cohort does not match strategy.", "medium": "Broadly comparable cohort.", "high": "Fund, stage, sector, geography, and vintage align."},
+    "judgmentConfidence": {"low": "Power-law assumption is untested.", "medium": "Heavy tail is directionally supported.", "high": "Heavy-tail portfolio context is robustly supported."}
+  },
+  "overlapFrameworkIds": ["VM-01", "BVC-02", "MMI-10"],
+  "conflictingFrameworkIds": ["UNIVERSAL-80-20", "TAIL-WINNER-PREDICTABILITY"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "portfolio_policy"],
+    "promotionRequirements": ["Validate distribution service.", "Use representative fund data.", "Establish update cadence and mark policy."],
+    "empiricalQualifications": ["Private returns are delayed, selected, and mark-sensitive.", "Heavy tails make skill difficult to distinguish from luck."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical and empirical patterns are paraphrased; no chapter text is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define the minimum cohort size for descriptive use."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

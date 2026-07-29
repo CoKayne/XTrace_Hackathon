@@ -1,0 +1,305 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-08",
+  "slug": "pro-rata-pay-to-play",
+  "name": "Pro Rata, Follow-On Capacity, and Pay-to-Play",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates the legal right to participate, the fund's capacity and decision to participate, and the consequences of declining.",
+    "productLabel": "Follow-On Rights Lens — based on Feld and Mendelson's public Venture Deals materials",
+    "notAClaimOf": [
+      "pro rata guaranteeing allocation",
+      "a fund having enough reserves to exercise a right",
+      "pay-to-play creating an unconditional lifetime funding commitment"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public pro-rata and pay-to-play materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A pro-rata right creates conditional access to future financings; a fund still needs capacity, eligibility, allocation, approval, and a fresh underwriting decision. Pay-to-play may penalize nonparticipation in a qualifying round. Model rights, capacity, choice, and consequence separately for every investor and scenario.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-VC-RIGHTS-2012",
+      "claimIds": [
+        "VD-CLM-014"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Pro-rata as the right to continue investing to maintain ownership"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P1-PAYTOPLAY-2005",
+      "claimIds": [
+        "VD-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Qualified financing, required participation, affiliate aggregation, and preferred-to-common consequence"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P2-CONTENTS-2019",
+      "claimIds": [
+        "VD-CLM-014",
+        "VD-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 5 pay-to-play; Chapter 7 first-refusal and other rights; Chapter 12 reserves and fund mechanics"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_venture_backed_companies"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "united_states",
+      "other_with_counsel_mapping"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "convertible",
+      "common_equity"
+    ]
+  },
+  "requiredConditions": [
+    "Eligibility, major-investor threshold, pro-rata formula, transfer, notice, allocation, and exclusions are exact.",
+    "Pay-to-play qualified-financing trigger, required amount, consequence, affiliates, waiver, and exceptions are exact.",
+    "Fund reserves, concentration, remaining life, follow-on policy, and approval are separately available.",
+    "Each financing is freshly reunderwritten."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "follow_on_rights",
+      "description": "Investor eligibility, pro-rata calculation, major-investor threshold, notice, transfer, allocation, and round exclusions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "investor rights agreement",
+        "side letter",
+        "SAFE pro-rata letter",
+        "financing documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "pay_to_play_terms",
+      "description": "Qualified-financing definition, participation requirement, affiliate aggregation, conversion or rights-loss consequence, waiver, and exceptions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "charter",
+        "stock purchase agreement",
+        "side letter",
+        "amendment"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "fund_capacity_policy",
+      "description": "Available reserves, concentration, fund life, follow-on allocation policy, approvals, and opportunity cost.",
+      "necessity": "required",
+      "acceptableSources": [
+        "fund policy",
+        "reserve model",
+        "LPA",
+        "investment committee record"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fresh_underwrite",
+      "description": "Current company, market, terms, dilution, valuation, and expected-return analysis.",
+      "necessity": "required",
+      "acceptableSources": [
+        "current Evidence Pack",
+        "updated valuation",
+        "IC memo"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Does this investor legally have a pro-rata or other participation right?",
+    "How much may or must it invest, and by when?",
+    "Will allocation or new-lead conditions limit exercise?",
+    "Does the fund have approved capacity and concentration room?",
+    "What happens if the investor declines under pay-to-play?",
+    "Does the current underwrite justify exercising the right?",
+    "What other portfolio use competes for the reserve?"
+  ],
+  "positiveSignals": [
+    "Rights, eligibility, and deadlines are exact.",
+    "Fund capacity and approval are verified.",
+    "The company passes a fresh underwriting process.",
+    "Ownership retention and security payoff are modeled.",
+    "Decline and pay-to-play consequences are explicit."
+  ],
+  "redFlags": [
+    "Pro-rata is treated as guaranteed allocation.",
+    "The fund is assumed to have reserves.",
+    "A contractual right substitutes for a fresh underwrite.",
+    "Pay-to-play consequences are omitted.",
+    "Super-pro-rata or transfer rights crowd out future financing without analysis."
+  ],
+  "disconfirmingEvidence": [
+    "Major-investor status or ownership threshold has lapsed.",
+    "The round is excluded or notice was missed.",
+    "Fund reserve, concentration, or life prevents participation.",
+    "New terms or company evidence fail the current underwrite.",
+    "A waiver or alternative financing changes pay-to-play consequences."
+  ],
+  "contraindications": [
+    "Do not equate right, capacity, and decision.",
+    "Do not exercise based on sunk cost or prior thesis alone.",
+    "Do not infer pay-to-play consequences.",
+    "Do not let the LLM calculate allocation or fund capacity."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Validate contractual eligibility, amount, allocation, and deadline.",
+      "Validate pay-to-play trigger and consequence.",
+      "Validate fund reserves, concentration, life, and approval.",
+      "Run a fresh underwriting and compare opportunity cost.",
+      "Send rights, economics, and policy outputs to deterministic Decision Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredOutputs": [
+        "legal_participation_range",
+        "ownership_after_each_choice",
+        "pay_to_play_consequence",
+        "fund_capacity_status",
+        "decision_deadline"
+      ],
+      "guards": [
+        "right_not_equal_capacity",
+        "capacity_not_equal_decision",
+        "fresh_underwrite_completed",
+        "Fund_Policy_applied"
+      ],
+      "calculationOwner": "follow_on_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Rights or reserves rely on memory or verbal claims.",
+      "medium": "Contracts and fund data exist but allocation or pay-to-play details are incomplete.",
+      "high": "Executed rights, current round, reserves, policy, and approvals reconcile."
+    },
+    "evidenceStrength": {
+      "low": "Only a presumed right is known.",
+      "medium": "Right and capacity are known but underwrite or allocation is uncertain.",
+      "high": "Right, capacity, allocation, consequence, and underwrite are independently supported."
+    },
+    "evidenceCoverage": {
+      "low": "Only current ownership is known.",
+      "medium": "Right and round are covered but fund policy or consequence is partial.",
+      "high": "Eligibility, amount, allocation, deadline, consequence, fund capacity, underwrite, and opportunity cost are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No follow-on right or financing exists.",
+      "medium": "A right exists with custom exclusions or allocation.",
+      "high": "The right and financing state are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only evidence requests are possible.",
+      "medium": "A feasible participation range can be shown.",
+      "high": "All inputs are ready for Fund Policy decision."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VM-07",
+    "SHR-09",
+    "VCFI-04",
+    "VCFI-05",
+    "VD-04"
+  ],
+  "conflictingFrameworkIds": [
+    "PRO-RATA-EQUALS-ALLOCATION",
+    "RIGHT-EQUALS-CAPACITY",
+    "PRIOR-INVESTMENT-EQUALS-FOLLOW-ON"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Fund-operations and venture-counsel review.",
+      "Validate rights and reserve calculations.",
+      "Backtest follow-on decision and opportunity-cost workflow."
+    ],
+    "empiricalQualifications": [
+      "Actual allocation may differ from contractual maximum.",
+      "Fund capacity and priorities change over time.",
+      "Follow-on returns are subject to selection, valuation, and survivorship effects."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author doctrine is neutrally paraphrased; contractual and fund-policy facts remain deal-specific."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define reserve opportunity-cost contract.",
+      "Map super-pro-rata and SAFE pro-rata variants."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

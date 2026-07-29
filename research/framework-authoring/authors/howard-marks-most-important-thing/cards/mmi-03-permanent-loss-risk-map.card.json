@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-03",
+  "slug": "permanent-loss-risk-map",
+  "name": "Permanent-Loss and Uncertainty Risk Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Maps pathways to permanent capital loss and the range of plausible outcomes instead of reducing risk to observed volatility or one forecast.",
+    "productLabel": "Permanent-Loss Risk Map — based on Howard Marks's public risk materials",
+    "notAClaimOf": ["volatility never mattering", "risk being exactly measurable", "a realized success proving ex-ante safety"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public risk materials",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Represent risk as uncertainty about future states and pathways to irreversible loss. Separate operating failure, financing failure, terms, governance, concentration, liquidity, and portfolio consequences; do not infer ex-ante risk from the one outcome that happened.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-RISK-COURSE-2024",
+      "claimIds": ["MMI-CLM-006", "MMI-CLM-007", "MMI-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Official ten-part course description and lessons on the character and misconceptions of risk"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-LESSONS-2007",
+      "claimIds": ["MMI-CLM-006", "MMI-CLM-007"],
+      "locator": {"kind": "pdf_page", "value": "Risk discussion, including invisible ex-ante risk and multiple possible outcomes"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-HOOD-2025",
+      "claimIds": ["MMI-CLM-006", "MMI-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Sections distinguishing volatility from permanent loss and evaluating a full cycle"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The investor's security, ownership, follow-on policy, and loss definition are known.",
+    "Risk pathways are separated from probability estimates.",
+    "Unknown and unmodeled states remain visible."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "failure_pathways",
+      "description": "Evidence-backed operating, financing, governance, legal, technical, and market failure pathways.",
+      "necessity": "required",
+      "acceptableSources": ["company data", "customer evidence", "technical diligence", "legal diligence", "cap table"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "runway_capital_path",
+      "description": "Runway, burn, financing milestones, dilution, and downside financing cases.",
+      "necessity": "required",
+      "acceptableSources": ["cash plan", "board materials", "financing model"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "alternative_states",
+      "description": "Plausible adverse states beyond the management base case.",
+      "necessity": "recommended",
+      "acceptableSources": ["scenario analysis", "premortem", "industry history"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Through which causal paths can invested capital be permanently impaired?",
+    "Which risks are survivable volatility and which can terminate the company or investor payoff?",
+    "What financing, governance, or contractual features amplify loss?",
+    "Which plausible state is missing because it has not occurred before?"
+  ],
+  "positiveSignals": [
+    "Material failure paths have mitigations, owners, and measurable triggers.",
+    "The company can survive a delayed financing or demand shock.",
+    "Terms and governance do not create avoidable irreversible loss.",
+    "Scenario analysis includes states outside recent historical norms."
+  ],
+  "redFlags": [
+    "Low historical volatility is presented as low venture risk.",
+    "A successful outcome is used to label the original decision safe.",
+    "Runway assumes an on-time up-round.",
+    "Worst case means only the worst previously observed case."
+  ],
+  "disconfirmingEvidence": [
+    "A single delayed milestone creates insolvency before the next financing window.",
+    "Preferences or dilution erase common-equity payoff in plausible exits.",
+    "Customer, regulatory, or technical concentration creates an unmitigated kill path.",
+    "The fund lacks follow-on capacity under the modeled downside."
+  ],
+  "contraindications": [
+    "Do not convert qualitative uncertainty into invented probabilities.",
+    "Do not treat mark-to-market movement and permanent loss as identical.",
+    "Do not use this card to avoid all risky investments."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Enumerate independent permanent-loss pathways.",
+      "Map triggers, time to impact, mitigations, and evidence for each.",
+      "Separate volatility, recoverable impairment, and irreversible loss.",
+      "Add plausible states not present in the observed history.",
+      "Conclude bounded, material, critical, or insufficiently mapped."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Risk claims rely on management assurance.", "medium": "Multiple diligence sources support material pathways.", "high": "Primary operating, legal, technical, and financing evidence converge."},
+    "evidenceStrength": {"low": "Generic risk list only.", "medium": "Causal pathways exist but probability or mitigation is weak.", "high": "Paths, triggers, exposure, mitigations, and capital impact are evidenced."},
+    "evidenceCoverage": {"low": "Only market risk is covered.", "medium": "Operating and financing risks are covered but terms or governance are partial.", "high": "Operating, financing, technical, legal, governance, terms, and portfolio effects are covered."},
+    "applicabilityConfidence": {"low": "Investor exposure is unknown.", "medium": "Company and stage are clear but terms are incomplete.", "high": "Company, security, fund exposure, and time horizon are explicit."},
+    "judgmentConfidence": {"low": "Risk remains largely unknown.", "medium": "Major loss paths are directionally understood.", "high": "Material paths and mitigations survive independent challenge."}
+  },
+  "overlapFrameworkIds": ["DSV-05", "VD-04", "VDCF-07", "NN-08"],
+  "conflictingFrameworkIds": ["VOLATILITY-EQUALS-RISK", "OUTCOME-PROVES-SAFETY"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Create a controlled venture loss-path taxonomy.", "Validate with retrospective failure cases.", "Complete book review."],
+    "empiricalQualifications": ["Unmodeled tail events remain.", "Private-company data can understate correlated financing risks."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public risk principles are paraphrased and adapted with explicit venture boundaries."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define recoverable impairment versus permanent loss for each security type."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

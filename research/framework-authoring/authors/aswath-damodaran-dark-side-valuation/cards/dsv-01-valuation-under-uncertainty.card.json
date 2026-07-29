@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-01",
+  "slug": "valuation-under-uncertainty",
+  "name": "Valuation Under Uncertainty",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Turns uncertainty into explicit assumptions, risk locations, sensitivities, and evidence requests instead of false precision.",
+    "productLabel": "Valuation Under Uncertainty Lens — based on Aswath Damodaran's public valuation materials",
+    "notAClaimOf": [
+      "producing a precise true value",
+      "removing uncertainty through model complexity",
+      "authorizing an investment decision"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public valuation materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Young companies can be valued systematically even when history is sparse and outcomes are wide. The analysis should state what is observed, what is assumed, what kind of uncertainty each input carries, where that risk enters the model, and which inputs drive value. Extra decimals, arbitrary premiums, and more model levers do not turn uncertainty into knowledge.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-UNCERTAINTY",
+      "claimIds": [
+        "DSV-CLM-001",
+        "DSV-CLM-002"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 3-12: unhealthy responses, uncertainty classification, risk placement, model simplicity, distributions, and willingness to be wrong"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-003"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 12-18: dark-side shortcuts and systematic valuation of young companies"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-VALUATION-INTRO",
+      "claimIds": [
+        "DSV-CLM-001",
+        "DSV-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Inside the Valuation Process: bias, imprecision, and estimation, firm-specific, and macroeconomic uncertainty"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Valuation date, currency, security, and enterprise-versus-equity scope are explicit.",
+    "Observed company evidence is separated from estimates and external priors.",
+    "Each material risk is assigned once to cash flow, probability, discount rate, or a separate claim adjustment.",
+    "The output is presented as a conditional model rather than a discovered fact."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "observed_company_facts",
+      "description": "Time-stamped company evidence for current operations, financing, customers, product, and capitalization.",
+      "necessity": "required",
+      "acceptableSources": [
+        "management data room",
+        "financial statements",
+        "customer evidence",
+        "cap table",
+        "verified company disclosures"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "assumption_register",
+      "description": "Every non-observed model input with source, date, unit, range, owner, and rationale.",
+      "necessity": "required",
+      "acceptableSources": [
+        "model input registry",
+        "industry dataset",
+        "comparable analysis",
+        "scenario workshop"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "risk_placement_map",
+      "description": "A map showing whether each material uncertainty affects expected cash flow, discrete probability, discount rate, security terms, or decision policy.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation model",
+        "risk register",
+        "scenario analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "sensitivity_output",
+      "description": "Sensitivity of value to the few inputs that materially drive the result.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation service",
+        "scenario model",
+        "simulation output"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which inputs are observations, estimates, external priors, or policy choices?",
+    "Which two or three uncertainties drive most of the value range?",
+    "Is each material risk reflected exactly once and in the correct model location?",
+    "Does model complexity add information or merely add adjustable levers?",
+    "What new evidence would narrow estimation uncertainty?",
+    "Which uncertainty cannot be resolved by more research and must remain visible?"
+  ],
+  "positiveSignals": [
+    "Every material input has provenance, date, unit, range, and classification.",
+    "Risk placement is explicit and free of obvious double counting.",
+    "A small number of economically meaningful drivers explains most sensitivity.",
+    "The model updates predictably when new company evidence arrives.",
+    "Unknowns are tied to specific diligence requests."
+  ],
+  "redFlags": [
+    "A point estimate is presented without a range or sensitivity.",
+    "Stage averages or sector priors are labeled as company facts.",
+    "A single arbitrary discount rate absorbs failure, illiquidity, key-person, dilution, and macro risk.",
+    "More decimal places are used to imply confidence.",
+    "The output jumps from a model value to an investment recommendation."
+  ],
+  "disconfirmingEvidence": [
+    "Small reasonable changes to unverified inputs reverse the conclusion.",
+    "The model cannot explain where a material risk is reflected.",
+    "Multiple risks are counted in both cash flows and discount rates.",
+    "The same evidence is represented differently across scenarios without rationale.",
+    "Critical company facts are replaced by unsupported estimates."
+  ],
+  "contraindications": [
+    "Do not use the card to approve an investment.",
+    "Do not hide missing data with market defaults.",
+    "Do not equate a wide range with a useless valuation.",
+    "Do not use model output without valuation-date and security context."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Create a fact-versus-assumption register.",
+      "Classify and place each material uncertainty.",
+      "Run deterministic sensitivities on the few dominant drivers.",
+      "Report double-counting findings and unresolved unknowns.",
+      "Return the model to the valuation service; do not create an investment decision."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "calculationOwner": "valuation_service",
+      "requiredOutputs": [
+        "assumption_register",
+        "risk_placement_map",
+        "driver_sensitivities",
+        "valuation_range"
+      ],
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only unsourced management claims or generic defaults are available.",
+      "medium": "Authoritative external priors and partial company records are available.",
+      "high": "Auditable company evidence and versioned external datasets support all material inputs."
+    },
+    "evidenceStrength": {
+      "low": "The output is driven mostly by unsupported point estimates.",
+      "medium": "Major assumptions are sourced but important company facts or ranges remain missing.",
+      "high": "Material assumptions are independently supported, ranged, and causally connected."
+    },
+    "evidenceCoverage": {
+      "low": "Only revenue and headline valuation are modeled.",
+      "medium": "Operations, risk, and valuation are covered but claims or survival remain incomplete.",
+      "high": "Cash flows, risk, survival, claims, liquidity, and sensitivities are all mapped."
+    },
+    "applicabilityConfidence": {
+      "low": "The asset or security cannot be described consistently enough to model.",
+      "medium": "A company model is feasible but several material inputs rely on priors.",
+      "high": "The company, security, and valuation scope are explicit and evidence-backed."
+    },
+    "judgmentConfidence": {
+      "low": "Only a broad hypothesis and evidence request can be stated.",
+      "medium": "A conditional range is defensible but sensitive to unresolved assumptions.",
+      "high": "The conditional range is stable across sourced alternatives and all material risks are placed."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-07",
+    "DSV-10",
+    "VM-07"
+  ],
+  "conflictingFrameworkIds": [
+    "VALUATION-AS-POINT-TRUTH",
+    "COMPLEXITY-EQUALS-ACCURACY",
+    "DEFAULTS-AS-COMPANY-FACTS"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition chapter review.",
+      "Validate risk-placement and sensitivity outputs against expert-reviewed models.",
+      "Demonstrate that the audit catches material errors without rejecting appropriately uncertain models."
+    ],
+    "empiricalQualifications": [
+      "A well-structured valuation can still be wrong because future outcomes are uncertain.",
+      "More evidence reduces estimation uncertainty but not all economic uncertainty.",
+      "Confidence describes model support, not probability of investment success."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public valuation doctrine is neutrally paraphrased; no book or paper passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Review risk placement terminology with a valuation expert."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

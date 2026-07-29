@@ -1,0 +1,299 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-07",
+  "slug": "founder-alignment-governance",
+  "name": "Founder Alignment & Governance",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Examines early governance path dependence without treating founder control or unusual personality as a universal positive signal.",
+    "productLabel": "Founder Alignment Lens — based on CS183 public materials with empirical qualification",
+    "notAClaimOf": [
+      "a blanket preference for permanent founder control",
+      "a founder personality diagnosis",
+      "Peter Thiel endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Blake Masters' CS183 notes, qualified by external founder-replacement research",
+    "scope": "product_synthesis",
+    "people": [
+      "Peter Thiel",
+      "Blake Masters"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Early choices about cofounders, equity, board control, roles, and incentives can create lasting constraints. The relevant investment question is whether ownership, operational authority, and formal control are aligned with current capability and company stage—not whether the founder retains control at all costs or displays a particular personality.",
+  "claimTypes": [
+    "affiliated_doctrine",
+    "historical_description",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P2-CS183-06",
+      "claimIds": [
+        "PT-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Founding path dependence; ownership, possession, and control"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-P2-CS183-18",
+      "claimIds": [
+        "PT-CLM-018"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Founder symbolism and extreme-trait discussion"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "PT-E1-FOUNDER-REPLACEMENT",
+      "claimIds": [
+        "PT-EQ-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and identification strategy"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "conflict"
+    },
+    {
+      "sourceId": "PT-E1-VC-SURVEY",
+      "claimIds": [
+        "PT-EQ-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Survey findings on team importance"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The cap table, board, executive roles, and material founder agreements can be reviewed.",
+    "The analysis distinguishes founder identity from role capability and incentive alignment.",
+    "Company-stage needs and foreseeable governance decisions are explicit."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "founder_history",
+      "description": "Verified working history, role ownership, relevant experience, and observed conflict resolution.",
+      "necessity": "required",
+      "acceptableSources": [
+        "founder interviews",
+        "references",
+        "employment history",
+        "team records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "ownership_and_control",
+      "description": "Current and pro forma cap table, voting rights, board composition, vesting, and protective provisions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table",
+        "charter",
+        "stockholder agreement",
+        "term sheet"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "role_capability",
+      "description": "Evidence matching each critical current and next-stage role to capability, time allocation, and accountability.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating review",
+        "references",
+        "performance evidence",
+        "organization plan"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "governance_scenarios",
+      "description": "How deadlock, founder departure, underperformance, financing, and succession are handled.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "governance documents",
+        "board policy",
+        "founder agreement",
+        "scenario discussion"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who owns the company, who operates it, and who controls material decisions?",
+    "Where are those three dimensions aligned or misaligned?",
+    "Which founder capabilities are proven, and which next-stage capabilities are missing?",
+    "How has the team handled serious disagreement or failure?",
+    "What happens if a founder leaves, underperforms, or must change roles?",
+    "Does governance support truth-seeking and accountability, or entrench any individual?",
+    "Are references and observed behaviors consistent with the founder narrative?"
+  ],
+  "positiveSignals": [
+    "Roles, ownership, vesting, and control are explicit and mutually understood.",
+    "The founders have relevant evidence of working through conflict.",
+    "The board can support long-term building while responding to clear underperformance.",
+    "Founders identify capability gaps and recruit stronger operators when needed.",
+    "Succession, deadlock, departure, and financing scenarios are addressed.",
+    "Reference evidence converges across customers, employees, and collaborators."
+  ],
+  "redFlags": [
+    "Equity or control does not match contribution and responsibility.",
+    "A cofounder dispute is unresolved or governed by ambiguous agreements.",
+    "Founder control is presented as a substitute for accountability.",
+    "The team depends on one irreplaceable person without continuity planning.",
+    "Unusual personality is treated as evidence of exceptional ability.",
+    "Team scoring relies on prestige or storytelling without observed behavior.",
+    "The board lacks either independence or domain capability."
+  ],
+  "disconfirmingEvidence": [
+    "References identify repeated integrity, execution, or collaboration failures.",
+    "The founder refuses role changes despite clear stage mismatch.",
+    "Vesting, IP, or control terms create an unresolved hold-up risk.",
+    "Board processes cannot resolve deadlock or protect minority stakeholders.",
+    "A replacement or added executive demonstrably improves company performance."
+  ],
+  "contraindications": [
+    "Do not assign a positive score for eccentricity, dropout status, age, or founder title.",
+    "Do not treat founder continuity as inherently superior to replacement.",
+    "Do not infer team quality from investor prestige.",
+    "Do not perform mental-health or personality diagnosis."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map ownership, possession, and control using verified documents.",
+      "Assess current and next-stage role capability separately.",
+      "Evaluate incentives, conflict history, and governance scenarios.",
+      "Present founder continuity and potential role change as competing hypotheses.",
+      "Request the highest-value reference or governance document needed to resolve uncertainty."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Founder doctrine is known only through selected anecdotes.",
+      "medium": "Course notes and preliminary external research are available.",
+      "high": "Licensed locators and authorized empirical versions are fully reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Founder self-description or prestige only.",
+      "medium": "Documents and one independent reference support the assessment.",
+      "high": "Documents, repeated observed behavior, multi-sided references, and governance tests converge."
+    },
+    "evidenceCoverage": {
+      "low": "Cap table, roles, or conflict history is missing.",
+      "medium": "Current alignment is known but next-stage or departure scenarios are incomplete.",
+      "high": "Ownership, control, roles, references, and governance scenarios are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The analysis concerns a mature company with established professional governance.",
+      "medium": "Founder alignment matters but material documents are unavailable.",
+      "high": "Early founder and governance choices are central to company risk."
+    },
+    "judgmentConfidence": {
+      "low": "Only founder narrative is available.",
+      "medium": "Current alignment is supported with unresolved stage-transition risk.",
+      "high": "Documents, behavior, references, and scenario governance converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "WASS-FOUNDERS-DILEMMAS",
+    "SUPER-FOUNDERS-BASE-RATES",
+    "KUPOR-GOVERNANCE"
+  ],
+  "conflictingFrameworkIds": [
+    "PERMANENT-FOUNDER-CONTROL",
+    "PROFESSIONAL-CEO-BY-STAGE"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Review exact empirical founder-replacement version and identification limits.",
+      "Use observable behavior and governance variables rather than personality proxies.",
+      "Test stage-specific outcomes against simple team and traction baselines.",
+      "Separate governance vetoes from soft founder-quality judgments."
+    ],
+    "empiricalQualifications": [
+      "VCs report valuing teams, but self-reported importance is not causal proof.",
+      "Founder replacement can improve outcomes in some settings.",
+      "Founder-success narratives are highly selected and retrospective."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No founder anecdotes or personality descriptions are reproduced at length."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete authorized empirical paper review.",
+      "Reconcile with Super Founders and Founder's Dilemmas cards.",
+      "Define which governance facts can become deterministic vetoes."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft removes personality mimicry and separates alignment from permanent founder control."
+    }
+  ]
+}

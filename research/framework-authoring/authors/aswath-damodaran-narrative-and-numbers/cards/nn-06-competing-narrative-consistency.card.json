@@ -1,0 +1,278 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-06",
+  "slug": "competing-narrative-consistency",
+  "name": "Competing Narrative Consistency Test",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Runs materially different stories independently and checks whether every scenario's revenue, economics, risk, and optionality describe one possible business.",
+    "productLabel": "Competing Narrative Consistency Lens — based on Aswath Damodaran's public narrative valuation cases",
+    "notAClaimOf": [
+      "one story needing to win before analysis",
+      "averaging stories creating a coherent base case",
+      "scenario range being investment risk probability"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public competing-narrative valuation cases",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Preserve competing stories as distinct hypotheses, map each through its own driver set, and reject combinations that cannot coexist. Compare the resulting values, sensitivities, evidence, and falsifiers without collapsing the disagreement into a synthetic average story.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-BRIDGE-2014",
+      "claimIds": [
+        "NN-CLM-009",
+        "NN-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Spreadsheet-nirvana warning and four Uber narrative/value cases"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-THREE-PS",
+      "claimIds": [
+        "NN-CLM-004",
+        "NN-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Dueling Narratives and differences in where probable, plausible, and possible boundaries are drawn"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-TOOLS",
+      "claimIds": [
+        "NN-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Narrative-linked company valuation spreadsheet and probabilistic tools"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "At least two materially different, non-strawman stories exist.",
+    "Each story has its own complete driver set and evidence map.",
+    "Scenario labels, narrative identities, and numerical models are version-pinned.",
+    "The deterministic scenario service calculates all values."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "competing_stories",
+      "description": "Distinct business stories with proponents, source dates, claims, and falsifiers.",
+      "necessity": "required",
+      "acceptableSources": [
+        "investment-team views",
+        "founder narrative",
+        "external analyst",
+        "customer evidence",
+        "market research"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "complete_driver_sets",
+      "description": "Revenue, margin, reinvestment, risk, duration, survival, and optionality inputs for each story.",
+      "necessity": "required",
+      "acceptableSources": [
+        "NN-04 output",
+        "NN-05 output",
+        "deterministic scenario model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "cross_driver_constraints",
+      "description": "Rules preventing contradictory best-case assumptions and double counting.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation policy",
+        "business-model model",
+        "reviewer-approved constraints"
+      ],
+      "missingEffect": "not_applicable"
+    }
+  ],
+  "decisionQuestions": [
+    "What differs structurally between the stories?",
+    "Which driver differences explain most of the value gap?",
+    "Can each driver set coexist operationally and financially?",
+    "Is optionality already included in market, growth, or terminal value?",
+    "What evidence would distinguish the stories fastest?",
+    "Does the current round price require one particular story?"
+  ],
+  "positiveSignals": [
+    "Competing stories are independently complete and charitable.",
+    "Driver differences, not rhetoric, explain the value range.",
+    "Each scenario passes growth-margin-reinvestment consistency.",
+    "Optionality and failure are not double-counted.",
+    "A small set of evidence can discriminate between stories."
+  ],
+  "redFlags": [
+    "The Bull case combines every favorable assumption regardless of compatibility.",
+    "The Bear case is a vague percentage haircut.",
+    "Disagreement is averaged before its causes are identified.",
+    "One scenario uses company facts while another uses generic priors without disclosure.",
+    "The model assigns probability from prose confidence."
+  ],
+  "disconfirmingEvidence": [
+    "Required driver combinations cannot coexist.",
+    "A story depends on mutually exclusive market or business definitions.",
+    "New evidence supports a third story better than either current story.",
+    "Value difference disappears after metric or security normalization.",
+    "The apparent disagreement is only a timing or accounting mismatch."
+  ],
+  "contraindications": [
+    "Do not average narratives into one model.",
+    "Do not create strawman dissent.",
+    "Do not interpret valuation spread as calibrated probability.",
+    "Do not select an investment action before price, terms, and policy checks."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define each competing narrative and source.",
+      "Build complete, internally coherent driver sets.",
+      "Run deterministic valuations independently.",
+      "Attribute value gaps to business-definition and driver differences.",
+      "Preserve disagreements and request the highest-information evidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "independentScenarioExecution": true,
+      "averagingBeforeExecution": false,
+      "crossDriverConsistencyRequired": true,
+      "calculationOwner": "scenario_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Stories are anonymous or unsupported.",
+      "medium": "Each story has credible sources but uneven company access.",
+      "high": "Each story uses primary company evidence and independent corroboration."
+    },
+    "evidenceStrength": {
+      "low": "Stories differ mainly in adjectives.",
+      "medium": "Material driver differences are explicit but one scenario relies on priors.",
+      "high": "Stories have complete driver maps, counterevidence, and discriminating tests."
+    },
+    "evidenceCoverage": {
+      "low": "Only revenue or TAM differs.",
+      "medium": "Revenue and economics are covered but risk or optionality is partial.",
+      "high": "Business definition, revenue, economics, risk, duration, survival, optionality, and terms are separated."
+    },
+    "applicabilityConfidence": {
+      "low": "The stories are not materially different.",
+      "medium": "The disagreement is real but one story remains underspecified.",
+      "high": "Multiple complete, decision-relevant stories exist."
+    },
+    "judgmentConfidence": {
+      "low": "Only disagreement can be documented.",
+      "medium": "Value-sensitive differences and next tests are defensible.",
+      "high": "Independent results and discriminating evidence are calculation-ready and auditable."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-07",
+    "EI-08",
+    "VM-04",
+    "PT-02"
+  ],
+  "conflictingFrameworkIds": [
+    "AVERAGED-NARRATIVE",
+    "BEST-OF-EACH-DRIVER-BULL",
+    "SCENARIO-SPREAD-EQUALS-PROBABILITY"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful case review.",
+      "Validate scenario-consistency rules.",
+      "Backtest whether independent execution improves decision auditability."
+    ],
+    "empiricalQualifications": [
+      "Scenario completeness does not ensure forecast accuracy.",
+      "Narrative probabilities may remain unidentifiable.",
+      "Model structure can create artificial differences."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public competing-narrative examples are paraphrased; execution contract is product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete case and chapter locators.",
+      "Define scenario normalization and comparison schema."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

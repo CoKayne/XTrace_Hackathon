@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-04",
+  "slug": "last-mover-durability",
+  "name": "Last-Mover Durability",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether current advantages can survive long enough to support the distant cash flows embedded in venture value.",
+    "productLabel": "Last-Mover Durability Lens — based on Peter Thiel's public teaching",
+    "notAClaimOf": [
+      "certainty about a ten-year forecast",
+      "a substitute for scenario valuation",
+      "Peter Thiel endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Peter Thiel's public last-mover and durability teaching",
+    "scope": "person_direct",
+    "people": [
+      "Peter Thiel"
+    ],
+    "organizations": [
+      "Y Combinator",
+      "Stanford University"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "For a high-growth technology company, much of the valuation may depend on cash flows far in the future. Current growth is therefore insufficient unless the mechanisms supporting differentiation, retention, pricing, and economics can plausibly persist through technological, competitive, and regulatory change.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P1-LECTURE-2014",
+      "claimIds": [
+        "PT-CLM-005",
+        "PT-CLM-006",
+        "PT-CLM-007"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "18:21-27:55"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-P2-CS183-04",
+      "claimIds": [
+        "PT-CLM-005",
+        "PT-CLM-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Sections III-IV and last-mover discussion"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "b2b_saas",
+      "enterprise_ai",
+      "consumer_network",
+      "marketplace",
+      "deep_tech",
+      "platform"
+    ],
+    "sectors": [
+      "technology"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity"
+    ]
+  },
+  "requiredConditions": [
+    "A material portion of investment value depends on long-duration growth or cash flow.",
+    "At least one present or planned durability mechanism can be identified.",
+    "The company and market can be stress-tested over a defined horizon."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "value_duration",
+      "description": "Scenario-model evidence showing how much value depends on later years or terminal assumptions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "scenario DCF",
+        "reverse DCF",
+        "VC return model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "durability_mechanism",
+      "description": "Mechanism-specific evidence for technology, network, scale, switching cost, brand, data, or distribution persistence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cohort data",
+        "technical evidence",
+        "unit economics",
+        "workflow evidence",
+        "market structure"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "erosion_scenarios",
+      "description": "Named technological, competitive, regulatory, supplier, and customer forces that could erode the mechanism.",
+      "necessity": "required",
+      "acceptableSources": [
+        "risk register",
+        "competitor research",
+        "regulatory sources",
+        "customer research"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "reinvestment_burden",
+      "description": "Capital, R&D, sales, service, and organizational reinvestment required to maintain the advantage.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "financial plan",
+        "headcount plan",
+        "capex plan",
+        "product roadmap"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What share of value depends on cash flows beyond the explicit forecast period?",
+    "Which current advantage must still exist at that time?",
+    "Why does the mechanism strengthen or at least resist decay?",
+    "What ongoing reinvestment is required to defend it?",
+    "Which technology, bundling, regulation, or customer behavior could compress its duration?",
+    "What leading indicators would show durability is weakening?"
+  ],
+  "positiveSignals": [
+    "Durability is supported by repeated cohorts rather than a single period of growth.",
+    "The defense mechanism compounds with usage, data, scale, or workflow integration.",
+    "Required defense reinvestment remains attractive relative to incremental value.",
+    "The company has survived a credible competitive or technology shock without economic deterioration.",
+    "Reverse valuation assumptions remain plausible under conservative duration scenarios."
+  ],
+  "redFlags": [
+    "Current growth is the only argument for long-term value.",
+    "The terminal value assumes persistent margins without a defense mechanism.",
+    "The advantage relies on a temporary supplier price, regulatory gap, or incumbent delay.",
+    "Maintaining performance requires rapidly rising custom service or R&D cost.",
+    "Customer retention is contractual but not behavioral.",
+    "Management cannot identify an erosion indicator."
+  ],
+  "disconfirmingEvidence": [
+    "Cohort retention or expansion weakens as newer competitors enter.",
+    "The cost to maintain performance rises faster than customer value.",
+    "Open-source or bundled substitutes eliminate differentiation.",
+    "Regulation removes exclusive access, data use, or distribution.",
+    "Customers reduce switching friction or multi-home."
+  ],
+  "contraindications": [
+    "Do not use as a precise long-term forecast when evidence is insufficient.",
+    "Do not replace valuation scenarios with a qualitative moat story.",
+    "Do not double count the same moat evidence in PT-02, Helmer 7 Powers, and specialist cards."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Quantify value duration in the valuation engine.",
+      "Identify one mechanism per claimed source of durability.",
+      "Attach supporting and disconfirming evidence to each mechanism.",
+      "Stress-test duration and reinvestment burden in bear, base, and bull scenarios.",
+      "Report durability judgment separately from company growth and price attractiveness."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "reason": "The valuation engine deterministically calculates scenario sensitivity; the framework only judges evidence for assumptions."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only summaries or unattributed doctrine are available.",
+      "medium": "Direct lecture is identified but immutable captions are not yet reviewed.",
+      "high": "Official caption revision and exact timestamped paraphrases are approved."
+    },
+    "evidenceStrength": {
+      "low": "Future moat assertion only.",
+      "medium": "Current mechanism plus limited longitudinal evidence.",
+      "high": "Longitudinal cohorts, economics, and shock evidence support persistence."
+    },
+    "evidenceCoverage": {
+      "low": "Value duration or erosion scenarios are missing.",
+      "medium": "Mechanism and valuation sensitivity exist, but reinvestment or counterevidence is incomplete.",
+      "high": "All required evidence and leading erosion indicators are sourced."
+    },
+    "applicabilityConfidence": {
+      "low": "Value is near-term or the business is too undefined for a duration thesis.",
+      "medium": "Long-term value matters but the proposed mechanism is early.",
+      "high": "Most value is long-duration and durability is central to the thesis."
+    },
+    "judgmentConfidence": {
+      "low": "No evidence supports survival of the current advantage.",
+      "medium": "A mechanism exists but has not survived meaningful stress.",
+      "high": "Mechanism, economics, longitudinal behavior, and stress evidence converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-02",
+    "HEL-7P",
+    "DAM-REVERSE-DCF",
+    "MAUB-EXPECTATIONS"
+  ],
+  "conflictingFrameworkIds": [
+    "GROWTH-FIRST"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Define non-overlapping mechanism evidence with 7 Powers.",
+      "Test whether durability anchors improve long-horizon forecast calibration.",
+      "Validate stage-specific evidence requirements and leading indicators."
+    ],
+    "empiricalQualifications": [
+      "Durability is difficult to observe prospectively.",
+      "Famous long-lived monopolies create survivorship bias.",
+      "Long-duration valuation magnifies small assumption errors."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No valuation example from the lecture is reproduced as a reusable worksheet."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Capture official caption hash and exact approved ranges.",
+      "Map evidence ownership with 7 Powers and valuation cards."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft separating durability evidence from deterministic valuation."
+    }
+  ]
+}
+

@@ -1,0 +1,165 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-01",
+  "slug": "stage-appropriate-operating-system",
+  "name": "Stage-Appropriate Operating System",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Determines whether the company's current complexity warrants lightweight operating structures and whether those structures reduce chaos without displacing product and customer work.",
+    "productLabel": "Stage-Appropriate Operating System Lens — based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["more process being better", "every pre-seed company needing a formal operating system", "operating structure proving product-market fit"]
+  },
+  "attribution": {
+    "display": "Based on Claire Hughes Johnson's public Scaling People materials",
+    "scope": "person_direct",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["Stripe Press", "Stanford Technology Ventures Program"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Install only the minimum repeatable structures needed for the company's present traction, team size, coordination load, and failure modes. Very small teams may coordinate informally; as people can no longer share context directly, explicit foundations, operating mechanisms, and cadences become more useful.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-BOOK-2023",
+      "claimIds": ["SP-CLM-001"],
+      "locator": {"kind": "web_section", "value": "Official description: practical guide to company building, hiring, team development, feedback, and performance mechanisms"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-FOUNDING-2023",
+      "claimIds": ["SP-CLM-002"],
+      "locator": {"kind": "web_section", "value": "Introduction, lines 284-289: after traction and increasing importance beyond roughly 40-50 people"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-LAUNCH-2023",
+      "claimIds": ["SP-CLM-002", "SP-CLM-003"],
+      "locator": {"kind": "web_section", "value": "Q&A: after product-market fit and traction, construct systems, frameworks, structures, and operating cadences"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-STANFORD-2023",
+      "claimIds": ["SP-CLM-002", "SP-CLM-003"],
+      "locator": {"kind": "pdf_page", "value": "Operating to Win transcript pp. 1-2: not necessarily when tiny; repeatable stability points and no universal cadence"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Company stage, traction, team size, coordination topology, and operating failure are known.",
+    "The review distinguishes absent process from intentionally lightweight process.",
+    "Customer and product evidence are assessed separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "stage_and_traction",
+      "description": "Company stage, product launch state, customer traction, revenue state, and product-market-fit evidence or uncertainty.",
+      "necessity": "required",
+      "acceptableSources": ["company metrics", "customer records", "product analytics", "financial records"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "organization_complexity",
+      "description": "Headcount, teams, locations, management layers, dependencies, information flow, and decision rights.",
+      "necessity": "required",
+      "acceptableSources": ["organization chart", "team map", "role records", "decision log"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "operating_failure_modes",
+      "description": "Repeated missed handoffs, unclear ownership, duplicated work, decision delay, quality incidents, or communication breakdowns.",
+      "necessity": "required",
+      "acceptableSources": ["postmortems", "delivery records", "meeting artifacts", "employee interviews", "customer incidents"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "existing_mechanisms_and_outcomes",
+      "description": "Current planning, review, decision, communication, and accountability mechanisms and the outcomes they appear to affect.",
+      "necessity": "required",
+      "acceptableSources": ["planning documents", "dashboards", "meeting records", "decision logs", "outcome metrics"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What coordination problem exists at the company's current stage?",
+    "Can the team solve it with a lighter mechanism?",
+    "Does a repeated structure reduce a demonstrated failure mode?",
+    "Does process consume time without improving decisions, learning, delivery, or accountability?",
+    "Which trigger would justify adding, changing, or removing a mechanism?"
+  ],
+  "positiveSignals": [
+    "Mechanisms are introduced in response to observed complexity.",
+    "A small number of repeated practices clarify ownership and decisions.",
+    "The company reviews and improves its operating mechanisms.",
+    "Leaders can connect each process to a business or team outcome."
+  ],
+  "redFlags": [
+    "Enterprise-style process is installed before a real coordination need.",
+    "The company copies another firm's cadence without an internal problem definition.",
+    "Meetings and documents proliferate while ownership remains unclear.",
+    "Operating-system claims distract from weak customer or product evidence."
+  ],
+  "disconfirmingEvidence": [
+    "A seemingly informal team consistently delivers with clear ownership and low coordination cost.",
+    "A formal mechanism exists only for regulatory or safety requirements and is proportionate.",
+    "A failed process is being time-bounded, measured, and removed.",
+    "Rapid change temporarily justifies founder-led coordination."
+  ],
+  "contraindications": [
+    "Do not penalize a tiny co-located team for lacking late-stage systems.",
+    "Do not reward process volume.",
+    "Do not infer product-market fit or investment quality from operating maturity."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Classify stage, traction, organization complexity, and failure modes.",
+      "Inventory current mechanisms and their stated purpose.",
+      "Test whether each mechanism addresses a demonstrated problem.",
+      "Compare outcome evidence before and after or across teams when available.",
+      "Conclude under-structured, stage-appropriate, over-structured, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder description only.", "medium": "Operating artifacts and some participant evidence.", "high": "Artifacts, decision records, outcome metrics, and independent interviews converge."},
+    "evidenceStrength": {"low": "Process inventory without outcomes.", "medium": "Repeated failure and plausible mechanism link.", "high": "Mechanism adoption or removal corresponds with replicated outcome change."},
+    "evidenceCoverage": {"low": "Stage or process list only.", "medium": "Complexity, failures, and mechanisms covered.", "high": "Stage, topology, failures, mechanisms, costs, counterevidence, and outcomes covered."},
+    "applicabilityConfidence": {"low": "Tiny team with no coordination failure.", "medium": "Some repeated complexity.", "high": "Scaling complexity materially affects execution."},
+    "judgmentConfidence": {"low": "Generic process opinion.", "medium": "Stage and failure evidence support a bounded conclusion.", "high": "Mechanism-to-outcome evidence supports a clear stage-appropriate judgment."}
+  },
+  "overlapFrameworkIds": ["SP-03", "SP-04", "VM-08"],
+  "conflictingFrameworkIds": ["MORE-PROCESS-IS-BETTER", "NO-PROCESS-IS-ALWAYS-FASTER"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Review licensed book.", "Define stage and complexity anchors.", "Backtest against prospective execution outcomes."],
+    "empiricalQualifications": ["The public method is practitioner-derived.", "Observed process can be a response to prior problems rather than their cause."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are neutrally paraphrased; no template is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define stage-specific minimum evidence and over-process indicators."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

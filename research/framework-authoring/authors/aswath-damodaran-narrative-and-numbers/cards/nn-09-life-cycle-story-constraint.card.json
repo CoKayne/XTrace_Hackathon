@@ -1,0 +1,289 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-09",
+  "slug": "life-cycle-story-constraint",
+  "name": "Corporate-Life-Cycle Story Constraint",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Changes the dominant narrative questions, evidence, and management tests as a company moves from possibility through growth, maturity, and decline.",
+    "productLabel": "Life-Cycle Story Lens — based on Aswath Damodaran's public corporate-life-cycle narrative materials",
+    "notAClaimOf": [
+      "funding round determining life-cycle stage",
+      "all companies following identical paths",
+      "a visionary founder being unsuitable after early stage by default"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public corporate-life-cycle narrative materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Determine life-cycle state from operating evidence rather than round label. Early stories emphasize market possibility and survival, growth stories require delivery and scalable economics, mature stories are constrained by history and size, and declining stories require an explicit endgame. Evaluate whether management actions and capabilities fit the current narrative task.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-PREFACE",
+      "claimIds": [
+        "NN-CLM-018",
+        "NN-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Paragraphs on early, growth, mature, and declining companies and changing management tasks"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-LIFECYCLE-SUPPORT",
+      "claimIds": [
+        "NN-CLM-018"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapters 14-16: Corporate Life Cycle, Shifting Focus, and Endgame"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "NN-P2-BOOK-2017",
+      "claimIds": [
+        "NN-CLM-018",
+        "NN-CLM-019"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Public table of contents Chapters 14-16; exact pages pending"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public",
+      "distressed"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Stage is inferred from operating, market, financing, and organizational evidence.",
+    "The dominant current story and transition hypothesis are separate.",
+    "Management assessment is task-based and evidence-based, not personality imitation.",
+    "Life-cycle classification is updated when the operating evidence changes."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "operating_life_cycle",
+      "description": "Product maturity, revenue growth, margins, reinvestment, capital access, market share, and customer evidence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company operating data",
+        "financial statements",
+        "customer cohorts",
+        "market data",
+        "financing history"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "management_task_fit",
+      "description": "Observed decisions and execution relevant to the current stage's narrative task.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board material",
+        "hiring record",
+        "operating milestones",
+        "capital allocation",
+        "strategy changes"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "transition_indicators",
+      "description": "Evidence of movement toward growth, maturity, renewal, distress, or decline.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "growth deceleration",
+        "margin transition",
+        "market saturation",
+        "product renewal",
+        "liquidity evidence"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What operating evidence defines the current life-cycle state?",
+    "What narrative question is most important at this state?",
+    "What must management prove next?",
+    "Does size, history, or capital need constrain the story?",
+    "Is the company transitioning to a new state?",
+    "What would a successful or unsuccessful endgame look like?"
+  ],
+  "positiveSignals": [
+    "Narrative ambition and evidence match the company's state.",
+    "Management actions address the current stage's bottleneck.",
+    "Growth delivery includes economics and organizational capacity.",
+    "Mature-company plans respect size and reinvestment constraints.",
+    "Declining businesses have explicit capital and stakeholder endgames."
+  ],
+  "redFlags": [
+    "Seed or Series labels substitute for operating evidence.",
+    "A mature company uses startup TAM language without a credible new engine.",
+    "A scaling company still relies only on charisma and possibility.",
+    "Management behavior remains fitted to a prior stage.",
+    "Decline is modeled as temporary growth slowdown without evidence."
+  ],
+  "disconfirmingEvidence": [
+    "Operating metrics indicate a different stage than management claims.",
+    "Growth depends on capital or organization the company cannot supply.",
+    "A mature core funds a credible new growth engine.",
+    "A supposed decline is a cyclical rather than structural effect.",
+    "A management transition materially changes execution capacity."
+  ],
+  "contraindications": [
+    "Do not infer life cycle from financing stage alone.",
+    "Do not prescribe CEO replacement from a generic stage template.",
+    "Do not assume every company reaches maturity.",
+    "Do not use life-cycle label as a valuation multiple."
+  ],
+  "decisionMethod": {
+    "kind": "ordinal_anchors",
+    "instructions": [
+      "Classify operating state from evidence, not financing label.",
+      "Identify the dominant narrative task and value drivers.",
+      "Assess management actions against that task.",
+      "Model transition and endgame hypotheses with counterevidence.",
+      "Route stage-appropriate questions to other lenses."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "stateCandidates": [
+        "idea_or_startup",
+        "young_growth",
+        "high_growth",
+        "mature_growth",
+        "stable",
+        "decline_or_distress"
+      ],
+      "fundingRoundMayDetermineState": false,
+      "calculationOwner": "lifecycle_classification_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Stage is based only on management label.",
+      "medium": "Partial operating and market data support classification.",
+      "high": "Verified longitudinal operating, financial, market, and organizational evidence converges."
+    },
+    "evidenceStrength": {
+      "low": "Only a round or company age supports the stage.",
+      "medium": "Operating indicators support the state but transition evidence is incomplete.",
+      "high": "Multiple longitudinal indicators support state and transition."
+    },
+    "evidenceCoverage": {
+      "low": "Only growth or funding is covered.",
+      "medium": "Growth, economics, and market are covered but organization or capital is partial.",
+      "high": "Product, market, growth, margin, reinvestment, capital, organization, and transition are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The company spans unrelated businesses at different stages.",
+      "medium": "A dominant state exists with a material secondary engine.",
+      "high": "The analyzed business unit and state are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a tentative life-cycle range is supportable.",
+      "medium": "Current state and key task are defensible.",
+      "high": "State, transition, management task, and stage-specific diligence are well supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-05",
+    "SHR-07",
+    "SF-08",
+    "VM-06"
+  ],
+  "conflictingFrameworkIds": [
+    "ROUND-EQUALS-LIFECYCLE",
+    "ONE-MANAGEMENT-STYLE-ALL-STAGES",
+    "MATURE-COMPANY-STARTUP-STORY-WITHOUT-NEW-ENGINE"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapters 14-16 review.",
+      "Define operating state anchors by business model.",
+      "Validate management-task interpretations with expert reviewers."
+    ],
+    "empiricalQualifications": [
+      "Life-cycle boundaries are continuous and business-unit specific.",
+      "Technology can compress or disrupt expected transitions.",
+      "Management fit is difficult to infer from public evidence."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public life-cycle and management-task concepts are paraphrased; state anchors are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete exact chapter/page locators.",
+      "Define multi-business classification."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

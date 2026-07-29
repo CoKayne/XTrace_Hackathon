@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-04",
+  "slug": "risk-control-not-avoidance",
+  "name": "Risk Control, Not Risk Avoidance",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether downside has been deliberately bounded without eliminating the upside and uncertainty the fund must bear to meet its objective.",
+    "productLabel": "Risk-Control Lens — based on Howard Marks's public materials",
+    "notAClaimOf": ["zero-loss investing", "maximum defensiveness being universally optimal", "all risk deserving equal compensation"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public materials; venture controls are product synthesis",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Accept only risks that are understood, compensated, survivable, and aligned with the fund's return model. Reduce avoidable loss pathways while retaining the uncertainty necessary for upside; refusing all uncertainty is not a viable return strategy.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-RISK-2024",
+      "claimIds": ["MMI-CLM-006", "MMI-CLM-008", "MMI-CLM-019"],
+      "locator": {"kind": "web_section", "value": "Sections The Risk of Not Taking Risk and closing synthesis"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-WINNERS-2023",
+      "claimIds": ["MMI-CLM-008", "MMI-CLM-009", "MMI-CLM-019", "MMI-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Sections Not Risk Avoidance and Alpha/Asymmetry"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The fund's return objective, loss tolerance, ownership target, and reserve policy are explicit.",
+    "Company risks are mapped before controls are evaluated.",
+    "Control cost and upside impairment are represented."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "risk_control_map",
+      "description": "Each material risk linked to proposed prevention, detection, response, or contractual control.",
+      "necessity": "required",
+      "acceptableSources": ["diligence report", "term sheet", "governance plan", "milestone plan"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "fund_risk_policy",
+      "description": "Fund-specific return objective and capacity to bear loss, concentration, and follow-on.",
+      "necessity": "required",
+      "acceptableSources": ["fund policy", "portfolio model"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "control_tradeoffs",
+      "description": "Evidence that proposed controls do not destroy product speed, founder incentives, or required upside.",
+      "necessity": "recommended",
+      "acceptableSources": ["term negotiation", "operating plan", "founder discussion"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which risks are essential to the upside thesis and which are avoidable?",
+    "How is each accepted risk monitored, financed, or contractually bounded?",
+    "Does a proposed control protect capital or merely shift risk elsewhere?",
+    "Would excessive control prevent the company or fund from achieving its objective?"
+  ],
+  "positiveSignals": [
+    "Accepted risks have explicit expected compensation and survival capacity.",
+    "Controls address kill paths without eliminating the value-creation mechanism.",
+    "Milestone financing limits exposure while preserving upside.",
+    "Fund concentration and reserves remain within stated policy."
+  ],
+  "redFlags": [
+    "Risk avoidance is labeled risk management.",
+    "Protective terms undermine founder incentives or future financing.",
+    "The fund accepts risk because upside is large without testing survival.",
+    "No owner or trigger exists for a stated control."
+  ],
+  "disconfirmingEvidence": [
+    "The only way to remove downside also removes the investment's return source.",
+    "The fund cannot support a plausible financing shortfall.",
+    "Governance protections are unenforceable or informational only.",
+    "A hidden correlated exposure defeats deal-level controls."
+  ],
+  "contraindications": [
+    "Do not use Marks's defensive orientation as a universal venture veto.",
+    "Do not equate legal protection with economic protection.",
+    "Do not suppress documented disagreement about the proper posture."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Classify each risk as essential, avoidable, transferable, or unmitigated.",
+      "Map controls and their costs.",
+      "Test the company and fund against an adverse financing scenario.",
+      "Identify any control that impairs required upside.",
+      "Conclude controlled, overcontrolled, uncontrolled, or policy-misaligned."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Controls are asserted without documents.", "medium": "Plans and terms support major controls.", "high": "Executed terms, operating evidence, and fund data support controls."},
+    "evidenceStrength": {"low": "Controls are generic.", "medium": "Major kill paths are controlled but tradeoffs remain.", "high": "Controls are causal, enforceable, monitored, and stress-tested."},
+    "evidenceCoverage": {"low": "Only one risk domain is addressed.", "medium": "Company risks and controls are covered but fund effects are partial.", "high": "Company, terms, financing, fund, and upside tradeoffs are covered."},
+    "applicabilityConfidence": {"low": "Fund objective is unknown.", "medium": "Fund posture is approximate.", "high": "Fund objective, capacity, deal exposure, and controls are explicit."},
+    "judgmentConfidence": {"low": "Only control questions are supportable.", "medium": "A directional control conclusion is supportable.", "high": "Accepted and mitigated risks are evidenced and policy-aligned."}
+  },
+  "overlapFrameworkIds": ["BVC-04", "BVC-08", "VD-04", "VM-08"],
+  "conflictingFrameworkIds": ["ZERO-RISK-OBJECTIVE", "MAXIMUM-DEFENSIVENESS-UNIVERSAL"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale", "portfolio_policy"],
+    "promotionRequirements": ["Validate risk-control taxonomy.", "Test fund-policy integration.", "Complete chapter review."],
+    "empiricalQualifications": ["Controls can create second-order risks.", "A venture portfolio can require accepting many individual losses to capture power-law winners."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine is paraphrased; implementation controls are explicitly product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Reconcile with fund-specific loss and concentration policy."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

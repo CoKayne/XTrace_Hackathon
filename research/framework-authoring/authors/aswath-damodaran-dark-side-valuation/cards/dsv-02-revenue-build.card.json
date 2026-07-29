@@ -1,0 +1,288 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-02",
+  "slug": "revenue-build",
+  "name": "Causal Revenue Build",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Builds and cross-checks revenue from market-share and operating-unit paths while making competition and capacity explicit.",
+    "productLabel": "Causal Revenue Build Lens — based on Aswath Damodaran's public young-company valuation materials",
+    "notAClaimOf": [
+      "TAM proving attainable revenue",
+      "market growth automatically accruing to the company",
+      "management forecasts being verified facts"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public young-company valuation materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Revenue can be constructed top-down from a defined market, expected market evolution, and feasible company share, or bottom-up from units, capacity, price, conversion, retention, and expansion. A defensible model reconciles the two where possible and makes the cost of acquiring share, competitor reaction, and operational capacity visible.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-004",
+        "DSV-CLM-005"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 18-24: top-down and bottom-up revenue estimation, market definition, market share, capacity, and marketing implications"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-BIG-MARKET-2015",
+      "claimIds": [
+        "DSV-CLM-004",
+        "DSV-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Big-market narrative and valuation sections: market size, competition, business-model economics, and overconfidence"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "saas",
+      "marketplace",
+      "consumer",
+      "transactional",
+      "hardware",
+      "deep_tech",
+      "services"
+    ],
+    "sectors": [
+      "all_non_financial"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Revenue unit, period, currency, customer, geography, use case, and market boundary are defined.",
+    "Top-down and bottom-up numbers use compatible scope and timing.",
+    "Share capture is connected to acquisition, capacity, pricing, retention, and competitor response.",
+    "Revenue assumptions are separated from verified current metrics."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "market_boundary_and_size",
+      "description": "Defined relevant market with methodology, base year, growth drivers, geography, customer, and source.",
+      "necessity": "required",
+      "acceptableSources": [
+        "industry dataset",
+        "customer spending data",
+        "regulatory data",
+        "bottom-up market reconstruction"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "company_revenue_drivers",
+      "description": "Current and projected units, price, conversion, retention, expansion, utilization, or transaction volume as appropriate.",
+      "necessity": "required",
+      "acceptableSources": [
+        "billing records",
+        "cohort data",
+        "sales pipeline",
+        "usage data",
+        "signed contracts",
+        "capacity plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "share_capture_mechanism",
+      "description": "Causal evidence for customer acquisition and share gain, including competitor reaction and spending or capacity required.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer interviews",
+        "win-loss data",
+        "sales efficiency",
+        "distribution agreements",
+        "competitive research"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "top_down_bottom_up_reconciliation",
+      "description": "A comparison of both methods with explicit explanation for residual differences.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "deterministic model",
+        "operating plan",
+        "market model"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact market is being modeled and who pays?",
+    "What share is implied by projected revenue in each year?",
+    "What operational units and conversion mechanics produce the same revenue?",
+    "What capacity and commercial investment are required to deliver it?",
+    "How do pricing changes affect conversion, share, and margin?",
+    "What competitor response would invalidate the share path?"
+  ],
+  "positiveSignals": [
+    "Top-down and bottom-up forecasts independently converge within an explained range.",
+    "Current customer and cohort data support the next forecast interval.",
+    "Share gains have a documented distribution or product mechanism.",
+    "Capacity and commercial investment scale consistently with revenue.",
+    "The model includes competitive response and price-volume tradeoffs."
+  ],
+  "redFlags": [
+    "Revenue equals a large TAM multiplied by an unsupported share.",
+    "The addressable market silently expands between evidence and forecast.",
+    "Market growth is assigned to the company without acquisition or capacity evidence.",
+    "High growth and high pricing are assumed simultaneously without demand response.",
+    "One-off contracted revenue is treated as recurring."
+  ],
+  "disconfirmingEvidence": [
+    "Bottom-up capacity cannot produce the top-down forecast.",
+    "Customer cohorts contradict assumed conversion, retention, or expansion.",
+    "Share growth requires commercial spend or price cuts absent from the model.",
+    "Competitors possess equal distribution and are excluded from the share path.",
+    "The market definition counts customers or spending the product cannot serve."
+  ],
+  "contraindications": [
+    "Do not infer demand from market size alone.",
+    "Do not mix bookings, ARR, recognized revenue, GMV, and net revenue.",
+    "Do not treat pipeline as contracted revenue.",
+    "Do not output valuation before margin and reinvestment paths are attached."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Construct a versioned top-down market/share path.",
+      "Construct a bottom-up operating-unit path.",
+      "Reconcile scope, timing, price, conversion, capacity, and retention.",
+      "Identify the first unsupported bridge and the evidence needed to test it.",
+      "Send validated revenue scenarios to the deterministic valuation service."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "topDownIdentity": "relevant_market_size * attainable_market_share",
+      "bottomUpIdentity": "revenue_units * realized_price_per_unit",
+      "requiredReconciliation": true,
+      "calculationOwner": "valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only founder narrative or generic market reports are available.",
+      "medium": "Third-party market data and partial company operating data are available.",
+      "high": "Verified company cohorts, contracts, pricing, capacity, and independently sourced market data are available."
+    },
+    "evidenceStrength": {
+      "low": "Revenue is inferred from TAM without a causal bridge.",
+      "medium": "One forecast method is evidence-backed and the other is approximate.",
+      "high": "Independent top-down and bottom-up paths reconcile and survive competitive tests."
+    },
+    "evidenceCoverage": {
+      "low": "Only market size and target share are covered.",
+      "medium": "Market, units, and price are covered but retention or capacity is incomplete.",
+      "high": "Market, share, units, price, acquisition, retention, capacity, spend, and competition are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The business model has no stable revenue unit or payer definition.",
+      "medium": "A revenue model is possible but early product or market definitions remain fluid.",
+      "high": "Payer, unit, market, and operating drivers are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a broad revenue hypothesis can be stated.",
+      "medium": "A forecast range is usable but one important bridge relies on a prior.",
+      "high": "The forecast is supported by reconciled drivers and independent evidence."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-03",
+    "DSV-04",
+    "PT-05",
+    "SF-06"
+  ],
+  "conflictingFrameworkIds": [
+    "TAM-TIMES-ARBITRARY-SHARE",
+    "PIPELINE-EQUALS-REVENUE",
+    "MARKET-GROWTH-EQUALS-COMPANY-GROWTH"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapter 9 review.",
+      "Backtest forecasts by business model and stage.",
+      "Validate reconciliation and metric-normalization rules against audited models."
+    ],
+    "empiricalQualifications": [
+      "Early-stage revenue is path-dependent and forecast errors are expected.",
+      "Market reports often use incompatible definitions and may reflect vendor incentives.",
+      "Bottom-up models can also be biased when company pipeline or capacity claims are unverified."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public valuation principles are neutrally paraphrased; no source text is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Define metric normalization by business model in the system layer."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

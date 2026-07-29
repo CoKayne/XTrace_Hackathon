@@ -1,0 +1,294 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-07",
+  "slug": "cornered-resource",
+  "name": "Cornered Resource",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether the company controls preferential access to an independently valuable resource on terms rivals cannot economically match.",
+    "productLabel": "Cornered Resource Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "scarcity alone creating Power",
+      "patent count proving exclusivity or value",
+      "star employees automatically being company-owned resources"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public Cornered Resource doctrine",
+    "scope": "person_direct",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A Cornered Resource may create Power when a company has durable preferential access at attractive terms to a coveted asset that can independently create material value and cannot be obtained on equivalent terms by competitors. The analysis must test ownership or control, transferability, substitutes, rent allocation, duration, key-person risk, and legal enforceability.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Cornered Resource section lines 125-141: preferential rights, independent value, patents, and Pixar group"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "claimIds": [
+        "H7P-CLM-008"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Official audio 00:20:40-00:27:12: Cornered Resource and Google example"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "H7P-P1-ACQUIRED-2021",
+      "claimIds": [
+        "H7P-CLM-008"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Canonical interview 00:42:41-00:44:07: patents and why market-priced individual talent is often misclassified"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "biotech",
+      "deep_tech",
+      "content",
+      "data",
+      "resource_access",
+      "regulated",
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The resource independently contributes material value.",
+    "The company has enforceable and durable preferential access.",
+    "Competitors cannot obtain a substitute or equivalent access on similar terms.",
+    "Economic rents accrue materially to the company rather than the resource owner."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "resource_value",
+      "description": "Causal evidence that the asset independently improves product value, cost, access, performance, or probability of success.",
+      "necessity": "required",
+      "acceptableSources": [
+        "technical validation",
+        "commercial data",
+        "clinical evidence",
+        "customer evidence",
+        "asset valuation"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "control_and_terms",
+      "description": "Ownership, license, assignment, exclusivity, employment, relationship, governance, duration, territory, and economic terms.",
+      "necessity": "required",
+      "acceptableSources": [
+        "contract",
+        "IP assignment",
+        "license",
+        "employment agreement",
+        "legal opinion"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "substitute_and_rival_access",
+      "description": "Alternative resources, design-arounds, licensing markets, recruiting paths, supplier capacity, and competitor access.",
+      "necessity": "required",
+      "acceptableSources": [
+        "freedom to operate",
+        "competitive diligence",
+        "supplier research",
+        "talent market data",
+        "expert review"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "rent_capture_and_continuity",
+      "description": "Whether value accrues to the company, resource owner, employee, licensor, or supplier and how control survives renewal, departure, litigation, or regulation.",
+      "necessity": "required",
+      "acceptableSources": [
+        "unit economics",
+        "compensation",
+        "royalty schedule",
+        "renewal terms",
+        "continuity plan"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What independent value does the resource create?",
+    "Does the company own or control access, for how long, where, and on what terms?",
+    "Can competitors acquire, license, hire, synthesize, or design around it?",
+    "Who captures the economic rent?",
+    "What happens after key-person departure, patent expiry, contract renewal, or regulation?",
+    "Does a broader resource market make the asset less cornered than claimed?"
+  ],
+  "positiveSignals": [
+    "Independent evidence shows the resource materially changes economics or product outcomes.",
+    "Company control is enforceable, durable, and favorably priced.",
+    "Substitutes and design-arounds remain inferior or slow.",
+    "The company retains material rent after royalties, compensation, and renewal.",
+    "Continuity does not depend on one unbound individual."
+  ],
+  "redFlags": [
+    "Scarcity or prestige is the only evidence of value.",
+    "Patents are counted without enforceability, scope, ownership, or design-around review.",
+    "A star employee can leave or demand the full economic rent.",
+    "Exclusivity expires before the investment horizon.",
+    "A supplier can offer the same resource to competitors."
+  ],
+  "disconfirmingEvidence": [
+    "Competitors obtain equivalent access on market terms.",
+    "A substitute removes the resource's value.",
+    "IP is unassigned, invalid, narrow, or readily designed around.",
+    "Renewal reprices the resource so the owner captures the rent.",
+    "Key-person loss or regulation terminates control."
+  ],
+  "contraindications": [
+    "Do not use patent count, credentials, or scarcity as a proxy.",
+    "Do not treat individual talent as company Power without retention and rent analysis.",
+    "Do not ignore substitute resources.",
+    "Do not count a resource again as Process Power unless the mechanisms are distinct."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Identify the resource and test its independent material value.",
+      "Verify legal, relational, and economic control.",
+      "Map substitutes and competitor access paths.",
+      "Allocate rents and stress continuity events.",
+      "Conclude on observed, candidate, path, unsupported, or inapplicable Cornered Resource."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only management claims or asset counts are available.",
+      "medium": "Contracts and value evidence are partially reviewed.",
+      "high": "Legal, technical, commercial, substitute, and rent evidence are independently verified."
+    },
+    "evidenceStrength": {
+      "low": "Scarcity is shown without value or control.",
+      "medium": "Value and control exist but substitutes or continuity are uncertain.",
+      "high": "Material value, preferential control, rival disadvantage, rent capture, and continuity are supported."
+    },
+    "evidenceCoverage": {
+      "low": "Resource value or control is missing.",
+      "medium": "Value and control are covered but substitution or rent allocation is incomplete.",
+      "high": "Value, control, terms, substitutes, rival access, rent, duration, and continuity are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The business depends on broadly available inputs.",
+      "medium": "A scarce input helps but is not decisive.",
+      "high": "A specific controllable resource materially drives company economics."
+    },
+    "judgmentConfidence": {
+      "low": "Only a scarce-resource label is supported.",
+      "medium": "Candidate Cornered Resource exists with unresolved rent or substitutes.",
+      "high": "Observed independent Benefit and durable preferential-access Barrier are supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "H7P-08",
+    "SF-08",
+    "PT-04"
+  ],
+  "conflictingFrameworkIds": [
+    "PATENT-COUNT-SCORE",
+    "STAR-TALENT-EQUALS-MOAT",
+    "SCARCITY-EQUALS-POWER"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed Cornered Resource chapter review.",
+      "Define sector-specific legal and substitute evidence requirements.",
+      "Validate rent-capture and continuity tests against outcomes."
+    ],
+    "empiricalQualifications": [
+      "Scarce assets may be priced so the owner captures most rents.",
+      "Patent and talent markets can make resources mobile.",
+      "Substitution, expiry, litigation, and regulation can abruptly end control."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public interview doctrine is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete first-edition Benefit and Barrier review.",
+      "Add legal-review profiles for IP, data, talent, supply, and regulatory assets."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial control, substitutes, and rent-aware Cornered Resource card."
+    }
+  ]
+}

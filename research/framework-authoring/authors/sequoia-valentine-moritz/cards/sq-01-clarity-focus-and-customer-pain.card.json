@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-01",
+  "slug": "clarity-focus-and-customer-pain",
+  "name": "Clarity, Focus, and Customer Pain",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a company can define one important customer problem, one bounded customer, and one legible value proposition.",
+    "productLabel": "Clarity, Focus, and Customer Pain — based on Sequoia's public institution doctrine",
+    "notAClaimOf": ["a concise pitch proving product-market fit", "one-product companies always outperforming platforms", "a complete Sequoia underwriting score"]
+  },
+  "attribution": {
+    "display": "Based on Team Sequoia's public enduring-company and Arc materials",
+    "scope": "institution_doctrine",
+    "people": [],
+    "organizations": ["Sequoia Capital"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "At the relevant stage, require a specific customer, an important problem, and a focused value proposition that can be stated plainly. Then test the statement against customer behavior rather than treating clarity of language as proof of demand.",
+  "claimTypes": ["affiliated_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-I1-ENDURING",
+      "claimIds": ["SQ-CLM-001", "SQ-CLM-002"],
+      "locator": {"kind": "web_section", "value": "Lines 7-17: clarity of purpose, focus, and pain killers"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-I1-ARC-CURRENT",
+      "claimIds": ["SQ-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Lines 135-169: founder, customer, product, GTM, business, and PMF workshops"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b"],
+    "businessModels": ["all_startups", "saas", "enterprise", "consumer", "marketplace", "transactional", "hardware_enabled"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The target customer, use case, and stage are defined.",
+    "The lens tests current focus while allowing a broader long-term roadmap.",
+    "Customer evidence is reviewed separately from pitch quality."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "problem_definition",
+      "description": "Specific customer, workflow, problem, frequency, severity, current substitute, and consequence of non-resolution.",
+      "necessity": "required",
+      "acceptableSources": ["customer interviews", "workflow observation", "support records", "lost-deal notes", "problem research"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "value_proposition",
+      "description": "Plain description of the product's single current promise and how it changes customer cost, revenue, time, risk, or experience.",
+      "necessity": "required",
+      "acceptableSources": ["product brief", "demo", "customer-facing materials", "customer testimony", "usage records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "focus_consistency",
+      "description": "Roadmap, staffing, sales, and product activity showing whether resources align with the stated problem.",
+      "necessity": "required",
+      "acceptableSources": ["roadmap", "staffing plan", "sales pipeline", "product analytics", "budget"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "negative_cases",
+      "description": "Customers who did not care, did not adopt, churned, or preferred a substitute and why.",
+      "necessity": "required",
+      "acceptableSources": ["lost-deal records", "churn interviews", "non-user interviews", "support data"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who experiences the problem, in which workflow, and how costly or important is it?",
+    "Can the current product promise be stated without combining unrelated benefits?",
+    "Do product, staffing, GTM, and spending choices reinforce that promise?",
+    "Which customer evidence contradicts the claimed pain or focus?",
+    "Is complexity necessary to solve the problem or evidence of unresolved strategy?"
+  ],
+  "positiveSignals": [
+    "Independent customers describe the same important problem in their own words.",
+    "The product delivers one legible outcome and customers can explain the value.",
+    "Roadmap, hiring, sales, and spending concentrate on the same wedge.",
+    "The company distinguishes current focus from future expansion."
+  ],
+  "redFlags": [
+    "The target customer or core problem changes by audience.",
+    "A feature list substitutes for a value proposition.",
+    "Many unrelated pilots hide the absence of a repeatable use case.",
+    "A polished slogan is offered without customer or behavior evidence."
+  ],
+  "disconfirmingEvidence": [
+    "A complex product can be necessary in regulated, infrastructure, or multi-sided workflows.",
+    "An early company may test several hypotheses before committing to one.",
+    "A platform may have multiple products while retaining a coherent shared advantage.",
+    "Clear positioning does not establish market size, economics, defensibility, or price."
+  ],
+  "contraindications": [
+    "Do not penalize legitimate discovery work before a hypothesis has enough evidence.",
+    "Do not convert presentation skill or brevity into a founder-quality score.",
+    "Do not infer investment merit or valuation from clarity alone."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "State the customer, workflow, problem, substitute, and current product promise.",
+      "Compare that statement with customer, product, staffing, GTM, and spending evidence.",
+      "Review failed, churned, and non-user cases.",
+      "Classify focus as coherent, emerging, fragmented, or insufficient evidence.",
+      "Record the next customer test that could change the classification."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Pitch wording alone.", "medium": "Internal product and customer records.", "high": "Independent customer evidence plus internal records and negative cases."},
+    "evidenceStrength": {"low": "Memorable description only.", "medium": "Repeated customer problem and aligned product.", "high": "Customer behavior and resource allocation converge on the same important problem."},
+    "evidenceCoverage": {"low": "Problem statement only.", "medium": "Customer and product evidence.", "high": "Customer, product, GTM, staffing, budget, and contrary evidence covered."},
+    "applicabilityConfidence": {"low": "Undefined discovery stage.", "medium": "Specific hypothesis under test.", "high": "Stage-appropriate product and customer evidence exists."},
+    "judgmentConfidence": {"low": "Pitch-based impression.", "medium": "Bounded coherence assessment.", "high": "Multiple independent evidence types support the same focus."}
+  },
+  "overlapFrameworkIds": ["OA2-01", "OA2-02", "NN-02", "MA-01", "SHR-02"],
+  "conflictingFrameworkIds": ["PITCH-BREVITY-AS-PMF", "FEATURE-COUNT-AS-VALUE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define stage-specific focus anchors.", "Backtest against customer retention and learning velocity.", "Review false negatives for complex products."],
+    "empiricalQualifications": ["Sequoia's list is institution doctrine, not a validated causal model.", "Focus needs differ across stage and business model."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Institution-controlled public material is neutrally paraphrased."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Define complex-product and discovery-stage adaptations."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

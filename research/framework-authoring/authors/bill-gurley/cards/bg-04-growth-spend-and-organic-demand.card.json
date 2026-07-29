@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-04",
+  "slug": "growth-spend-and-organic-demand",
+  "name": "Growth Spend and Organic Demand",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether incremental growth spend preserves customer quality and unit economics or manufactures fragile revenue.",
+    "productLabel": "Growth Spend and Organic Demand Lens — based on Bill Gurley's public writing",
+    "notAClaimOf": ["paid growth always being bad", "organic growth being free", "historical average CAC authorizing marginal spend"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd writing",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Evaluate acquisition at the margin. As spend rises, measure whether CAC, retention, contribution, and customer mix deteriorate, and identify how much demand exists independently of discounts, subsidies, and variable marketing.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-LTV-2012",
+      "claimIds": ["BG-CLM-010", "BG-CLM-011", "BG-CLM-012"],
+      "locator": {"kind": "web_section", "value": "Reasons 1-10 and lines 24-53: tactical model, spending rationalization, variable interaction, organic growth, and durability"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-REVENUE-2011",
+      "claimIds": ["BG-CLM-002"],
+      "locator": {"kind": "web_section", "value": "Sections on organic demand, growth, and profitless prosperity"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["saas", "consumer", "marketplace", "transactional", "enterprise"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Spend and acquisition can be observed across levels, periods, or experiments.",
+    "Customer quality can be tracked after acquisition.",
+    "Organic, referral, sales, and paid channels are defined consistently."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "marginal_spend_curve",
+      "description": "Spend, acquired customers, fully loaded CAC, conversion, and payback by incremental spend band.",
+      "necessity": "required",
+      "acceptableSources": ["marketing data", "CRM", "payroll", "experiment records", "billing"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "customer_quality",
+      "description": "Retention, contribution, support burden, fraud, refunds, expansion, and mix by acquisition source and spend band.",
+      "necessity": "required",
+      "acceptableSources": ["cohort analysis", "product analytics", "cost ledger", "support records", "billing"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "organic_demand",
+      "description": "Direct, referral, word-of-mouth, repeat, and unpaid demand with honest attribution limits.",
+      "necessity": "required",
+      "acceptableSources": ["attribution data", "surveys", "referral records", "search data", "customer interviews"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "growth_advantage",
+      "description": "Mechanism that makes acquisition improve or remain defensible beyond purchasing the same media as competitors.",
+      "necessity": "required",
+      "acceptableSources": ["channel contracts", "product loops", "network data", "brand evidence", "competitive analysis"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What happens to CAC and retention at the next spend increment?",
+    "Are lower-quality customers entering as the company scales acquisition?",
+    "How much demand remains if subsidies or paid media are reduced?",
+    "Which acquisition advantage is hard to copy?",
+    "Can the company fund payback under adverse retention and capital conditions?"
+  ],
+  "positiveSignals": [
+    "Marginal cohorts retain and contribute near or above prior cohorts.",
+    "Organic or referral demand grows with customer value.",
+    "Spend can be reduced without collapsing the installed base.",
+    "The acquisition mechanism has a product, distribution, data, or brand advantage."
+  ],
+  "redFlags": [
+    "Average CAC is stable only because old low-cost cohorts dominate.",
+    "Discounted customers churn or cost more to serve.",
+    "Growth stops when subsidies stop.",
+    "Management scales spend using an uncalibrated long-duration LTV."
+  ],
+  "disconfirmingEvidence": [
+    "A new channel may begin inefficiently while the company learns.",
+    "Brand investment can create delayed organic benefits that are hard to attribute.",
+    "Subsidies can rationally seed a measured network if density and retention improve.",
+    "Slower organic growth may be acceptable in enterprise markets with strong economics."
+  ],
+  "contraindications": [
+    "Do not label all paid acquisition as low quality.",
+    "Do not treat unattributed demand as costless.",
+    "Do not let aggregate growth override marginal cohort evidence."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Construct spend-response and customer-quality curves.",
+      "Calculate marginal CAC, payback, contribution, and retention deterministically.",
+      "Estimate organic demand with attribution uncertainty.",
+      "Test the independent acquisition advantage and downside funding need.",
+      "Conclude scalable, bounded learning, saturation risk, subsidized fragility, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Marginal CAC, payback, contribution, retention, and spend-response curves must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Blended attribution.", "medium": "Channel and cohort records.", "high": "Controlled experiments and reconciled cohort economics."},
+    "evidenceStrength": {"low": "Growth and average CAC.", "medium": "Marginal spend and customer quality.", "high": "Repeated marginal and spend-reduction evidence supports durability."},
+    "evidenceCoverage": {"low": "Paid spend only.", "medium": "Spend, cohorts, and organic.", "high": "Marginal curves, customer quality, cash, advantage, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Little variable acquisition.", "medium": "Material paid growth.", "high": "Growth economics determine capital needs and valuation."},
+    "judgmentConfidence": {"low": "Aggregate marketing story.", "medium": "Bounded marginal evidence.", "high": "Controlled, repeated evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["BG-03", "BG-02", "MA-08", "CSP-05"],
+  "conflictingFrameworkIds": ["AVERAGE-CAC-AS-MARGINAL", "PAID-GROWTH-EQUALS-DEMAND"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Implement marginal-spend service.", "Validate attribution policy.", "Backtest saturation and organic-demand classifications."],
+    "empiricalQualifications": ["Attribution is uncertain and endogenous.", "Short experiments may not capture delayed retention or brand effects."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public author material is neutrally paraphrased."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Define experiment and attribution standards."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

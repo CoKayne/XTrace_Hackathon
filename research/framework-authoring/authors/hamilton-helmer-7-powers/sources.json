@@ -1,0 +1,268 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "hamilton_helmer_7_powers_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers",
+      "Strategy Capital"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "H7P-P2-BOOK-2016",
+      "title": "7 Powers: The Foundations of Business Strategy",
+      "authorOrSpeaker": [
+        "Hamilton Helmer"
+      ],
+      "publisher": "Deep Strategy",
+      "sourceClass": "P2",
+      "sourceType": "bibliographic_catalog_record",
+      "url": "https://openlibrary.org/books/OL30547694M/7_Powers",
+      "edition": "First hardbound edition; October 25, 2016; ISBN 9780998116303; cataloged at 210 pages",
+      "publishedAt": "2016-10-25",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_metadata_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports work identity, publisher, date, format, and ISBN only. It does not support chapter-level doctrine.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-P1-SYNOPSIS",
+      "title": "7 Powers — Official Synopsis",
+      "authorOrSpeaker": [
+        "Hamilton Helmer"
+      ],
+      "publisher": "7powers.com",
+      "sourceClass": "P1",
+      "sourceType": "official_book_site",
+      "url": "https://7powers.com/synopsis/",
+      "edition": "Official synopsis accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports Power as conditions for persistent differential returns, invention-first positioning, Power Progression, and Origination/Take-Off/Stability phase labels.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "title": "The 7 Powers with Hamilton Helmer & Jeff Lawson",
+      "authorOrSpeaker": [
+        "Hamilton Helmer",
+        "Jeff Lawson",
+        "James Currier"
+      ],
+      "publisher": "NFX",
+      "sourceClass": "P1",
+      "sourceType": "public_interview_and_edited_transcript",
+      "url": "https://www.nfx.com/post/seven-powers",
+      "edition": "Interview published April 2021",
+      "publishedAt": "2021-04",
+      "eventAt": "2021",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_interview_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary public support for definitions and caveats on all seven Powers. Editorial interstitial text is distinguished from attributed Helmer speech.",
+      "immutableRevision": {
+        "status": "pending_audio_timestamp_and_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "title": "Power + Business",
+      "authorOrSpeaker": [
+        "Hamilton Helmer",
+        "Patrick O'Shaughnessy"
+      ],
+      "publisher": "Invest Like the Best / Colossus",
+      "sourceClass": "P1",
+      "sourceType": "public_audio_interview_with_official_show_notes",
+      "url": "https://colossus.com/episode/helmer-power-business/",
+      "edition": "Episode 174; May 19, 2020",
+      "publishedAt": "2020-05-19",
+      "eventAt": "2020",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_audio_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Official show notes provide exact topic timestamps for Benefit/Barrier, all seven Powers, time lag, and customer implications. Full text transcript is access-controlled, so detailed wording must be checked against audio before publication.",
+      "immutableRevision": {
+        "status": "pending_audio_timestamp_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-P1-ACQUIRED-2021",
+      "title": "7 Powers with Hamilton Helmer",
+      "authorOrSpeaker": [
+        "Hamilton Helmer",
+        "Ben Gilbert",
+        "David Rosenthal"
+      ],
+      "publisher": "Acquired",
+      "sourceClass": "P1",
+      "sourceType": "public_audio_interview",
+      "url": "https://www.acquired.fm/episodes/7-powers-with-hamilton-helmer",
+      "edition": "Canonical March 2020 interview, remastered December 7, 2021",
+      "publishedAt": "2021-12-07",
+      "eventAt": "2020-03",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_audio_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Direct interview supporting Benefit/Barrier, Counter-Positioning, Switching Costs, market boundaries, and the distinction between current and potential competitors. Exact audio timestamps are retained in claim locators.",
+      "immutableRevision": {
+        "status": "pending_audio_timestamp_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-P2-FOREWORD",
+      "title": "Foreword to 7 Powers",
+      "authorOrSpeaker": [
+        "Reed Hastings"
+      ],
+      "publisher": "7powers.com",
+      "sourceClass": "P2",
+      "sourceType": "official_book_foreword",
+      "url": "https://7powers.com/foreword/",
+      "edition": "Official online foreword accessed July 28, 2026",
+      "publishedAt": "2016",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_foreword_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "External firsthand corroboration for execution-versus-strategy, Counter-Positioning, and the timing purpose of Power Progression. Claims are attributed to Hastings, not converted into Helmer quotations.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-P2-STRATEGY-CAPITAL",
+      "title": "Strategy Capital — About Us",
+      "authorOrSpeaker": [
+        "Strategy Capital"
+      ],
+      "publisher": "Strategy Capital",
+      "sourceClass": "P2",
+      "sourceType": "official_institution_page",
+      "url": "https://strategycapital.com/about/",
+      "edition": "Official firm page accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "institution_doctrine",
+      "attributionNotes": "Supports the firm's stated use of competitive strategy to study durable competitive outcomes and undervalued future earning power. It is promotional and supplies no audited performance evidence.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_performance_claim_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-E1-NETWORK-NBER-2025",
+      "title": "Measuring Markets for Network Goods",
+      "authorOrSpeaker": [
+        "Leonardo Bursztyn",
+        "Matthew Gentzkow",
+        "Rafael Jiménez-Durán",
+        "Aaron Leonard",
+        "Filip Milojević",
+        "Christopher Roth"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "experimental_working_paper",
+      "url": "https://www.nber.org/papers/w33901",
+      "edition": "NBER Working Paper 33901; June 2025; revised April 2026",
+      "publishedAt": "2025-06",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies network claims by showing that substitution and value can depend on collective network changes, content supply, social coordination, and platform-specific local connections.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_replication_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-E1-SWITCHING-DUBE-2009",
+      "title": "Do Switching Costs Make Markets Less Competitive?",
+      "authorOrSpeaker": [
+        "Jean-Pierre Dubé",
+        "Günter J. Hitsch",
+        "Peter E. Rossi"
+      ],
+      "publisher": "University of Chicago Booth / SSRN",
+      "sourceClass": "E1",
+      "sourceType": "dynamic_competition_working_paper",
+      "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=907227",
+      "edition": "September 2008 revision; publicly indexed January 2009",
+      "publishedAt": "2009-01-19",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies the simple inference that switching costs always reduce competition or increase equilibrium prices; implications depend on dynamic pricing, differentiation, and lock-in assumptions.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_model_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "H7P-E1-PROCESS-RYALL-2006",
+      "title": "Causal Ambiguity, Operating Complexity and Strong Capability-Based Advantages",
+      "authorOrSpeaker": [
+        "Michael D. Ryall"
+      ],
+      "publisher": "Academy of Management Proceedings",
+      "sourceClass": "E1",
+      "sourceType": "formal_strategy_model",
+      "url": "https://journals.aom.org/doi/10.5465/ambpp.2006.22896775",
+      "edition": "Academy of Management Proceedings 2006; published online November 30, 2017",
+      "publishedAt": "2006-08-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies Process Power by finding intrinsic causal ambiguity necessary but not sufficient in the formal model, and by rejecting a simple equation between operating complexity and causal ambiguity.",
+      "immutableRevision": {
+        "status": "pending_full_paper_hash_and_model_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,346 @@
+{
+  "schemaVersion": "framework-source-gap-register-v1",
+  "researchCutoff": "2026-07-29",
+  "runtimeArtifact": false,
+  "purpose": "Track lawful source acquisition and fidelity-review gaps for the framework-authoring corpus. This file is reviewer metadata and must never be loaded as an investment factor.",
+  "currentCorpusSnapshot": {
+    "packCount": 20,
+    "cardCount": 199,
+    "cataloguedSourceCount": 270,
+    "publicSourceParaphraseCardCount": 180,
+    "rightsPendingCardCount": 19,
+    "approvedCardCount": 0,
+    "publishedCardCount": 0,
+    "validatedDecisionFactorCount": 0,
+    "formalDecisionWeightTotal": 0
+  },
+  "completionAssessment": {
+    "frameworkBreadth": {
+      "plannedPacksDrafted": 20,
+      "plannedPackCount": 20,
+      "ratio": 1.0
+    },
+    "publicSourceRightsCoverage": {
+      "coveredCards": 180,
+      "totalCards": 199,
+      "ratio": 0.9045
+    },
+    "practicalFrameworkPackV1Estimate": {
+      "minimum": 0.8,
+      "maximum": 0.85,
+      "metricType": "qualitative_reviewer_estimate",
+      "scope": "Research-question generation, evidence requests, independent advisory lenses, counterevidence, and disagreement-preserving reports.",
+      "excludes": [
+        "named-investor fidelity approval",
+        "publication approval",
+        "predictive validation",
+        "formal decision weighting",
+        "legal or fiduciary sign-off"
+      ],
+      "notForRuntimeScoring": true
+    },
+    "strictPublicationAndDecisionStatus": {
+      "approvedOrPublishedCardRatio": 0.0,
+      "validatedDecisionFactorRatio": 0.0,
+      "interpretation": "The corpus is a draft advisory research library, not a validated automated investment-decision model."
+    }
+  },
+  "providedSources": [
+    {
+      "sourceId": "VCFI-P1-SSRN-CH1-2021",
+      "title": "Venture Capital and the Finance of Innovation — Front Matter and Chapter 1",
+      "authors": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "edition": "Third edition, 2021",
+      "publicUrl": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=929145",
+      "reviewedOn": "2026-07-29",
+      "pdfPageCount": 36,
+      "sha256": "aec0815b2b2213a8c6ab9510d1e9c05835d36901b62bd79a102bad79996a4709",
+      "repositoryPolicy": "Do not commit the copyrighted PDF. Store only metadata, source location, hash, neutral paraphrase, and exact locators.",
+      "includedCoverage": [
+        "third-edition bibliographic and copyright pages",
+        "authors and preface",
+        "brief contents for Parts I-IV and Chapters 1-24",
+        "complete Chapter 1 on the VC industry"
+      ],
+      "excludedCoverage": [
+        "Chapters 3-4 on returns and VC cost of capital",
+        "Chapters 7-12 on investment analysis, VC Method, DCF, and comparables",
+        "Chapters 13-18 on option pricing, preferred securities, later rounds, and implied valuation",
+        "Chapters 19-24 on R&D finance, simulation, real options, trees, game theory, and R&D valuation"
+      ],
+      "frameworkEffect": {
+        "strengthens": [
+          "VCFI-01",
+          "pack positioning and third-edition architecture"
+        ],
+        "rightsBlockersResolved": [],
+        "stillPending": [
+          "VCFI-03",
+          "VCFI-04",
+          "VCFI-05",
+          "VCFI-06",
+          "VCFI-07",
+          "VCFI-08",
+          "VCFI-09",
+          "VCFI-10"
+        ]
+      }
+    }
+  ],
+  "acquisitionBacklog": [
+    {
+      "priority": 1,
+      "tier": "A_exact_formula_and_process",
+      "title": "Venture Capital and the Finance of Innovation",
+      "authors": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "requestedEdition": "Third edition",
+      "targetPack": "metrick_yasuda_vc_finance_public_frameworks_v0_1",
+      "neededFor": "Exact VC Method, retention, total/partial valuation, DCF, comparables, preferred-security, waterfall, fund-economics, and staged-finance review.",
+      "affectedCardIds": [
+        "VCFI-03",
+        "VCFI-04",
+        "VCFI-05",
+        "VCFI-06",
+        "VCFI-07",
+        "VCFI-08",
+        "VCFI-09",
+        "VCFI-10"
+      ],
+      "currentStatus": "public_front_matter_and_chapter_1_reviewed_full_text_missing"
+    },
+    {
+      "priority": 2,
+      "tier": "A_exact_formula_and_process",
+      "title": "The Business of Venture Capital",
+      "authors": [
+        "Mahendra Ramsinghani"
+      ],
+      "requestedEdition": "Third edition",
+      "targetPack": "mahendra_ramsinghani_business_of_vc_public_frameworks_v0_1",
+      "neededFor": "Fund construction, portfolio sizing, ownership planning, reserves, performance attribution, value-creation capacity, and exit-process fidelity.",
+      "affectedCardIds": [
+        "BVC-02",
+        "BVC-03",
+        "BVC-04",
+        "BVC-05",
+        "BVC-09"
+      ],
+      "currentStatus": "public_source_draft_exists_full_text_missing"
+    },
+    {
+      "priority": 3,
+      "tier": "A_exact_formula_and_process",
+      "title": "Expectations Investing",
+      "authors": [
+        "Michael Mauboussin",
+        "Alfred Rappaport"
+      ],
+      "requestedEdition": "Revised and Updated edition",
+      "targetPack": "expectations_investing_public_frameworks_v0_1",
+      "neededFor": "Reverse-DCF sequence, implied-expectation decomposition, advantage-period interpretation, trigger and sensitivity definitions, and exact source locators.",
+      "affectedCardIds": [],
+      "currentStatus": "public_source_draft_exists_fidelity_enhancement"
+    },
+    {
+      "priority": 4,
+      "tier": "A_exact_formula_and_process",
+      "title": "Venture Deals",
+      "authors": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "requestedEdition": "Fourth edition",
+      "targetPack": "venture_deals_public_frameworks_v0_1",
+      "neededFor": "Term-sheet definitions, liquidation waterfalls, option-pool treatment, anti-dilution, governance, convertible instruments, and exact chapter locators.",
+      "affectedCardIds": [],
+      "currentStatus": "public_source_draft_exists_fidelity_enhancement"
+    },
+    {
+      "priority": 5,
+      "tier": "A_exact_formula_and_process",
+      "title": "The Founder's Dilemmas",
+      "authors": [
+        "Noam Wasserman"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "noam_wasserman_founders_dilemmas_public_frameworks_v0_1",
+      "neededFor": "Founder relationship, role, equity, control, succession, governance, and evidence-based applicability review.",
+      "affectedCardIds": [
+        "FD-02",
+        "FD-04",
+        "FD-06",
+        "FD-07",
+        "FD-10"
+      ],
+      "currentStatus": "public_source_draft_exists_full_text_missing"
+    },
+    {
+      "priority": 6,
+      "tier": "A_exact_formula_and_process",
+      "title": "Scaling People",
+      "authors": [
+        "Claire Hughes Johnson"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "claire_hughes_johnson_scaling_people_public_frameworks_v0_1",
+      "neededFor": "Stage-appropriate operating systems, management cadence, hiring, onboarding, feedback, and operating-diligence source locators.",
+      "affectedCardIds": [],
+      "currentStatus": "public_source_draft_exists_fidelity_enhancement"
+    },
+    {
+      "priority": 7,
+      "tier": "A_exact_formula_and_process",
+      "title": "Obviously Awesome",
+      "authors": [
+        "April Dunford"
+      ],
+      "requestedEdition": "Updated and Expanded second edition plus subscriber workbook",
+      "targetPack": "april_dunford_obviously_awesome_2e_public_frameworks_v0_1",
+      "neededFor": "Exact positioning sequence, competitive alternatives, differentiated value, best-fit customers, market category, and workbook-specific validation.",
+      "affectedCardIds": [
+        "OA2-08"
+      ],
+      "currentStatus": "public_source_draft_exists_workbook_specific_card_pending"
+    },
+    {
+      "priority": 8,
+      "tier": "A_exact_formula_and_process",
+      "title": "7 Powers: The Foundations of Business Strategy",
+      "authors": [
+        "Hamilton Helmer"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "hamilton_helmer_7_powers_public_frameworks_v0_1",
+      "neededFor": "Benefit/barrier definitions, seven-Power boundaries, progression timing, counterexamples, and exact source locators.",
+      "affectedCardIds": [],
+      "currentStatus": "public_source_draft_exists_fidelity_enhancement"
+    },
+    {
+      "priority": 9,
+      "tier": "A_exact_formula_and_process",
+      "title": "Super Founders",
+      "authors": [
+        "Ali Tamaseb"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "super_founders_public_frameworks_v0_1",
+      "neededFor": "Dataset definitions, descriptive base rates, sampling limits, founder-myth counterweights, and exact evidence locators.",
+      "affectedCardIds": [],
+      "currentStatus": "public_source_draft_exists_fidelity_enhancement"
+    },
+    {
+      "priority": 10,
+      "tier": "A_exact_formula_and_process",
+      "title": "The Venture Mindset",
+      "authors": [
+        "Ilya Strebulaev",
+        "Alex Dang"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "venture_mindset_public_frameworks_v0_1",
+      "neededFor": "Decision-language fidelity, power-law portfolio behavior, structured dissent, follow-on re-underwriting, and exact source locators.",
+      "affectedCardIds": [],
+      "currentStatus": "public_source_draft_exists_fidelity_enhancement"
+    },
+    {
+      "priority": 11,
+      "tier": "A_exact_formula_and_process",
+      "title": "Secrets of Sand Hill Road",
+      "authors": [
+        "Scott Kupor"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "scott_kupor_public_frameworks_v0_1",
+      "neededFor": "End-to-end VC workflow, fund-return logic, ownership, governance, term-sheet, pro-rata, and exit-process fidelity.",
+      "affectedCardIds": [],
+      "currentStatus": "public_source_draft_exists_fidelity_enhancement"
+    },
+    {
+      "priority": 12,
+      "tier": "B_secondary_fidelity",
+      "title": "Zero to One",
+      "authors": [
+        "Peter Thiel",
+        "Blake Masters"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "peter_thiel_public_frameworks_v0_1",
+      "neededFor": "Chapter-level locators and fidelity review for contrarian truth, monopoly, durability, distribution, founder alignment, timing, and power-law claims.",
+      "affectedCardIds": [],
+      "currentStatus": "strong_public_source_draft_exists"
+    },
+    {
+      "priority": 13,
+      "tier": "B_secondary_fidelity",
+      "title": "The Dark Side of Valuation",
+      "authors": [
+        "Aswath Damodaran"
+      ],
+      "requestedEdition": "Third edition",
+      "targetPack": "aswath_damodaran_dark_side_valuation_public_frameworks_v0_1",
+      "neededFor": "Exact young-company, loss-making-company, distress, scenario, real-option, and relative-valuation chapter locators.",
+      "affectedCardIds": [],
+      "currentStatus": "strong_author_public_materials_exist"
+    },
+    {
+      "priority": 14,
+      "tier": "B_secondary_fidelity",
+      "title": "Narrative and Numbers",
+      "authors": [
+        "Aswath Damodaran"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "aswath_damodaran_narrative_and_numbers_public_frameworks_v0_1",
+      "neededFor": "Exact story-to-number sequence, narrative plausibility, lifecycle constraints, and revision-ledger locators.",
+      "affectedCardIds": [],
+      "currentStatus": "strong_author_public_materials_exist"
+    },
+    {
+      "priority": 15,
+      "tier": "B_secondary_fidelity",
+      "title": "The Most Important Thing Illuminated",
+      "authors": [
+        "Howard Marks"
+      ],
+      "requestedEdition": "Latest lawfully available edition",
+      "targetPack": "howard_marks_most_important_thing_public_frameworks_v0_1",
+      "neededFor": "Chapter-level fidelity for second-level thinking, cycles, price/value, risk, contrarianism, and process/outcome separation.",
+      "affectedCardIds": [],
+      "currentStatus": "strong_author_memo_corpus_exists"
+    }
+  ],
+  "notCurrentlyRequired": [
+    {
+      "title": "The Cold Start Problem",
+      "reason": "A full author-hosted public PDF already supports the current draft."
+    },
+    {
+      "title": "The Power Law",
+      "reason": "The current pack is historical and advisory; public author interviews are sufficient for the safe first draft."
+    },
+    {
+      "title": "Marc Andreessen source book",
+      "reason": "Direct public essays, interviews, and talks are sufficient for the current pack."
+    },
+    {
+      "title": "Bill Gurley source book",
+      "reason": "Direct public essays, interviews, and talks are sufficient for the current pack."
+    },
+    {
+      "title": "Sequoia / Don Valentine / Michael Moritz source book",
+      "reason": "Official institutional materials and direct public interviews are sufficient for the current pack."
+    }
+  ],
+  "sourceHandlingPolicy": {
+    "acceptedInput": "Lawfully acquired PDF or EPUB supplied privately by the user.",
+    "repositoryRule": "Never commit copyrighted source files. Commit only bibliographic metadata, hashes, neutral non-substitutive paraphrases, exact chapter/page locators, and review status.",
+    "rightsRule": "Private lawful access can support internal fidelity review. It does not automatically grant public redistribution or publication rights.",
+    "reasoningRule": "Do not reconstruct private chain of thought. Produce auditable Framework Cards and seven-part Decision Traces."
+  }
+}

@@ -1,0 +1,254 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-06",
+  "slug": "structured-dissent",
+  "name": "Agree to Disagree",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Preserves independent, evidence-backed disagreement so consensus does not erase minority insight or uncertainty.",
+    "productLabel": "Structured Dissent Lens — based on The Venture Mindset public materials",
+    "notAClaimOf": [
+      "minority views being inherently correct",
+      "conviction replacing evidence",
+      "author endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Strebulaev and Dang public nine-principle and HBR materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Decision makers should form views independently, document evidence and falsifiers, and preserve material disagreement rather than forcing consensus. Conviction earns attention only when it is specific, source-backed, accountable, and reviewable after the outcome.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-007"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pages 14 and 20-23"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VM-P2-HBR-2024",
+      "claimIds": [
+        "VM-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official publication summary: disagreement over consensus"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "screening",
+      "due_diligence",
+      "investment_committee",
+      "follow_on"
+    ],
+    "businessModels": [
+      "venture_investing",
+      "corporate_innovation"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible",
+      "internal_innovation_budget"
+    ]
+  },
+  "requiredConditions": [
+    "Reviewers can record opinions before group discussion.",
+    "Claims, evidence, uncertainty, and falsifiers can be compared independently.",
+    "The organization tolerates dissent without waiving integrity or policy gates."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "independent_judgments",
+      "description": "Timestamped pre-discussion assessments with evidence references and confidence anchors.",
+      "necessity": "required",
+      "acceptableSources": [
+        "review forms",
+        "lens outputs",
+        "IC pre-reads"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "disagreement_map",
+      "description": "Exact fact, assumption, time horizon, framework, or policy choice causing the disagreement.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Framework disagreement record",
+        "IC minutes",
+        "decision memo"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "falsifiers_and_owner",
+      "description": "Observation that would change each view and the accountable reviewer.",
+      "necessity": "required",
+      "acceptableSources": [
+        "decision journal",
+        "monitoring plan"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Did each reviewer form a view before seeing others' conclusions?",
+    "Is disagreement about facts, assumptions, time horizon, framework, or values?",
+    "What evidence would change each side?",
+    "Does the minority view violate a hard policy or merely differ in judgment?",
+    "How will the outcome update reviewer calibration?"
+  ],
+  "positiveSignals": [
+    "Independent views remain visible after group discussion.",
+    "Disagreement is localized to explicit evidence or assumptions.",
+    "Minority reviewers provide falsifiers and accept accountability.",
+    "The final decision explains why one tradeoff was chosen without rewriting dissent.",
+    "Postmortems evaluate both majority and minority calibration."
+  ],
+  "redFlags": [
+    "A senior partner's view appears before independent assessments.",
+    "Conviction is measured by forcefulness.",
+    "Consensus score averages away a decisive disagreement.",
+    "Dissent lacks evidence or cannot be falsified.",
+    "The minority record is edited after outcomes.",
+    "Policy violations are excused as contrarian thinking."
+  ],
+  "disconfirmingEvidence": [
+    "Independent assessments converge only after name or prestige disclosure.",
+    "The same reviewer is repeatedly contrarian without calibration.",
+    "Disagreements disappear when evidence definitions are corrected.",
+    "Minority views consistently depend on unsupported assumptions.",
+    "The process delays decisions without generating new evidence."
+  ],
+  "contraindications": [
+    "Do not average incompatible framework conclusions.",
+    "Do not allow dissent to bypass legal, integrity, mandate, or price gates.",
+    "Do not disclose other lens conclusions before independent execution."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Collect independent judgments before discussion.",
+      "Localize each disagreement.",
+      "Compare evidence, assumptions, falsifiers, and horizons.",
+      "Preserve all material views in the final record.",
+      "Let deterministic policy resolve only explicit gates, not rewrite judgments."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only secondary summaries support the principle.",
+      "medium": "Official keynote and publication metadata support it.",
+      "high": "Hashed keynote and reviewed licensed chapter converge."
+    },
+    "evidenceStrength": {
+      "low": "Unrecorded meeting recollection.",
+      "medium": "Independent views and a disagreement map exist.",
+      "high": "Views, sources, falsifiers, owners, and postmortem calibration are complete."
+    },
+    "evidenceCoverage": {
+      "low": "Pre-discussion judgments are absent.",
+      "medium": "Judgments exist but falsifiers or calibration are missing.",
+      "high": "All disagreement components are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "The decision is deterministic and contains no judgment disagreement.",
+      "medium": "Judgment matters but reviewer independence is limited.",
+      "high": "High uncertainty and diverse expertise make dissent decision-relevant."
+    },
+    "judgmentConfidence": {
+      "low": "Only the existence of disagreement is known.",
+      "medium": "The disagreement is localized but not yet resolvable.",
+      "high": "Evidence, falsifiers, and reviewer calibration clarify the tradeoff."
+    }
+  },
+  "overlapFrameworkIds": [
+    "FRAMEWORK-DISAGREEMENT",
+    "DECISION-JOURNAL",
+    "PT-01"
+  ],
+  "conflictingFrameworkIds": [
+    "CONSENSUS-SEEKING",
+    "LLM-JUDGE-AVERAGE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Enforce independent execution in the system.",
+      "Measure decision latency, information gain, and reviewer calibration.",
+      "Define non-negotiable policy gates that dissent cannot bypass."
+    ],
+    "empiricalQualifications": [
+      "Minority views are not inherently superior.",
+      "Group discussion can both improve information sharing and induce herding.",
+      "Named-author lenses may create authority bias."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Only neutral paraphrase of public principles is stored."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash keynote source revision.",
+      "Align with Task 11 independent-lens execution and disagreement persistence."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft turns dissent into an auditable independent-decision process."
+    }
+  ]
+}

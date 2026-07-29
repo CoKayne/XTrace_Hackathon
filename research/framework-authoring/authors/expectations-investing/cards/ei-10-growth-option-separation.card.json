@@ -1,0 +1,305 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-10",
+  "slug": "growth-option-separation",
+  "name": "Existing Business and Growth Option Separation",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates existing-business value from uncertain growth opportunities and permits separate option treatment only when incremental rights and no-double-count controls pass.",
+    "productLabel": "Growth-Option Separation Lens — based on Mauboussin and Rappaport's public real-options materials",
+    "notAClaimOf": [
+      "a large TAM being an option",
+      "all startup upside deserving a separate premium",
+      "accounting intangibles automatically creating option value"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Michael J. Mauboussin and Alfred Rappaport's public real-options and intangible-investment materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport"
+    ],
+    "organizations": [
+      "Expectations Investing"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Value the operating business and growth already included in explicit forecasts or residual value first. A separate growth option is eligible only when the company has a specific incremental opportunity, meaningful access or exclusivity, an identifiable exercise cost and decision window, and a reconciliation proving the same cash flows are absent from the base model.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-P1-TUTORIAL-10",
+      "claimIds": [
+        "EI-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Value of existing business plus real options for uncertain growth opportunities and implied option gap"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-ABOUT-FAQ",
+      "claimIds": [
+        "EI-CLM-018",
+        "EI-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Intangible-investment treatment and real-options role in expectations analysis"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "EI-A1-ROIC-2022",
+      "claimIds": [
+        "EI-CLM-018"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Public report: analytical treatment of intangible investment and reconciliation of invested capital"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "deep_tech",
+      "biotech",
+      "platform",
+      "infrastructure",
+      "multi_market_expansion",
+      "all_with_incremental_exclusive_opportunities"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Existing-business and explicit-growth cash flows are defined first.",
+    "The proposed option is incremental and company-specific.",
+    "Access or exclusivity, exercise cost, decision trigger, option life, and erosion are identified.",
+    "A line-by-line reconciliation proves no overlap with explicit forecast, residual value, or another option.",
+    "Any intangible capitalization adjustment preserves total free cash flow."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "base_value_reconciliation",
+      "description": "Existing-business DCF and schedule of all explicit and residual growth assumptions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic DCF",
+        "valuation bridge",
+        "scenario pack"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "incremental_option_right",
+      "description": "Specific project, market, technology, data, patent, license, contract, or platform right that creates differentiated access.",
+      "necessity": "required",
+      "acceptableSources": [
+        "patent",
+        "license",
+        "contract",
+        "technical asset",
+        "validated platform access"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "exercise_and_timing",
+      "description": "Exercise cost, decision trigger, time window, information arrival, erosion, and abandonment conditions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "project plan",
+        "budget",
+        "regulatory timeline",
+        "contract",
+        "competitive scenario"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "intangible_reconciliation",
+      "description": "If R&D or other intangibles are capitalized analytically, a reconciliation to reported accounts and unchanged total free cash flow.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "accounting statements",
+        "valuation model",
+        "intangible asset schedule"
+      ],
+      "missingEffect": "no_effect"
+    }
+  ],
+  "decisionQuestions": [
+    "Which cash flows belong to the existing business?",
+    "Which growth paths are already in the explicit forecast or residual value?",
+    "What incremental right gives this company differentiated access to the opportunity?",
+    "What are the exercise cost, trigger, life, and erosion mechanism?",
+    "Can management wait for useful information before committing?",
+    "Does the no-double-count reconciliation pass?",
+    "Does any intangible reclassification preserve free cash flow?"
+  ],
+  "positiveSignals": [
+    "A legally, technically, contractually, or structurally differentiated right exists.",
+    "The company can defer major investment until decision-relevant information arrives.",
+    "Exercise cost, term, trigger, and erosion are source-linked.",
+    "The opportunity's cash flows are absent from the base DCF and residual value.",
+    "Intangible adjustments reconcile without creating cash."
+  ],
+  "redFlags": [
+    "The option is only a large TAM or management aspiration.",
+    "Competitors have equivalent access.",
+    "No exercise cost, decision point, or finite window exists.",
+    "The same growth appears in forecasts, terminal value, and option value.",
+    "Capitalizing expenses increases FCF without reconciliation."
+  ],
+  "disconfirmingEvidence": [
+    "The right expires before technical, regulatory, or commercial readiness.",
+    "Competition can enter on equivalent terms.",
+    "Investment must be committed before useful information arrives.",
+    "The project is already required to sustain the base business.",
+    "Reasonable option inputs make incremental value immaterial or indeterminate."
+  ],
+  "contraindications": [
+    "Do not call generic managerial flexibility a real option.",
+    "Do not add option value without company-specific access.",
+    "Do not double count growth.",
+    "Do not let accounting reclassification create cash.",
+    "Do not let the LLM value the option."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconcile existing-business, explicit-growth, and residual-value cash flows.",
+      "Test incremental right, access, exercise, information, term, and erosion gates.",
+      "Reconcile intangible adjustments to unchanged free cash flow.",
+      "If all gates pass, send bounded inputs to the deterministic option service.",
+      "Otherwise classify the item as scenario upside, strategic possibility, or not applicable."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "allRequiredGates": [
+        "incremental_cash_flows",
+        "company_specific_access",
+        "identifiable_exercise_cost",
+        "finite_or_estimated_option_life",
+        "information_before_exercise",
+        "no_double_count",
+        "intangible_adjustment_preserves_fcf"
+      ],
+      "calculationOwner": "real_option_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The opportunity and rights rely only on narrative.",
+      "medium": "Project and access evidence exist but term or cost is approximate.",
+      "high": "Rights, project, cost, timing, competition, and model reconciliation are verified."
+    },
+    "evidenceStrength": {
+      "low": "Only strategic possibility is shown.",
+      "medium": "Most option gates pass but one material range is broad.",
+      "high": "All gates and no-double-count reconciliation pass with independent evidence."
+    },
+    "evidenceCoverage": {
+      "low": "Only TAM and opportunity are covered.",
+      "medium": "Access, project, and cost are covered but erosion or reconciliation is partial.",
+      "high": "Base value, access, exercise, timing, erosion, competition, and reconciliation are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Opportunity is shared, required, or already modeled.",
+      "medium": "It resembles an option but exclusivity or life is uncertain.",
+      "high": "It has a clear incremental option structure."
+    },
+    "judgmentConfidence": {
+      "low": "No separate option treatment is supportable.",
+      "medium": "A bounded option range may be calculated with caveats.",
+      "high": "A deterministic option calculation and reconciliation are supportable."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-09",
+    "EI-03",
+    "H7P-07",
+    "PT-03"
+  ],
+  "conflictingFrameworkIds": [
+    "LARGE-TAM-EQUALS-OPTION",
+    "GROWTH-OPTION-DOUBLE-COUNT",
+    "INTANGIBLE-CAPITALIZATION-CREATES-CASH"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful revised-edition real-options review.",
+      "Validate option gates and model choices by sector.",
+      "Backtest no-double-count reconciliation."
+    ],
+    "empiricalQualifications": [
+      "Project volatility, option life, and competitive erosion are difficult to estimate.",
+      "Many startup opportunities are better represented as scenarios than separate options.",
+      "Access can disappear before formal legal rights expire."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Official public companion materials are neutrally paraphrased and adapted through explicit product gates."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Align real-option contract with DSV-09.",
+      "Define intangible adjustment reconciliation schema."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-07",
+  "slug": "base-rate-update",
+  "name": "Reference-Class and Evidence Update",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Uses an explicitly selected reference-class distribution as a prior and updates it only with evidence whose relevance and likelihood are stated.",
+    "productLabel": "Base-Rate Update Lens — based on Mauboussin-affiliated public research",
+    "notAClaimOf": [
+      "base rates determining an individual outcome",
+      "a convenient industry average being a valid reference class",
+      "Bayesian language making unsupported probabilities precise"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Michael J. Mauboussin and Dan Callahan's public Bayes and Base Rates research",
+    "scope": "person_direct",
+    "people": [
+      "Michael J. Mauboussin",
+      "Dan Callahan"
+    ],
+    "organizations": [
+      "Morgan Stanley Investment Management"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Choose a reference class that matches the company and question on stage, business model, geography, cohort, and measurement. Treat its full distribution as a prior, document selection and survivorship limits, then update with company-specific evidence. If likelihoods cannot be defensibly quantified, preserve the update as directional rather than manufacturing a posterior.",
+  "claimTypes": [
+    "affiliated_doctrine",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-A1-BASE-RATES-2026",
+      "claimIds": [
+        "EI-CLM-015"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Public report: reference-class selection, prior distributions, evidence updating, and changing base-rate distributions"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-CHAPTER-SUMMARIES",
+      "claimIds": [
+        "EI-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 7: expected value, margin of safety, and base rates"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_with_valid_reference_class"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "The forecast question and outcome measure are precisely defined.",
+    "Reference-class inclusion, exclusion, cohort, stage, geography, and measurement are recorded.",
+    "The full distribution and missing-data biases are available.",
+    "Company-specific update evidence is distinct from evidence used to choose the class."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "reference_class",
+      "description": "Versioned dataset and rules for a relevant cohort, including outcome distribution and censoring.",
+      "necessity": "required",
+      "acceptableSources": [
+        "auditable market dataset",
+        "peer cohort",
+        "academic research",
+        "validated internal history"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "class_fit",
+      "description": "Evidence supporting similarity on stage, business model, geography, capital intensity, cohort, and metric definition.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company profile",
+        "dataset schema",
+        "industry taxonomy",
+        "expert review"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "update_evidence",
+      "description": "Company-specific evidence and, if numeric Bayes is used, validated likelihood ratios or conditional distributions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "verified company data",
+        "customer evidence",
+        "validated predictive model",
+        "independent research"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact outcome is being forecast?",
+    "Which reference class is closest and why?",
+    "How were failures, censored outcomes, and changing cohorts handled?",
+    "What company-specific evidence should update the prior?",
+    "Are numeric likelihoods validated or only directional?",
+    "What alternative reference class would change the conclusion?"
+  ],
+  "positiveSignals": [
+    "The reference class is defined before viewing the desired outcome.",
+    "The cohort matches stage, model, geography, and measurement.",
+    "Failures and censored cases are retained.",
+    "Company-specific evidence has validated predictive relevance.",
+    "Alternative-class sensitivity is shown."
+  ],
+  "redFlags": [
+    "The class is chosen because its average supports the thesis.",
+    "Only successful companies appear in the dataset.",
+    "A mean replaces the outcome distribution.",
+    "Company storytelling overrides the prior without update evidence.",
+    "Unsupported likelihood ratios create false posterior precision."
+  ],
+  "disconfirmingEvidence": [
+    "A closer reference class has materially different outcomes.",
+    "The dataset excludes failures, shutdowns, or down rounds.",
+    "Metric definitions differ from the company evidence.",
+    "The cohort is structurally obsolete after technology or regulation change.",
+    "Alleged company-specific signals have weak out-of-sample predictive value."
+  ],
+  "contraindications": [
+    "Do not use a reference class without documented selection rules.",
+    "Do not convert directional evidence into numeric Bayes without validated likelihoods.",
+    "Do not treat the prior as an individual-company verdict.",
+    "Do not let the LLM calculate a posterior."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define the outcome and select the reference class before evaluating the desired answer.",
+      "Audit class fit, distribution, censoring, and temporal relevance.",
+      "Separate class-selection evidence from company-update evidence.",
+      "Run a deterministic update only when validated likelihood inputs exist; otherwise state a directional update.",
+      "Report alternative classes, counterevidence, and posterior uncertainty."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "numericUpdateRequires": [
+        "prior_distribution_versioned",
+        "likelihood_model_validated",
+        "evidence_independence_or_dependence_modeled",
+        "metric_definitions_aligned"
+      ],
+      "fallback": "directional_update_without_numeric_posterior",
+      "calculationOwner": "base_rate_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The base rate comes from anecdotes or an opaque database.",
+      "medium": "The dataset is credible but class fit or censoring is incomplete.",
+      "high": "The dataset, cohort rules, failures, metrics, and updates are auditable."
+    },
+    "evidenceStrength": {
+      "low": "Only an unmatched average exists.",
+      "medium": "A relevant prior and directional update exist.",
+      "high": "A matched prior and validated update model support a bounded posterior."
+    },
+    "evidenceCoverage": {
+      "low": "Only successful peers are observed.",
+      "medium": "Distribution and company evidence exist but cohort drift or censoring remains.",
+      "high": "Distribution, class fit, failures, drift, update evidence, and alternatives are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No defensible reference class exists.",
+      "medium": "A class exists but the company is an edge case.",
+      "high": "The question and company match a well-defined cohort."
+    },
+    "judgmentConfidence": {
+      "low": "Only class-selection uncertainty can be reported.",
+      "medium": "A prior and directional update are defensible.",
+      "high": "A reproducible update with sensitivity is supportable."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SF-01",
+    "VM-03",
+    "VCFI-01"
+  ],
+  "conflictingFrameworkIds": [
+    "BASE-RATE-EQUALS-VERDICT",
+    "SUCCESS-ONLY-REFERENCE-CLASS",
+    "UNVALIDATED-NUMERIC-BAYES"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Approve reference-class governance and dataset versions.",
+      "Validate likelihood models out of sample.",
+      "Audit cohort drift and survivorship controls."
+    ],
+    "empiricalQualifications": [
+      "Reference classes involve judgment and can be manipulated.",
+      "Startup cohorts evolve rapidly and historical distributions may drift.",
+      "Company evidence is often dependent, making naive sequential updates misleading."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "This card primarily reflects later Mauboussin-affiliated public research, not a joint Rappaport attribution."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define supported reference-class datasets and drift policy.",
+      "Specify numeric-update validation thresholds."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

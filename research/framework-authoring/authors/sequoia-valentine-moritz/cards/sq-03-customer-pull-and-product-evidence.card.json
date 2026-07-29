@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-03",
+  "slug": "customer-pull-and-product-evidence",
+  "name": "Customer Pull and Product Evidence",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether customers demonstrably value and seek the product through use, payment, retention, backlog, or credible distribution evidence.",
+    "productLabel": "Customer Pull and Product Evidence — a product synthesis from separately attributed Sequoia, Valentine, and Moritz public sources",
+    "notAClaimOf": ["one reference customer proving a market", "portfolio stories estimating success probability", "attention or partnerships automatically proving durable pull"]
+  },
+  "attribution": {
+    "display": "Product synthesis from Sequoia institution cases and direct Valentine/Moritz accounts, each attributed at source level",
+    "scope": "product_synthesis",
+    "people": ["Don Valentine", "Michael Moritz"],
+    "organizations": ["Sequoia Capital", "Computer History Museum"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Seek observable evidence that customers obtain distinct value and pull the product into use: payment, repeat use, retention, backlog, refusal to return a useful prototype, or distribution partners adopting it. Triangulate across cohorts and review loss evidence because selected success stories and one large customer can mislead.",
+  "claimTypes": ["direct_doctrine", "revealed_behavior", "historical_description", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-P1-VALENTINE-CISCO-CHM",
+      "claimIds": ["SQ-CLM-006", "SQ-CLM-027"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 4-5 and 13-15: exceptional demand, HP prototype/reference, and customer targeting"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-P1-MORITZ-ZAPPOS",
+      "claimIds": ["SQ-CLM-008", "SQ-CLM-009", "SQ-CLM-027"],
+      "locator": {"kind": "web_section", "value": "Lines 40-57: prior concerns, later growth, user availability and service evidence"},
+      "attributionScope": "revealed_behavior",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-I1-GOOGLE-CASE",
+      "claimIds": ["SQ-CLM-007", "SQ-CLM-027"],
+      "locator": {"kind": "web_section", "value": "Lines 31-34: superior search and external partnership adoption"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups", "saas", "enterprise", "consumer", "marketplace", "transactional", "hardware_enabled"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Customer-pull evidence is adapted to the company's stage and business model.",
+    "Paid, unpaid, partner-distributed, and founder-network usage are separated.",
+    "Selected case examples are used only to generate questions."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "use_and_value",
+      "description": "Cohort usage, retention, workflow dependency, outcome improvement, satisfaction, and reasons for use.",
+      "necessity": "required",
+      "acceptableSources": ["product analytics", "usage logs", "customer interviews", "renewal records", "outcome studies"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "commercial_pull",
+      "description": "Contracts, payment, backlog quality, conversion, sales cycles, expansion, and price response.",
+      "necessity": "required",
+      "acceptableSources": ["contracts", "billing", "bank records", "CRM", "pipeline records", "pricing tests"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "distribution_and_independence",
+      "description": "Source of demand and whether customers or partners are independent of founders, investors, subsidies, and one dominant channel.",
+      "necessity": "required",
+      "acceptableSources": ["attribution data", "partner agreements", "customer-source records", "channel cohorts", "concentration report"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "negative_customer_evidence",
+      "description": "Churn, return rates, non-use, failed pilots, lost deals, support burden, and customers declining to pay.",
+      "necessity": "required",
+      "acceptableSources": ["returns", "churn interviews", "lost-deal records", "support logs", "failed-pilot reviews"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What behavior shows customers value the product rather than the story?",
+    "Is pull repeatable across independent customers and cohorts?",
+    "What share of demand depends on subsidy, scarcity, a relationship, or one channel?",
+    "Do economics remain acceptable when customer support, returns, and delivery are included?",
+    "Which negative customer evidence most threatens the pull claim?"
+  ],
+  "positiveSignals": [
+    "Independent customers repeatedly use, pay, renew, or expand for the same core value.",
+    "Backlog or demand is contractually credible and converts to delivery and cash.",
+    "External partners adopt the product because it improves their own user outcome.",
+    "Return, support, and service burdens remain compatible with unit economics."
+  ],
+  "redFlags": [
+    "Press, downloads, letters of intent, or investor introductions substitute for use and payment.",
+    "One prominent customer or partner dominates evidence.",
+    "Aggregate growth hides poor cohorts, high returns, or costly implementation.",
+    "Only positive customers are sampled."
+  ],
+  "disconfirmingEvidence": [
+    "Pre-revenue technical or regulated products may show pull through validated milestones and committed design partners.",
+    "A high early support burden may fall with documented product learning.",
+    "One strategic customer can be rational if contract terms and expansion paths are strong.",
+    "Strong pull does not establish defensibility, valuation, or investor return."
+  ],
+  "contraindications": [
+    "Do not copy Cisco, Google, or Zappos evidence patterns without adapting to the current model.",
+    "Do not treat a selected portfolio story as a comparison set.",
+    "Do not label product-market fit or investment merit from one metric."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define stage- and model-appropriate pull evidence.",
+      "Reconcile use, retention, commercial, delivery, return, and support data by cohort.",
+      "Separate independent demand from relationship, subsidy, scarcity, and channel effects.",
+      "Review churned, failed, and non-paying cases.",
+      "Classify pull as strong, emerging, concentrated, artificial, absent, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Cohort retention, conversion, concentration, returns, backlog conversion, and unit economics must be calculated outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder assertion, press, or non-binding interest.", "medium": "Internal usage, CRM, and billing.", "high": "Reconciled records plus independent customer and negative-case verification."},
+    "evidenceStrength": {"low": "Attention only.", "medium": "Repeated use or early payment.", "high": "Independent cohorts show use, retention, payment, and sustainable delivery."},
+    "evidenceCoverage": {"low": "One customer or metric.", "medium": "Use and commercial pull.", "high": "Use, retention, payment, source, returns, support, economics, and losses covered."},
+    "applicabilityConfidence": {"low": "Wrong model or immature evidence window.", "medium": "Stage-appropriate evidence.", "high": "Model, stage, cohort maturity, and demand source are explicit."},
+    "judgmentConfidence": {"low": "Portfolio analogy.", "medium": "Bounded cohort assessment.", "high": "Multiple independent evidence types and counterevidence converge."}
+  },
+  "overlapFrameworkIds": ["MA-01", "BG-04", "SF-06", "CSP-04", "SHR-02"],
+  "conflictingFrameworkIds": ["PRESS-AS-CUSTOMER-PULL", "ONE-LOGO-AS-PMF"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define stage/model pull anchors.", "Backtest against retention and cash outcomes.", "Add failed-case comparisons."],
+    "empiricalQualifications": ["The supporting company stories are selected retrospectives.", "Customer-pull signals differ by stage and business model."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Direct, revealed-behavior, and institution material is neutrally paraphrased and separated."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Add model-specific customer-pull taxonomies and external base rates."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

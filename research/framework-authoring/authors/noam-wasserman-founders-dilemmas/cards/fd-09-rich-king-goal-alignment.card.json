@@ -1,0 +1,157 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-09",
+  "slug": "rich-king-goal-alignment",
+  "name": "Founder Wealth-Control Goal Alignment",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Makes founder wealth, growth, control, role, and time-horizon preferences explicit before interpreting financing and governance choices.",
+    "productLabel": "Rich-versus-King Alignment Lens — based on Noam Wasserman's public research",
+    "notAClaimOf": ["wealth being superior to control", "founder motives being binary", "control terms revealing private motivation"]
+  },
+  "attribution": {
+    "display": "Based on Noam Wasserman's public Rich-versus-King research",
+    "scope": "person_direct",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Ask founders directly how they prioritize company value, personal wealth, control, operating role, mission, and time horizon. Compare those goals with choices about cofounders, executives, capital, board control, and exit; surface trade-offs without prescribing one objective.",
+  "claimTypes": ["direct_doctrine", "empirical_association", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-HBS-RICH-2006",
+      "claimIds": ["FD-CLM-021", "FD-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Profit and control motives; cofounder, investor, and CEO choices"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P1-HBR-2008",
+      "claimIds": ["FD-CLM-021", "FD-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Founder control and resource trade-off synthesis"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P1-SMJ-2015",
+      "claimIds": ["FD-CLM-022", "FD-CLM-023"],
+      "locator": {"kind": "chapter_page", "value": "Abstract, theory, empirical results, and limitations; DOI 10.1002/smj.2478"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "FD-P1-HBS-SINK-2012",
+      "claimIds": ["FD-CLM-021", "FD-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Rich-versus-King interview section"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "late_stage"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Founder goals materially affect financing, governance, hiring, or exit.",
+    "Goals are elicited directly rather than inferred from terms.",
+    "The analysis preserves legitimate non-financial objectives."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "founder_goal_statement",
+      "description": "Explicit priorities for company scale, wealth, control, role, mission, liquidity, and time horizon.",
+      "necessity": "required",
+      "acceptableSources": ["founder interview", "board discussion", "written founder goals"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "choice_goal_consistency",
+      "description": "Cofounder, hiring, financing, governance, and exit choices compared with stated goals.",
+      "necessity": "required",
+      "acceptableSources": ["financing history", "board records", "hiring history", "cap table", "founder interview"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "stakeholder_alignment",
+      "description": "Investor, cofounder, and key-executive expectations for growth, control, role, and exit.",
+      "necessity": "required",
+      "acceptableSources": ["stakeholder interviews", "term documents", "board strategy record"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What does each founder mean by success?",
+    "Which goals are non-negotiable and which can change?",
+    "Do current capital and governance arrangements support those goals?",
+    "Where do founder, cofounder, and investor objectives diverge?"
+  ],
+  "positiveSignals": [
+    "Founders articulate trade-offs rather than claiming all objectives are simultaneously maximized.",
+    "Financing, hiring, and governance choices are consistent with stated goals.",
+    "Stakeholders understand material differences and have a resolution path.",
+    "Goals are revisited as company and personal circumstances change."
+  ],
+  "redFlags": [
+    "Founders promise investors aggressive scale while privately prioritizing control or lifestyle.",
+    "Different founders hold incompatible exit or control expectations.",
+    "The board assumes a growth objective the founders have not accepted.",
+    "Historical choices repeatedly contradict stated goals without explanation."
+  ],
+  "disconfirmingEvidence": [
+    "High founder control coexists with credible resource access and aligned investors.",
+    "Control relinquishment reflects necessity rather than a wealth-maximizing preference.",
+    "Founder goals have legitimately evolved and stakeholders updated agreements.",
+    "An apparent tension is bounded by stage, domain, or time."
+  ],
+  "contraindications": [
+    "Do not classify founders as Rich or King without direct evidence.",
+    "Do not treat one goal as normatively superior.",
+    "Do not apply a population valuation association as an automatic company discount."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Elicit founder goals independently and explicitly.",
+      "Compare decisions and current terms with those goals.",
+      "Map divergences across founders, investors, and executives.",
+      "Test whether apparent inconsistency reflects evolution or context.",
+      "Conclude aligned, trade-off understood, material divergence, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Inferred motive.", "medium": "Direct founder statements and some choices.", "high": "Independent statements, contemporaneous choices, and stakeholder expectations converge."},
+    "evidenceStrength": {"low": "Control term only.", "medium": "Specific goal-choice consistency or tension.", "high": "Repeated choices and stakeholder behavior demonstrate alignment or divergence."},
+    "evidenceCoverage": {"low": "One founder or one choice.", "medium": "Most founders and key financing/governance choices.", "high": "All material founders, investors, executives, decisions, and evolution covered."},
+    "applicabilityConfidence": {"low": "Founder goals immaterial to the investment path.", "medium": "Some governance or exit effect.", "high": "Founder objectives materially shape growth, capital, governance, or exit."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Conditional alignment or unresolved tension.", "high": "Explicit and behaviorally supported alignment or divergence."}
+  },
+  "overlapFrameworkIds": ["FD-07", "FD-08", "SK-08", "VM-08"],
+  "conflictingFrameworkIds": ["RICH-IS-ALWAYS-BETTER", "CONTROL-TERMS-REVEAL-MOTIVE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define consented goal-elicitation protocol.", "Require cross-stakeholder checks.", "Backtest alignment judgments."],
+    "empiricalQualifications": ["Goals can be multidimensional and evolve.", "Control/value associations do not identify an optimal choice for an individual founder."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author research is neutrally paraphrased; no binary personality label is produced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define founder-goal privacy, update cadence, and conflict-handling protocol."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

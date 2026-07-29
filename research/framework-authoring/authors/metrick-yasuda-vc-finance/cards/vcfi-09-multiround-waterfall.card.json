@@ -1,0 +1,334 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-09",
+  "slug": "multiround-waterfall",
+  "name": "Multi-Round Waterfall and Implied Valuation",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Values a later-round claim only after reconstructing every prior round, the complete payoff stack, and the exit-value distribution.",
+    "productLabel": "Multi-Round Waterfall Lens — based on Metrick and Yasuda's public AUTO/FLEX architecture",
+    "notAClaimOf": [
+      "the newest round having standalone economics",
+      "headline post-money being common-equity value",
+      "an option model eliminating term or data uncertainty"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Andrew Metrick and Ayako Yasuda's public later-round, partial-valuation, and implied-valuation architecture",
+    "scope": "coauthored_work",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "VCV Tools",
+      "John Wiley & Sons"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A later-round investment sits inside a stack of prior securities whose preferences, participation, conversion, caps, seniority, and share counts interact. The complete stack first produces a piecewise exit waterfall. Estimating current partial value additionally requires an exit-value distribution and option-model assumptions. The resulting security value and implied post-money should be shown separately from common-equity intrinsic value and headline round valuation.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "empirical_qualification",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P2-CONTENTS-2021",
+      "claimIds": [
+        "VCFI-CLM-011",
+        "VCFI-CLM-012"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Brief Contents pp. 1-2: later-round investments, participating preferred, implied valuation, and complex structures"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-AUTO",
+      "claimIds": [
+        "VCFI-CLM-011",
+        "VCFI-CLM-012",
+        "VCFI-CLM-013",
+        "VCFI-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "AUTO description, prior-round requirement, term inputs, payoff diagrams, partial valuation, GP/LP value, and implied post valuation"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-FLEX",
+      "claimIds": [
+        "VCFI-CLM-014",
+        "VCFI-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Component option valuation and partial/LP value outputs"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-OPTIONS",
+      "claimIds": [
+        "VCFI-CLM-014",
+        "VCFI-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "European, random-expiration, and binary call inputs and outputs"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-E1-VALUATIONS-2017",
+      "claimIds": [
+        "VCFI-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: class-specific contractual protections and distortion from applying the latest preferred price across shares"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "participating_preferred",
+      "convertible",
+      "options",
+      "warrants",
+      "multiple_round_stack"
+    ]
+  },
+  "requiredConditions": [
+    "All prior and current rounds are represented from governing documents.",
+    "The exit waterfall reconciles before present-value modeling.",
+    "Total exit value, volatility, rate, holding-period distribution, and model choice are explicit assumptions.",
+    "Common-equity value, each security's partial value, and implied post-money are separately labeled.",
+    "Model risk and legal ambiguity are surfaced."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "complete_round_stack",
+      "description": "Every round's securities, shares, investment, preference, seniority, participation, cap, conversion, dividends, triggers, and amendments.",
+      "necessity": "required",
+      "acceptableSources": [
+        "charter history",
+        "executed financing documents",
+        "reconciled cap table"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "exit_value_distribution",
+      "description": "Versioned distribution or scenario set for total distributable exit equity value and timing.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation service",
+        "approved scenario model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "option_model_inputs",
+      "description": "Model type, total value, volatility, risk-free rate, expected holding/expiration distribution, and calibration evidence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation policy",
+        "market data",
+        "deterministic option service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_round_price_and_terms",
+      "description": "Current investment amount, price, shares, rights, and reported pre/post-money values.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "stock purchase agreement",
+        "financing model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Are all prior rounds and amendments included?",
+    "Does the exit waterfall reconcile at every contractual breakpoint?",
+    "Which option components represent each security's payoff?",
+    "How sensitive is current partial value to volatility, timing, and total value?",
+    "What implied valuation follows from security-specific value?",
+    "How and why does it differ from headline post-money and common-equity value?"
+  ],
+  "positiveSignals": [
+    "All rounds reconcile to legal documents and the cap table.",
+    "Piecewise payoffs reconcile across a dense exit grid.",
+    "Option components reproduce the contractual payoff schedule.",
+    "Assumption and model sensitivities are visible.",
+    "Security-specific, implied, headline, and common values are separately reported."
+  ],
+  "redFlags": [
+    "Only the newest round is entered.",
+    "Prior liquidation preferences are omitted.",
+    "One deterministic exit point is presented as current partial value.",
+    "Volatility or holding period comes from an unexplained default.",
+    "Implied post-money is labeled company intrinsic value."
+  ],
+  "disconfirmingEvidence": [
+    "A missing prior round materially changes breakpoints or proceeds.",
+    "The option decomposition fails to reproduce the waterfall.",
+    "Partial value is unstable under defensible volatility or timing inputs.",
+    "Legal interpretation changes seniority, participation, or conversion.",
+    "Security protections explain most of the headline valuation premium."
+  ],
+  "contraindications": [
+    "Do not value a later round without all prior rounds.",
+    "Do not perform option valuation before verifying the contractual payoff.",
+    "Do not transfer preferred value to common shares.",
+    "Do not use an implied valuation as the deterministic investment decision."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Reconstruct and reconcile the complete security stack.",
+      "Generate the multi-round exit waterfall.",
+      "Decompose each payoff into supported option components if current partial value is required.",
+      "Run model and sensitivity calculations in deterministic services.",
+      "Report security, implied, headline, and common values separately and pass them to Fund Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredSequence": [
+        "cap_table_reconciliation",
+        "legal_term_normalization",
+        "exit_waterfall",
+        "payoff_component_decomposition",
+        "partial_valuation",
+        "gp_lp_allocation",
+        "implied_valuation",
+        "fund_policy"
+      ],
+      "requiredReconciliations": [
+        "sum_of_claim_payoffs_equals_distributable_exit_equity_value",
+        "component_payoff_equals_contractual_payoff_across_test_grid",
+        "all_issued_and_reserved_shares_reconcile"
+      ],
+      "calculationOwner": "multiround_waterfall_and_partial_valuation_services",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only reported rounds and headline values are known.",
+      "medium": "Most legal terms exist but one prior round or model input is uncertain.",
+      "high": "Complete legal stack, cap table, valuation distribution, and calibrated model inputs are verified."
+    },
+    "evidenceStrength": {
+      "low": "One exit point and generic terms drive the output.",
+      "medium": "Waterfall is verified but present-value assumptions remain broad.",
+      "high": "Waterfall, component reproduction, and sensitivities pass deterministic tests."
+    },
+    "evidenceCoverage": {
+      "low": "Only current-round investment and price are covered.",
+      "medium": "Rounds and payoffs are covered but timing or volatility is incomplete.",
+      "high": "All rounds, claims, breakpoints, distributions, model inputs, GP/LP terms, and reported values are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The round stack or security cannot be reconstructed.",
+      "medium": "The stack is usable with one flagged legal or model ambiguity.",
+      "high": "The complete transaction and valuation context are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a missing-document request can be produced.",
+      "medium": "A provisional payoff or partial-value range is available.",
+      "high": "Security-specific and implied values are reproducible and reconciled."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-02",
+    "VCFI-04",
+    "VCFI-05",
+    "VCFI-08",
+    "DSV-10"
+  ],
+  "conflictingFrameworkIds": [
+    "LATEST-ROUND-STANDALONE",
+    "POSTMONEY-EQUALS-COMMON-VALUE",
+    "ONE-POINT-PARTIAL-VALUATION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapters 13-18 review.",
+      "Validate option and waterfall models with valuation experts and venture counsel.",
+      "Reconcile historical test cases against legal documents and realized payoffs."
+    ],
+    "empiricalQualifications": [
+      "Private-company exit distributions, volatility, and timing are difficult to observe.",
+      "Option valuation can be highly sensitive to model choice and inputs.",
+      "Reported post-money values may materially overstate common-equity value."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The public companion-tool architecture is neutrally paraphrased; formula and legal fidelity require third-edition and expert review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete Chapters 13-18 review.",
+      "Specify validated option models, calibration data, and legal term taxonomy."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

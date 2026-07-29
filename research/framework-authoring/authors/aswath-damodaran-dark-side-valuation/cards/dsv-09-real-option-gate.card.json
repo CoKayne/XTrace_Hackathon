@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-09",
+  "slug": "real-option-gate",
+  "name": "Real Option Qualification Gate",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Allows a separate option value only when there is incremental optionality, exclusivity, a finite window, an exercise cost, and no DCF double count.",
+    "productLabel": "Real Option Gate — based on Aswath Damodaran's public real-option materials",
+    "notAClaimOf": [
+      "large markets being real options",
+      "management flexibility automatically creating option value",
+      "growth already in a DCF deserving an extra premium"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public real-option materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A strategic opportunity resembles a real option only when a current asset or investment creates an incremental right to delay, expand, abandon, or develop; the company has meaningful exclusivity or competitive advantage; the right has a finite useful life; exercise requires an identifiable investment; uncertainty can increase the upside; and the same cash flows are not already counted in the base valuation.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-REALOPTIONS",
+      "claimIds": [
+        "DSV-CLM-017"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 24-31 and 51-53: delay/expansion options, exclusivity, term, erosion, estimation limitations, and competitive advantage"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-017",
+        "DSV-CLM-018"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 61-64: selective real-option application, exclusivity, time limits, and double-counting constraints"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "deep_tech",
+      "biotech",
+      "platform",
+      "infrastructure",
+      "natural_resources",
+      "multi_market_expansion",
+      "all_startups_with_exclusive_rights"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The optional future cash flow is incremental to the base valuation.",
+    "A legal, technological, contractual, network, or structural source of exclusivity is identified.",
+    "The exercise decision, exercise cost, option window, and expiration or erosion mechanism are defined.",
+    "The option model assumptions can be estimated with ranges and are not copied from traded stock volatility."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "underlying_opportunity",
+      "description": "Specific incremental project or market cash flows and the current asset that creates access.",
+      "necessity": "required",
+      "acceptableSources": [
+        "technical roadmap",
+        "market model",
+        "project plan",
+        "customer evidence",
+        "regulatory pathway"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "exclusive_right",
+      "description": "Evidence that competitors cannot exercise the same opportunity on equivalent terms during the option window.",
+      "necessity": "required",
+      "acceptableSources": [
+        "patent",
+        "license",
+        "contract",
+        "controlled data",
+        "regulatory right",
+        "supported competitive barrier"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "option_terms",
+      "description": "Exercise cost, time to expiration, erosion, delay cost, abandonment value, and decision trigger.",
+      "necessity": "required",
+      "acceptableSources": [
+        "contract",
+        "project budget",
+        "regulatory timeline",
+        "competitive scenario",
+        "technical plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "double_count_reconciliation",
+      "description": "Line-by-line proof that the option's cash flows are absent from base revenue, margin, reinvestment, and terminal value.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic DCF model",
+        "option register",
+        "valuation bridge"
+      ],
+      "missingEffect": "not_applicable"
+    }
+  ],
+  "decisionQuestions": [
+    "What present asset or investment creates the future right?",
+    "What incremental cash flows are excluded from the base DCF?",
+    "Why can the company, but not an equivalent rival, exercise the opportunity?",
+    "What are the exercise cost, decision trigger, term, and erosion mechanism?",
+    "Is uncertainty about the underlying value measurable without false precision?",
+    "Would removing the separate option leave any of its growth inside terminal value?"
+  ],
+  "positiveSignals": [
+    "The company holds verifiable exclusive rights for a finite period.",
+    "Management can wait for information before committing the exercise cost.",
+    "The opportunity has identifiable incremental cash flows and decision triggers.",
+    "Competitive entry and erosion are explicitly modeled.",
+    "A reconciliation proves no overlap with base DCF."
+  ],
+  "redFlags": [
+    "The option is described only as a large TAM or future possibility.",
+    "Competitors can enter on equal terms.",
+    "No exercise cost, term, or decision point exists.",
+    "Volatility is copied from public stock returns without connection to project value.",
+    "The same expansion appears in revenue forecasts or terminal value."
+  ],
+  "disconfirmingEvidence": [
+    "Rights expire before technical or commercial readiness.",
+    "Competition can enter sooner than the option window assumes.",
+    "The opportunity requires irreversible investment before uncertainty resolves.",
+    "Base DCF already includes the market expansion.",
+    "Reasonable input ranges make option value immaterial or indeterminate."
+  ],
+  "contraindications": [
+    "Do not apply option pricing to generic managerial flexibility.",
+    "Do not add a real-option premium without exclusivity.",
+    "Do not double count forecast or terminal growth.",
+    "Do not let the LLM estimate option value or volatility."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Identify the incremental opportunity and current access asset.",
+      "Run exclusivity, finite-term, exercise-cost, and information-arrival gates.",
+      "Reconcile option cash flows against the base valuation.",
+      "If every gate passes, send bounded inputs to the deterministic option service.",
+      "Otherwise classify the item as strategic upside, scenario variation, or not applicable without separate value."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "allRequiredGates": [
+        "incremental_underlying_cash_flows",
+        "company_specific_exclusivity",
+        "finite_or_estimated_option_life",
+        "identifiable_exercise_cost",
+        "information_arrives_before_exercise",
+        "no_double_count_in_base_dcf"
+      ],
+      "calculationOwner": "real_option_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The opportunity is only a management narrative.",
+      "medium": "Project and market evidence exist but exclusivity or term is incomplete.",
+      "high": "Rights, project economics, term, exercise cost, competition, and base-model reconciliation are verified."
+    },
+    "evidenceStrength": {
+      "low": "Only strategic upside is described.",
+      "medium": "Most option gates pass but one material input relies on a broad range.",
+      "high": "All gates pass with independent legal, technical, commercial, and financial evidence."
+    },
+    "evidenceCoverage": {
+      "low": "Only TAM and future possibility are covered.",
+      "medium": "Underlying, rights, and cost are covered but erosion or double count is incomplete.",
+      "high": "Underlying, exclusivity, term, exercise, uncertainty, competition, and reconciliation are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The opportunity is shared or already in the base case.",
+      "medium": "The opportunity resembles an option but exclusivity is time-uncertain.",
+      "high": "The opportunity has a clear company-specific option structure."
+    },
+    "judgmentConfidence": {
+      "low": "No separate option value is supportable.",
+      "medium": "A bounded option range may be calculated with important caveats.",
+      "high": "A deterministic option calculation is supported and separately reconciled."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-02",
+    "DSV-07",
+    "H7P-07",
+    "PT-03"
+  ],
+  "conflictingFrameworkIds": [
+    "LARGE-TAM-EQUALS-REAL-OPTION",
+    "FLEXIBILITY-EQUALS-OPTION-VALUE",
+    "GROWTH-OPTION-DOUBLE-COUNT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition and real-option chapter review.",
+      "Validate gate precision and recall on expert-labeled cases.",
+      "Review deterministic option-model assumptions by sector."
+    ],
+    "empiricalQualifications": [
+      "Project-value volatility and option life are difficult to estimate.",
+      "Competitive entry can erase practical exclusivity faster than legal terms suggest.",
+      "Many strategic opportunities are better represented as scenarios than separate options."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public real-option doctrine is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Define deterministic model choices and input-quality floors by option type."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

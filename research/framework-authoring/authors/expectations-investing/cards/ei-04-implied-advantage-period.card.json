@@ -1,0 +1,287 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-04",
+  "slug": "implied-advantage-period",
+  "name": "Market-Implied Forecast and Advantage Period",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Reverse-solves the duration of value-creating performance required by price after spread, reinvestment, and residual assumptions are fixed.",
+    "productLabel": "Implied Advantage-Period Lens — based on public Expectations Investing and affiliated competitive-advantage-period research",
+    "notAClaimOf": [
+      "competitive advantage having a directly observable expiration date",
+      "duration being independent of return spread or reinvestment",
+      "a longer implied period proving overvaluation"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Mauboussin and Rappaport's public implied-forecast-period material, qualified by later Mauboussin-affiliated research",
+    "scope": "product_synthesis",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport",
+      "Dan Callahan"
+    ],
+    "organizations": [
+      "Expectations Investing",
+      "Morgan Stanley Investment Management"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Once operating returns, reinvestment, required return, fade, and residual value are fixed, extend or shorten the explicit value-creation period until the model reconciles with the defined price. Compare that conditional duration with product, customer, competitive, regulatory, and capability evidence rather than treating it as an observed moat life.",
+  "claimTypes": [
+    "direct_doctrine",
+    "affiliated_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-P1-TUTORIAL-8",
+      "claimIds": [
+        "EI-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Determine the market-implied forecast period by extending the forecast and comparing present value with market value"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-A1-CAP-2026",
+      "claimIds": [
+        "EI-CLM-009",
+        "EI-CLM-014"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Public report: competitive-advantage period analyzed with return-cost spread, investment, and duration"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "EI-A1-MOAT-2024",
+      "claimIds": [
+        "EI-CLM-014"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Magnitude and sustainability of value creation; life-cycle and competitive analysis"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_with_positive_or_forecastable_value_creation"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "common_equity",
+      "normalized_equity_value"
+    ]
+  },
+  "requiredConditions": [
+    "EI-01 price and model gates pass.",
+    "Return on incremental capital, required return, reinvestment, fade, and residual rules are explicit.",
+    "A business-specific durability mechanism and erosion mechanism are testable.",
+    "The result is reported as conditional on fixed anchors."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "value_creation_path",
+      "description": "Scenario path for return on incremental capital, capital cost, reinvestment, fade, and residual value.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation model",
+        "verified operating data",
+        "approved fund policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "durability_mechanism",
+      "description": "Specific Power, contract, customer behavior, technology, regulation, or capability that can sustain excess returns.",
+      "necessity": "required",
+      "acceptableSources": [
+        "H7P evidence pack",
+        "customer cohorts",
+        "contracts",
+        "cost curves",
+        "competitive research"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "erosion_evidence",
+      "description": "Entry, imitation, churn, substitution, regulation, obsolescence, or capacity evidence that limits duration.",
+      "necessity": "required",
+      "acceptableSources": [
+        "competitor evidence",
+        "customer research",
+        "technology roadmap",
+        "regulatory record",
+        "historical cohorts"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "For how long must the company earn above its required return to justify the target value?",
+    "Which assumptions other than duration are fixed?",
+    "What mechanism can sustain the required spread?",
+    "What evidence sets the erosion or fade rate?",
+    "How does required duration compare with product, contract, customer, and technology life?",
+    "Does the duration conclusion survive sensitivity to reinvestment and residual value?"
+  ],
+  "positiveSignals": [
+    "Required duration is shorter than independently supported durability.",
+    "Customer retention, switching, cost, network, or contract evidence supports persistence.",
+    "Reinvestment opportunities remain available at attractive incremental returns.",
+    "Fade assumptions are explicit and evidence-linked.",
+    "Duration remains feasible under conservative residual assumptions."
+  ],
+  "redFlags": [
+    "Implied duration exceeds product, patent, contract, or technology life.",
+    "A moat label replaces evidence about return spread and persistence.",
+    "Terminal value silently assumes permanent excess returns.",
+    "Duration is solved while margin and reinvestment also move.",
+    "A long implied period is automatically labeled overvaluation."
+  ],
+  "disconfirmingEvidence": [
+    "Competitive entry compresses price or raises acquisition cost.",
+    "Cohorts show weakening retention or expansion.",
+    "Reinvestment opportunities saturate before the implied period.",
+    "Technology or regulation shortens the useful advantage window.",
+    "A reasonable residual-value change materially alters required duration."
+  ],
+  "contraindications": [
+    "Do not use when no coherent value-creation spread can be estimated.",
+    "Do not treat H7P or moat labels as duration measurements.",
+    "Do not conceal terminal or fade assumptions.",
+    "Do not let the LLM calculate the implied period."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Validate EI-01 and value-creation inputs.",
+      "Fix spread, reinvestment, fade, residual, and required-return assumptions.",
+      "Use the deterministic solver to infer the compatible duration range.",
+      "Compare the range with independent durability and erosion evidence.",
+      "Report sensitivity, counterevidence, and the next evidence needed."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "identity": "solve advantage_period such that modeled_value(advantage_period, fixed_spread_reinvestment_fade_residual_discount) = defined_valuation_target",
+      "guards": [
+        "EI_01_passed",
+        "spread_and_reinvestment_explicit",
+        "fade_and_residual_explicit",
+        "duration_is_only_solve_variable",
+        "sensitivity_run"
+      ],
+      "calculationOwner": "expectations_solver",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Durability is supported only by company narrative.",
+      "medium": "Operating and competitive evidence exist but erosion is indirect.",
+      "high": "Verified cohorts, economics, contracts, competition, and model inputs support the range."
+    },
+    "evidenceStrength": {
+      "low": "A point duration depends on arbitrary residual assumptions.",
+      "medium": "A duration range survives basic sensitivity.",
+      "high": "Independent durability evidence supports the modeled range across sensitivities."
+    },
+    "evidenceCoverage": {
+      "low": "Only growth and valuation are known.",
+      "medium": "Spread and reinvestment are covered but fade or erosion remains incomplete.",
+      "high": "Spread, reinvestment, duration, fade, residual, and erosion are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The business has no forecastable value-creation path.",
+      "medium": "The path exists but is pre-scale or structurally changing.",
+      "high": "The business and value-creation mechanism fit the analysis."
+    },
+    "judgmentConfidence": {
+      "low": "No defensible implied duration can be reported.",
+      "medium": "A wide conditional range is usable.",
+      "high": "A bounded range and independent durability comparison are reproducible."
+    }
+  },
+  "overlapFrameworkIds": [
+    "EI-01",
+    "H7P-01",
+    "H7P-09",
+    "DSV-03"
+  ],
+  "conflictingFrameworkIds": [
+    "MOAT-LABEL-EQUALS-DURATION",
+    "PERMANENT-EXCESS-RETURN",
+    "LONG-DURATION-EQUALS-OVERVALUED"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful revised-edition duration-method review.",
+      "Validate solver and residual-value sensitivity.",
+      "Backtest durability evidence against realized fade."
+    ],
+    "empiricalQualifications": [
+      "Competitive advantage erodes nonlinearly and can strengthen before fading.",
+      "Early-stage data may not identify incremental return or duration.",
+      "Residual-value assumptions can dominate long-duration conclusions."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Official companion doctrine is separated from later affiliated research."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Confirm revised-edition terminology and exact locators.",
+      "Define cross-pack durability evidence contract."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

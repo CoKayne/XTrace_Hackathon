@@ -1,0 +1,289 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-06",
+  "slug": "drag-along-exit-control",
+  "name": "Drag-Along and Exit-Control Analysis",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests who can approve and compel an exit, who bears liability, and how preference-heavy proceeds create class conflicts.",
+    "productLabel": "Drag-Along Exit Lens — based on Feld and Mendelson's public Venture Deals materials",
+    "notAClaimOf": [
+      "drag-along making stakeholder economics equal",
+      "a majority threshold eliminating conflicts",
+      "contractual consent resolving fiduciary duties"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public drag-along materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A drag-along can require specified holders to support a qualifying sale after designated board, preferred, common, or other thresholds approve it. Analyze triggers, class thresholds, consideration equality, representations, indemnity, liability limits, rollover, and exceptions together with the liquidation waterfall, especially when common receives little or nothing.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-DRAG-2005",
+      "claimIds": [
+        "VD-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Drag-along purpose, approval threshold, below-preference exits, common holdout, and class-majority compromise"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P1-LIQUIDATION-2004",
+      "claimIds": [
+        "VD-CLM-005",
+        "VD-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Preference and as-converted outcomes in sale states"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VD-I1-NVCA-MODELS-2026",
+      "claimIds": [
+        "VD-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Current voting agreement and internally consistent model-document set"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_venture_backed_companies"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "united_states",
+      "other_with_counsel_mapping"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "common_equity",
+      "option"
+    ]
+  },
+  "requiredConditions": [
+    "The current drag-along, voting, charter, and sale documents are available.",
+    "All approval constituencies, thresholds, triggers, exceptions, and sunsets are exact.",
+    "The exit waterfall is calculated by holder.",
+    "Representations, indemnity, liability cap, escrow, rollover, and consideration equality are separately reviewed by counsel."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "drag_clause",
+      "description": "Exact trigger, board and class approvals, covered holders, exceptions, consideration and liability terms.",
+      "necessity": "required",
+      "acceptableSources": [
+        "voting agreement",
+        "charter",
+        "ROFR/co-sale agreement",
+        "sale agreement"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "holder_votes",
+      "description": "Current voting power by holder and class, conversion status, proxies, and existing consents.",
+      "necessity": "required",
+      "acceptableSources": [
+        "verified cap table",
+        "voting agreement",
+        "proxy",
+        "consent record"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "exit_distribution",
+      "description": "Holder-level proceeds, escrow, earn-out, rollover, fees, carve-outs, and liabilities.",
+      "necessity": "required",
+      "acceptableSources": [
+        "VD-03 waterfall",
+        "transaction model",
+        "draft sale agreement"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which approvals activate the drag?",
+    "Who is compelled and who is exempt?",
+    "Can preferred convert to affect a class threshold?",
+    "What does each stakeholder receive after the waterfall?",
+    "Are consideration, escrow, earn-out, rollover, and liability shared consistently?",
+    "What conflicts or independent-review needs arise?"
+  ],
+  "positiveSignals": [
+    "Thresholds and covered holders are unambiguous.",
+    "The approval path is deterministic.",
+    "All holders' proceeds and liabilities are transparent.",
+    "Minority liability is capped and proportionate under counsel review.",
+    "Conflicts are identified before consent."
+  ],
+  "redFlags": [
+    "Drag is summarized only as majority can sell.",
+    "Common holders receive little but bear broad liability.",
+    "Conversion can manufacture a threshold without being modeled.",
+    "Rollover or earn-out treatment differs silently.",
+    "The system treats a valid trigger as proof the sale is fair."
+  ],
+  "disconfirmingEvidence": [
+    "A required board or class threshold is missing.",
+    "A holder is outside the drag or has a side-letter exemption.",
+    "Consideration form or liability differs by holder.",
+    "The transaction does not meet the defined sale trigger.",
+    "Fiduciary or conflict process requires independent action."
+  ],
+  "contraindications": [
+    "Do not determine enforceability or fairness.",
+    "Do not analyze drag without the exit waterfall.",
+    "Do not infer threshold from ownership alone.",
+    "Do not let the LLM calculate approvals or proceeds."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Parse the current drag clause and holder/class vote schedule.",
+      "Run conversion and approval states through the governance service.",
+      "Run holder proceeds through VD-03.",
+      "Compare consideration, liability, escrow, and rollover by holder.",
+      "Display contractual outcome, stakeholder conflict, unknowns, and counsel questions separately."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "outputs": [
+        "drag_trigger_status",
+        "missing_approvals",
+        "compelled_holders",
+        "proceeds_and_liability_by_holder"
+      ],
+      "guards": [
+        "documents_current",
+        "conversion_states_tested",
+        "waterfall_completed",
+        "legal_fairness_judgment_excluded"
+      ],
+      "calculationOwner": "governance_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a sale summary or old voting agreement exists.",
+      "medium": "Current clause and cap table exist but transaction liability terms are incomplete.",
+      "high": "Current agreements, votes, sale terms, waterfall, and counsel review reconcile."
+    },
+    "evidenceStrength": {
+      "low": "No approval or holder outcome is reproducible.",
+      "medium": "Trigger and proceeds are mostly resolved with one legal ambiguity.",
+      "high": "Contractual approval and economics are deterministic."
+    },
+    "evidenceCoverage": {
+      "low": "Only majority ownership is known.",
+      "medium": "Thresholds and proceeds are covered but liability or conversion is partial.",
+      "high": "Approvals, classes, conversion, holders, proceeds, consideration, liability, and conflicts are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No drag clause or mapped jurisdiction exists.",
+      "medium": "A drag exists with custom drafting.",
+      "high": "The clause and transaction state are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only missing approvals can be listed.",
+      "medium": "A likely contractual outcome is supportable with counsel flags.",
+      "high": "The approval and economic maps are reproducible."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VD-03",
+    "VD-05",
+    "SHR-08",
+    "PT-07"
+  ],
+  "conflictingFrameworkIds": [
+    "DRAG-EQUALS-FAIRNESS",
+    "MAJORITY-OWNERSHIP-EQUALS-TRIGGER",
+    "EQUAL-PRICE-EQUALS-EQUAL-ECONOMICS"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Venture-counsel review.",
+      "Golden-case tests for class, conversion, and liability interactions.",
+      "Map latest NVCA voting agreement."
+    ],
+    "empiricalQualifications": [
+      "Exit conflicts are highly transaction-specific.",
+      "Formal drag rights may be negotiated or waived.",
+      "Applicable corporate law and fiduciary process vary."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author doctrine is neutrally paraphrased; legal fairness and enforceability are excluded."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define holder-liability comparison schema.",
+      "Complete current NVCA drag-clause mapping."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

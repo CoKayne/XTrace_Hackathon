@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "metrick_yasuda_vc_finance_public_frameworks_v0_1",
+  "name": "Metrick / Yasuda Venture Capital Finance Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten independently reviewable cards spanning VC risk and returns, total valuation, the VC Method, ownership and dilution, LP economics, preferred securities, multi-round waterfalls, and staged innovation finance.",
+  "cardFiles": [
+    "cards/vcfi-01-risk-return-base-rate.card.json",
+    "cards/vcfi-02-total-partial-boundary.card.json",
+    "cards/vcfi-03-vc-method-exit-backsolve.card.json",
+    "cards/vcfi-04-dilution-retention.card.json",
+    "cards/vcfi-05-lp-net-economics.card.json",
+    "cards/vcfi-06-reality-check-dcf.card.json",
+    "cards/vcfi-07-comparable-exit-value.card.json",
+    "cards/vcfi-08-convertible-preferred-payoff.card.json",
+    "cards/vcfi-09-multiround-waterfall.card.json",
+    "cards/vcfi-10-staged-innovation-options.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Complete lawful third-edition chapter and page review, especially Chapters 3-4 and 7-24.",
+      "Reconcile all second-edition companion-tool concepts against the 2021 third edition.",
+      "Verify the VC Method target-return and retention equations without double-counting failure risk.",
+      "Validate DCF, comparables, option, waterfall, GP/LP, and implied-valuation contracts with subject-matter experts.",
+      "Obtain venture-counsel review for security terminology and jurisdiction-specific rights.",
+      "Backtest security and LP outputs on complete historical term sheets and cap tables.",
+      "Complete content and rights review before seed conversion."
+    ]
+  }
+}

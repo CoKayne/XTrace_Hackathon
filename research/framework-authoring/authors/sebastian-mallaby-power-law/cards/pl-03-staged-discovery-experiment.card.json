@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-03",
+  "slug": "staged-discovery-experiment",
+  "name": "Staged Discovery Experiment",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Converts unknowable early-stage claims into staged, evidence-producing experiments tied to capital and continuation decisions.",
+    "productLabel": "Discovery-through-Experimentation Pattern — supported by Mallaby's public analysis and NBER research",
+    "notAClaimOf": ["all uncertainty being reducible", "milestones guaranteeing success", "small checks always being optimal"]
+  },
+  "attribution": {
+    "display": "Historical pattern from Sebastian Mallaby's public materials, operationalized with external experimentation research",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby", "William R. Kerr", "Ramana Nanda", "Matthew Rhodes-Kropf"],
+    "organizations": ["Penguin Press", "National Bureau of Economic Research"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "When success cannot be known in advance, identify the most decision-relevant uncertainty, design the smallest credible test, tie capital and time to it, and predefine what evidence leads to continue, change, or stop.",
+  "claimTypes": ["historical_description", "empirical_association", "normative_guidance", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P2-BOOK-2022",
+      "claimIds": ["PL-CLM-004"],
+      "locator": {"kind": "web_section", "value": "Official description that improbable innovations are discovered rather than predicted"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-E1-EXPERIMENT-2014",
+      "claimIds": ["PL-CLM-004", "PL-CLM-005"],
+      "locator": {"kind": "pdf_page", "value": "pp. 6-12, uncertainty, staged finance, milestones, and continuation/abandonment"},
+      "attributionScope": "external_empirical",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A material uncertainty can be stated without pretending to know its probability.",
+    "A test can produce decision-relevant evidence within available runway.",
+    "Capital, milestone, and decision rights are explicit."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "critical_uncertainty",
+      "description": "The causal uncertainty whose resolution most changes the investment thesis.",
+      "necessity": "required",
+      "acceptableSources": ["diligence", "technical review", "customer evidence", "scenario model"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "experiment_design",
+      "description": "Test, success/failure observations, budget, owner, and completion date.",
+      "necessity": "required",
+      "acceptableSources": ["milestone plan", "product experiment", "commercial pilot", "technical study"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "continuation_policy",
+      "description": "Precommitted continue, pivot, pause, and stop criteria.",
+      "necessity": "required",
+      "acceptableSources": ["IC condition", "board plan", "financing plan"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which uncertainty has the highest decision value?",
+    "What is the smallest credible experiment that can resolve it?",
+    "What capital and time are required before the next information point?",
+    "What observation changes continue, pivot, or stop decisions?"
+  ],
+  "positiveSignals": [
+    "The test targets a causal bottleneck rather than a vanity metric.",
+    "Evidence arrives before runway or strategic flexibility is exhausted.",
+    "Milestone criteria are recorded before results.",
+    "The next capital tranche matches the uncertainty being resolved."
+  ],
+  "redFlags": [
+    "Milestones restate the desired outcome without a test.",
+    "Capital funds scale before technical or demand uncertainty resolves.",
+    "Stop rules are undefined or rewritten after weak results.",
+    "A cheap experiment is mistaken for a meaningful experiment."
+  ],
+  "disconfirmingEvidence": [
+    "The test cannot distinguish competing hypotheses.",
+    "The required experiment is effectively the full commercial build.",
+    "External financing risk prevents continuation after a positive result.",
+    "The observation window exceeds company runway."
+  ],
+  "contraindications": [
+    "Do not invent event probabilities.",
+    "Do not stage capital when underfunding makes the experiment invalid.",
+    "Do not use one milestone to collapse independent technical and commercial risks."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Rank unresolved causal uncertainties by decision value.",
+      "Specify one evidence-producing test and competing hypotheses.",
+      "Map budget, time, runway, and next financing.",
+      "Pre-register continuation and abandonment criteria.",
+      "Conclude experiment-ready, redesign required, unfinanceable, or not applicable."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "milestone_runway_check",
+      "requiredOutputs": ["cash_to_milestone", "months_to_milestone", "runway_buffer", "next_financing_need"],
+      "prohibition": "The language model must not calculate runway or budget sufficiency."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Experiment rests on founder assertion.", "medium": "Technical or customer reviewers support the design.", "high": "Independent experts and primary operating evidence support design and observation."},
+    "evidenceStrength": {"low": "Test does not resolve the uncertainty.", "medium": "Test is informative but criteria or budget are incomplete.", "high": "Test, alternatives, criteria, budget, and capital path are explicit."},
+    "evidenceCoverage": {"low": "Milestone name only.", "medium": "Test and criteria covered; runway or next round partial.", "high": "Uncertainty, test, owner, budget, timing, criteria, runway, and decision path complete."},
+    "applicabilityConfidence": {"low": "Outcome is readily knowable without experimentation or cannot be staged.", "medium": "Staging is plausible.", "high": "Stage, uncertainty, testability, and financing structure align."},
+    "judgmentConfidence": {"low": "Only a research question.", "medium": "A conditional experiment is supportable.", "high": "A decision-relevant staged experiment is executable and pre-registered."}
+  },
+  "overlapFrameworkIds": ["VDCF-04", "BVC-07", "VM-04", "NN-08"],
+  "conflictingFrameworkIds": ["FORECAST-CERTAINTY", "VANITY-MILESTONE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate milestone schema.", "Backtest information gain and capital efficiency.", "Require deterministic runway service."],
+    "empiricalQualifications": ["Some technologies require large indivisible experiments.", "Financing markets can terminate sound experiments."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public historical and research concepts are paraphrased; workflow is product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define how conflicting milestone results update the Evidence Pack."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

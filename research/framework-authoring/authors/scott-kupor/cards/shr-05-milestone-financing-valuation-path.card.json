@@ -1,0 +1,261 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-05",
+  "slug": "milestone-financing-valuation-path",
+  "name": "Milestone-Backed Financing and Valuation Path",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Backs into round size and a sustainable current price from the milestones and evidence required for the next financing decision.",
+    "productLabel": "Financing Path Lens — based on Scott Kupor's official fundraising transcript",
+    "notAClaimOf": [
+      "a guaranteed next round",
+      "monotonically rising private valuations as intrinsic value",
+      "lower valuation always being founder-friendly"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor and Frank Chen's official a16z fundraising transcript",
+    "scope": "coauthored_work",
+    "people": [
+      "Scott Kupor",
+      "Frank Chen"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "The amount raised should be linked to the next decision-relevant milestones, the time and resources required to reach them, and acceptable dilution. Current valuation should be tested against whether achieving those milestones can plausibly support a future financing under market sensitivity. A higher price today may lower immediate dilution while increasing down-round and financing risk.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-A16Z-RAISE-2019",
+      "claimIds": [
+        "SHR-CLM-007",
+        "SHR-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official transcript lines 165-191: round sizing, next-round milestones, dilution, valuation path, and conflicting incentives"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "venture_backed_startup"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The company is planning a financing round.",
+    "Next-stage evidence requirements can be stated.",
+    "Operating and capital scenarios include a no-next-round case."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "next_round_milestones",
+      "description": "Specific product, customer, regulatory, revenue, margin, or organizational evidence expected at the next financing.",
+      "necessity": "required",
+      "acceptableSources": [
+        "market benchmarks",
+        "investor interviews",
+        "operating plan",
+        "Fund Policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "use_of_funds",
+      "description": "Milestone-linked spending, timing, hiring, contingency, and runway.",
+      "necessity": "required",
+      "acceptableSources": [
+        "budget",
+        "cash-flow model",
+        "hiring plan",
+        "operating plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "valuation_sensitivity",
+      "description": "Current and next-round valuation scenarios under milestone delivery, delay, multiple compression, and financing scarcity.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation model",
+        "market comparables",
+        "scenario analysis"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "dilution_and_downside",
+      "description": "Fully diluted ownership, down-round waterfall, bridge case, and no-financing survival plan.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table",
+        "waterfall service",
+        "downside plan"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What evidence must exist at the next financing decision?",
+    "How much capital and time are required to create that evidence?",
+    "Which milestones are controllable and which depend on market conditions?",
+    "If all milestones are achieved, what next-round price range is plausible under multiple sensitivity?",
+    "What happens if the next round is delayed, flat, or down?",
+    "Whose price incentive is embedded in each assumption?"
+  ],
+  "positiveSignals": [
+    "Each material spend maps to a financing-relevant milestone.",
+    "The plan has credible contingency and no-round survival options.",
+    "Milestone delivery supports a plausible next-round step-up across more than one market scenario.",
+    "Dilution is explicit and consistent with recruiting and founder retention.",
+    "The model exposes VC and founder price incentives."
+  ],
+  "redFlags": [
+    "Round size is based on what the market will fund rather than a milestone plan.",
+    "The company requires a bull-market multiple to avoid a down round.",
+    "Use of funds is not linked to decision-changing evidence.",
+    "The model assumes the next round will occur on schedule.",
+    "Headline valuation is optimized while structure and dilution are ignored."
+  ],
+  "disconfirmingEvidence": [
+    "Milestone costs or timelines repeatedly miss.",
+    "Comparable financing multiples compress below the required path.",
+    "Planned milestones do not change customer, technical, regulatory, or financial uncertainty.",
+    "The no-round case creates an immediate solvency or retention problem.",
+    "A lower-capital plan reaches the same evidence with less dilution."
+  ],
+  "contraindications": [
+    "Do not treat the next round as an operating objective or guarantee.",
+    "Do not equate a rising share price with intrinsic value creation.",
+    "Do not omit downside runway, structure, or fully diluted ownership."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define next-round evidence before selecting round size.",
+      "Map cash, time, and owners to each milestone.",
+      "Run current and next-round valuation sensitivity.",
+      "Run flat, down, delayed, and no-round scenarios.",
+      "Conclude on financing-path resilience rather than preferred headline price."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationOwner": "Operating Model, Valuation Service, Cap Table, and Waterfall Service"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only fundraising summaries are available.",
+      "medium": "The official transcript supports the core process.",
+      "high": "Hashed transcript lines and licensed chapter pages converge."
+    },
+    "evidenceStrength": {
+      "low": "Founder use-of-funds narrative only.",
+      "medium": "Milestones and budget are sourced but market sensitivity is weak.",
+      "high": "Milestones, cost, timing, market, valuation, dilution, and downside evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Milestones or no-round case is missing.",
+      "medium": "Base and downside exist but structure or sensitivity is incomplete.",
+      "high": "All financing, valuation, dilution, and contingency scenarios are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No external financing is planned.",
+      "medium": "Financing is possible but next-stage requirements are unclear.",
+      "high": "The company is actively planning a venture round with defined milestones."
+    },
+    "judgmentConfidence": {
+      "low": "The conclusion is driven by a single valuation case.",
+      "medium": "The path works with several unresolved assumptions.",
+      "high": "The path remains coherent across sourced sensitivities."
+    }
+  },
+  "overlapFrameworkIds": [
+    "NARRATIVE-NUMBERS-MILESTONES",
+    "EXPECTATIONS-REVERSE-DCF",
+    "VENTURE-DEALS-DILUTION"
+  ],
+  "conflictingFrameworkIds": [
+    "MAX-VALUATION-FIRST",
+    "NEXT-ROUND-GUARANTEED"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Calibrate milestone and financing assumptions by stage and sector.",
+      "Validate predicted versus actual cash use, timing, and round outcomes.",
+      "Keep price incentives and structure visible."
+    ],
+    "empiricalQualifications": [
+      "Next-round markets and multiples are exogenous.",
+      "A down round can occur despite operational progress.",
+      "Milestone selection can be gamed if not tied to decision uncertainty."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The official transcript is paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Align with valuation and deterministic financing services.",
+      "Reconcile with Narrative and Numbers and Expectations Investing."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}
+

@@ -1,0 +1,160 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-03",
+  "slug": "founding-documents-and-lived-norms",
+  "name": "Founding Documents and Lived Norms",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether mission, long-term goals, operating principles, and team charters clarify decisions and responsibilities and are reflected in conduct.",
+    "productLabel": "Founding Documents Lens — based on Claire Hughes Johnson's official book excerpt",
+    "notAClaimOf": ["culture slogans being operating evidence", "mission statements proving impact", "copying Stripe's principles"]
+  },
+  "attribution": {
+    "display": "Based on Claire Hughes Johnson's official Scaling People excerpt and public talks",
+    "scope": "person_direct",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["Stripe", "Stripe Atlas", "Stanford Technology Ventures Program"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Review whether the organization has a distinctive reason for existing, durable ambitions, authentic decision principles, and discoverable team responsibilities. Then test whether hiring, rewards, resource allocation, difficult decisions, metrics, risks, and dependencies actually reflect those documents.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-FOUNDING-2023",
+      "claimIds": ["SP-CLM-007", "SP-CLM-008", "SP-CLM-009", "SP-CLM-010"],
+      "locator": {"kind": "web_section", "value": "Lines 284-289, 314-319, Principles, and lines 347-415: mission, long-term goals, authentic principles, team charters, risks and dependencies"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-STANFORD-2023",
+      "claimIds": ["SP-CLM-007", "SP-CLM-009", "SP-CLM-011"],
+      "locator": {"kind": "pdf_page", "value": "Operating to Win transcript pp. 1-2: founding documents, relevant/believable/enduring/deliverable principles, and operating cadence"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-LAUNCH-2023",
+      "claimIds": ["SP-CLM-007", "SP-CLM-009"],
+      "locator": {"kind": "web_section", "value": "Q&A on making implicit expectations explicit and replicating structures through the organization"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has enough traction or organizational complexity for explicit alignment to matter.",
+    "Documents and observed behavior can be compared.",
+    "The analysis does not require copying a proprietary template."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "founding_documents",
+      "description": "Current and prior mission, long-term goals, operating principles, team charters, owners, dates, and revision history.",
+      "necessity": "required",
+      "acceptableSources": ["company wiki", "board materials", "strategy documents", "team charters"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "behavioral_expression",
+      "description": "Hiring, promotion, reward, resource, customer, product, and difficult-decision examples linked to stated principles.",
+      "necessity": "required",
+      "acceptableSources": ["decision log", "hiring records", "promotion criteria", "budget decisions", "postmortems"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "responsibility_and_dependency_map",
+      "description": "Team purposes, ownership, interfaces, metrics, major risks, dependencies, and contact paths.",
+      "necessity": "recommended",
+      "acceptableSources": ["organization chart", "team pages", "RACI", "service catalog", "risk register"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "employee_understanding",
+      "description": "Consent-based evidence of whether people can explain priorities, decision rules, and ownership consistently.",
+      "necessity": "recommended",
+      "acceptableSources": ["structured interviews", "onboarding assessments", "engagement research"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is the mission distinctive and connected to actual strategy?",
+    "Do shorter goals ladder to durable goals?",
+    "Which hard decision demonstrates each stated principle?",
+    "Are principles authentic descriptions or aspirational marketing?",
+    "Can teams identify ownership, metrics, risks, and dependencies?",
+    "How are documents revised when behavior or strategy changes?"
+  ],
+  "positiveSignals": [
+    "Different employees explain the same priorities and decision rules.",
+    "Hard decisions visibly use stated principles.",
+    "Team charters clarify interfaces and reduce ownership ambiguity.",
+    "Documents have owners and a measured revision practice."
+  ],
+  "redFlags": [
+    "Values are generic slogans with no decision examples.",
+    "Rewards and promotions contradict stated principles.",
+    "Multiple teams claim or disclaim the same responsibility.",
+    "Long-term goals are replaced by a changing list of quarterly targets."
+  ],
+  "disconfirmingEvidence": [
+    "A young team coordinates clearly without formal documents.",
+    "A principle changed because strategy or evidence changed and the revision is explicit.",
+    "A team charter is intentionally temporary during a reorganization.",
+    "Apparent inconsistency reflects a documented legal, safety, or customer exception."
+  ],
+  "contraindications": [
+    "Do not compare a startup's wording with Stripe's wording.",
+    "Do not score polished prose.",
+    "Do not treat mission or values as evidence without behavior.",
+    "Do not collect employee evidence without consent and access controls."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Version the mission, long-term goals, principles, and team charters.",
+      "Map shorter goals and team responsibilities to them.",
+      "Collect confirming and contradicting behavior.",
+      "Test ownership, risk, dependency, and revision clarity.",
+      "Conclude lived, partially lived, ceremonial, premature, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Public values page only.", "medium": "Internal documents and selected decisions.", "high": "Versioned documents, multiple decisions, outcome records, and consent-based interviews converge."},
+    "evidenceStrength": {"low": "Slogan consistency.", "medium": "Some decisions reflect the documents.", "high": "Repeated difficult decisions, incentives, and team behavior reflect them."},
+    "evidenceCoverage": {"low": "Mission only.", "medium": "Mission, goals, principles, and some behavior.", "high": "All documents, revisions, decisions, rewards, ownership, risks, dependencies, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Tiny team with no alignment problem.", "medium": "Growing team with emerging coordination needs.", "high": "Multiple teams or locations require explicit shared context."},
+    "judgmentConfidence": {"low": "Text-quality judgment.", "medium": "Some behavior supports or contradicts the documents.", "high": "Longitudinal documents and conduct support a clear conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-01", "SP-04", "FD-07"],
+  "conflictingFrameworkIds": ["CULTURE-SLOGAN-SCORE", "MISSION-STATEMENT-EQUALS-IMPACT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Review licensed book.", "Define document-to-behavior evidence protocol.", "Backtest responsibility and alignment judgments."],
+    "empiricalQualifications": ["Documents can rationalize behavior after the fact.", "Clear values can coexist with weak business performance."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The official excerpt is paraphrased; its team-charter template is not reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define minimum behavioral samples and document-version policy."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

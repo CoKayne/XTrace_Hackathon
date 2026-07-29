@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-08",
+  "slug": "fund-fit-gate",
+  "name": "Company, Deal, and Fund-Fit Gate",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Prevents a strong company thesis from becoming an investment recommendation until deal economics and fund-level constraints also pass.",
+    "productLabel": "Fund-Fit Gate — product synthesis from The Business of Venture Capital's end-to-end architecture",
+    "notAClaimOf": [
+      "a non-fit company being a bad company",
+      "fund policy overriding material company evidence",
+      "one lens making the final investment decision"
+    ]
+  },
+  "attribution": {
+    "display": "Product synthesis from Mahendra Ramsinghani's end-to-end venture-fund architecture",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Evaluate three independent layers: whether the company thesis is attractive, whether price and security create acceptable deal economics, and whether the resulting check, ownership, reserves, concentration, capacity, and liquidity path fit the fund. Preserve each conclusion and let the deterministic Decision Policy combine them.",
+  "claimTypes": [
+    "product_inference",
+    "direct_doctrine"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-BOOK-2021",
+      "claimIds": [
+        "BVC-CLM-001",
+        "BVC-CLM-015",
+        "BVC-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Book architecture: raising a fund, building a portfolio, structuring investments, value creation, and exits"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH11",
+      "claimIds": [
+        "BVC-CLM-002",
+        "BVC-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Fund strategy and sandbox summary"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "BVC-P2-CH27",
+      "claimIds": [
+        "BVC-CLM-014",
+        "BVC-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Preferred stock and transaction-structure summary"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "follow_on"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Company, deal, and fund-fit evidence packs are independently complete enough to judge.",
+    "Fund Policy and portfolio state are pinned.",
+    "Price and security are normalized.",
+    "Only deterministic Decision Policy issues the final state."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "company_case",
+      "description": "Independent lens outputs on team, market, product, economics, advantage, risk, valuation, and counterevidence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Framework Registry outputs",
+        "Evidence Pack",
+        "valuation service",
+        "investment memo"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "deal_case",
+      "description": "Price, instrument, ownership, dilution, rights, waterfall, return scenarios, and legal open items.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "cap table",
+        "ownership service",
+        "waterfall service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fund_fit_case",
+      "description": "Strategy, check, reserve, concentration, capacity, capital path, liquidity timing, and expected fund contribution.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Fund Policy",
+        "portfolio ledger",
+        "fund construction service",
+        "performance service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is the company thesis attractive on evidence?",
+    "Is the proposed price/security attractive relative to value and risk?",
+    "Does the complete capital path fit the fund?",
+    "What policy or portfolio constraint binds?",
+    "Would a different price, check, ownership, or syndication make the deal fit?",
+    "Which layer explains a Watch, Advance, or decline outcome?"
+  ],
+  "positiveSignals": [
+    "All three layers are independently favorable or explicitly conditioned.",
+    "Price and terms preserve sufficient scenario payoff.",
+    "Capital path fits check, reserve, ownership, and concentration.",
+    "The investment can contribute materially to fund returns.",
+    "Disagreements and exception costs remain visible."
+  ],
+  "redFlags": [
+    "Company enthusiasm suppresses terms or fund-fit analysis.",
+    "A low price substitutes for company quality.",
+    "An out-of-policy deal is silently approved.",
+    "Expected fund contribution uses only the Bull exit.",
+    "The final conclusion cannot be traced to a layer."
+  ],
+  "disconfirmingEvidence": [
+    "Company case is strong but ownership is too small for material contribution.",
+    "Terms make downside unattractive.",
+    "Reserve or concentration constraints bind.",
+    "Time to liquidity conflicts with fund life.",
+    "A syndication or revised round could remove the fund-fit conflict."
+  ],
+  "contraindications": [
+    "Do not label non-fit as low-quality company.",
+    "Do not let a Framework Card issue final Invest Candidate.",
+    "Do not hide policy exceptions.",
+    "Do not combine layers by opaque LLM scoring."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Load independent company, deal, and fund-fit conclusions.",
+      "Apply required evidence and policy gates to each layer.",
+      "Identify binding constraints and negotiable variables.",
+      "Preserve dissent and conditional outcomes.",
+      "Pass normalized factors to the versioned deterministic Decision Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredLayers": [
+        "company_quality",
+        "deal_economics",
+        "fund_fit"
+      ],
+      "opaqueWeightedAverageProhibited": true,
+      "finalDecisionOwner": "deterministic_decision_policy",
+      "calculationOwner": "decision_policy_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "One or more layers rely on unsourced assumptions.",
+      "medium": "Most inputs are verified but one layer uses labeled defaults.",
+      "high": "Company, transaction, fund, and portfolio evidence are verified and version-pinned."
+    },
+    "evidenceStrength": {
+      "low": "Only company attractiveness is established.",
+      "medium": "All layers are analyzed but one binding variable remains unresolved.",
+      "high": "All gates and sensitivities are supported."
+    },
+    "evidenceCoverage": {
+      "low": "Terms or fund fit is absent.",
+      "medium": "All layers exist but follow-on or exit path is partial.",
+      "high": "Company, valuation, terms, ownership, follow-on, portfolio, policy, and exit are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No pinned Fund Policy exists.",
+      "medium": "A labeled default policy is used.",
+      "high": "Current policy and portfolio state are user-confirmed."
+    },
+    "judgmentConfidence": {
+      "low": "Only Watch or evidence request is supportable.",
+      "medium": "Advance with explicit conditions is defensible.",
+      "high": "The case is ready for deterministic IC-submission classification."
+    }
+  },
+  "overlapFrameworkIds": [
+    "BVC-01",
+    "BVC-03",
+    "DSV-10",
+    "VCFI-10"
+  ],
+  "conflictingFrameworkIds": [
+    "GOOD-COMPANY-EQUALS-GOOD-DEAL",
+    "OPAQUE-WEIGHTED-SCORE",
+    "HIDDEN-POLICY-EXCEPTION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Validate three-layer gate with IC reviewers.",
+      "Align with deterministic Decision Policy.",
+      "Backtest binding-constraint explanations."
+    ],
+    "empiricalQualifications": [
+      "Fund policy may evolve.",
+      "Scenario values and exits remain uncertain.",
+      "Layer separation improves auditability but not necessarily predictive accuracy."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "End-to-end book architecture is paraphrased; three-layer gate is product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Align output contract with main system Decision Policy.",
+      "Define negotiable constraint representation."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source product synthesis draft."
+    }
+  ]
+}

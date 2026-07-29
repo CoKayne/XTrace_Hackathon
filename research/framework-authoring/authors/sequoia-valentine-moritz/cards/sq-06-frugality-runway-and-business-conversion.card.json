@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-06",
+  "slug": "frugality-runway-and-business-conversion",
+  "name": "Frugality, Runway, and Business Conversion",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether capital is concentrated on survival and the few investments that can turn product demand into sustainable business economics.",
+    "productLabel": "Frugality, Runway, and Business Conversion — based on Sequoia's public institution guidance",
+    "notAClaimOf": ["indiscriminate cost cutting", "low burn proving quality", "Moritz directly authoring the 2022 PayPal account"]
+  },
+  "attribution": {
+    "display": "Based on Sequoia institution guidance; Roelof Botha's recounting of Michael Moritz at PayPal is not treated as person-direct",
+    "scope": "institution_doctrine",
+    "people": ["Roelof Botha"],
+    "organizations": ["Sequoia Capital"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Treat cash as strategic time. Reconcile runway under scenarios, improve customer-funded economics, remove low-value expenditure, and continue investing in the few capabilities required for the future. Product demand must become a sustainable business; cost reduction alone cannot create one.",
+  "claimTypes": ["affiliated_doctrine", "historical_description", "normative_guidance", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-I1-ENDURING",
+      "claimIds": ["SQ-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Lines 22-28: agility, resilience, frugality, and constrained starting capital"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-I1-ADAPTING-2022",
+      "claimIds": ["SQ-CLM-018", "SQ-CLM-019", "SQ-CLM-030"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 2, 23, 35-36, and 49-50: runway, business conversion, financial degrees of freedom, future investments, and sustainability"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-P1-VALENTINE-CISCO-CHM",
+      "claimIds": ["SQ-CLM-017"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 28-29: Valentine's direct account of preserving financing capital at Cisco"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Cash, burn, commitments, financing access, and milestone needs are reconciled.",
+    "The capital environment and operating scenario are dated.",
+    "Cuts and investments are evaluated against customer value, safety, and future capability."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "cash_and_runway",
+      "description": "Cash, restricted cash, burn, working capital, debt, commitments, and runway under multiple scenarios.",
+      "necessity": "required",
+      "acceptableSources": ["bank records", "general ledger", "cash forecast", "debt documents", "commitment schedule"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "unit_economics_and_customer_funding",
+      "description": "Price, gross and contribution margin, collections, payback, retention, and credible paths to improved economics.",
+      "necessity": "required",
+      "acceptableSources": ["billing", "cost ledger", "cohort records", "contracts", "cash-flow statement"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "spending_priority_map",
+      "description": "Expense by strategic priority, milestone, owner, expected outcome, and reversibility.",
+      "necessity": "required",
+      "acceptableSources": ["budget", "headcount plan", "roadmap", "project portfolio", "vendor commitments"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "financing_and_downside",
+      "description": "Capital needs, financing alternatives, terms, trigger dates, dilution, downside cuts, and protected future investments.",
+      "necessity": "required",
+      "acceptableSources": ["financing plan", "term sheets", "cap table", "scenario model", "board materials"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "How much decision time does verified cash provide under bear, base, and bull cases?",
+    "Which spending directly improves customer value, economics, risk, or a critical milestone?",
+    "Can product demand become a business with positive unit economics and cash generation?",
+    "Which cuts remove waste, and which would destroy future capability or safety?",
+    "What financing event or missed milestone creates the next loss of control?"
+  ],
+  "positiveSignals": [
+    "Runway is reconciled and scenario triggers are explicit.",
+    "The company improves economics through price, product, automation, and customer value before relying only on cuts.",
+    "Low-value spend is removed while high-leverage future investments remain funded.",
+    "Management acts before financing urgency eliminates choices."
+  ],
+  "redFlags": [
+    "Runway excludes working capital, debt service, signed commitments, or downside revenue.",
+    "Low burn is achieved by deferring security, compliance, maintenance, or critical talent.",
+    "Growth depends indefinitely on negative contribution economics.",
+    "Cost reductions are celebrated without a credible business model."
+  ],
+  "disconfirmingEvidence": [
+    "High burn can be rational for bounded, high-value technical or regulatory milestones.",
+    "Low current margins can improve with verified scale or product mechanisms.",
+    "Additional capital can create value when milestone probability and fund-return economics justify it.",
+    "Aggressive cuts can reduce learning, product quality, retention, and future value."
+  ],
+  "contraindications": [
+    "Do not equate frugality with the lowest possible spend.",
+    "Do not use a downturn-specific deck as an automatic reduction mandate.",
+    "Do not calculate runway, dilution, or valuation inside the language model."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconcile cash, burn, commitments, working capital, debt, and financing assumptions.",
+      "Compute runway and milestone needs under deterministic scenarios.",
+      "Map spending to customer value, business economics, risk, and future capability.",
+      "Test cuts, price, product, collections, financing, and investment alternatives.",
+      "Conclude controlled, improving, fragile, value-destructive, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Cash reconciliation, burn, runway, unit economics, financing, dilution, and scenario arithmetic must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Management runway claim.", "medium": "Internal finance model and ledger.", "high": "Reconciled bank, ledger, contracts, debt, and scenario evidence."},
+    "evidenceStrength": {"low": "Expense narrative.", "medium": "Verified runway and priority map.", "high": "Runway, economics, triggers, financing, and protected investments converge."},
+    "evidenceCoverage": {"low": "Cash balance only.", "medium": "Cash, burn, and expenses.", "high": "Cash, commitments, working capital, unit economics, milestones, financing, and downside covered."},
+    "applicabilityConfidence": {"low": "Stable profitable business or unknown cash.", "medium": "Capital-dependent company.", "high": "Material financing, runway, or business-conversion decision."},
+    "judgmentConfidence": {"low": "Burn multiple impression.", "medium": "Bounded scenario view.", "high": "Reconciled deterministic model and strategic evidence support the conclusion."}
+  },
+  "overlapFrameworkIds": ["BG-09", "MA-06", "VM-08", "DSV-09", "BVC-04"],
+  "conflictingFrameworkIds": ["LOW-BURN-AS-QUALITY", "BLIND-COST-CUTTING"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Integrate audited cash/runway service.", "Define sector milestone and safety protections.", "Backtest financing and survival scenarios."],
+    "empiricalQualifications": ["Downturn guidance is time- and context-specific.", "Capital efficiency and optimal burn vary by stage, technology, and market."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Institution doctrine and direct Valentine corroboration are separately attributed; recounted Moritz advice is not marked person-direct."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Define capital-intensive and regulated-company adaptations."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

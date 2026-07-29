@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "venture_mindset_public_frameworks_v0_1",
+  "name": "The Venture Mindset Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Nine independently reviewable cards based on the authors' public nine-principle materials, with empirical qualifications and explicit applicability boundaries.",
+  "cardFiles": [
+    "cards/vm-01-asymmetric-small-bets.card.json",
+    "cards/vm-02-outside-four-walls.card.json",
+    "cards/vm-03-prepared-mind.card.json",
+    "cards/vm-04-fast-no-deep-diligence.card.json",
+    "cards/vm-05-bet-on-jockey.card.json",
+    "cards/vm-06-structured-dissent.card.json",
+    "cards/vm-07-follow-on-reunderwrite.card.json",
+    "cards/vm-08-value-creation-incentives.card.json",
+    "cards/vm-09-patient-exit.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Hash and page-review the official 2025 keynote source revision.",
+      "Review authorized full versions of empirical sources.",
+      "Complete cross-framework overlap mapping.",
+      "Determine book-chapter gaps only after the full public-source audit.",
+      "Complete rights and content review before seed conversion."
+    ]
+  }
+}
+

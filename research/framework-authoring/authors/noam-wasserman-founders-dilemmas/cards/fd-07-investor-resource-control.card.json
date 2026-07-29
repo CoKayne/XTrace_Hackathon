@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-07",
+  "slug": "investor-resource-control",
+  "name": "Investor Resource and Control Trade-off",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Assesses whether a financing source adds the needed resources at governance and relationship costs the founders understand and can support.",
+    "productLabel": "Founder-Investor Alignment Lens — based on Noam Wasserman's public work",
+    "notAClaimOf": ["venture capital always being desirable", "friendly capital being low risk", "control terms alone determining investor quality"]
+  },
+  "attribution": {
+    "display": "Based on Noam Wasserman's public work",
+    "scope": "product_synthesis",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School", "Princeton University Press"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Evaluate financing as a bundle of capital, expertise, network, board participation, milestones, ownership, and control. Compare that bundle with the company's resource gap and the founders' explicit goals, while treating friends-and-family money as carrying both financial and relationship exposure.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-HBS-SINK-2012",
+      "claimIds": ["FD-CLM-016", "FD-CLM-021", "FD-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Rich-versus-King and investor-choice interview sections"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P1-HBS-FAMILY-2012",
+      "claimIds": ["FD-CLM-016", "FD-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Chapter 9 excerpt on friends-and-family financing"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P2-HBS-COURSE-2011",
+      "claimIds": ["FD-CLM-016", "FD-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Beyond the Team—investors and successors"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P2-GBOOKS-2012",
+      "claimIds": ["FD-CLM-016", "FD-CLM-017"],
+      "locator": {"kind": "chapter_page", "value": "Limited-preview contents: Chapter 9, Investors; full comparison pending licensed review"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["preferred_equity", "common_equity", "safe", "convertible", "debt", "all"]
+  },
+  "requiredConditions": [
+    "The company is considering or has accepted external financing.",
+    "Resource needs and governance consequences are decision-relevant.",
+    "Legal and financial terms are independently reviewed."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "resource_gap",
+      "description": "Capital, expertise, network, recruiting, credibility, and governance resources needed for the next milestone.",
+      "necessity": "required",
+      "acceptableSources": ["operating plan", "board materials", "fundraising plan", "capability map"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "investor_bundle",
+      "description": "Capital, ownership, board rights, protective terms, milestones, support, reputation, reserves, and conflicts for each investor option.",
+      "necessity": "required",
+      "acceptableSources": ["term sheet", "fund documents", "reference checks", "portfolio evidence", "legal diligence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "founder_investor_alignment",
+      "description": "Explicit founder goals, growth ambition, control tolerance, time horizon, and decision expectations.",
+      "necessity": "required",
+      "acceptableSources": ["founder interviews", "board discussion", "financing memo", "reference checks"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "relationship_capital_risk",
+      "description": "Disclosure, sophistication, loss capacity, and relationship downside for friends-and-family capital.",
+      "necessity": "recommended",
+      "acceptableSources": ["subscription materials", "risk disclosure", "investor interviews", "counsel review"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which resource gap requires outside capital or investor capability?",
+    "What control, ownership, governance, and relationship costs accompany each option?",
+    "Do the investor's fund model and behavior fit the company's likely path?",
+    "Do founders and investors share expectations for pace, follow-on capital, board decisions, and exit?"
+  ],
+  "positiveSignals": [
+    "The investor fills a specific resource gap beyond price.",
+    "Founders understand and can explain governance and control consequences.",
+    "References support the investor's behavior in difficulty, not only success.",
+    "Friends-and-family participants receive clear risk disclosure and can bear loss."
+  ],
+  "redFlags": [
+    "Capital is selected solely for valuation or personal familiarity.",
+    "Founder expectations conflict with the investor's return horizon or reserve model.",
+    "Board or control terms are poorly understood.",
+    "Relationship capital is raised through optimism without downside discussion."
+  ],
+  "disconfirmingEvidence": [
+    "A lower-priced investor adds resources that improve expected company value.",
+    "A founder preserving control can fund and execute the plan without critical resource loss.",
+    "A prestigious investor lacks partner fit, attention, or follow-on capacity.",
+    "Friends-and-family investors are sophisticated, informed, and relationship risk is bounded."
+  ],
+  "contraindications": [
+    "Do not rank investor quality from brand alone.",
+    "Do not provide legal interpretation of financing documents.",
+    "Do not infer founder motive solely from accepting or rejecting VC."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define the company's resource gap and founder goals.",
+      "Normalize investor economics, governance, support, and conflicts.",
+      "Review reference evidence from adverse and successful outcomes.",
+      "Test non-VC, lower-price, and control-preserving alternatives.",
+      "Conclude aligned, conditionally aligned, misaligned, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "financing_governance_comparison",
+      "requiredOutputs": ["ownership_and_dilution", "board_composition", "voting_and_protective_rights", "liquidation_and_conversion", "follow_on_scenarios"],
+      "prohibition": "The language model must not calculate dilution, control, liquidation, or legal outcomes."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Pitch and term-sheet headline only.", "medium": "Documents and some references.", "high": "Executed terms, counsel-reviewed facts, fund data, and diverse references converge."},
+    "evidenceStrength": {"low": "Brand or valuation preference.", "medium": "Specific resource and control fit.", "high": "Terms and observed behavior demonstrate alignment or material mismatch."},
+    "evidenceCoverage": {"low": "Price only.", "medium": "Economics, board, and some references covered.", "high": "Resources, economics, governance, reserves, conflicts, references, and founder goals covered."},
+    "applicabilityConfidence": {"low": "External capital immaterial.", "medium": "Financing affects resources or control.", "high": "Financing choice materially shapes company path and founder outcomes."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Conditional fit.", "high": "Well-supported alignment or mismatch."}
+  },
+  "overlapFrameworkIds": ["FD-09", "SK-04", "VD-02", "MY-06"],
+  "conflictingFrameworkIds": ["HIGHEST-VALUATION-IS-BEST-INVESTOR", "VC-ALWAYS-ADDS-VALUE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Complete licensed Chapter 9 review.", "Validate governance comparison service.", "Require investor-reference evidence."],
+    "empiricalQualifications": ["Investor selection and outcomes are endogenous.", "Support quality varies by partner, fund, and cycle."]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public sources support principal trade-offs; full investor-option comparison requires licensed Chapter 9 review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review full Chapter 9 and align with financing/legal framework packs."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

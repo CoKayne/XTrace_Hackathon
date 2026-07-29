@@ -1,0 +1,277 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-04",
+  "slug": "dilution-retention",
+  "name": "Ownership Retention and Dilution Forecast",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Translates required exit ownership into current ownership through an explicit future-financing and option-pool path.",
+    "productLabel": "Dilution and Retention Lens — derived from Metrick and Yasuda's staged-finance and multi-round architecture",
+    "notAClaimOf": [
+      "ownership remaining constant until exit",
+      "industry-average dilution being a company fact",
+      "anti-dilution provisions eliminating economic dilution"
+    ]
+  },
+  "attribution": {
+    "display": "Derived from Andrew Metrick and Ayako Yasuda's public staged-finance, term-sheet, and multi-round architecture",
+    "scope": "product_synthesis",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "University of California, Davis",
+      "VCV Tools"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Current ownership and exit ownership differ when a startup raises additional capital, expands its option pool, issues convertibles, changes share counts, or invokes contractual protections. The model should represent each expected financing event, calculate each holder's retention scenario, and distinguish percentage dilution from changes in economic payoff.",
+  "claimTypes": [
+    "product_inference",
+    "contractual_convention"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P1-UCD-SYLLABUS-2019",
+      "claimIds": [
+        "VCFI-CLM-006"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 1-2: staged financing, milestones, current capital structure, and effects on future options"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-AUTO",
+      "claimIds": [
+        "VCFI-CLM-006",
+        "VCFI-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Later-round requirement for all previous rounds; investment, shares, preference, cap, and founders' shares inputs"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "common_equity",
+      "preferred_equity",
+      "convertible",
+      "options",
+      "warrants"
+    ]
+  },
+  "requiredConditions": [
+    "The current fully diluted cap table is reconciled to legal records.",
+    "Known convertibles, warrants, option grants, and reserved pools are modeled.",
+    "Future round timing, capital need, price, pool refresh, and participation are scenario assumptions rather than facts.",
+    "Percentage ownership and contractual payoff are reported separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "current_cap_table",
+      "description": "Reconciled holder-by-holder shares, options, warrants, convertibles, and fully diluted denominator.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board-approved cap table",
+        "charter",
+        "equity administration system",
+        "financing documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "financing_plan",
+      "description": "Runway, milestone budget, future capital requirements, expected timing, and scenario round assumptions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating plan",
+        "board budget",
+        "management financing plan",
+        "fund scenario assumptions"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "dilution_terms",
+      "description": "Pre/post-money pool treatment, conversion, anti-dilution, pro rata, pay-to-play, and issuance rights.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "charter",
+        "investor rights agreement",
+        "convertible instruments"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is the verified current fully diluted ownership?",
+    "Which future financing or pool events are required to reach the exit plan?",
+    "How much ownership does this investor retain under Bear, Base, and Bull financing paths?",
+    "Which contractual rights change share count versus economic payoff?",
+    "Can the fund maintain target ownership within its reserve and concentration policy?"
+  ],
+  "positiveSignals": [
+    "The current cap table reconciles to all outstanding instruments.",
+    "Financing needs derive from operating milestones rather than a generic dilution rate.",
+    "Each future event has timing, amount, price, and pool assumptions.",
+    "Pro rata and reserve decisions are explicitly modeled.",
+    "Retention sensitivity is visible across scenarios."
+  ],
+  "redFlags": [
+    "The model assumes no future financing for a cash-consuming company.",
+    "Option pool refresh is omitted or counted in the wrong pre/post-money location.",
+    "Convertibles are ignored until conversion.",
+    "Anti-dilution is described as preventing all dilution.",
+    "A market average is presented as the company's expected cap table."
+  ],
+  "disconfirmingEvidence": [
+    "Runway requires more or earlier capital than the modeled path.",
+    "A large option-pool refresh materially reduces retention.",
+    "Existing convertibles or warrants expand the denominator.",
+    "The fund lacks reserves to exercise pro rata rights.",
+    "Required current ownership is unavailable or violates concentration policy."
+  ],
+  "contraindications": [
+    "Do not calculate retention without a reconciled starting cap table.",
+    "Do not present priors as company facts.",
+    "Do not use percentage retention as a security payoff.",
+    "Do not assume legal anti-dilution removes financing or economic risk."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Reconcile the current fully diluted cap table.",
+      "Build Bear, Base, and Bull financing-event sequences from operating needs.",
+      "Apply share issuance, conversion, pool, and participation rules event by event.",
+      "Calculate holder retention and reserve requirements.",
+      "Pass the resulting cap tables to the waterfall and Fund Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "identity": "retention_factor_s = investor_fully_diluted_ownership_at_exit_s / investor_fully_diluted_ownership_current",
+      "eventOrder": [
+        "starting_cap_table",
+        "convertible_conversion",
+        "option_pool_adjustment",
+        "new_money_issuance",
+        "pro_rata_or_follow_on",
+        "post_round_reconciliation"
+      ],
+      "calculationOwner": "cap_table_and_dilution_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Ownership comes from pitch-deck percentages.",
+      "medium": "Current cap table is verified but future financing inputs are management estimates.",
+      "high": "Legal cap table, instruments, operating plan, and approved financing assumptions are verified."
+    },
+    "evidenceStrength": {
+      "low": "A generic dilution percentage is used.",
+      "medium": "Company-specific scenarios exist but material term uncertainty remains.",
+      "high": "Event-level scenarios and rights reconcile across all holders."
+    },
+    "evidenceCoverage": {
+      "low": "Only current headline ownership is known.",
+      "medium": "Current instruments and one future round are covered.",
+      "high": "All instruments, pools, future rounds, rights, reserves, and exit retention are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Capital needs or starting denominator are unknown.",
+      "medium": "The near-term financing path is credible but later rounds are broad ranges.",
+      "high": "The scenario horizon and capital needs are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a cap-table request can be produced.",
+      "medium": "A wide retention range can inform ownership planning.",
+      "high": "Retention and reserve needs are reproducible under all scenarios."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-03",
+    "VCFI-09",
+    "SK-07",
+    "DSV-10"
+  ],
+  "conflictingFrameworkIds": [
+    "NO-FUTURE-DILUTION",
+    "ANTI-DILUTION-EQUALS-NO-DILUTION",
+    "GENERIC-RETENTION-AS-FACT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete third-edition later-round review.",
+      "Validate cap-table event ordering with venture counsel.",
+      "Backtest financing-path and reserve assumptions."
+    ],
+    "empiricalQualifications": [
+      "Future financing amount, timing, and pricing are inherently uncertain.",
+      "Legal rights may change dilution differently across jurisdictions.",
+      "Economic payoff can diverge from fully diluted ownership."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The card is a conservative product synthesis from public multi-round architecture."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete Chapter 15 and complex-structure review.",
+      "Review jurisdictional share and convertible mechanics."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

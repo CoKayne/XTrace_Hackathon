@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-04",
+  "slug": "founder-purpose-and-product-obsession",
+  "name": "Founder Purpose and Product Obsession",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether sustained founder focus appears in product judgment, customer understanding, learning, and responsible execution.",
+    "productLabel": "Founder Purpose and Product Obsession — based on Michael Moritz's public Stanford talk, with Sequoia Arc context",
+    "notAClaimOf": ["a personality or charisma score", "hours worked predicting success", "self-neglect, intensity, or founder mythology being desirable"]
+  },
+  "attribution": {
+    "display": "Based on Michael Moritz's direct 2016 Stanford statements; Sequoia Arc materials are institution-level context",
+    "scope": "person_direct",
+    "people": ["Michael Moritz"],
+    "organizations": ["Stanford Technology Ventures Program", "Sequoia Capital"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Assess founder purpose and sustained focus through observable command of the product and customer, quality of learning, difficult prioritization, and consistent execution. Do not infer it from identity, pedigree, charisma, long hours, social performance, or unhealthy self-sacrifice.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-P1-MORITZ-STVP-2016",
+      "claimIds": ["SQ-CLM-011", "SQ-CLM-012", "SQ-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 32-35 and 51-68: founder purpose, customer connection, product explanation, and sustained focus"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-I1-ARC-CURRENT",
+      "claimIds": ["SQ-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Lines 135-163: founder motivation, customer, product, GTM, and business questions"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SQ-I1-COVID-2021",
+      "claimIds": ["SQ-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Lines 38-39: employee wellbeing, burnout, and people-first leadership"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Founder assessment is role-specific and based on observed work.",
+    "Equal evidence standards are applied across demographic, educational, geographic, and communication differences.",
+    "Purpose is evaluated separately from market, economics, governance, and price."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "product_and_customer_command",
+      "description": "Founder understanding of product mechanisms, target users, customer evidence, alternatives, and unresolved questions.",
+      "necessity": "required",
+      "acceptableSources": ["product review", "customer interviews", "technical diligence", "sales calls", "founder discussion"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "learning_and_updates",
+      "description": "Specific decisions changed after evidence, experiments run, mistakes recognized, and resulting outcomes.",
+      "necessity": "required",
+      "acceptableSources": ["decision log", "experiment record", "board material", "roadmap history", "postmortems"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "focus_and_execution",
+      "description": "Priority continuity, milestone delivery, resource tradeoffs, and willingness to stop low-value work.",
+      "necessity": "required",
+      "acceptableSources": ["operating plan", "roadmap", "budget", "milestone history", "team interviews"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "leadership_and_wellbeing",
+      "description": "Team treatment, retention, safety, sustainable workload, conflict handling, and openness to contrary evidence.",
+      "necessity": "required",
+      "acceptableSources": ["team interviews", "retention data", "governance records", "incident records", "references"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What product and customer knowledge does the founder demonstrate beyond the pitch?",
+    "Which important belief or plan changed after new evidence?",
+    "What has the founder deliberately not pursued, and why?",
+    "Does intensity produce learning and outcomes or rigidity and harm?",
+    "What evidence contradicts the impression of purpose or execution?"
+  ],
+  "positiveSignals": [
+    "The founder explains the product, customer, and uncertainty with specificity.",
+    "Decisions update when evidence changes without abandoning the core purpose reflexively.",
+    "Resources follow explicit priorities and milestones.",
+    "The founder sustains standards without normalizing burnout, intimidation, or self-neglect."
+  ],
+  "redFlags": [
+    "Charisma, pedigree, identity, social following, or long hours substitute for evidence.",
+    "Declared obsession appears as inability to process contrary facts.",
+    "Priorities change repeatedly without a learning record.",
+    "Intensity is used to excuse misconduct, unsafe work, or team attrition."
+  ],
+  "disconfirmingEvidence": [
+    "A quiet, nontraditional, or less polished founder may show exceptional product and customer command.",
+    "Multiple interests do not preclude strong leadership when responsibilities and priorities are clear.",
+    "A founder can protect wellbeing while maintaining high standards and sustained commitment.",
+    "Deep purpose cannot overcome weak demand, economics, governance, or price."
+  ],
+  "contraindications": [
+    "Do not score demographics, school, accent, charisma, hours worked, online presence, or lifestyle.",
+    "Do not diagnose personality, motivation, or mental health.",
+    "Do not turn a selected experiential observation into a success probability."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define the founder role and stage-appropriate responsibilities.",
+      "Review product command, customer evidence, decision updates, priorities, and execution.",
+      "Review references and contrary team evidence using consistent questions.",
+      "Separate sustained evidence-based focus from rigidity, performance, or unhealthy intensity.",
+      "Conclude demonstrated, mixed, unproven, concerning, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Self-description or public persona.", "medium": "Observed decisions and internal records.", "high": "Longitudinal decisions, outcomes, customers, and diverse references converge."},
+    "evidenceStrength": {"low": "Intensity claim.", "medium": "Specific product judgment and execution.", "high": "Repeated learning, prioritization, delivery, and responsible leadership."},
+    "evidenceCoverage": {"low": "Founder interview only.", "medium": "Product, customer, and milestones.", "high": "Decisions, outcomes, negative cases, team, governance, and references covered."},
+    "applicabilityConfidence": {"low": "Role or stage undefined.", "medium": "Founder role and current priorities known.", "high": "Longitudinal evidence matches role, stage, and company needs."},
+    "judgmentConfidence": {"low": "Persona impression.", "medium": "Bounded behavior assessment.", "high": "Consistent observed work and counterevidence support the judgment."}
+  },
+  "overlapFrameworkIds": ["SF-01", "SF-02", "FD-03", "SP-01", "VM-04"],
+  "conflictingFrameworkIds": ["CHARISMA-AS-FOUNDER-QUALITY", "HOURS-WORKED-AS-SUCCESS", "PEDIGREE-SCORE"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Build structured behavioral references.", "Test demographic calibration and inter-rater reliability.", "Obtain employment and governance review."],
+    "empiricalQualifications": ["Moritz's observation is experiential and selected, not a validated personality model.", "Founder assessment is vulnerable to affinity, charisma, and attribution bias."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Direct public statements are neutrally paraphrased; no private mental process or personality imitation is represented."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Obtain bias, employment, and governance review before any structured founder assessment."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

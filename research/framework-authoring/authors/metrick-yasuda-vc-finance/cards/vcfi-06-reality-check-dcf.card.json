@@ -1,0 +1,313 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-06",
+  "slug": "reality-check-dcf",
+  "name": "Reality-Check DCF for Successful Exit Value",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Builds a successful-exit total value from explicit revenue, margin, and capital-productivity paths.",
+    "productLabel": "Reality-Check DCF Lens — based on Metrick and Yasuda's public high-growth valuation materials",
+    "notAClaimOf": [
+      "a DCF point estimate being precise",
+      "a successful scenario being an expected value",
+      "company total value equaling preferred security value"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Andrew Metrick and Ayako Yasuda's public description of the Reality-Check DCF model",
+    "scope": "coauthored_work",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "John Wiley & Sons",
+      "University of California, Davis",
+      "VCV Tools"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "A high-growth company's successful-exit total value can be estimated through an operating DCF that makes revenue growth, profit margin, capital productivity, cash flow, and exit timing explicit. Sparse history increases uncertainty rather than removing the need for causal assumptions. The output is a company-level exit value for later ownership and security analysis.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P2-BOOK-2021",
+      "claimIds": [
+        "VCFI-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Publisher description of technology-company DCF and estimates for sales, profit, and return on capital"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-UCD-SYLLABUS-2019",
+      "claimIds": [
+        "VCFI-CLM-007"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF p. 1: successful exit value, revenue growth, margins, capital productivity, and Reality-Check DCF"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-OVERVIEW",
+      "claimIds": [
+        "VCFI-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "AUTO overview: Reality-Check DCF evaluates total startup value at exit"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "saas",
+      "marketplace",
+      "consumer",
+      "transactional",
+      "hardware",
+      "deep_tech",
+      "services"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "enterprise_value_input",
+      "equity_value_input"
+    ]
+  },
+  "requiredConditions": [
+    "A successful-exit horizon and company outcome are defined.",
+    "Revenue, margin, capital productivity, reinvestment, and risk paths are internally consistent.",
+    "Observed company facts, externally sourced anchors, and model assumptions are separated.",
+    "Enterprise value is bridged to equity value before VC Method use.",
+    "Failure/downside is handled outside or within the scenario framework exactly once."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "operating_history",
+      "description": "Verified historical revenue, gross margin, operating costs, cash, debt, and capital use with periods and definitions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financial statements",
+        "management accounts",
+        "billing system",
+        "bank statements"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "growth_drivers",
+      "description": "Customer, unit, price, capacity, retention, sales-cycle, pipeline, and market evidence supporting the revenue path.",
+      "necessity": "required",
+      "acceptableSources": [
+        "CRM data",
+        "customer contracts",
+        "usage data",
+        "market research"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "margin_and_capital_path",
+      "description": "Gross and operating margin path plus working capital, capex, R&D, acquisition cost, and capital-productivity assumptions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating plan",
+        "unit economics",
+        "cohort analysis",
+        "comparable company filings"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "valuation_parameters",
+      "description": "Scenario-specific discounting, terminal/exit treatment, debt, cash, dilution boundary, and valuation date.",
+      "necessity": "required",
+      "acceptableSources": [
+        "approved valuation policy",
+        "market data",
+        "deterministic valuation service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which operating drivers create the successful exit value?",
+    "Are revenue and margin paths supported by customers, capacity, and competition?",
+    "How much reinvestment is required for the growth path?",
+    "How does the company reach a coherent exit or stable state?",
+    "Which assumptions drive most of the value and what would falsify them?",
+    "Is the output enterprise or equity value and how is it bridged?"
+  ],
+  "positiveSignals": [
+    "Revenue is causally linked to customer or unit drivers.",
+    "Margin expansion has an operational path.",
+    "Growth carries explicit reinvestment and capital productivity.",
+    "Bear, Base, and Bull scenarios are internally coherent.",
+    "The enterprise-to-equity bridge and exit date are explicit."
+  ],
+  "redFlags": [
+    "TAM share alone drives revenue.",
+    "Margin expands without product mix or cost evidence.",
+    "Growth requires no capital.",
+    "Terminal or exit value dominates without sensitivity.",
+    "The current round price anchors the DCF."
+  ],
+  "disconfirmingEvidence": [
+    "Customer cohorts or pipeline cannot support forecast growth.",
+    "Unit economics worsen with scale.",
+    "Capital needs exceed the financing plan.",
+    "Competitive response limits margin or market share.",
+    "Reasonable assumption changes reduce exit value below the ownership requirement."
+  ],
+  "contraindications": [
+    "Do not use DCF output as preferred security value.",
+    "Do not label a successful exit scenario as expected value.",
+    "Do not hide unsupported inputs behind spreadsheet complexity.",
+    "Do not calculate inside the LLM."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Separate observed facts, external anchors, and assumptions.",
+      "Construct causal revenue, margin, and reinvestment paths.",
+      "Run Bear, Base, and Bull DCFs in the deterministic valuation service.",
+      "Bridge enterprise to equity value and expose sensitivity.",
+      "Send successful-exit equity values to VC Method and security analysis."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredModelOutputs": [
+        "free_cash_flow_path",
+        "discounted_value",
+        "enterprise_value",
+        "equity_value",
+        "successful_exit_equity_value",
+        "sensitivity_table"
+      ],
+      "reuseExistingFrameworks": [
+        "DSV-02",
+        "DSV-03",
+        "DSV-04",
+        "DSV-05",
+        "DSV-06",
+        "DSV-07"
+      ],
+      "calculationOwner": "intrinsic_valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Founder narrative and unsourced market numbers drive the model.",
+      "medium": "Company data and external anchors exist but are unaudited or incomplete.",
+      "high": "Verified company records, customer evidence, market data, and approved valuation inputs are available."
+    },
+    "evidenceStrength": {
+      "low": "A top-down forecast with no operational bridge is used.",
+      "medium": "Key drivers are supported but major uncertainty remains in exit or margins.",
+      "high": "Multiple independent evidence streams support each material driver."
+    },
+    "evidenceCoverage": {
+      "low": "Only revenue and TAM are covered.",
+      "medium": "Revenue, margin, and capital are covered but risk or bridge is incomplete.",
+      "high": "Operations, growth, margins, capital, risk, survival, exit, and equity bridge are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No coherent operating model can be formed.",
+      "medium": "The model is usable with broad scenario ranges.",
+      "high": "The business model and exit horizon are well specified."
+    },
+    "judgmentConfidence": {
+      "low": "Only driver questions can be produced.",
+      "medium": "A wide successful-exit value range can be used provisionally.",
+      "high": "The value range is reproducible and robust enough for ownership analysis."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-01",
+    "DSV-02",
+    "DSV-03",
+    "DSV-04",
+    "DSV-07",
+    "VCFI-03",
+    "VCFI-07"
+  ],
+  "conflictingFrameworkIds": [
+    "ROUND-PRICE-ANCHORED-DCF",
+    "FREE-GROWTH",
+    "SUCCESS-CASE-EQUALS-EXPECTED-VALUE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapter 11 review.",
+      "Reconcile the model with the Damodaran valuation service.",
+      "Backtest operating forecasts without hindsight leakage."
+    ],
+    "empiricalQualifications": [
+      "Sparse history creates wide and unstable ranges.",
+      "Model complexity does not replace evidence.",
+      "A successful-exit DCF does not by itself represent failure probability or security rights."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public descriptions support the model's high-level role; third-edition formula details remain pending."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete Chapter 11 and spreadsheet review.",
+      "Define which calculations are shared with the existing intrinsic-valuation service."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

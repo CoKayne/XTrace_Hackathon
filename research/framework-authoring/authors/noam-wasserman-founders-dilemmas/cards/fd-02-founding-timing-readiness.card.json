@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-02",
+  "slug": "founding-timing-readiness",
+  "name": "Founding Timing and Readiness",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Assesses whether the founders' timing left material gaps in relevant experience, network, market readiness, or personal runway and how those gaps are being addressed.",
+    "productLabel": "Founding-Timing Lens — product synthesis from Noam Wasserman's public work",
+    "notAClaimOf": ["older founders always being better", "one career path causing success", "personal constraints being moral defects"]
+  },
+  "attribution": {
+    "display": "Product synthesis from Noam Wasserman's public Founder's Dilemmas materials",
+    "scope": "product_synthesis",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School", "Princeton University Press"],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Evaluate the decision to found when made: relevant operating and industry experience, access to collaborators and customers, market window, opportunity cost, and personal runway. Focus on present capability gaps and mitigation rather than rewarding age, pedigree, or a canonical résumé.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-HBS-FAMILY-2012",
+      "claimIds": ["FD-CLM-002", "FD-CLM-004"],
+      "locator": {"kind": "web_section", "value": "Book scope paragraph describing pre-founding career dilemmas"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P2-HBS-COURSE-2011",
+      "claimIds": ["FD-CLM-002", "FD-CLM-004"],
+      "locator": {"kind": "web_section", "value": "Course opening module on deciding when to found and industry transition"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P2-GBOOKS-2012",
+      "claimIds": ["FD-CLM-004"],
+      "locator": {"kind": "chapter_page", "value": "Limited-preview contents: pre-founding section, Chapters 1-2; full locator pending licensed review"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Founding timing or founder preparation is material to current execution.",
+    "The analyst can distinguish relevant capability from pedigree proxies.",
+    "Personal information is volunteered or reviewed with consent."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "founder_capability_map",
+      "description": "Relevant industry, functional, technical, commercial, hiring, and financing experience at founding and now.",
+      "necessity": "required",
+      "acceptableSources": ["founder interview", "work history", "references", "execution artifacts"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "market_timing_record",
+      "description": "Customer, technology, regulatory, or distribution conditions at founding and their evolution.",
+      "necessity": "required",
+      "acceptableSources": ["customer evidence", "market timeline", "product milestones", "regulatory history"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "gap_mitigation",
+      "description": "Cofounders, hires, advisors, partners, or learning loops addressing missing capability.",
+      "necessity": "required",
+      "acceptableSources": ["team history", "hiring plan", "advisor evidence", "reference checks"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What did the founders know and not know when they started?",
+    "Which gaps still matter for the next milestone?",
+    "Did the market window reward early entry despite capability gaps?",
+    "What evidence shows the team learns, recruits, or partners around missing capability?"
+  ],
+  "positiveSignals": [
+    "Founders possess relevant, demonstrated insight or execution capability.",
+    "Early timing created proprietary learning, relationships, or product evidence.",
+    "The team names its gaps and recruits complementary capability.",
+    "Customer and market evidence—not biography alone—supports timing."
+  ],
+  "redFlags": [
+    "Pedigree or passion substitutes for evidence of relevant capability.",
+    "The team denies clear gaps or repeatedly hires the wrong profile.",
+    "Personal runway or constraints threaten continuity with no mitigation.",
+    "Market readiness is asserted only from investor attention."
+  ],
+  "disconfirmingEvidence": [
+    "An inexperienced founder demonstrates rapid, repeated learning and recruiting.",
+    "An experienced founder's prior playbook does not fit the current market.",
+    "A seemingly early market has committed users and improving prerequisites.",
+    "A seemingly late entrant has a distinct distribution or product wedge."
+  ],
+  "contraindications": [
+    "Do not score age, school, employer brand, family status, or protected traits.",
+    "Do not treat personal constraints as adverse without consented, decision-relevant evidence.",
+    "Do not infer market timing from founder readiness alone."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Reconstruct capability and market conditions at founding.",
+      "Map present gaps to the next milestone.",
+      "Review actual mitigation and learning behavior.",
+      "Test pedigree and hindsight alternatives.",
+      "Conclude prepared, adaptive despite gaps, exposed, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Résumé or founder assertion only.", "medium": "Artifacts and some references support capability.", "high": "Execution history, customers, references, and team evidence converge."},
+    "evidenceStrength": {"low": "Pedigree proxy.", "medium": "Specific capability or gap is demonstrated.", "high": "Repeated execution and mitigation link capability to milestones."},
+    "evidenceCoverage": {"low": "Founder history only.", "medium": "Capabilities, market, and some mitigation covered.", "high": "Founding context, present gaps, market, personal continuity, and mitigation covered."},
+    "applicabilityConfidence": {"low": "Timing no longer material.", "medium": "Some founding gaps persist.", "high": "Next milestone materially depends on unresolved founding-timing choices."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Material but mitigable gap.", "high": "Well-supported readiness or exposure judgment."}
+  },
+  "overlapFrameworkIds": ["SF-02", "PT-05", "VM-02"],
+  "conflictingFrameworkIds": ["PEDIGREE-EQUALS-READINESS", "AGE-EQUALS-FOUNDER-QUALITY"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Complete licensed Chapter 2 review.", "Define privacy-safe capability evidence.", "Test for pedigree bias."],
+    "empiricalQualifications": ["Founder experience effects vary by task and market.", "Survivorship and hindsight can distort timing narratives."]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Core concept is public, but complete Chapter 2 fidelity requires licensed review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review full Chapter 2 and bias-test evidence requirements."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-01",
+  "slug": "network-effect-applicability",
+  "name": "Network-Effect Applicability Gate",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Requires a defined participant interaction and measurable incremental user value before the system applies any network-effect framework.",
+    "productLabel": "Network-Effect Applicability — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["virality proving network effects", "more data automatically creating a moat", "a large installed base proving increasing user value"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials with affiliated qualifications",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Apply a network-effect lens only when identifiable participant nodes interact through a product and incremental participation can improve another participant's value. Separate that mechanism from virality, scale economies, brand, data volume, and generic retention.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-001", "CSP-CLM-002", "CSP-CLM-004"],
+      "locator": {"kind": "pdf_page", "value": "Part I, Chapters 1-3, PDF pp. 26-53"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-METRICS-2018",
+      "claimIds": ["CSP-CLM-001", "CSP-CLM-002", "CSP-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Network effect versus virality; local network and cold-start metrics"},
+      "attributionScope": "course_notes_derivative",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "CSP-P1-DATA-2019",
+      "claimIds": ["CSP-CLM-003", "CSP-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Direct interactions, defined interface, and limits of data-moat claims"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Participant roles and the interaction interface can be identified.",
+    "Incremental value can be observed at an appropriate network unit.",
+    "Non-network sources of growth and retention remain separately modeled."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "interaction_graph",
+      "description": "Participant roles, value contribution, interaction edge, and product interface.",
+      "necessity": "required",
+      "acceptableSources": ["product telemetry", "workflow map", "marketplace transaction data", "user research"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "incremental_value",
+      "description": "Evidence that participation or density improves another user's success, relevance, liquidity, or retention.",
+      "necessity": "required",
+      "acceptableSources": ["cohort analysis", "density experiment", "match-rate data", "retention analysis"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "alternative_mechanisms",
+      "description": "Evidence for virality, brand, scale economies, data learning, or product quality as alternate explanations.",
+      "necessity": "recommended",
+      "acceptableSources": ["growth accounting", "product experiment", "cost data", "model performance"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who are the nodes and what interaction creates value?",
+    "How does another relevant participant change user value?",
+    "At what atomic unit should the effect appear?",
+    "Could virality, product quality, brand, or data explain the observation instead?"
+  ],
+  "positiveSignals": [
+    "A defined interaction links participation to another user's successful outcome.",
+    "The effect appears within relevant atomic networks and cohorts.",
+    "Alternative non-network explanations are tested.",
+    "The mechanism persists after controlling for product age and marketing."
+  ],
+  "redFlags": [
+    "The pitch says network effect because user count is growing.",
+    "Invites or referrals are the only evidence.",
+    "More training data is called a network without participant interaction.",
+    "Aggregate retention hides empty local networks."
+  ],
+  "disconfirmingEvidence": [
+    "User value is unchanged after relevant density increases.",
+    "Retention improvement is fully explained by product activation.",
+    "Users can receive complete value with no other participants.",
+    "The data advantage plateaus or is replicable without user interaction."
+  ],
+  "contraindications": [
+    "Do not apply downstream Cold Start cards when this gate fails.",
+    "Do not use a binary network-effect label as a valuation premium.",
+    "Do not combine different network archetypes without separate units."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define nodes, edges, interface, and atomic boundary.",
+      "State the proposed incremental-value mechanism.",
+      "Test against local operating evidence.",
+      "Evaluate alternate explanations.",
+      "Conclude applicable, partially applicable, not demonstrated, or not a network."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder narrative only.", "medium": "Product analytics support interactions.", "high": "Auditable telemetry and controlled or quasi-controlled evidence support the mechanism."},
+    "evidenceStrength": {"low": "Scale correlation only.", "medium": "Local density covaries with value.", "high": "A causal or strongly discriminating interaction mechanism is supported."},
+    "evidenceCoverage": {"low": "User count only.", "medium": "Nodes, edges, and outcomes covered; alternatives partial.", "high": "Interaction, atomic unit, density, outcomes, cohorts, and alternatives complete."},
+    "applicabilityConfidence": {"low": "No participant interaction.", "medium": "A network feature exists but may not drive the product.", "high": "Network interaction is central to delivered value."},
+    "judgmentConfidence": {"low": "Network claim unsupported.", "medium": "A plausible network effect merits measurement.", "high": "Applicability is supported by local operating evidence."}
+  },
+  "overlapFrameworkIds": ["H7P-04", "PT-04", "NN-05"],
+  "conflictingFrameworkIds": ["VIRALITY-EQUALS-NETWORK", "DATA-VOLUME-EQUALS-MOAT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate archetype-specific interaction schemas.", "Backtest applicability labels.", "Require analytics provenance."],
+    "empiricalQualifications": ["Observational density effects are confounded by user quality and market maturity.", "Many products contain both networked and non-networked value."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author-hosted and affiliated public sources are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define minimum analytics requirements for each network archetype."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

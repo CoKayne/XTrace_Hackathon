@@ -1,0 +1,315 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-07",
+  "slug": "comparable-exit-value",
+  "name": "Comparable Successful-Exit Valuation",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Uses normalized comparables to estimate successful-exit total value while preserving pricing, lifecycle, and claim differences.",
+    "productLabel": "Comparable Exit Value Lens — based on Metrick and Yasuda's public total-valuation architecture",
+    "notAClaimOf": [
+      "same-sector companies being automatically comparable",
+      "a current preferred round being an exit comparable",
+      "relative pricing being intrinsic value"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Andrew Metrick and Ayako Yasuda's public comparable total-valuation architecture",
+    "scope": "coauthored_work",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "John Wiley & Sons",
+      "University of California, Davis",
+      "VCV Tools"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Comparable analysis provides an alternative estimate of company total value at a successful exit. The target metric, multiple, claim scope, date, geography, growth, profitability, capital intensity, lifecycle, and business model must be normalized. The result is a pricing range to compare with an independent DCF, not a direct value for the preferred security offered today.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P2-BOOK-2021",
+      "claimIds": [
+        "VCFI-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Publisher description: comparables model as high-growth enterprise valuation tool"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-UCD-SYLLABUS-2019",
+      "claimIds": [
+        "VCFI-CLM-008"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF p. 1: comparables as a model for successful-exit enterprise value"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-OVERVIEW",
+      "claimIds": [
+        "VCFI-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "AUTO overview: relative valuation as alternative total exit valuation model"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-E1-VALUATIONS-2017",
+      "claimIds": [
+        "VCFI-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: preferred-right differences and overstatement from applying latest preferred price to all shares"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "saas",
+      "marketplace",
+      "consumer",
+      "transactional",
+      "hardware",
+      "deep_tech",
+      "services"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "enterprise_value_input",
+      "equity_value_input"
+    ]
+  },
+  "requiredConditions": [
+    "The valuation date and successful-exit horizon are explicit.",
+    "Metric definitions and enterprise/equity claim scope are consistent.",
+    "Comparable observations are dated and economically relevant to the exit state.",
+    "Growth, margin, risk, capital intensity, geography, lifecycle, and business-model differences are controlled.",
+    "Current preferred-round security terms are excluded from the company exit multiple or normalized separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "target_exit_metric",
+      "description": "Scenario-specific exit metric with period, definition, currency, and accounting normalization.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic operating forecast",
+        "financial model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "comparable_set",
+      "description": "Versioned public companies or transactions with date, stage, geography, business model, metrics, valuation scope, and inclusion rules.",
+      "necessity": "required",
+      "acceptableSources": [
+        "public filings",
+        "licensed market database",
+        "verified transaction documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "normalization_controls",
+      "description": "Controls for growth, profitability, reinvestment, risk, size, lifecycle, and claim differences.",
+      "necessity": "required",
+      "acceptableSources": [
+        "statistical model",
+        "public filings",
+        "valuation methodology"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "market_regime",
+      "description": "Current and exit-date market regime assumptions, sample dispersion, and transaction staleness.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "public market data",
+        "licensed transaction data",
+        "market research"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is the exact exit metric and claim scope?",
+    "Why is each comparable economically relevant at the target exit state?",
+    "How are growth, margin, risk, capital intensity, and lifecycle differences controlled?",
+    "How wide and stable is the multiple distribution?",
+    "How does the result compare with the Reality-Check DCF?",
+    "Are preferred-security prices being mistaken for common company value?"
+  ],
+  "positiveSignals": [
+    "Comparable selection rules are predeclared and versioned.",
+    "Metrics, dates, currencies, and EV/equity scope are normalized.",
+    "The distribution and sensitivity to sample inclusion are shown.",
+    "Fundamental controls explain the selected range.",
+    "DCF and comparable results converge or their disagreement is explained."
+  ],
+  "redFlags": [
+    "A famous company's multiple is used without economic comparability.",
+    "ARR, revenue, GMV, bookings, and run rate are mixed.",
+    "Current round valuations are treated as successful-exit evidence.",
+    "A median is shown without dispersion.",
+    "The sample changes until the desired value appears."
+  ],
+  "disconfirmingEvidence": [
+    "Comparable fundamentals differ materially from the target exit state.",
+    "The range is unstable under reasonable inclusion rules.",
+    "Transactions are stale or security rights explain the headline multiple.",
+    "Market-regime normalization materially lowers the range.",
+    "The DCF cannot support the operating assumptions implicit in the multiple."
+  ],
+  "contraindications": [
+    "Do not call this intrinsic value.",
+    "Do not mix enterprise and equity multiples.",
+    "Do not use a current preferred round as a total exit comparable without normalization.",
+    "Do not hide sample dates, dispersion, or exclusions."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define the target exit metric, claim, date, and currency.",
+      "Build a versioned comparable set using predeclared criteria.",
+      "Normalize metrics and control fundamental differences.",
+      "Calculate the exit pricing distribution and sensitivity.",
+      "Compare with DCF and pass total exit equity values to the VC Method."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredChecks": [
+        "metric_definition_match",
+        "claim_scope_match",
+        "date_and_currency_normalization",
+        "fundamental_controls",
+        "sample_dispersion",
+        "selection_sensitivity"
+      ],
+      "requiredOutputs": [
+        "exit_multiple_distribution",
+        "exit_enterprise_value_range",
+        "exit_equity_value_range",
+        "dcf_comparable_gap"
+      ],
+      "calculationOwner": "comparable_valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Media valuations without metrics or terms form the sample.",
+      "medium": "Public filings and some verified transactions are available.",
+      "high": "Current filings, licensed transactions, terms, and normalized metrics are available."
+    },
+    "evidenceStrength": {
+      "low": "One comparable or a sector median drives the result.",
+      "medium": "A distribution exists but material controls remain approximate.",
+      "high": "A broad current sample remains stable across reasonable controls."
+    },
+    "evidenceCoverage": {
+      "low": "Only company names and valuations are present.",
+      "medium": "Metrics and dates are covered but lifecycle or claim normalization is incomplete.",
+      "high": "Metrics, fundamentals, lifecycle, dates, terms, distribution, and market regime are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No economically relevant comparables exist.",
+      "medium": "A noisy set exists with disclosed limitations.",
+      "high": "The target exit state can be credibly normalized to the sample."
+    },
+    "judgmentConfidence": {
+      "low": "Only broad pricing context can be stated.",
+      "medium": "A wide exit pricing range is defensible.",
+      "high": "The range is robust and reconciled against DCF."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-08",
+    "VCFI-03",
+    "VCFI-06"
+  ],
+  "conflictingFrameworkIds": [
+    "SAME-SECTOR-EQUALS-COMPARABLE",
+    "CURRENT-ROUND-EQUALS-EXIT-VALUE",
+    "PREFERRED-PRICE-EQUALS-COMMON-VALUE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapter 12 review.",
+      "Validate comparable selection and normalization rules.",
+      "Backtest ranges without selection or hindsight leakage."
+    ],
+    "empiricalQualifications": [
+      "Private transaction data is sparse, stale, selected, and term-dependent.",
+      "Market multiples reflect regime and sentiment as well as fundamentals.",
+      "Exit comparables are hypothetical when the company is many years from exit."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public model descriptions are neutrally paraphrased; exact third-edition method remains pending."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete Chapter 12 review.",
+      "Define licensed transaction-data policy and exit-regime methodology."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-02",
+  "slug": "market-pull-and-size",
+  "name": "Market Pull and Size",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a large and reachable market is actively pulling the product rather than relying on a top-down TAM narrative.",
+    "productLabel": "Market Pull and Size Lens — based on Marc Andreessen's public startup writings",
+    "notAClaimOf": ["TAM slides proving demand", "a large market excusing weak execution", "market size fixing an uneconomic product"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public startup writings",
+    "scope": "person_direct",
+    "people": ["Marc Andreessen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Give market quality substantial weight, but test it from both directions: a credible bottom-up reachable opportunity and observable evidence that customers pull the product. A favorable market can make iteration possible; it does not replace company-specific proof.",
+  "claimTypes": ["direct_doctrine", "empirical_qualification", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-001", "MA-CLM-002", "MA-CLM-004"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 29-36, Part 4: market, product, team, and demand-pull discussion"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-A1-PMF-SYNTHESIS-2017",
+      "claimIds": ["MA-CLM-004"],
+      "locator": {"kind": "web_section", "value": "Lines 124-128, attribution history and Why Market Matters More Than Anything"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "MA-P1-SOFTWARE-2011",
+      "claimIds": ["MA-CLM-021", "MA-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Lines 125-135 and 163-170: market expansion thesis and company proof burden"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The customer, problem, purchase unit, geography, and realistic route to market are defined.",
+    "Top-down market estimates can be reconciled with bottom-up units.",
+    "Market attractiveness is kept separate from company capture and valuation."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "bottom_up_market",
+      "description": "Potential customer count, use frequency, contract or transaction value, adoption constraints, geography, and realistic serviceable share.",
+      "necessity": "required",
+      "acceptableSources": ["industry records", "customer counts", "pricing data", "usage data", "regulatory records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "observed_pull",
+      "description": "Customer urgency, inbound demand, conversion, willingness to switch, and willingness to pay.",
+      "necessity": "required",
+      "acceptableSources": ["customer interviews", "CRM", "billing", "experiments", "procurement records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "market_structure",
+      "description": "Incumbents, substitutes, budgets, channels, regulation, concentration, and adoption friction.",
+      "necessity": "required",
+      "acceptableSources": ["market research", "competitor evidence", "procurement data", "regulatory sources", "channel interviews"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "capture_constraints",
+      "description": "Distribution capacity, product readiness, unit economics, capital requirements, and time needed to access the market.",
+      "necessity": "required",
+      "acceptableSources": ["go-to-market plan", "unit economics", "product roadmap", "capital plan", "sales data"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which customers have an urgent problem and a budget or adoption mechanism?",
+    "What is the bottom-up reachable market under explicit assumptions?",
+    "Does observed pull support the market narrative?",
+    "Which frictions prevent the company from accessing nominal TAM?",
+    "How much of the opportunity could the company plausibly capture before competitors or substitutes respond?"
+  ],
+  "positiveSignals": [
+    "Independent bottom-up and top-down estimates converge.",
+    "Customers demonstrate urgency, budget, and switching behavior.",
+    "The initial segment is reachable and can expand into a larger market.",
+    "The company identifies adoption constraints and does not count inaccessible demand."
+  ],
+  "redFlags": [
+    "TAM is a percentage of a broad global category with no purchase-unit logic.",
+    "Interest is high but budget, urgency, conversion, or retention is absent.",
+    "The plan assumes market share without a distribution mechanism.",
+    "Regulatory, implementation, or capital constraints are omitted."
+  ],
+  "disconfirmingEvidence": [
+    "A small initial market can be rational when it is a defensible beachhead into a larger adjacent market.",
+    "A large market may initially show weak revenue when infrastructure or regulation creates a legitimate timing lag.",
+    "A narrow high-value market may support a strong company even if it does not meet venture-return requirements.",
+    "Rapid market growth may attract competition and reduce eventual capture."
+  ],
+  "contraindications": [
+    "Do not score market size without fund-return context.",
+    "Do not treat macro sector growth as evidence of this company's customer pull.",
+    "Do not infer a valuation premium from nominal TAM."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define the purchasing unit and bottom-up market.",
+      "Map urgency, budget, substitutes, adoption friction, and observed pull.",
+      "Separate total, serviceable, reachable, and plausibly captured markets.",
+      "Compare market opportunity with distribution, capital, and timing constraints.",
+      "Conclude unattractive, interesting but unproven, attractive and reachable, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder TAM assertion.", "medium": "Reputable market data and customer evidence.", "high": "Independent market, budget, transaction, and customer evidence converge."},
+    "evidenceStrength": {"low": "Macro growth only.", "medium": "Bottom-up market plus some pull.", "high": "Reachable market and repeated purchase behavior are demonstrated."},
+    "evidenceCoverage": {"low": "Nominal TAM.", "medium": "Customers, pricing, and structure covered.", "high": "TAM, reachable market, demand, friction, competition, capture, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Undefined buyer or market.", "medium": "Specific initial segment.", "high": "Specific purchase unit and expansion path."},
+    "judgmentConfidence": {"low": "Narrative market claim.", "medium": "Bounded opportunity with unresolved capture.", "high": "Convergent market-pull and reachability evidence."}
+  },
+  "overlapFrameworkIds": ["MA-01", "PT-03", "SF-06", "DSV-02"],
+  "conflictingFrameworkIds": ["TOP-DOWN-TAM-SCORE", "MARKET-SIZE-ALONE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define sector-specific capture anchors.", "Backtest market forecasts.", "Separate fund-fit from company quality."],
+    "empiricalQualifications": ["Market-size forecasts are highly uncertain.", "Demand growth can attract competition and compress economics."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public material is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Add sector-specific forecast-error and adoption-friction qualifications."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

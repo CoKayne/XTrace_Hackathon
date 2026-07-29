@@ -1,0 +1,162 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-05",
+  "slug": "hiring-evidence-system",
+  "name": "Hiring Evidence System",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether hiring starts from stage-specific outcomes and uses consistent, role-relevant evidence, diligence, and human review rather than pedigree or intuition.",
+    "productLabel": "Hiring Evidence Lens — based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["automated candidate ranking", "pedigree predicting performance", "one interview method fitting every role"]
+  },
+  "attribution": {
+    "display": "Product synthesis based on Claire Hughes Johnson's public hiring discussions",
+    "scope": "product_synthesis",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["First Round Review", "LEADERS Magazine"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Define what the role must accomplish in the company's present context, gather consistent role-relevant evidence, perform reference diligence, and test learning, outcomes, agency, adaptation, and actual team-building behavior. Treat these as hypotheses for human review, not an AI personality or employability score.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-FIRSTROUND-2023",
+      "claimIds": ["SP-CLM-014", "SP-CLM-015", "SP-CLM-016", "SP-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 73-104, 115-158: research and references, team-design evidence, adaptation failures, learning, outcomes, resilience, ownership, and admitted hiring fallibility"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-LEADERS-2023",
+      "claimIds": ["SP-CLM-014", "SP-CLM-018"],
+      "locator": {"kind": "pdf_page", "value": "p. 2, lines 120-131: comprehensive hiring approach and continuity through acclimation"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-STANFORD-TEAM-2023",
+      "claimIds": ["SP-CLM-020"],
+      "locator": {"kind": "pdf_page", "value": "Transcript p. 1: hiring order depends on product-development needs; shared norms and complementary skills"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Analysis concerns the company's hiring system, not ranking identifiable applicants.",
+    "Role requirements are tied to current company outcomes and constraints.",
+    "Employment-law, privacy, accessibility, and fairness review remains human-owned."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "role_outcome_definition",
+      "description": "Role mission, stage-specific outcomes, capabilities, constraints, decision rights, and success measures.",
+      "necessity": "required",
+      "acceptableSources": ["approved role brief", "team charter", "hiring plan", "budget", "manager interview"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "structured_process_artifacts",
+      "description": "Consistent role-relevant questions or work samples, interviewer responsibilities, recorded evidence, decision owner, and exceptions.",
+      "necessity": "required",
+      "acceptableSources": ["interview plan", "rubric", "work sample", "decision record", "candidate-review record"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "reference_and_role_history",
+      "description": "Lawfully obtained references and verified examples of outcomes, team design, hiring choices, learning, and adaptation.",
+      "necessity": "recommended",
+      "acceptableSources": ["consented reference calls", "employment verification", "public work", "candidate-provided evidence"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "hiring_outcomes_and_fairness",
+      "description": "Time-to-fill, acceptance, quality outcomes, retention, performance after onboarding, candidate experience, accommodations, exceptions, and group-level process audit where lawful and sufficiently powered.",
+      "necessity": "recommended",
+      "acceptableSources": ["ATS", "HRIS", "onboarding outcomes", "candidate survey", "fairness audit"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What must this role accomplish now, and why this hire rather than another solution?",
+    "Does each interview or work sample gather evidence against that need?",
+    "What did references verify or contradict?",
+    "Are prestige, affinity, or communication style substituting for role evidence?",
+    "Does the process learn from post-hire outcomes and possible bias?"
+  ],
+  "positiveSignals": [
+    "Role outcomes and evidence criteria are defined before candidate comparison.",
+    "Different candidates receive a consistent core evidence process with appropriate accommodations.",
+    "References test specific claims and reveal counterevidence.",
+    "Post-hire outcomes revise the hiring process.",
+    "Exceptions are documented and human-reviewed."
+  ],
+  "redFlags": [
+    "Famous employer, school, investor network, or founder affinity drives the decision.",
+    "Interview feedback is vague, personality-based, or unrelated to role outcomes.",
+    "References are ceremonial or only confirm enthusiasm.",
+    "AI ranks applicants or infers traits from voice, image, name, accent, or demographic proxies.",
+    "A failed executive hire is rationalized without updating the process."
+  ],
+  "disconfirmingEvidence": [
+    "An unstructured-looking process uses a consistent, job-relevant work trial with documented review.",
+    "A process exception is a lawful accommodation.",
+    "A strong post-hire outcome came from evidence not captured by the current rubric and prompts revision.",
+    "A candidate lacks conventional pedigree but demonstrates the required outcomes."
+  ],
+  "contraindications": [
+    "Do not rank or automatically reject identifiable applicants.",
+    "Do not infer protected traits, personality, emotion, mental health, honesty, or culture fit from text, voice, or images.",
+    "Do not use credentials or prior employer prestige as a standalone signal.",
+    "Do not expose or retain hiring data without authorization.",
+    "Do not deploy without employment-law and fairness review."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define the role's current outcomes and alternatives to hiring.",
+      "Map every selection step to role-relevant evidence.",
+      "Review diligence, references, exceptions, and contradicting evidence.",
+      "Audit whether language or decisions rely on pedigree or prohibited inference.",
+      "Review post-hire outcomes only at the system level and conclude disciplined, emerging, biased or inconsistent, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Recruiting narrative or résumé impression.", "medium": "Role brief, interview evidence, and some references.", "high": "Consistent artifacts, lawful references, post-hire outcomes, and independent fairness review converge."},
+    "evidenceStrength": {"low": "Process description.", "medium": "Multiple documented role-relevant decisions.", "high": "Prospective evidence criteria and post-hire outcomes repeatedly validate or improve the system."},
+    "evidenceCoverage": {"low": "Job description only.", "medium": "Role, interviews, and some diligence.", "high": "Alternatives, role outcomes, process, references, exceptions, outcomes, accessibility, and fairness covered."},
+    "applicabilityConfidence": {"low": "No material hiring activity.", "medium": "Occasional hiring affects execution.", "high": "Scaling and leadership outcomes depend materially on repeated hiring."},
+    "judgmentConfidence": {"low": "Candidate or culture impression.", "medium": "System artifacts support a bounded judgment.", "high": "Longitudinal, privacy-safe system and outcome evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-02", "SP-06", "FD-05", "SF-02"],
+  "conflictingFrameworkIds": ["PEDIGREE-SCORE", "AI-CANDIDATE-PERSONALITY-RANKING", "UNSTRUCTURED-CULTURE-FIT"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale"],
+    "promotionRequirements": ["Review licensed hiring chapter.", "Obtain legal, privacy, accessibility, and fairness review.", "Validate system-level outcome measures."],
+    "empiricalQualifications": ["Hiring outcomes are confounded by onboarding, manager quality, role changes, and labor-market conditions.", "Small samples cannot support reliable demographic comparisons."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author interviews are paraphrased; no book interview rubric or template is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Licensed chapter review and employment-domain review are mandatory before any product use."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

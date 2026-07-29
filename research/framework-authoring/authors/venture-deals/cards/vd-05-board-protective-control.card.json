@@ -1,0 +1,300 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-05",
+  "slug": "board-protective-control",
+  "name": "Board Composition and Protective-Control Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Maps board election, observer, quorum, class-vote, and protective-provision rights into state-specific governance authority.",
+    "productLabel": "Board and Protective-Control Lens — based on Feld and Mendelson's public Venture Deals materials",
+    "notAClaimOf": [
+      "one board seat equaling company control",
+      "protective provisions being affirmative management authority",
+      "contract rights replacing fiduciary duties"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public board and protective-provision materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Represent board composition and investor vetoes as separate governance mechanisms. Determine how each seat is elected, removed, replaced, and counted; then map protective provisions to the enumerated actions, classes, thresholds, qualifiers, and sunsets they can block. Do not infer unlimited control or legal duties from contractual access.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-BOARD-2005",
+      "claimIds": [
+        "VD-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Board size, investor/common seats, mutually selected seats, CEO/founder seats, and observers"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P1-PROTECTIVE-2005",
+      "claimIds": [
+        "VD-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Protective provisions as consent rights over enumerated corporate actions"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P1-VC-RIGHTS-2012",
+      "claimIds": [
+        "VD-CLM-009",
+        "VD-CLM-014"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Board access as information/governance right alongside downside and pro-rata rights"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VD-I1-NVCA-MODELS-2026",
+      "claimIds": [
+        "VD-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Current voting agreement, certificate, and investor-rights documents and starting-point disclaimer"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_venture_backed_companies"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "united_states",
+      "other_with_counsel_mapping"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "common_equity"
+    ]
+  },
+  "requiredConditions": [
+    "Current charter, voting agreement, board records, and amendments are available.",
+    "Seat election, removal, vacancy, quorum, observer, and committee rules are explicit.",
+    "Each protective provision includes action, class, threshold, qualifier, exception, and sunset.",
+    "Contract mapping is separated from fiduciary-duty and enforceability advice."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "board_rights",
+      "description": "Board size, current directors, electing constituencies, removal/vacancy, quorum, committees, observers, and information access.",
+      "necessity": "required",
+      "acceptableSources": [
+        "charter",
+        "voting agreement",
+        "board minutes",
+        "investor rights agreement"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "protective_rights",
+      "description": "Every veto action, holder class, vote threshold, adverse-effect qualifier, exception, and sunset.",
+      "necessity": "required",
+      "acceptableSources": [
+        "charter",
+        "voting agreement",
+        "side letter",
+        "amendment"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "governance_states",
+      "description": "Proposed financing, debt, sale, amendment, dividend, repurchase, board-change, and distress states.",
+      "necessity": "required",
+      "acceptableSources": [
+        "transaction scenario",
+        "board proposal",
+        "Fund Policy"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who elects, removes, and replaces each director?",
+    "Is a seat tied to a founder, office, class, or named investor?",
+    "What can observers access and what can they not vote?",
+    "Which actions need board, stockholder, class, or investor consent?",
+    "Do thresholds or rights change after ownership falls or conversion occurs?",
+    "Could a minority class block financing, sale, debt, or governance changes?",
+    "Where might stakeholder conflicts require independent review?"
+  ],
+  "positiveSignals": [
+    "Current board records reconcile with governing documents.",
+    "Seat and veto rights have clear thresholds and sunsets.",
+    "Independent-seat selection is explicit.",
+    "Material future states are tested for approvals.",
+    "Potential conflicts are surfaced before a transaction."
+  ],
+  "redFlags": [
+    "One investor seat is labeled control without vote analysis.",
+    "Observers are modeled as directors.",
+    "Protective provisions are treated as general management power.",
+    "Class thresholds, adverse-effect qualifiers, or sunsets are omitted.",
+    "The system opines on fiduciary duty without counsel."
+  ],
+  "disconfirmingEvidence": [
+    "Ownership thresholds terminated a nomination or veto right.",
+    "A conversion or amendment changed class voting.",
+    "Quorum or committee rules change effective authority.",
+    "Side letters grant additional information or consent rights.",
+    "A conflicted board decision requires a legal process not captured by the term map."
+  ],
+  "contraindications": [
+    "Do not infer governance from cap-table ownership alone.",
+    "Do not conflate board, observer, stockholder, and class rights.",
+    "Do not provide fiduciary-duty conclusions.",
+    "Do not let the LLM calculate approval outcomes."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconcile current board and governing-document versions.",
+      "Build seat-election, observer, quorum, committee, and removal rules.",
+      "Build the protective-provision action and threshold matrix.",
+      "Run proposed governance states through the deterministic approval service.",
+      "Display blockers, conflicts, sunsets, and counsel questions."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "outputs": [
+        "board_composition_by_state",
+        "required_approvals_by_action",
+        "blocking_constituencies",
+        "rights_sunsets"
+      ],
+      "guards": [
+        "current_documents_pinned",
+        "class_and_threshold_explicit",
+        "observer_not_voter",
+        "legal_judgment_excluded"
+      ],
+      "calculationOwner": "governance_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a deck or verbal board summary exists.",
+      "medium": "Core documents exist but current board records or side rights are incomplete.",
+      "high": "Charter, voting, rights, minutes, amendments, and counsel review reconcile."
+    },
+    "evidenceStrength": {
+      "low": "No state-specific approval can be reproduced.",
+      "medium": "Most approvals are mapped with one ambiguity.",
+      "high": "All tested actions produce deterministic approval paths."
+    },
+    "evidenceCoverage": {
+      "low": "Only board names are known.",
+      "medium": "Seats and major vetoes are covered but thresholds, sunsets, or observers are partial.",
+      "high": "Seats, votes, vetoes, observers, quorum, committees, thresholds, sunsets, and conflicts are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Governance structure or jurisdiction does not map.",
+      "medium": "US venture structure exists with custom provisions.",
+      "high": "Governing documents clearly define the rights."
+    },
+    "judgmentConfidence": {
+      "low": "Only document gaps can be listed.",
+      "medium": "Likely approval paths can be shown with counsel flags.",
+      "high": "Contractual approval paths are reproducible."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SHR-08",
+    "PT-07",
+    "VCFI-09"
+  ],
+  "conflictingFrameworkIds": [
+    "BOARD-SEAT-EQUALS-CONTROL",
+    "OBSERVER-EQUALS-DIRECTOR",
+    "PROTECTIVE-RIGHTS-EQUALS-MANAGEMENT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Venture-counsel and governance-expert review.",
+      "Golden-case approval-path tests.",
+      "Current NVCA document mapping."
+    ],
+    "empiricalQualifications": [
+      "Formal rights and actual influence can differ.",
+      "Board authority remains subject to law and fiduciary duties.",
+      "Governance terms change across rounds and distress situations."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public contract doctrine is neutrally paraphrased and separated from legal advice."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define approval-state schema.",
+      "Map current NVCA voting and charter variants."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

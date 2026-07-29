@@ -1,0 +1,606 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "peter_thiel_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Peter Thiel",
+      "Blake Masters"
+    ],
+    "organizations": [
+      "Founders Fund",
+      "Thiel Fellowship"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "PT-P2-BOOK-001",
+      "title": "Zero to One: Notes on Startups, or How to Build the Future",
+      "authorOrSpeaker": [
+        "Peter Thiel",
+        "Blake Masters"
+      ],
+      "publisher": "Crown Currency / Penguin Random House",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_metadata_and_description",
+      "url": "https://www.penguinrandomhouse.com/books/234730/zero-to-one-by-peter-thiel-with-blake-masters/9780804139304/",
+      "edition": "English ebook and hardcover",
+      "publishedAt": "2014-09-16",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_metadata_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "The official description supports only high-level themes. It does not provide complete chapter text or page-level qualifiers.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-INDEX",
+      "title": "Notes Essays—Peter Thiel’s CS183: Startup—Stanford, Spring 2012",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_index",
+      "url": "https://blakemasters.tumblr.com/peter-thiels-cs183-startup",
+      "edition": "Public essay-note series",
+      "publishedAt": null,
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Masters explicitly calls these essay versions and accepts responsibility for errors and omissions. They are not verbatim Peter Thiel transcripts.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-01",
+      "title": "CS183 Class 1: The Challenge of the Future",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative",
+      "url": "https://blakemasters.tumblr.com/post/20400301508/cs183class1",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-04-03",
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Use for course structure and candidate claims; do not present as a verbatim Peter Thiel statement.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-04",
+      "title": "CS183 Class 4: The Last Mover Advantage",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative",
+      "url": "https://blakemasters.tumblr.com/post/21169325300/peter-thiels-cs183-startup-class-4-notes-essay",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-04-15",
+      "eventAt": "2012-04-11",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Supports market-definition, value-capture, moat, beachhead, and expansion claims with the Blake Masters derivative caveat.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-06",
+      "title": "CS183 Class 6: Thiel's Law",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative",
+      "url": "https://blakemasters.tumblr.com/post/21742864570/peter-thiels-cs183-startup-class-6-notes-essay",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-04-23",
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Supports path dependence and governance alignment; does not establish perpetual founder control.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-07",
+      "title": "CS183 Class 7: Follow the Money",
+      "authorOrSpeaker": [
+        "Blake Masters",
+        "course participants including other investors"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative_multi_contributor",
+      "url": "https://blakemasters.tumblr.com/post/21869934240/peter-thiels-cs183-startup-class-7-notes-essay",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-04-25",
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Contains contributions beyond Peter Thiel. Treat power-law and concentration statements as course doctrine, not exclusively personal doctrine.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-09",
+      "title": "CS183 Class 9: If You Build It, Will They Come?",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative",
+      "url": "https://blakemasters.tumblr.com/post/22405055017/peter-thiels-cs183-startup-class-9-notes-essay",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-05-04",
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Supports distribution doctrine and simplified CLV/CAC relations. Runtime calculations require more complete unit-economics definitions.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-11",
+      "title": "CS183 Class 11: Secrets",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative",
+      "url": "https://blakemasters.tumblr.com/post/22697001277/peter-thiels-cs183-startup-class-11-notes",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-05-08",
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Supports the contrarian-secret research question; it does not establish truth merely from disagreement.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-13",
+      "title": "CS183 Class 13: You Are Not a Lottery Ticket",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative",
+      "url": "https://blakemasters.tumblr.com/post/23031598829/peter-thiels-cs183-startup-class-13-notes-essay",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-05-15",
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "The notes acknowledge that the skill-versus-luck case is not airtight and empirically difficult to ground.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-14",
+      "title": "CS183 Class 14: Seeing Green",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative",
+      "url": "https://blakemasters.tumblr.com/post/23288345442/peter-thiels-cs183-startup-class-14-notes-essay",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-05-19",
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "The ten-question framework is doctrine, not a validated predictive score. The notes themselves preserve uncertainty in case examples.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-CS183-18",
+      "title": "CS183 Class 18: Founder as Victim, Founder as God",
+      "authorOrSpeaker": [
+        "Blake Masters"
+      ],
+      "publisher": "Blake Masters",
+      "sourceClass": "P2",
+      "sourceType": "course_notes_derivative",
+      "url": "https://blakemasters.tumblr.com/post/23785152389/peter-thiels-cs183-startup-class-18-notes-essay",
+      "edition": "Public essay notes",
+      "publishedAt": "2012-05-29",
+      "eventAt": "2012",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Highly narrative and vulnerable to success bias. Never operationalize unusual personality as a positive founder predictor.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P1-LECTURE-2014",
+      "title": "Lecture 5: Competition Is for Losers",
+      "authorOrSpeaker": [
+        "Peter Thiel"
+      ],
+      "publisher": "Y Combinator / Stanford How to Start a Startup",
+      "sourceClass": "P1",
+      "sourceType": "official_video_lecture",
+      "url": "https://www.youtube.com/watch?v=5_0dVHMpJlo",
+      "edition": "Official lecture recording",
+      "publishedAt": "2014-10-07",
+      "eventAt": "2014-10-07",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_video_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary runtime source for Contrarian Monopoly. Searchable third-party transcripts may aid research but must not become the published source revision.",
+      "immutableRevision": {
+        "status": "blocked_on_official_caption_capture_and_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null,
+        "videoId": "5_0dVHMpJlo",
+        "reviewedTimestampRanges": [
+          "00:20-06:54",
+          "06:54-13:17",
+          "13:17-18:21",
+          "18:21-22:52",
+          "22:52-27:55",
+          "36:59-42:43",
+          "44:54-47:30"
+        ]
+      }
+    },
+    {
+      "sourceId": "PT-P1-STANFORD-DISTRIBUTION",
+      "title": "Selling Customers: Getting Product Out",
+      "authorOrSpeaker": [
+        "Peter Thiel"
+      ],
+      "publisher": "Stanford eCorner",
+      "sourceClass": "P1",
+      "sourceType": "official_transcript",
+      "url": "https://ecorner.stanford.edu/wp-content/uploads/sites/2/2004/01/1026.pdf",
+      "edition": "Stanford eCorner transcript",
+      "publishedAt": "2004-01-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_transcript_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Direct Peter Thiel distribution material. Page-level review remains required before publication.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_page_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P1-TSINGHUA-2016",
+      "title": "Tsinghua GMBA Interview with Peter Thiel",
+      "authorOrSpeaker": [
+        "Peter Thiel"
+      ],
+      "publisher": "Tsinghua University School of Economics and Management",
+      "sourceClass": "P1",
+      "sourceType": "edited_interview",
+      "url": "https://gmba.sem.tsinghua.edu.cn/info/1080/1739.htm",
+      "edition": "Edited web interview",
+      "publishedAt": "2020",
+      "eventAt": "2016",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_interview_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Edited interview, not a raw verbatim transcript.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-FF-MANIFESTO",
+      "title": "What Happened to the Future?",
+      "authorOrSpeaker": [
+        "Bruce Gibney"
+      ],
+      "publisher": "Founders Fund",
+      "sourceClass": "P2",
+      "sourceType": "institution_manifesto",
+      "url": "https://foundersfund.com/2017/01/manifesto/",
+      "edition": "Official Founders Fund web publication",
+      "publishedAt": "2017-01-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "institution_doctrine",
+      "attributionNotes": "Authored by Bruce Gibney. Never attribute the full manifesto to Peter Thiel personally. The article acknowledges weak direct evidence for parts of its investment thesis.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-FF-PORTFOLIO",
+      "title": "Founders Fund Portfolio",
+      "authorOrSpeaker": [
+        "Founders Fund"
+      ],
+      "publisher": "Founders Fund",
+      "sourceClass": "P2",
+      "sourceType": "institution_revealed_behavior",
+      "url": "https://foundersfund.com/portfolio/",
+      "edition": "Public portfolio page",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_metadata_only",
+      "attributionScope": "revealed_behavior",
+      "attributionNotes": "Firm-level behavior only. Public portfolio composition is not Peter Thiel's personal decision set and may omit failures or private investments.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-P2-THIEL-FELLOWSHIP",
+      "title": "Thiel Fellowship",
+      "authorOrSpeaker": [
+        "Thiel Foundation"
+      ],
+      "publisher": "Thiel Fellowship",
+      "sourceClass": "P2",
+      "sourceType": "affiliated_program_revealed_preference",
+      "url": "https://thielfellowship.org/",
+      "edition": "Public program description",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_metadata_only",
+      "attributionScope": "revealed_behavior",
+      "attributionNotes": "Shows institutional support for agency and nontraditional paths. It does not make age, dropout status, or fellowship membership a causal success signal.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-E1-POWERLAW-ANGELLIST",
+      "title": "What AngelList Data Says About Power-Law Returns in Venture Capital",
+      "authorOrSpeaker": [
+        "Abe Othman"
+      ],
+      "publisher": "AngelList",
+      "sourceClass": "E1",
+      "sourceType": "platform_empirical_analysis",
+      "url": "https://www.angellist.com/blog/what-angellist-data-says-about-power-law-returns-in-venture-capital",
+      "edition": "June 17, 2020 analysis",
+      "publishedAt": "2020-06-17",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports heavy tails but challenges concentrated seven-to-ten-investment portfolios absent a demonstrated selection edge. Platform selection and unrealized marks limit generalization.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-E1-VC-SURVEY",
+      "title": "How Do Venture Capitalists Make Decisions?",
+      "authorOrSpeaker": [
+        "Paul Gompers",
+        "Will Gornall",
+        "Steven Kaplan",
+        "Ilya Strebulaev"
+      ],
+      "publisher": "NBER",
+      "sourceClass": "E1",
+      "sourceType": "working_paper_survey",
+      "url": "https://www.nber.org/papers/w22587",
+      "edition": "NBER Working Paper 22587",
+      "publishedAt": "2016",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Describes VC practice and self-reported priorities; does not establish that those priorities are causally optimal.",
+      "immutableRevision": {
+        "status": "pending_authorized_pdf_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-E1-DEAL-SELECTION",
+      "title": "Venture Deal Selection Under Noisy Information",
+      "authorOrSpeaker": [
+        "Research authors listed in NBER Working Paper 33483"
+      ],
+      "publisher": "NBER",
+      "sourceClass": "E1",
+      "sourceType": "working_paper_empirical",
+      "url": "https://www.nber.org/papers/w33483",
+      "edition": "NBER Working Paper 33483",
+      "publishedAt": "2025",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "A single-VC deal-selection sample informs predictive limitations but has limited external validity.",
+      "immutableRevision": {
+        "status": "pending_authorized_pdf_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-E1-COMPETITION-INNOVATION",
+      "title": "Competition and Innovation: An Inverted-U Relationship",
+      "authorOrSpeaker": [
+        "Philippe Aghion and coauthors"
+      ],
+      "publisher": "NBER",
+      "sourceClass": "E1",
+      "sourceType": "working_paper_empirical",
+      "url": "https://www.nber.org/papers/w9269",
+      "edition": "NBER Working Paper 9269",
+      "publishedAt": "2002",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies blanket anti-competition claims; competition's innovation effect is conditional.",
+      "immutableRevision": {
+        "status": "pending_authorized_pdf_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-E1-FOUNDER-REPLACEMENT",
+      "title": "Founder Replacement and Startup Performance",
+      "authorOrSpeaker": [
+        "Study authors listed in SSRN record 2717124"
+      ],
+      "publisher": "SSRN",
+      "sourceClass": "E1",
+      "sourceType": "empirical_working_paper",
+      "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2717124",
+      "edition": "SSRN record 2717124",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Provides a causal counterpoint to blanket founder-control rules. Exact version and identification details need final paper review.",
+      "immutableRevision": {
+        "status": "pending_authorized_pdf_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "PT-S1-FF-GOVERNANCE",
+      "title": "Founders Fund decision structure coverage",
+      "authorOrSpeaker": [
+        "Axios reporting"
+      ],
+      "publisher": "Axios",
+      "sourceClass": "S1",
+      "sourceType": "reliable_external_reporting",
+      "url": "https://www.axios.com/2020/02/19/peter-thiel-founders-fund",
+      "edition": "February 19, 2020 article",
+      "publishedAt": "2020-02-19",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_metadata_and_short_paraphrase_only",
+      "attributionScope": "external_claim",
+      "attributionNotes": "Used only to prevent over-attribution of all Founders Fund investments to Peter Thiel.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    }
+  ],
+  "excludedSources": [
+    {
+      "sourceId": "EX-PT-001",
+      "title": "Stanford The Power of Founders",
+      "reason": "The speaker is Ravi Belani, not Peter Thiel. Search results can cause misattribution."
+    },
+    {
+      "sourceId": "EX-PT-002",
+      "title": "Unauthorized Zero to One PDF mirrors",
+      "reason": "Rights and provenance cannot be verified."
+    },
+    {
+      "sourceId": "EX-PT-003",
+      "title": "Uncited AI and blog summaries",
+      "reason": "They merge source doctrine, interpretation, and hindsight."
+    },
+    {
+      "sourceId": "EX-PT-004",
+      "title": "Automatic personal attribution of Founders Fund portfolio deals",
+      "reason": "Firm decisions are multi-person and public portfolio pages do not disclose complete deal authorship."
+    }
+  ]
+}

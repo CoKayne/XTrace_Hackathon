@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-07",
+  "slug": "narrative-delta-classifier",
+  "name": "Narrative Delta Classifier",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Classifies new evidence relative to a pinned prior story as confirmation, parameter shift, new narrative branch, or narrative break.",
+    "productLabel": "Narrative Delta Lens — based on Aswath Damodaran's public news-and-narrative framework",
+    "notAClaimOf": [
+      "news having an intrinsic positive or negative class",
+      "every update requiring a new valuation",
+      "an LLM classification being self-validating"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public narrative-adjustment framework",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Compare new evidence with the exact prior story. Treat it as confirmation/no material change, a shift in existing drivers, a change that opens a materially new business path, or a break that invalidates the story. The same event can receive a different classification under a different prior story, so always retain the before and after versions.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-NEWS-2014",
+      "claimIds": [
+        "NN-CLM-014",
+        "NN-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Narrative Adjustments: The Real World Intrudes and Reactive and Proactive Valuation Responses"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-NEWS-SUPPORT",
+      "claimIds": [
+        "NN-CLM-014"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapters 11-13: Narrative Deltas, News Effects, and Macro Stories"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "NN-P1-RESETS-2015",
+      "claimIds": [
+        "NN-CLM-013",
+        "NN-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Versioned Apple, Facebook, and Twitter narratives and subsequent evidence"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "A prior narrative version exists with date, sources, drivers, and falsifiers.",
+    "The new evidence is verified and dated.",
+    "Classification is made per narrative node, not by article sentiment.",
+    "Materiality and driver consequence are evaluated separately from class."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "prior_narrative_version",
+      "description": "Pinned prior story, driver map, assumptions, milestones, and decision context.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Framework Registry",
+        "investment memo",
+        "XTrace memory",
+        "versioned report"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "new_verified_evidence",
+      "description": "Dated primary or corroborated evidence with entity resolution and source lineage.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company filing",
+        "company announcement",
+        "regulator",
+        "customer evidence",
+        "credible news source"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "driver_delta",
+      "description": "Affected story node and revenue, margin, reinvestment, risk, duration, survival, or optionality consequence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "NN-04 output",
+        "NN-05 output",
+        "analyst mapping",
+        "deterministic sensitivity"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact prior claim does the evidence touch?",
+    "Does it confirm the path, alter an existing driver, open a new branch, or invalidate the story?",
+    "Would another prior narrative classify the same evidence differently?",
+    "Which driver and scenario change, by what direction and lag?",
+    "Is the evidence material enough to update value or only the research queue?",
+    "What counterevidence could reverse this classification?"
+  ],
+  "positiveSignals": [
+    "The prior story is pinned and the affected node is explicit.",
+    "Primary evidence supports the event and entity.",
+    "The delta reaches a material driver through a causal path.",
+    "Before/after assumptions and unchanged nodes are shown.",
+    "Alternative classifications and counterevidence are retained."
+  ],
+  "redFlags": [
+    "The prior story is reconstructed after seeing the news.",
+    "Positive article tone is classified as a positive shift.",
+    "A small metric surprise is called a new narrative.",
+    "A company-level break is inferred from sector-level news.",
+    "The old version is overwritten."
+  ],
+  "disconfirmingEvidence": [
+    "The event was already included in the prior base case.",
+    "Entity, geography, product, or customer exposure is mismatched.",
+    "The evidence changes a non-value metric only.",
+    "A later correction or primary source reverses the report.",
+    "The original concern lies outside the affected node."
+  ],
+  "contraindications": [
+    "Do not classify without a pinned prior story.",
+    "Do not infer magnitude from classification alone.",
+    "Do not call a sector event a company shift without exposure.",
+    "Do not turn a delta into an Invest Candidate."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Load the exact prior narrative version.",
+      "Verify and entity-resolve the new evidence.",
+      "Identify the affected narrative node and causal driver path.",
+      "Assign confirmation, shift, change, or break with counter-classifications.",
+      "Record the version delta and route material cases to deterministic recalculation."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "allowedDeltaClasses": [
+        "confirmation_or_no_material_change",
+        "shift_existing_driver",
+        "change_new_narrative_branch",
+        "break_prior_narrative"
+      ],
+      "priorVersionRequired": true,
+      "magnitudeFromClassProhibited": true,
+      "calculationOwner": "narrative_registry_and_valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The update is a single unattributed report.",
+      "medium": "A credible source and corroborator support the evidence.",
+      "high": "Primary evidence and independent corroboration agree."
+    },
+    "evidenceStrength": {
+      "low": "Only thematic similarity exists.",
+      "medium": "The affected node and direction are supported but magnitude is uncertain.",
+      "high": "Evidence directly confirms, changes, or falsifies a material story claim."
+    },
+    "evidenceCoverage": {
+      "low": "No prior version or driver map is available.",
+      "medium": "Prior, event, and node are covered but materiality or counterevidence is partial.",
+      "high": "Prior, evidence, node, class, driver, lag, materiality, and counterevidence are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Entity or story-node relevance is unclear.",
+      "medium": "The event applies but transmission depends on an unresolved condition.",
+      "high": "The event directly touches a pinned, material story node."
+    },
+    "judgmentConfidence": {
+      "low": "Only an unclassified research alert is supportable.",
+      "medium": "A provisional delta class and next test are defensible.",
+      "high": "The delta is source-backed, material, and ready for versioned recalculation."
+    }
+  },
+  "overlapFrameworkIds": [
+    "EI-09",
+    "DSV-01",
+    "VM-07",
+    "SHR-09"
+  ],
+  "conflictingFrameworkIds": [
+    "NEWS-SENTIMENT-EQUALS-DELTA",
+    "NO-PRIOR-STORY-CLASSIFICATION",
+    "OVERWRITE-THESIS-HISTORY"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapters 11-13 review.",
+      "Backtest classification precision and materiality thresholds.",
+      "Validate private-company adaptations with VC reviewers."
+    ],
+    "empiricalQualifications": [
+      "Different reasonable prior stories can yield different classes.",
+      "Private-company news is sparse and often self-reported.",
+      "Narrative class alone does not quantify value effect."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public narrative-adjustment concepts are paraphrased; confirmation class and registry fields are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Confirm the book's full delta taxonomy and exact terminology.",
+      "Define materiality routing thresholds."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

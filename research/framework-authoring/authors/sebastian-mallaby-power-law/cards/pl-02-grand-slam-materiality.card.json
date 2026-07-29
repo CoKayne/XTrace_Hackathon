@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-02",
+  "slug": "grand-slam-materiality",
+  "name": "Grand-Slam Fund Materiality Gate",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a credible extreme-success scenario can produce enough investor proceeds to matter to this fund after dilution and follow-on.",
+    "productLabel": "Grand-Slam Materiality Gate — derived from The Power Law's public historical pattern",
+    "notAClaimOf": ["the Bull case being probable", "large markets guaranteeing large exits", "all funds requiring the same return contribution"]
+  },
+  "attribution": {
+    "display": "Product synthesis based on Sebastian Mallaby's public power-law analysis",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Penguin Press", "Council on Foreign Relations"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "For a winner-dependent venture strategy, calculate whether the deal's supported high-outcome case would contribute materially to fund returns. Preserve uncertainty: passing this gate means the upside can matter, not that it will occur.",
+  "claimTypes": ["historical_description", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P1-CFR-2022",
+      "claimIds": ["PL-CLM-001", "PL-CLM-003"],
+      "locator": {"kind": "web_section", "value": "Official summary of rare transformative successes and grand-slam search"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-P1-CWT-2022",
+      "claimIds": ["PL-CLM-001", "PL-CLM-003"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of one or two portfolio bets producing the returns"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PL-E1-EXPERIMENT-2014",
+      "claimIds": ["PL-CLM-001", "PL-CLM-004"],
+      "locator": {"kind": "pdf_page", "value": "pp. 8-11, skew and limited ability to predict ultimate winners"},
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["common_equity", "preferred_equity", "safe", "convertible_note", "all"]
+  },
+  "requiredConditions": [
+    "Fund size, ownership target, reserve policy, and return objective are explicit.",
+    "Bull scenario drivers are sourced and falsifiable.",
+    "Investor ownership and proceeds are deterministically modeled."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "bull_mechanism",
+      "description": "Causal evidence for the company reaching a scale that could create a material outcome.",
+      "necessity": "required",
+      "acceptableSources": ["customer evidence", "market structure", "unit economics", "technical evidence"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "ownership_path",
+      "description": "Initial ownership, expected dilution, follow-on, and exit ownership.",
+      "necessity": "required",
+      "acceptableSources": ["cap table", "term sheet", "portfolio model"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fund_contribution",
+      "description": "Deterministic investor proceeds and fund-return contribution by scenario.",
+      "necessity": "required",
+      "acceptableSources": ["portfolio return service"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What must become true for the company to reach the supported Bull outcome?",
+    "What ownership remains at that outcome after capital needs and dilution?",
+    "How much does the outcome contribute to this fund?",
+    "Is the contribution material enough for a winner-dependent strategy?"
+  ],
+  "positiveSignals": [
+    "Bull scale follows from a credible market and power mechanism.",
+    "Expected ownership remains meaningful after financing.",
+    "The deal can materially return the fund or a stated fraction of it.",
+    "The upside case has milestones that can be observed before full commitment."
+  ],
+  "redFlags": [
+    "The Bull case is only a TAM multiple.",
+    "Ownership assumptions ignore follow-on capital.",
+    "A spectacular company exit produces immaterial fund proceeds.",
+    "Materiality is confused with probability."
+  ],
+  "disconfirmingEvidence": [
+    "Capital intensity or dilution removes the fund-level payoff.",
+    "Market structure caps plausible company scale.",
+    "The fund lacks reserves to preserve ownership.",
+    "The same check in another opportunity provides better supported materiality."
+  ],
+  "contraindications": [
+    "Do not output Invest Candidate from this gate alone.",
+    "Do not assign Bull probability without evidence.",
+    "Do not apply to a fund whose approved strategy does not require extreme winners."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Verify fund return-engine applicability.",
+      "Describe and source the Bull mechanism.",
+      "Load deterministic ownership and fund-contribution outputs.",
+      "Stress dilution, capital needs, and exit scale.",
+      "Conclude material, potentially material, immaterial, or unsupported."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "fund_contribution_analysis",
+      "requiredOutputs": ["exit_ownership_by_scenario", "investor_proceeds_by_scenario", "gross_fund_multiple_contribution"],
+      "prohibition": "The language model must not calculate proceeds or contribution."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Bull inputs are unsourced.", "medium": "Company and market evidence support major inputs.", "high": "Primary customer, operating, market, and financing evidence converge."},
+    "evidenceStrength": {"low": "Large-outcome narrative only.", "medium": "Mechanism and model exist but dilution or scale remains uncertain.", "high": "Mechanism, ownership, capital path, and contribution survive sensitivity."},
+    "evidenceCoverage": {"low": "Exit value only.", "medium": "Exit and ownership covered; follow-on or mechanism partial.", "high": "Mechanism, scale, capital, dilution, ownership, proceeds, and fund target covered."},
+    "applicabilityConfidence": {"low": "Fund strategy is unknown.", "medium": "Winner-dependent objective is broad.", "high": "Fund policy and materiality threshold are approved."},
+    "judgmentConfidence": {"low": "No materiality conclusion.", "medium": "Potential materiality is supported.", "high": "Materiality is robust across plausible capital-path sensitivities."}
+  },
+  "overlapFrameworkIds": ["VM-01", "BVC-03", "MMI-10", "PT-03"],
+  "conflictingFrameworkIds": ["TAM-EQUALS-GRAND-SLAM", "MATERIALITY-EQUALS-PROBABILITY"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale", "portfolio_policy"],
+    "promotionRequirements": ["Validate deterministic ownership and contribution services.", "Set fund-specific materiality policy.", "Backtest scenario calibration."],
+    "empiricalQualifications": ["Tail magnitude is highly uncertain.", "Early-stage investors have limited ability to identify eventual outliers."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical pattern is paraphrased; the quantitative gate is product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define fund-specific materiality thresholds in policy, not in this card."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

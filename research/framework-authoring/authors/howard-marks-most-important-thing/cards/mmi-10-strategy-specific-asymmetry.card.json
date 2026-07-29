@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-10",
+  "slug": "strategy-specific-asymmetry",
+  "name": "Strategy-Specific Asymmetry",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Defines attractive asymmetry relative to the fund's actual return engine, preserving the conflict between loss-minimizing and winner-dependent strategies.",
+    "productLabel": "Strategy-Specific Asymmetry — based on Howard Marks's public materials with an explicit VC boundary",
+    "notAClaimOf": ["one universal defensive posture", "upside forecasts being reliable", "a large TAM proving asymmetric payoff"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public asymmetry materials; venture power-law reconciliation is product synthesis",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Judge whether potential gain is disproportionate to potential loss only after defining the fund's strategy. A credit-like or defensive mandate may emphasize loss minimization, whereas a venture fund may require rare extreme winners and must not eliminate the risks that create them.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-WINNERS-2023",
+      "claimIds": ["MMI-CLM-008", "MMI-CLM-009", "MMI-CLM-019", "MMI-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Not Risk Avoidance; aspirational strategies; alpha and asymmetry"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-MATTERS-2022",
+      "claimIds": ["MMI-CLM-009", "MMI-CLM-017"],
+      "locator": {"kind": "web_section", "value": "A Special Word in Closing: Asymmetry"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "MMI-P1-RISK-2024",
+      "claimIds": ["MMI-CLM-008", "MMI-CLM-019"],
+      "locator": {"kind": "web_section", "value": "The Risk of Not Taking Risk"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The fund's return engine and portfolio strategy are explicitly classified.",
+    "Investor payoff is modeled across Bear, Base, and Bull with dilution and follow-on.",
+    "Company upside evidence is separated from probability assumptions."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "fund_return_engine",
+      "description": "Fund policy showing whether returns depend on capital preservation, many moderate winners, rare extreme winners, or a stated combination.",
+      "necessity": "required",
+      "acceptableSources": ["fund policy", "portfolio construction model", "LP materials"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "payoff_distribution",
+      "description": "Deterministic investor proceeds and fund contribution across scenarios.",
+      "necessity": "required",
+      "acceptableSources": ["valuation service", "waterfall model", "portfolio model"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "upside_mechanism",
+      "description": "Evidence for the causal mechanism capable of producing a large outcome.",
+      "necessity": "required",
+      "acceptableSources": ["customer evidence", "unit economics", "market structure", "power analysis"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What kind of payoff distribution must this fund capture?",
+    "Does this deal offer upside large enough to matter after dilution and reserves?",
+    "Which downside is acceptable because it purchases necessary upside, and which is avoidable?",
+    "Would a defensive control destroy the venture return mechanism?",
+    "Would an aggressive posture exceed the fund's actual risk capacity?"
+  ],
+  "positiveSignals": [
+    "The deal's payoff shape matches the fund's declared return engine.",
+    "A credible causal mechanism supports meaningful Bull upside.",
+    "Downside is bounded at the fund level even if company-level loss is possible.",
+    "Terms and ownership preserve participation in the required outcome."
+  ],
+  "redFlags": [
+    "A large TAM is used as a payoff distribution.",
+    "The fund claims venture power law but sizes ownership too low to matter.",
+    "Loss avoidance removes the only route to exceptional upside.",
+    "Aggressiveness is justified without reserve, concentration, or survival analysis."
+  ],
+  "disconfirmingEvidence": [
+    "Even the Bull case contributes too little to fund return.",
+    "Future dilution or preferences remove upside participation.",
+    "The fund cannot survive correlated losses or required follow-ons.",
+    "A lower-risk alternative produces similar fund contribution."
+  ],
+  "contraindications": [
+    "Do not average defensive and winner-seeking lenses into one score.",
+    "Do not infer probability from scenario labels.",
+    "Do not call an investment asymmetric without investor-level payoff calculation."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Classify the fund return engine from approved policy.",
+      "Load deterministic investor and fund payoff distributions.",
+      "Test causal evidence for the upside mechanism.",
+      "Identify avoidable downside and upside-destroying controls.",
+      "Conclude strategy-aligned asymmetry, insufficient upside, excessive downside, or unresolved conflict."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "portfolio_payoff_distribution",
+      "requiredOutputs": ["investor_proceeds_by_scenario", "fund_contribution_by_scenario", "ownership_path", "capital_at_risk"],
+      "prohibition": "The language model must not invent probabilities, proceeds, or fund contribution."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Fund strategy or deal economics are assumed.", "medium": "Approved policy and modeled terms are available.", "high": "Fund policy, executed economics, and primary upside evidence converge."},
+    "evidenceStrength": {"low": "Upside is narrative only.", "medium": "Payoff is modeled but causal upside evidence is partial.", "high": "Strategy, payoff, causal upside, downside, and sensitivities are supported."},
+    "evidenceCoverage": {"low": "Company upside only.", "medium": "Investor payoff and policy covered; portfolio effects partial.", "high": "Company, security, ownership, follow-on, fund contribution, and alternatives are complete."},
+    "applicabilityConfidence": {"low": "Fund return engine is unknown.", "medium": "Strategy is broad but usable.", "high": "Return engine, constraints, stage, security, and horizon are explicit."},
+    "judgmentConfidence": {"low": "No asymmetry claim is supportable.", "medium": "A conditional strategy fit is supportable.", "high": "Investor-level asymmetry is supported and robust to sensitivities."}
+  },
+  "overlapFrameworkIds": ["VM-01", "BVC-02", "BVC-03", "VDCF-05", "MMI-04"],
+  "conflictingFrameworkIds": ["UNIVERSAL-DEFENSIVENESS", "TAM-EQUALS-ASYMMETRY"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale", "portfolio_policy"],
+    "promotionRequirements": ["Validate fund-return-engine classification.", "Integrate deterministic payoff and portfolio services.", "Backtest across venture strategies."],
+    "empiricalQualifications": ["Early-stage payoff probabilities are highly uncertain.", "Fund return may be dominated by a few outcomes that cannot be identified reliably ex ante."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Marks's public asymmetry concepts are paraphrased; the venture power-law boundary is explicitly product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Validate the fund-return-engine taxonomy before runtime use."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

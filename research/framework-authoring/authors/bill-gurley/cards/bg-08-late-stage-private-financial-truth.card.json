@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-08",
+  "slug": "late-stage-private-financial-truth",
+  "name": "Late-Stage Private Financial Truth",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Applies heightened verification to mature private-company financial claims, unit economics, controls, and preferred-stack outcomes.",
+    "productLabel": "Late-Stage Private Financial Truth Lens — based on Bill Gurley's public writing",
+    "notAClaimOf": ["a large round being equivalent to an IPO", "private data being S-1 quality", "stated ownership equaling economic payout"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd writing",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Do not infer public-company readiness or data quality from a private valuation or round size. Reconcile financial presentation to ordinary accounting, verify true contribution economics and controls, and calculate the preferred-stock waterfall before comparing price or ownership.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-LATE-STAGE-2015",
+      "claimIds": ["BG-CLM-022", "BG-CLM-023", "BG-CLM-024"],
+      "locator": {"kind": "web_section", "value": "Lines 12-34: private versus IPO scrutiny, revenue presentation, contribution margin, burn, and preferred-stack complexity"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-RED-FLAGS-2022",
+      "claimIds": ["BG-CLM-028", "BG-CLM-029"],
+      "locator": {"kind": "web_section", "value": "Sections 2-5: board, control, audit, and non-reconcilable financial presentation"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["series_b", "growth", "pre_ipo"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["preferred_equity", "convertible_note", "safe", "venture_debt", "all"]
+  },
+  "requiredConditions": [
+    "The company has material revenue, complex financing, or a mature private valuation.",
+    "Accounting and capitalization documents are available.",
+    "Verification depth is proportionate to maturity and check size."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "financial_reconciliation",
+      "description": "GAAP/IFRS or local statements, management metrics, audit status, cash, gross/net revenue, contra-revenue, and contribution costs.",
+      "necessity": "required",
+      "acceptableSources": ["audited statements", "general ledger", "bank records", "metric dictionary", "revenue memo"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "controls_and_risks",
+      "description": "Board oversight, finance function, internal controls, audit findings, security, compliance, legal contingencies, and remediation.",
+      "necessity": "required",
+      "acceptableSources": ["board materials", "audit reports", "control matrix", "legal review", "incident records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "capital_stack",
+      "description": "Fully diluted cap table, preferences, participation, seniority, conversion, debt, warrants, and side letters.",
+      "necessity": "required",
+      "acceptableSources": ["charter", "cap table", "financing documents", "side letters", "debt agreements"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "business_model_proof",
+      "description": "Full contribution economics, retention, concentration, cash consumption, and path to sustainable operations.",
+      "necessity": "required",
+      "acceptableSources": ["cohorts", "financial model", "customer records", "cash forecast", "unit economics"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which financial figures reconcile to ordinary accounting and cash?",
+    "What has and has not been independently audited?",
+    "Does true contribution margin support the business model?",
+    "What payout does the proposed security receive across exit values?",
+    "Which public-company-like control or disclosure gap is material at this stage?"
+  ],
+  "positiveSignals": [
+    "Management metrics reconcile to financial statements and cash.",
+    "Audits and controls are proportionate to maturity.",
+    "Contribution economics include all variable costs.",
+    "The complete cap table and waterfall are reproducible."
+  ],
+  "redFlags": [
+    "A deck metric cannot reconcile to standard accounting.",
+    "Gross volume is valued as net revenue.",
+    "The company delays ordinary audit or control requests without a credible reason.",
+    "Headline ownership ignores preferences, debt, or side terms."
+  ],
+  "disconfirmingEvidence": [
+    "An early private company need not have IPO-grade infrastructure.",
+    "Non-GAAP operating metrics can be useful when fully reconciled.",
+    "Preferred protection can rationally address stage-specific risk.",
+    "A control gap can be remediable if owned, time-bounded, and verified."
+  ],
+  "contraindications": [
+    "Do not demand public-company bureaucracy from an early startup.",
+    "Do not accept maturity claims based on round size.",
+    "Do not let the language model calculate waterfalls or accounting reconciliations."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Classify company maturity and required verification depth.",
+      "Reconcile accounting, management metrics, and cash.",
+      "Review controls, audit, contribution economics, and risks.",
+      "Compute fully diluted and waterfall outcomes deterministically.",
+      "Conclude verified for stage, material gaps, economic misstatement risk, control risk, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Accounting reconciliation, contribution, cap table, and waterfall calculations must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Fundraising deck.", "medium": "Internal ledger and legal documents.", "high": "Audited statements, cash, controls, contracts, and complete financing documents reconcile."},
+    "evidenceStrength": {"low": "Round-size signal.", "medium": "Reconciled internal evidence.", "high": "Independent financial, control, and legal verification."},
+    "evidenceCoverage": {"low": "Headline metrics.", "medium": "Financials and cap table.", "high": "Accounting, cash, controls, unit economics, risks, terms, and waterfall covered."},
+    "applicabilityConfidence": {"low": "Very early company.", "medium": "Material revenue or financing complexity.", "high": "Mature private underwriting depends on verified data and structure."},
+    "judgmentConfidence": {"low": "Private-market reputation.", "medium": "Bounded verified evidence.", "high": "Independent reconciliation supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["BG-01", "BG-10", "VD-01", "VD-03", "VCFI-09", "DSV-10"],
+  "conflictingFrameworkIds": ["ROUND-SIZE-AS-MATURITY", "HEADLINE-OWNERSHIP-AS-PAYOUT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Obtain accounting and legal review.", "Implement reconciliation and waterfall services.", "Define stage-proportionate control anchors."],
+    "empiricalQualifications": ["Private-company evidence quality varies.", "IPO readiness is not identical to investment quality."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public author material is neutrally paraphrased."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Obtain professional accounting and legal review."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

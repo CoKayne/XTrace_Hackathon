@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-05",
+  "slug": "acquisition-effect",
+  "name": "Network Acquisition-Effect Evidence",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether existing network participation causes efficient new-user acquisition rather than merely correlating with viral or paid growth.",
+    "productLabel": "Acquisition-Effect Lens — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["virality equaling network effects", "organic growth being free", "referrals proving retained value"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Measure how existing network nodes expose, invite, or transact with prospective participants and whether that loop creates activated, retained users at improving marginal cost. Keep viral acquisition separate from the value effect that makes the network useful.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-011", "CSP-CLM-014", "CSP-CLM-016"],
+      "locator": {"kind": "pdf_page", "value": "Part IV, Chapters 18-21, PDF pp. 198-237"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-METRICS-2018",
+      "claimIds": ["CSP-CLM-002", "CSP-CLM-011", "CSP-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Organic growth, virality distinction, and atomic-unit measurement"},
+      "attributionScope": "course_notes_derivative",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "CSP-01 applicability is satisfied.",
+    "Acquisition source, activation, and retention can be traced.",
+    "Network-mediated and non-network acquisition are separable."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "acquisition_loops",
+      "description": "Existing-node action, prospective-node exposure, conversion, activation, and repeat loop.",
+      "necessity": "required",
+      "acceptableSources": ["event telemetry", "referral graph", "transaction graph", "invite data"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "growth_accounting",
+      "description": "Paid, organic, viral, sales, reactivation, churn, CAC, and retained-user economics.",
+      "necessity": "required",
+      "acceptableSources": ["growth accounting", "cohort report", "marketing spend"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "local_effect",
+      "description": "Acquisition efficiency by atomic-network density and stage.",
+      "necessity": "recommended",
+      "acceptableSources": ["unit-level cohort data", "density experiment"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which existing-node behavior creates a new participant?",
+    "Does the acquired participant activate and retain?",
+    "Does marginal acquisition improve as relevant density rises?",
+    "Could the same loop exist without increasing network value?"
+  ],
+  "positiveSignals": [
+    "A repeatable node-mediated loop produces retained participants.",
+    "Organic or viral share rises within maturing atomic networks.",
+    "CAC or payback improves without hidden subsidy.",
+    "The loop reinforces the core interaction rather than vanity sharing."
+  ],
+  "redFlags": [
+    "Referral signups are counted without activation or retention.",
+    "Paid acquisition is relabeled network growth.",
+    "A viral feature has no user-value dependency.",
+    "Global organic growth hides local cold starts."
+  ],
+  "disconfirmingEvidence": [
+    "Referral cohorts retain worse than paid cohorts.",
+    "Acquisition efficiency does not vary with network density.",
+    "Invites are incentive-driven and stop when rewards end.",
+    "Most growth comes from a non-network distribution channel."
+  ],
+  "contraindications": [
+    "Do not infer network effect from K-factor alone.",
+    "Do not count unactivated invites as nodes.",
+    "Do not merge acquisition and engagement evidence."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Map each acquisition loop from existing to retained new node.",
+      "Reconcile source-level growth accounting.",
+      "Compare efficiency by density and cohort.",
+      "Test incentive and non-network alternatives.",
+      "Conclude demonstrated, emerging, viral-only, or unsupported."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "network_growth_accounting",
+      "requiredOutputs": ["source_mix", "activation_by_source", "retention_by_source", "cac_by_source", "density_acquisition_relation"],
+      "prohibition": "The language model must not calculate acquisition metrics."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Campaign summary only.", "medium": "Event and cohort data support loops.", "high": "Auditable graph, spend, activation, retention, and density data converge."},
+    "evidenceStrength": {"low": "Invites or traffic only.", "medium": "Retained organic acquisition exists but density causality is unclear.", "high": "Node-mediated loop and improving density economics are evidenced."},
+    "evidenceCoverage": {"low": "Signups only.", "medium": "Source, activation, retention covered; cost or local unit partial.", "high": "Loop, source, activation, retention, CAC, subsidy, density, and counterchannel complete."},
+    "applicabilityConfidence": {"low": "No participant-mediated acquisition.", "medium": "Some network acquisition exists.", "high": "Acquisition effect is material to growth."},
+    "judgmentConfidence": {"low": "Unsupported.", "medium": "Emerging acquisition effect.", "high": "Repeatable, retained, density-linked acquisition effect."}
+  },
+  "overlapFrameworkIds": ["CSP-04", "CSP-06", "CSP-07"],
+  "conflictingFrameworkIds": ["VIRALITY-EQUALS-NETWORK", "INVITES-EQUALS-RETAINED-NODES"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate growth-accounting service.", "Require retained-user cohorts.", "Test density link."],
+    "empiricalQualifications": ["Acquisition loops depend on host platforms and incentives.", "Attribution across channels is imperfect."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine and affiliated metrics are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define retained-node windows by network archetype."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

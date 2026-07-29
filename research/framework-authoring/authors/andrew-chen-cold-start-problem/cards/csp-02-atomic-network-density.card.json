@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-02",
+  "slug": "atomic-network-density",
+  "name": "Atomic Network and Minimum Viable Density",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Defines the smallest stable interaction unit and tests whether it produces recurring value before aggregate scale is credited.",
+    "productLabel": "Atomic-Network Lens — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["one universal magic number", "global users satisfying local liquidity", "small communities automatically scaling"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Identify the smallest bounded network in which the right participants repeatedly achieve the core interaction. Measure density and successful outcomes inside that unit, then test stability and reproducibility instead of relying on total users.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-005", "CSP-CLM-006", "CSP-CLM-009", "CSP-CLM-010"],
+      "locator": {"kind": "pdf_page", "value": "Chapters 5-10, PDF pp. 60-126; atomic network and magic moments"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-KICKSTART-2021",
+      "claimIds": ["CSP-CLM-005", "CSP-CLM-006"],
+      "locator": {"kind": "video_timestamp", "value": "Show notes: atomic networks and minimum viable community around 6:36"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "CSP-P1-METRICS-2018",
+      "claimIds": ["CSP-CLM-015", "CSP-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Atomic-unit organic share, cold start, and local geography reset"},
+      "attributionScope": "course_notes_derivative",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "CSP-01 applicability is satisfied.",
+    "A bounded network unit can be identified.",
+    "Core success is observable within that unit."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "atomic_unit",
+      "description": "Unit boundary, participant roles, time window, and core interaction.",
+      "necessity": "required",
+      "acceptableSources": ["product design", "transaction schema", "user research", "telemetry"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "density_outcomes",
+      "description": "Active participants, relevant edges, successful interactions, latency, fill/match rate, or equivalent within each unit.",
+      "necessity": "required",
+      "acceptableSources": ["product telemetry", "marketplace data", "collaboration analytics"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "stability",
+      "description": "Recurring use and retention after launch support or subsidy is reduced.",
+      "necessity": "required",
+      "acceptableSources": ["cohort data", "subsidy experiment", "retention report"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is the smallest network that can deliver recurring core value?",
+    "Which participants and edges must be present simultaneously?",
+    "At what density do unsuccessful interactions materially fall?",
+    "Does the unit remain active after launch support is reduced?"
+  ],
+  "positiveSignals": [
+    "Atomic boundary matches how users actually interact.",
+    "Core success and retention improve with relevant density.",
+    "Multiple atomic units reach similar operating thresholds.",
+    "Stability persists after temporary subsidy declines."
+  ],
+  "redFlags": [
+    "The atomic unit is chosen after seeing favorable metrics.",
+    "Total MAU hides low local liquidity.",
+    "A one-time event is called a stable network.",
+    "The threshold is copied from another product."
+  ],
+  "disconfirmingEvidence": [
+    "More participants do not improve successful interactions.",
+    "The unit collapses without continuous subsidy.",
+    "Quality deteriorates as density rises.",
+    "Different user segments require incompatible atomic boundaries."
+  ],
+  "contraindications": [
+    "Do not average local networks before checking dispersion.",
+    "Do not use a universal participant count.",
+    "Do not infer replication from one successful atomic network."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define the atomic boundary before analyzing metrics.",
+      "Compute density, successful interaction, and retention by unit.",
+      "Test threshold sensitivity and subsidy dependence.",
+      "Compare successful and failed units.",
+      "Conclude stable atomic network, emerging, unsupported, or mis-specified."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "atomic_network_analytics",
+      "requiredOutputs": ["unit_density", "interaction_success_rate", "time_to_value", "unit_retention", "subsidy_dependence", "dispersion"],
+      "prohibition": "The language model must not calculate or choose a favorable threshold."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Atomic unit is founder-defined without telemetry.", "medium": "Telemetry supports unit behavior.", "high": "Auditable unit-level cohorts and experiments support it."},
+    "evidenceStrength": {"low": "One unit and one period.", "medium": "Several units show density/value association.", "high": "Repeated units and subsidy tests support a stable mechanism."},
+    "evidenceCoverage": {"low": "Participant count only.", "medium": "Density and outcomes covered; stability partial.", "high": "Boundary, roles, edges, density, success, retention, subsidy, and failures complete."},
+    "applicabilityConfidence": {"low": "No stable bounded unit.", "medium": "Unit is plausible but heterogeneous.", "high": "Unit maps cleanly to product value and data."},
+    "judgmentConfidence": {"low": "Atomic network unproven.", "medium": "Emerging minimum viable density.", "high": "Stable and repeatable atomic-network evidence."}
+  },
+  "overlapFrameworkIds": ["CSP-01", "CSP-04", "CSP-06"],
+  "conflictingFrameworkIds": ["GLOBAL-MAU-EQUALS-LIQUIDITY", "UNIVERSAL-MAGIC-NUMBER"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate archetype-specific analytics.", "Pre-register thresholds.", "Test failed as well as successful units."],
+    "empiricalQualifications": ["Thresholds change with product, geography, and user mix.", "Density may correlate with latent market quality."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author-hosted book and public materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define atomic-unit versioning when product behavior changes."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

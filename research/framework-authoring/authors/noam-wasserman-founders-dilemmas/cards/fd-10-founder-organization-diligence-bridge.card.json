@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-10",
+  "slug": "founder-organization-diligence-bridge",
+  "name": "Founder and Organization Diligence Bridge",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Converts independent founder-dilemma findings into auditable diligence requests and bounded investment implications without an opaque founder score.",
+    "productLabel": "Founder-Organization Diligence Bridge — product synthesis from Noam Wasserman's public work",
+    "notAClaimOf": ["Noam Wasserman endorsing an investment score", "team risk determining the whole investment", "population statistics predicting one company"]
+  },
+  "attribution": {
+    "display": "Product synthesis from Noam Wasserman's public Founder's Dilemmas materials",
+    "scope": "product_synthesis",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School", "Princeton University Press"],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Run the timing, cofounder, role, equity, hiring, investor, succession, and goal lenses independently. Preserve conflicting evidence, identify which issue can affect the next operating or financing milestone, and translate it into a concrete diligence request, governance condition, hiring milestone, or watch item—not a personality score or automatic valuation penalty.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-KAUFFMAN-2016",
+      "claimIds": ["FD-CLM-001", "FD-CLM-002", "FD-CLM-003", "FD-CLM-024", "FD-CLM-025"],
+      "locator": {"kind": "web_section", "value": "Full learning path and transcripts"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P2-HBS-COURSE-2011",
+      "claimIds": ["FD-CLM-001", "FD-CLM-002", "FD-CLM-024"],
+      "locator": {"kind": "web_section", "value": "Course structure from pre-founding through successors"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P1-SMJ-2015",
+      "claimIds": ["FD-CLM-022", "FD-CLM-023"],
+      "locator": {"kind": "chapter_page", "value": "Abstract, empirical scope, results, and limitations; DOI 10.1002/smj.2478"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "FD-P2-GBOOKS-2012",
+      "claimIds": ["FD-CLM-002", "FD-CLM-025"],
+      "locator": {"kind": "chapter_page", "value": "Limited-preview contents and Conclusion, p. 329 onward; full synthesis pending licensed review"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "late_stage"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "FD-01 is applicable.",
+    "Relevant cards FD-02 through FD-09 have independent outputs.",
+    "Privacy, consent, legal, and access restrictions are respected.",
+    "Market, product, finance, valuation, and legal lenses remain separate."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "independent_founder_lens_outputs",
+      "description": "Evidence, judgments, counterevidence, unknowns, and next requests from applicable FD cards.",
+      "necessity": "required",
+      "acceptableSources": ["validated FD-02 through FD-09 outputs"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "materiality_link",
+      "description": "Explicit path from each founder/team issue to an operating, financing, governance, or exit milestone.",
+      "necessity": "required",
+      "acceptableSources": ["operating plan", "financing plan", "governance analysis", "scenario memo"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "remediation_and_conditions",
+      "description": "Owner, action, timing, verification, and consequence for each material issue.",
+      "necessity": "required",
+      "acceptableSources": ["diligence request", "board plan", "hiring milestone", "closing condition", "watch item"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which founder/team issue can materially affect the next milestone?",
+    "What evidence supports and contradicts that issue?",
+    "Can the issue be reduced through documentation, hiring, role design, governance, or financing terms?",
+    "Which unknown would change the investment recommendation?"
+  ],
+  "positiveSignals": [
+    "Independent lenses converge on adaptive behavior and aligned current arrangements.",
+    "Material gaps have named owners, dates, verification, and realistic remedies.",
+    "Contradictory founder and stakeholder evidence is preserved.",
+    "The investment report distinguishes observed facts, framework judgments, and conditions."
+  ],
+  "redFlags": [
+    "A single founder score hides different issues and confidence levels.",
+    "Population statistics are converted into a valuation discount.",
+    "Sensitive personal data appears without necessity or consent.",
+    "A material governance or departure issue has no enforceable resolution path."
+  ],
+  "disconfirmingEvidence": [
+    "A flagged structural issue has immaterial effect on the next milestone.",
+    "Independent records contradict an adverse founder narrative.",
+    "A strong team does not offset weak market, product, or valuation evidence.",
+    "A governance remedy changes legal rights but not actual operating behavior."
+  ],
+  "contraindications": [
+    "Do not create or display an opaque founder-quality score.",
+    "Do not infer protected or psychological characteristics.",
+    "Do not let this bridge calculate valuation or make the final deterministic decision.",
+    "Do not collapse disagreement across FD cards."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Load applicable FD card outputs without averaging them.",
+      "Map each supported issue to a specific company milestone.",
+      "Preserve counterevidence and privacy restrictions.",
+      "Generate bounded diligence requests, conditions, or watch items.",
+      "Pass only verified legal and cap-table facts to deterministic services."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "founder_organization_diligence_bridge",
+      "requiredOutputs": ["applicable_lens_results", "materiality_links", "unresolved_conflicts", "diligence_requests", "conditions_and_owners", "privacy_redactions"],
+      "prohibition": "The language model must not calculate a founder score, valuation adjustment, legal outcome, or final investment decision."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder narrative or summary score.", "medium": "Several lenses have mixed records.", "high": "Contemporaneous documents, independent references, and stakeholder evidence converge."},
+    "evidenceStrength": {"low": "Generic concern.", "medium": "Specific issue is linked to a milestone.", "high": "Repeated behavior or enforceable terms demonstrate the issue and remedy."},
+    "evidenceCoverage": {"low": "One team dimension.", "medium": "Most material dimensions with gaps.", "high": "All applicable lenses, conflicts, materiality, privacy, and remediation covered."},
+    "applicabilityConfidence": {"low": "Founder-team issues immaterial.", "medium": "One material issue.", "high": "Multiple issues materially affect execution or governance."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Bounded watch or condition.", "high": "Evidence-backed strength, risk, and action plan."}
+  },
+  "overlapFrameworkIds": ["FD-01", "FD-02", "FD-03", "FD-04", "FD-05", "FD-06", "FD-07", "FD-08", "FD-09", "SF-10", "VM-09"],
+  "conflictingFrameworkIds": ["OPAQUE-FOUNDER-SCORE", "TEAM-STRENGTH-OFFSETS-ALL-OTHER-RISK"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Complete licensed-book synthesis review.", "Validate privacy and materiality protocols.", "Backtest diligence actions without founder-score leakage."],
+    "empiricalQualifications": ["Framework judgments do not establish causal effect on returns.", "Remediation effectiveness depends on enforcement and behavior."]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The bridge is product synthesis and requires licensed-book fidelity review before publication."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review full book conclusion and validate privacy-safe runtime behavior."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

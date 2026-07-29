@@ -1,0 +1,515 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "venture_deals_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "John Wiley & Sons",
+      "Venture Deals",
+      "Techstars",
+      "National Venture Capital Association"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "VD-P2-BOOK-2019",
+      "title": "Venture Deals: Be Smarter Than Your Lawyer and Venture Capitalist",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_catalog_record",
+      "url": "https://uat.store.wiley.com/en-us/venture-deals-be-smarter-than-your-lawyer-and-venture-capitalist-4th-edition-p-9781119594840",
+      "edition": "Fourth edition; August 2019; hardcover ISBN 978-1-119-59482-6; ebook ISBN 978-1-119-59484-0; 368 catalog pages",
+      "publishedAt": "2019-08",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_metadata_and_public_description_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Canonical publisher metadata and high-level scope: fundraising, term sheets, economics, control, financing instruments, negotiation, and legal procedure.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P2-EXCERPT-2019",
+      "title": "Venture Deals, Fourth Edition — Official Excerpt",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_excerpt",
+      "url": "https://catalogimages.wiley.com/images/db/pdf/9781119594826.excerpt.pdf",
+      "edition": "Fourth-edition publisher excerpt",
+      "publishedAt": "2019",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_excerpt_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports selected public excerpt content and edition identity; exact page locators remain pending PDF hash and visual review.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P2-CONTENTS-2019",
+      "title": "Venture Deals, Fourth Edition — Contents",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Wiley / O'Reilly catalog",
+      "sourceClass": "P2",
+      "sourceType": "licensed_catalog_table_of_contents",
+      "url": "https://www.oreilly.com/library/view/venture-deals-4th/9781119594826/ftoc.xhtml",
+      "edition": "Fourth-edition contents record accessed July 28, 2026",
+      "publishedAt": "2019",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_table_of_contents_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports chapter and section architecture only: economics, control, other terms, convertible debt, cap table, venture debt, fund mechanics, negotiation, term-sheet rationale, and legal topics.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-COURSE-2026",
+      "title": "Venture Deals Course",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Techstars faculty"
+      ],
+      "publisher": "Techstars",
+      "sourceClass": "P1",
+      "sourceType": "official_book_based_course",
+      "url": "https://venturedeals.techstars.com/courses/venture-deals-summer-course-2026",
+      "edition": "Summer 2026 public course outline",
+      "publishedAt": "2026",
+      "eventAt": "2026",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_course_outline_neutral_paraphrase_only",
+      "attributionScope": "institution_doctrine",
+      "attributionNotes": "Supports the official pedagogical sequence: valuation, cap tables, term-sheet economics, control provisions, other terms, and negotiation.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-WRAP-2005",
+      "title": "Term Sheet Series Wrap Up",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_series_index",
+      "url": "https://feld.com/archives/2005/08/term-sheet-series-wrap-up/",
+      "edition": "Author series index, August 23, 2005",
+      "publishedAt": "2005-08-23",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Indexes the authors' public term-sheet series and preserves their disclaimer that it is not legal advice.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-PRICE-2005",
+      "title": "Term Sheet: Price",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/01/term-sheet-price/",
+      "edition": "Public article, January 3, 2005",
+      "publishedAt": "2005-01-03",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports economics/control classification, pre/post-money, fully diluted definitions, option-pool effects, and warrant complexity.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-LIQUIDATION-2004",
+      "title": "Liquidation Preferences",
+      "authorOrSpeaker": [
+        "Brad Feld"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_direct_article",
+      "url": "https://feld.com/archives/2004/07/liquidation-preferences/",
+      "edition": "Public article, July 15, 2004",
+      "publishedAt": "2004-07-15",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports preference versus as-converted choice, downside protection, exit consideration ambiguity, and typical IPO conversion.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-PARTICIPATION-2004",
+      "title": "To Participate or Not (Participating Preferences)",
+      "authorOrSpeaker": [
+        "Brad Feld"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_direct_article",
+      "url": "https://feld.com/archives/2004/08/to-participate-or-not-participating-preferences/",
+      "edition": "Public article, August 24, 2004",
+      "publishedAt": "2004-08-24",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports participation, caps, outcome sensitivity, and multi-round interactions; not a claim that any structure is universally fair.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-CONVERSION-2005",
+      "title": "Term Sheet: Conversion",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/04/term-sheet-conversion/",
+      "edition": "Public article, April 10, 2005",
+      "publishedAt": "2005-04-10",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports voluntary preferred-to-common conversion, conversion-rate adjustments, and typical qualified-IPO conversion.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-ANTIDILUTION-2005",
+      "title": "Term Sheet: Anti-Dilution",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/03/term-sheet-anti-dilution/",
+      "edition": "Public article, March 21, 2005",
+      "publishedAt": "2005-03-21",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports full-ratchet and weighted-average distinctions, broad/narrow denominator definitions, carve-outs, waivers, and conversion-price mechanics.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-BOARD-2005",
+      "title": "Term Sheet: Board of Directors",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/01/term-sheet-board-of-directors/",
+      "edition": "Public article, January 11, 2005",
+      "publishedAt": "2005-01-11",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports board election mechanics, constituency balance, CEO/founder seat distinctions, independent seats, and observers.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-PROTECTIVE-2005",
+      "title": "Term Sheet: Protective Provisions",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/01/term-sheet-protective-provisions/",
+      "edition": "Public article, January 18, 2005",
+      "publishedAt": "2005-01-18",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports protective provisions as investor veto rights over enumerated material company actions.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-DRAG-2005",
+      "title": "Term Sheet: Drag Along",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/02/term-sheet-drag-along/",
+      "edition": "Public article, February 6, 2005",
+      "publishedAt": "2005-02-06",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports drag-along purpose, threshold and class-vote sensitivity, holdout risk, and below-preference exit conflicts.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-VESTING-2005",
+      "title": "Term Sheet: Vesting",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/05/term-sheet-vesting/",
+      "edition": "Public article, May 10, 2005",
+      "publishedAt": "2005-05-10",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports vesting, repurchase, founder credit, option-pool return, and single/double-trigger acceleration concepts. Historical conventions are not current universal defaults.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-PAYTOPLAY-2005",
+      "title": "Term Sheet: Pay-to-Play",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/03/term-sheet-pay-to-play/",
+      "edition": "Public article, March 22, 2005",
+      "publishedAt": "2005-03-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports future-financing participation conditions and possible preferred-to-common conversion consequences.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-VC-RIGHTS-2012",
+      "title": "VC Rights: Up, Down, and Know What Is Going On",
+      "authorOrSpeaker": [
+        "Brad Feld"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_direct_article",
+      "url": "https://feld.com/archives/2012/05/vc-rights-up-down-and-know-what-the-fuck-is-going-on/",
+      "edition": "Public article, May 7, 2012",
+      "publishedAt": "2012-05-07",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports a simplified rights map: pro rata for upside participation, liquidation preference for downside, and board access for information and governance.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-CONVERTIBLE-2011",
+      "title": "How Convertible Debt Works",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts / Venture Deals",
+      "sourceClass": "P1",
+      "sourceType": "author_series_index",
+      "url": "https://feld.com/archives/2011/10/how-convertible-debt-works/",
+      "edition": "Public article, October 12, 2011",
+      "publishedAt": "2011-10-12",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Indexes discount, cap, conversion mechanics, sale treatment, warrants, other terms, and stage dynamics. Exact instrument behavior still depends on the signed document.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-P1-NOSHOP-2005",
+      "title": "Term Sheet: No Shop Agreement",
+      "authorOrSpeaker": [
+        "Brad Feld",
+        "Jason Mendelson"
+      ],
+      "publisher": "Feld Thoughts",
+      "sourceClass": "P1",
+      "sourceType": "author_coauthored_term_sheet_series",
+      "url": "https://feld.com/archives/2005/08/term-sheet-no-shop-agreement/",
+      "edition": "Public article, August 8, 2005",
+      "publishedAt": "2005-08-08",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports the shift from competitive fundraising to closing, the no-shop commitment, and the need for a bounded period.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-I1-NVCA-MODELS-2026",
+      "title": "NVCA Model Legal Documents",
+      "authorOrSpeaker": [
+        "National Venture Capital Association General Counsel Advisory Board"
+      ],
+      "publisher": "National Venture Capital Association",
+      "sourceClass": "I1",
+      "sourceType": "current_industry_model_documents",
+      "url": "https://nvca.org/model-legal-documents/",
+      "edition": "Model-document index accessed July 28, 2026; documents updated through 2025-2026",
+      "publishedAt": "2026",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_model_document_metadata_and_commentary",
+      "attributionScope": "institution_doctrine",
+      "attributionNotes": "Current external legal qualification. NVCA calls the documents starting points, offers alternatives, and expressly disclaims case-specific legal advice.",
+      "immutableRevision": {
+        "status": "version_dates_recorded_document_hashes_pending",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VD-E1-COOLEY-TERMS-2024",
+      "title": "Q3 2024 Venture Financing Report — Interview with Asad Khaliq",
+      "authorOrSpeaker": [
+        "Asad Khaliq",
+        "Cooley GO"
+      ],
+      "publisher": "Cooley LLP",
+      "sourceClass": "E1",
+      "sourceType": "external_market_practice_report",
+      "url": "https://www.cooleygo.com/q3-2024-venture-financing-report-interview-with-asad-khaliq/",
+      "edition": "Q3 2024 report interview",
+      "publishedAt": "2024",
+      "eventAt": "2024-Q3",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "External market-practice snapshot: reported sample prevalence of 1x nonparticipating preference and broad-based weighted-average anti-dilution. It is not a universal rule or current-case legal conclusion.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    }
+  ]
+}

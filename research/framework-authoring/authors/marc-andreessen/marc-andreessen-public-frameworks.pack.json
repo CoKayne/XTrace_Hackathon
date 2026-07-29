@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "marc_andreessen_public_frameworks_v0_1",
+  "name": "Marc Andreessen Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten cards covering PMF, market pull, adaptive planning, timing, risk reduction, capital sufficiency, enterprise dependency, distribution, post-PMF company building, and a guarded software/build thesis.",
+  "cardFiles": [
+    "cards/ma-01-product-market-fit-evidence-gate.card.json",
+    "cards/ma-02-market-pull-and-size.card.json",
+    "cards/ma-03-adaptive-plan-under-uncertainty.card.json",
+    "cards/ma-04-commercialization-timing.card.json",
+    "cards/ma-05-risk-onion-and-milestone-derisking.card.json",
+    "cards/ma-06-capital-sufficiency-and-discipline.card.json",
+    "cards/ma-07-enterprise-whale-dependency.card.json",
+    "cards/ma-08-distribution-and-market-capture.card.json",
+    "cards/ma-09-next-product-and-company-building.card.json",
+    "cards/ma-10-software-build-thesis-diligence-bridge.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Verify original post dates and archived revisions.",
+      "Define stage- and business-model-specific PMF evidence anchors.",
+      "Add external empirical qualifications and failed-case review.",
+      "Backtest decision utility independently from framework fidelity.",
+      "Complete Framework Fidelity and Decision Utility review."
+    ]
+  }
+}

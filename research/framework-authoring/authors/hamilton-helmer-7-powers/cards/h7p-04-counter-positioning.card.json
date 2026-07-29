@@ -1,0 +1,284 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-04",
+  "slug": "counter-positioning",
+  "name": "Counter-Positioning",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a superior newcomer business model imposes enough economic self-harm to make a named incumbent rationally delay imitation.",
+    "productLabel": "Counter-Positioning Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "incumbents always being irrational or slow",
+      "disruption automatically creating Power",
+      "the mechanism blocking other new entrants"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public Counter-Positioning doctrine",
+    "scope": "person_direct",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Counter-Positioning may exist when a newcomer adopts a superior business model but a specific incumbent would damage existing profits, channels, assets, organization, incentives, or stakeholder relationships by copying it. The Barrier is incumbent-specific and may buy time; it does not by itself stop another entrant from adopting the same model.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Counter-Positioning section lines 173-220: superior model, incumbent damage, organizational and channel conflicts"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-ACQUIRED-2021",
+      "claimIds": [
+        "H7P-CLM-005",
+        "H7P-CLM-012"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Canonical interview 00:18:02-00:23:55 and 00:37:10-00:37:46: incumbent damage, distinction from disruption, and partial barrier"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "H7P-P2-FOREWORD",
+      "claimIds": [
+        "H7P-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Foreword lines 37-41: Hastings on rational incumbent behavior and Counter-Positioning"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The newcomer model is superior for a defined customer task.",
+    "At least one named incumbent has material existing economics or assets at risk.",
+    "Imitation damage is quantified rather than described as culture alone.",
+    "Potential entrants and fast followers are evaluated separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "new_model_customer_superiority",
+      "description": "Measured customer-value, cost, access, speed, convenience, or quality improvement from the newcomer model.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer interviews",
+        "product benchmarks",
+        "win loss data",
+        "pricing evidence"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "incumbent_collateral_damage",
+      "description": "Revenue, margin, channel, asset, compensation, contract, regulatory, or organizational damage the incumbent would incur by matching.",
+      "necessity": "required",
+      "acceptableSources": [
+        "incumbent filings",
+        "channel economics",
+        "business model analysis",
+        "expert interviews"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "incumbent_response",
+      "description": "Observed response, delay, half-measures, cannibalization tolerance, acquisition, or separate-unit strategy.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "product launches",
+        "pricing changes",
+        "earnings calls",
+        "organizational actions"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "entrant_replication",
+      "description": "Other entrants' ability to copy the model and any second Power needed for durable protection.",
+      "necessity": "required",
+      "acceptableSources": [
+        "competitive landscape",
+        "startup funding data",
+        "technical analysis",
+        "distribution analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which incumbent is constrained and what exact economic engine is threatened?",
+    "How much value would imitation destroy before replacement economics scale?",
+    "Can the incumbent ring-fence, acquire, subsidize, or launch separately?",
+    "Has the incumbent delayed for economic reasons rather than simple execution failure?",
+    "How long is the likely response window?",
+    "What prevents other entrants from copying the newcomer?"
+  ],
+  "positiveSignals": [
+    "The newcomer offers measured customer superiority with a structurally different model.",
+    "Incumbent imitation would cannibalize a large profit pool or strand material assets.",
+    "Public actions show delay, conflicted pricing, channel resistance, or incomplete imitation.",
+    "The delay window lets the newcomer build another defensible mechanism.",
+    "New entrant replication is limited by an independent Barrier."
+  ],
+  "redFlags": [
+    "The incumbent is called stupid, old, or bureaucratic without an economic model.",
+    "The new product is cheaper only because of temporary subsidy.",
+    "Incumbents already copied without material damage.",
+    "The model is easy for other startups to reproduce.",
+    "A disruption narrative is treated as synonymous with Counter-Positioning."
+  ],
+  "disconfirmingEvidence": [
+    "The incumbent can migrate customers while preserving economics.",
+    "A separate brand, channel, or business unit avoids collateral damage.",
+    "The incumbent willingly cannibalizes and responds rapidly.",
+    "Customer superiority vanishes when subsidy or regulation normalizes.",
+    "Fast followers adopt the same model and compete away returns."
+  ],
+  "contraindications": [
+    "Do not diagnose management irrationality when economic self-harm is not shown.",
+    "Do not treat this as a barrier against all entrants.",
+    "Do not assume the response window is permanent.",
+    "Do not infer valuation attractiveness."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define the newcomer model and measured customer superiority.",
+      "Model imitation economics for each named incumbent.",
+      "Compare predicted and observed incumbent response.",
+      "Assess fast followers, substitutes, and the need for a second Power.",
+      "Conclude on the existence and likely duration of Counter-Positioning."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a founder disruption narrative is available.",
+      "medium": "Incumbent public economics and some response evidence are available.",
+      "high": "Reconciled incumbent economics, customer evidence, and observed response converge."
+    },
+    "evidenceStrength": {
+      "low": "No material incumbent self-harm is quantified.",
+      "medium": "Self-harm is material but response paths or entrants remain uncertain.",
+      "high": "Economic damage predicts observed delay and a durable follow-on Barrier exists."
+    },
+    "evidenceCoverage": {
+      "low": "New model or incumbent economics are missing.",
+      "medium": "Superiority and incumbent damage are covered but entrants are incomplete.",
+      "high": "Customer value, damage, response options, time window, entrants, and decay are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "There is no established incumbent economic engine.",
+      "medium": "Incumbents have some conflicting economics.",
+      "high": "The opportunity directly attacks a material incumbent profit or asset base."
+    },
+    "judgmentConfidence": {
+      "low": "Only a disruption label is supported.",
+      "medium": "Candidate incumbent-specific delay exists.",
+      "high": "Material self-harm, observed delay, and the response window are well supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "PT-02",
+    "PT-05",
+    "INNOVATORS-DILEMMA"
+  ],
+  "conflictingFrameworkIds": [
+    "INCUMBENT-STUPIDITY-THESIS",
+    "DISRUPTION-EQUALS-POWER"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed Counter-Positioning chapter review.",
+      "Backtest predicted incumbent responses using decision-date evidence.",
+      "Validate treatment of fast followers and second-Power requirements."
+    ],
+    "empiricalQualifications": [
+      "Retrospective narratives can mistake failed execution for rational self-harm.",
+      "Incumbents can use acquisitions, separate units, or cannibalization to respond.",
+      "The mechanism is often temporary and incumbent-specific."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public interview doctrine and official foreword are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Verify canonical interview timestamps against official audio.",
+      "Complete first-edition surplus and timing definition review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial incumbent-specific Counter-Positioning card."
+    }
+  ]
+}

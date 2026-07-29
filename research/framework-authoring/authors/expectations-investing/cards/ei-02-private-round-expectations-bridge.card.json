@@ -1,0 +1,274 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-02",
+  "slug": "private-round-expectations-bridge",
+  "name": "Private-Round Expectations Bridge",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Prevents reverse DCF on a startup round until the priced security, rights, cap table, and intended valuation target are normalized.",
+    "productLabel": "Private-Round Expectations Bridge — product synthesis qualified by public private-valuation research",
+    "notAClaimOf": [
+      "headline post-money being common-equity value",
+      "a negotiated round reflecting broad market consensus",
+      "security normalization eliminating private-market uncertainty"
+    ]
+  },
+  "attribution": {
+    "display": "Product synthesis connecting public Expectations Investing doctrine with security-specific VC valuation controls",
+    "scope": "product_synthesis",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport",
+      "Will Gornall",
+      "Ilya A. Strebulaev"
+    ],
+    "organizations": [
+      "Expectations Investing",
+      "National Bureau of Economic Research"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "A private financing price is attached to a particular security and negotiated transaction. Before using it as the target of an expectations inversion, normalize its rights and prior-round stack, define the company or claim value being analyzed, and label the output transaction-implied rather than market-consensus expectations.",
+  "claimTypes": [
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-E1-PRIVATE-VALUATIONS-2017",
+      "claimIds": [
+        "EI-CLM-011",
+        "EI-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "NBER abstract: contractual terms and different share-class economics affect reported private-company valuations"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-8",
+      "claimIds": [
+        "EI-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Equity bridge adds non-operating assets and subtracts debt and other liabilities before matching price"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_private_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "convertible",
+      "safe",
+      "common_equity"
+    ]
+  },
+  "requiredConditions": [
+    "The current transaction and every material prior financing round are identified.",
+    "Security rights, ownership, conversion, preference, participation, cap, and seniority are available.",
+    "The intended reverse-solve target is explicitly company enterprise value, company equity value, common-equivalent value, or security partial value.",
+    "The transaction context identifies inside, strategic, bridge, extension, or broadly marketed status."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "round_documents",
+      "description": "Dated term sheet or final financing documents with price, amount, security, and material rights.",
+      "necessity": "required",
+      "acceptableSources": [
+        "executed financing document",
+        "verified term sheet",
+        "company counsel summary"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "capital_stack",
+      "description": "Fully diluted cap table and material prior-round securities and claims.",
+      "necessity": "required",
+      "acceptableSources": [
+        "verified cap table",
+        "charter",
+        "prior financing documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "transaction_context",
+      "description": "Evidence of investor mix, process competitiveness, strategic rights, and whether the round is inside, bridge, extension, or primary financing.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financing process record",
+        "board materials",
+        "investor allocation schedule",
+        "management confirmation"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What security was actually purchased and which rights have economic value?",
+    "Which prior claims affect its payoff?",
+    "Which value object should be used for the operating inversion?",
+    "Was the round competitively priced or negotiated for strategic or inside reasons?",
+    "How much of headline valuation changes under the deterministic waterfall?",
+    "What can and cannot be inferred about broad market expectations?"
+  ],
+  "positiveSignals": [
+    "Executed terms and complete cap table reconcile.",
+    "The security waterfall produces an auditable value bridge.",
+    "A clearly defined common-equivalent or company-value target is available.",
+    "The transaction had multiple independent price-setting investors.",
+    "The expectations output is labeled transaction-implied with material limitations."
+  ],
+  "redFlags": [
+    "Latest preferred price is multiplied by all shares.",
+    "Liquidation preference, participation, conversion, or seniority is omitted.",
+    "SAFE or note cap is called a priced valuation without conversion analysis.",
+    "An inside or strategic round is described as market consensus.",
+    "The headline price-to-intrinsic-value gap is called overvaluation without a waterfall."
+  ],
+  "disconfirmingEvidence": [
+    "Full terms reveal material downside protection or non-price consideration.",
+    "Prior rounds change payoff ordering materially.",
+    "A bridge or insider-led process supplied no independent price discovery.",
+    "Strategic commercial rights explain part of the negotiated price.",
+    "Reasonable security valuations yield no stable company-value target."
+  ],
+  "contraindications": [
+    "Do not infer company value from an incomplete term sheet.",
+    "Do not apply a sample-average private-valuation discount to an individual deal.",
+    "Do not claim broad market consensus from one private transaction.",
+    "Do not let this bridge replace VCFI waterfall review."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Classify the financing instrument and transaction context.",
+      "Validate the full cap table and prior-round stack.",
+      "Run VCFI deterministic security payoff and normalization.",
+      "Select and label the value object that can feed EI-01.",
+      "If any material term is missing, stop the reverse solve and request evidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "allRequiredGates": [
+        "current_security_terms_complete",
+        "prior_round_stack_complete",
+        "fully_diluted_cap_table_reconciled",
+        "valuation_target_type_declared",
+        "transaction_context_labeled"
+      ],
+      "calculationOwner": "security_waterfall_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a press release or headline post-money is available.",
+      "medium": "Term sheet and cap table exist but one prior right or process detail is incomplete.",
+      "high": "Executed documents, cap table, prior rounds, and process evidence reconcile."
+    },
+    "evidenceStrength": {
+      "low": "No security-specific bridge can be calculated.",
+      "medium": "A bounded bridge is possible with one labeled term range.",
+      "high": "A deterministic waterfall and value-object bridge are reproducible."
+    },
+    "evidenceCoverage": {
+      "low": "Only round amount and headline valuation are known.",
+      "medium": "Current terms and cap table are covered but prior claims or process context are partial.",
+      "high": "Current and prior securities, claims, ownership, and transaction context are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No priced or convertible financing event is defined.",
+      "medium": "A transaction exists but its value object remains partly ambiguous.",
+      "high": "The security and target value object are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a missing-data warning is defensible.",
+      "medium": "A transaction-implied range can be shown with caveats.",
+      "high": "The normalized target is ready for EI-01 inversion."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-02",
+    "VCFI-08",
+    "VCFI-09",
+    "DSV-10"
+  ],
+  "conflictingFrameworkIds": [
+    "HEADLINE-POSTMONEY-EQUALS-COMPANY-VALUE",
+    "LATEST-ROUND-PRICE-EQUALS-COMMON-PRICE",
+    "PRIVATE-ROUND-EQUALS-MARKET-CONSENSUS"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Venture-counsel review of instrument and rights taxonomy.",
+      "Valuation-SME review of normalization and value-object mapping.",
+      "Backtest on complete private-round term and cap-table cases."
+    ],
+    "empiricalQualifications": [
+      "Private securities and negotiation processes are heterogeneous.",
+      "No universal discount converts headline valuation to company value.",
+      "A normalized transaction remains less observable and liquid than a public market price."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The private-round bridge is product synthesis; public empirical findings are used only as qualifications."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Align terminology with Venture Deals and VCFI packs.",
+      "Define supported instrument types and minimum document completeness."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft with private-round normalization gate."
+    }
+  ]
+}

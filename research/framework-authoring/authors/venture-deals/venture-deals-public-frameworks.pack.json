@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "venture_deals_public_frameworks_v0_1",
+  "name": "Feld / Mendelson Venture Deals Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten independently reviewable cards spanning economics and control, fully diluted pricing, liquidation and participation, anti-dilution, governance, drag-along, vesting, follow-on rights, convertible instruments, and closing process.",
+  "cardFiles": [
+    "cards/vd-01-economics-control-map.card.json",
+    "cards/vd-02-fully-diluted-price-pool.card.json",
+    "cards/vd-03-liquidation-participation-conversion.card.json",
+    "cards/vd-04-anti-dilution-down-round.card.json",
+    "cards/vd-05-board-protective-control.card.json",
+    "cards/vd-06-drag-along-exit-control.card.json",
+    "cards/vd-07-vesting-acceleration.card.json",
+    "cards/vd-08-pro-rata-pay-to-play.card.json",
+    "cards/vd-09-convertible-instrument-state-machine.card.json",
+    "cards/vd-10-term-sheet-closing-process.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Complete lawful fourth-edition review with exact chapter and page locators.",
+      "Map current NVCA model-document fields into versioned term schemas.",
+      "Obtain US venture-counsel review and create jurisdiction-specific exclusions.",
+      "Validate cap-table, waterfall, anti-dilution, governance, vesting, and deadline services.",
+      "Complete content, rights, Framework Fidelity, and Decision Utility review before seed conversion."
+    ]
+  }
+}

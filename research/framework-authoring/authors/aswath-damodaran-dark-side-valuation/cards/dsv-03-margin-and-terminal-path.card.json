@@ -1,0 +1,301 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-03",
+  "slug": "margin-and-terminal-path",
+  "name": "Operating Margin and Terminal Path",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether current unit economics can plausibly converge to an explicit, competitively sustainable operating and terminal state.",
+    "productLabel": "Margin and Terminal Path Lens — based on Aswath Damodaran's public valuation materials",
+    "notAClaimOf": [
+      "peer margins being an automatic company target",
+      "terminal value being a plug",
+      "high gross margin proving durable excess returns"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public valuation materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A young company's target operating margin may be anchored to mature companies with similar economics, but the valuation must show how product mix, pricing, variable costs, operating leverage, customer acquisition, and competition move current margins toward that state. Terminal assumptions must be mutually consistent and economically sustainable rather than selected to force a desired value.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-006"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 24-26: target operating margin, mature-company anchors, and path to profitability"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-HIGHGROW",
+      "claimIds": [
+        "DSV-CLM-006",
+        "DSV-CLM-019"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 4-6, 30-39: stable-growth constraints, terminal value, margin convergence, and sensitivity"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-SUPPORT-3E",
+      "claimIds": [
+        "DSV-CLM-006",
+        "DSV-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 9 illustrations 9.2-9.7 and Chapter 10 young-growth-company support materials"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "saas",
+      "marketplace",
+      "consumer",
+      "transactional",
+      "hardware",
+      "services"
+    ],
+    "sectors": [
+      "all_non_financial"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Gross margin, contribution margin, EBITDA, and operating margin are not conflated.",
+    "Current cost classifications and normalized unit economics are available or explicitly estimated.",
+    "The terminal business is described operationally, competitively, and financially.",
+    "Stable growth, risk, margin, reinvestment, return on capital, and capital structure are jointly constrained."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "current_margin_bridge",
+      "description": "Current revenue and cost structure reconciled from gross margin through operating margin.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financial statements",
+        "management accounts",
+        "unit economics",
+        "cost allocation"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "target_margin_anchor",
+      "description": "Mature-company or business-model margin anchors adjusted for scope, accounting, geography, and competitive structure.",
+      "necessity": "required",
+      "acceptableSources": [
+        "public filings",
+        "industry datasets",
+        "comparable-company analysis",
+        "verified private-company benchmarks"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "convergence_mechanisms",
+      "description": "Time-stamped mechanisms for pricing, mix, variable costs, fixed-cost leverage, go-to-market efficiency, and competition.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cohort data",
+        "operating plan",
+        "pricing analysis",
+        "cost roadmap",
+        "competitive diligence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "terminal_state_consistency",
+      "description": "Stable-state growth, margin, reinvestment, return on capital, risk, and capital structure with sensitivity.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation model",
+        "mature comparable data",
+        "macroeconomic assumptions"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What margin definition is used at each step?",
+    "Why is the selected mature-company margin economically comparable?",
+    "Which operating mechanisms move current margin toward the target and by when?",
+    "What competitive response or cost inflation could prevent convergence?",
+    "Does the terminal state still require extraordinary growth or risk?",
+    "How much of current value depends on the terminal margin and duration?"
+  ],
+  "positiveSignals": [
+    "Margin definitions reconcile to source financials.",
+    "Cohorts or operating data show early evidence of the proposed leverage mechanism.",
+    "The target is anchored to comparable economics rather than the highest peer.",
+    "The transition period reflects realistic customer, hiring, capacity, and competitive constraints.",
+    "Terminal sensitivity and value concentration are visible."
+  ],
+  "redFlags": [
+    "Gross margin is presented as operating margin.",
+    "The target equals a peer average without a company-specific path.",
+    "Marketing or R&D is assumed to fall while growth remains unchanged without evidence.",
+    "Stable growth exceeds relevant long-run economic growth.",
+    "Terminal value is selected through an exit multiple solely to reach a desired valuation."
+  ],
+  "disconfirmingEvidence": [
+    "Contribution margins worsen as the business scales.",
+    "Expansion requires permanently rising service, support, hardware, or acquisition cost.",
+    "Competitor pricing prevents the assumed margin.",
+    "The company lacks capital or capacity to reach the modeled scale.",
+    "Reasonable terminal assumptions remove most of the value."
+  ],
+  "contraindications": [
+    "Do not use a mature margin anchor without accounting and business-model normalization.",
+    "Do not hide reinvestment inside margin improvement.",
+    "Do not use terminal value as a balancing item.",
+    "Do not infer durable excess returns without a separate competitive-advantage lens."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconcile current margins and unit economics.",
+      "Select and normalize a target margin anchor.",
+      "Build an evidence-backed convergence path by driver and year.",
+      "Test the terminal state for stable-growth consistency.",
+      "Send scenarios and sensitivities to the deterministic valuation service."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "terminalGrowthConstraint": "stable_growth_rate <= long_run_growth_rate_of_relevant_economy",
+      "requiredOutputs": [
+        "margin_bridge",
+        "convergence_schedule",
+        "terminal_state",
+        "terminal_value_share",
+        "margin_sensitivity"
+      ],
+      "calculationOwner": "valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only adjusted founder metrics without reconciled statements are available.",
+      "medium": "Company accounts and public peer data are available with normalization gaps.",
+      "high": "Reconciled company data, cohorts, cost drivers, and normalized comparables are verified."
+    },
+    "evidenceStrength": {
+      "low": "The margin path is an unsupported linear interpolation.",
+      "medium": "A plausible target and partial operating mechanisms are supported.",
+      "high": "Each material step is supported by observed unit economics and operating evidence."
+    },
+    "evidenceCoverage": {
+      "low": "Only current gross margin and target operating margin are present.",
+      "medium": "Cost bridge and target are covered but competition or terminal reinvestment is incomplete.",
+      "high": "Current costs, mechanisms, competition, transition, and terminal economics are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The business model or accounting basis is too unstable to define margin.",
+      "medium": "Margin is definable but the company is too early for longitudinal evidence.",
+      "high": "Margin structure and relevant mature economics are clearly defined."
+    },
+    "judgmentConfidence": {
+      "low": "Only a broad margin range can be stated.",
+      "medium": "A path is plausible but important operating evidence is still missing.",
+      "high": "The path is supported and robust to realistic competition and cost scenarios."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-02",
+    "DSV-04",
+    "H7P-01",
+    "H7P-02"
+  ],
+  "conflictingFrameworkIds": [
+    "PEER-MARGIN-AS-AUTOMATIC-TARGET",
+    "TERMINAL-VALUE-AS-PLUG",
+    "GROSS-MARGIN-EQUALS-MOAT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapter 9 and terminal-value review.",
+      "Validate margin normalization by business model.",
+      "Backtest convergence assumptions and terminal sensitivities."
+    ],
+    "empiricalQualifications": [
+      "Mature peer margins may embed different products, accounting, scale, geography, and competitive intensity.",
+      "Early cohorts can improve for selection reasons without proving company-wide convergence.",
+      "Terminal outcomes are especially sensitive for young companies."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No source text or book tables are reproduced; principles are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Review stable-state constraints with a valuation expert."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

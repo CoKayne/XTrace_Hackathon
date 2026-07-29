@@ -1,0 +1,275 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-08",
+  "slug": "definite-agency-timing",
+  "name": "Definite Agency & Timing",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether the team has a concrete, revisable plan tied to a real timing catalyst rather than luck or trend language.",
+    "productLabel": "Definite Agency Lens — based on Peter Thiel public materials",
+    "notAClaimOf": [
+      "certainty about the future",
+      "proof that planning dominates luck",
+      "Peter Thiel endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Blake Masters' CS183 notes with Peter Thiel interview corroboration",
+    "scope": "product_synthesis",
+    "people": [
+      "Peter Thiel",
+      "Blake Masters"
+    ],
+    "organizations": [
+      "Hoover Institution"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "A startup should be able to state what future it is trying to create, why the timing is favorable, what sequence of actions it controls, and what evidence would cause the plan to change. A detailed plan is evidence of agency only when its assumptions are explicit and revisable.",
+  "claimTypes": [
+    "affiliated_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P2-CS183-13",
+      "claimIds": [
+        "PT-CLM-017"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Definite and indefinite views of the future; skill and luck caveat"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-P2-CS183-14",
+      "claimIds": [
+        "PT-CLM-017"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Timing, financing, and luck in the ten-question review"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PT-P2-THIEL-FELLOWSHIP",
+      "claimIds": [
+        "PT-CLM-020"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Program description"
+      },
+      "attributionScope": "revealed_behavior",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "businessModels": [
+      "technology_startup",
+      "deep_tech",
+      "b2b_saas",
+      "enterprise_ai",
+      "marketplace"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The company has a material timing thesis or sequence-dependent plan.",
+    "Management can distinguish controllable actions from external assumptions.",
+    "Milestones and update triggers can be documented."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "timing_catalyst",
+      "description": "Dated technical, customer, regulatory, cost, distribution, or capital change that makes the opportunity possible now.",
+      "necessity": "required",
+      "acceptableSources": [
+        "market evidence",
+        "regulatory source",
+        "technical benchmark",
+        "customer data"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "execution_sequence",
+      "description": "Ordered milestones, dependencies, owners, resources, and stop conditions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating plan",
+        "product roadmap",
+        "financing plan",
+        "founder interview"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "assumption_register",
+      "description": "Explicit external assumptions and observations that would trigger revision.",
+      "necessity": "required",
+      "acceptableSources": [
+        "investment memo",
+        "risk register",
+        "board material",
+        "test plan"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What changed to make this possible now?",
+    "Which parts of the outcome are controllable by this team?",
+    "What sequence of milestones converts the thesis into evidence?",
+    "Which assumptions depend on regulation, capital markets, suppliers, or customer behavior?",
+    "What observation or date forces a plan change?",
+    "Does the plan adapt to evidence or merely defend the original story?"
+  ],
+  "positiveSignals": [
+    "The timing catalyst is dated, causal, and independently supported.",
+    "Milestones test the highest-risk assumptions early.",
+    "The team distinguishes controllable execution from external luck.",
+    "Financing needs and timing fit milestone risk reduction.",
+    "Predeclared update triggers prevent post-hoc narrative changes."
+  ],
+  "redFlags": [
+    "Why now is only a popular trend label.",
+    "The plan is detailed but built on hidden external assumptions.",
+    "Milestones measure activity rather than risk reduction.",
+    "The team treats all misses as bad luck.",
+    "The company requires continuous favorable capital markets to survive.",
+    "Management refuses to define stop or revision conditions."
+  ],
+  "disconfirmingEvidence": [
+    "The proposed catalyst predates the company by years without changing adoption.",
+    "Critical dependencies repeatedly slip outside management control.",
+    "Milestones are met while customer or technical risk remains unchanged.",
+    "A new regulation, supplier change, or cost curve removes the timing advantage.",
+    "The company revises its thesis only after failures without prior criteria."
+  ],
+  "contraindications": [
+    "Do not treat plan detail as outcome probability.",
+    "Do not infer skill from a single successful outcome.",
+    "Do not score age, dropout status, or fellowship affiliation.",
+    "Do not use this lens without separating company facts from market assumptions."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Identify the timing catalyst and its dated source.",
+      "Separate controllable actions from external dependencies.",
+      "Map milestones to risks and financing.",
+      "List predeclared revision and stop conditions.",
+      "Conclude on plan quality and adaptability, not certainty."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The doctrine comes only from unsourced summaries.",
+      "medium": "Course notes and affiliated behavior support the doctrine with explicit limits.",
+      "high": "A reviewed coauthored edition and direct interview locators support each rule."
+    },
+    "evidenceStrength": {
+      "low": "Trend narrative and founder plan only.",
+      "medium": "Independent catalyst plus milestone plan.",
+      "high": "Catalyst, milestones, prior execution, and revision behavior are independently documented."
+    },
+    "evidenceCoverage": {
+      "low": "Catalyst, sequence, or assumptions are missing.",
+      "medium": "All exist but update triggers or financing links are weak.",
+      "high": "All evidence, dependencies, and stop conditions are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "Timing and coordinated execution are not material to the thesis.",
+      "medium": "Timing matters but only part of the plan is observable.",
+      "high": "Timing and staged execution are central and testable."
+    },
+    "judgmentConfidence": {
+      "low": "Only intent can be described.",
+      "medium": "A coherent plan exists with unresolved dependencies.",
+      "high": "The plan tests risk, adapts to evidence, and fits resources and timing."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-01",
+    "VENTURE-MINDSET-DECISION",
+    "MARKET-WHY-NOW"
+  ],
+  "conflictingFrameworkIds": [
+    "PURE-OPTIONALITY",
+    "LEAN-ITERATION"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Define observable plan-adaptability variables.",
+      "Test against outcome and hindsight bias with time-split data.",
+      "Distinguish plan quality from founder charisma and document polish."
+    ],
+    "empiricalQualifications": [
+      "Public doctrine acknowledges difficulty separating skill from luck.",
+      "Detailed plans can create false confidence.",
+      "Timing narratives are vulnerable to post-hoc revision."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book or course passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Review exact book version only after public-source audit.",
+      "Reconcile with Venture Mindset decision-process cards."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft adds assumption and revision controls to prevent planning theater."
+    }
+  ]
+}
+

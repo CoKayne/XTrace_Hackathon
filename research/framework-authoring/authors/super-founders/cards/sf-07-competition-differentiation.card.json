@@ -1,0 +1,283 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-07",
+  "slug": "competition-differentiation",
+  "name": "Competition Structure and Differentiation",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Classifies incumbent, fragmented, and venture-funded competition, then tests whether the company offers a measurable difference that can win.",
+    "productLabel": "Competition Structure Lens — based on Super Founders public findings",
+    "notAClaimOf": [
+      "competition being inherently positive",
+      "incumbents being unable to respond",
+      "first-mover position being irrelevant in every market"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public competition and differentiation observations",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Most billion-dollar startups in the author's cohort faced competition at founding. Existing incumbents or fragmented suppliers can demonstrate demand and leave room for a differentiated entrant, while copying a well-funded startup is a different and potentially less attractive structure. Competition presence is therefore not a score; the product maps alternatives, concentration, capital, customer switching, product difference, distribution, and likely response.",
+  "claimTypes": [
+    "empirical_association",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P1-INC-2021",
+      "claimIds": [
+        "SF-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Competition section: prevalence, incumbents, and public Zoom example"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-TECHMEME-2019",
+      "claimIds": [
+        "SF-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 00:16:13-00:21:22: incumbents, educated market, differentiated technology, funded-startup competition, and large-market context"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SF-P1-SANDHILL-2022",
+      "claimIds": [
+        "SF-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 27:21-30:11: 85 percent competition observation, incumbent, fragmentation, and copycat categories"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Competition includes current customer alternatives and doing nothing, not only named startups.",
+    "Competitor structure and product differentiation are evaluated separately.",
+    "All claims are dated because financing and product landscapes change."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "alternative_map",
+      "description": "Current customer alternatives, incumbents, fragmented suppliers, startups, internal tools, manual work, and no-action option.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer interviews",
+        "procurement records",
+        "competitor products",
+        "market research"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "competition_structure",
+      "description": "Market shares, concentration, startup funding, product overlap, switching costs, distribution control, and likely response.",
+      "necessity": "required",
+      "acceptableSources": [
+        "market data",
+        "funding records",
+        "customer diligence",
+        "competitive intelligence"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "measured_differentiation",
+      "description": "Customer-relevant performance, cost, time, workflow, risk, or experience difference against named alternatives.",
+      "necessity": "required",
+      "acceptableSources": [
+        "benchmark",
+        "pilot",
+        "customer reference",
+        "product test"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "distribution_and_response",
+      "description": "Route to customer, acquisition evidence, channel control, competitor response scenarios, and company counter-response.",
+      "necessity": "required",
+      "acceptableSources": [
+        "sales data",
+        "channel agreements",
+        "customer evidence",
+        "scenario analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What do target customers do today instead?",
+    "Is this market incumbent-dominated, fragmented, or crowded with funded startups?",
+    "What customer-valued difference is measured rather than asserted?",
+    "Why can the company distribute the product despite competitor control?",
+    "How quickly and cheaply can incumbents or funded rivals respond?",
+    "Is the company following a funded startup without a distinct mechanism?"
+  ],
+  "positiveSignals": [
+    "Existing alternatives demonstrate budget and demand.",
+    "Fragmentation leaves no dominant provider and customers report clear dissatisfaction.",
+    "Differentiation is measured in customer outcomes.",
+    "The company has a credible distribution wedge.",
+    "Competitor-response scenarios leave a plausible path to durable value."
+  ],
+  "redFlags": [
+    "No competition is presented as proof of novelty.",
+    "Competition is listed without customer alternatives or doing nothing.",
+    "A funded startup offers the same product with stronger distribution.",
+    "The product advantage is a feature incumbents can copy quickly.",
+    "Incumbent inefficiency is asserted without customer switching evidence."
+  ],
+  "disconfirmingEvidence": [
+    "Customers prefer existing workflows despite product benchmarks.",
+    "A funded rival has equivalent differentiation and lower acquisition friction.",
+    "An incumbent controls a required channel or data source.",
+    "Competitor response removes the measured advantage.",
+    "The market is fragmented because customer willingness to pay is structurally low."
+  ],
+  "contraindications": [
+    "Do not add points merely because competitors exist.",
+    "Do not equate incumbent age with inability to respond.",
+    "Do not treat first mover or follower position as a universal rule.",
+    "Do not omit indirect alternatives."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Build a customer-alternative map before named-startup comparison.",
+      "Classify incumbent, fragmentation, and funded-startup structure.",
+      "Measure product difference and distribution evidence.",
+      "Run competitor-response and customer-switching countercases.",
+      "Conclude on competitive position without inferring investability."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Competition map comes only from the founder.",
+      "medium": "Author public findings and some market evidence are reviewed.",
+      "high": "Licensed definitions plus customer, product, funding, and market evidence are independently reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Named competitors and narrative differentiation only.",
+      "medium": "Customer alternatives and some benchmarks are verified.",
+      "high": "Customer switching, product benchmarks, distribution, and response evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Indirect alternatives or distribution are missing.",
+      "medium": "Structure and differentiation exist but competitor response is incomplete.",
+      "high": "Alternatives, structure, capital, difference, distribution, switching, and response are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Competition is not a material uncertainty.",
+      "medium": "The market is developing and structure remains fluid.",
+      "high": "Company success depends on displacing or outmaneuvering identifiable alternatives."
+    },
+    "judgmentConfidence": {
+      "low": "The conclusion uses presence or absence of competition only.",
+      "medium": "A plausible structure and differentiation exist with unresolved response risk.",
+      "high": "Independent customer, product, market, and distribution evidence converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-02",
+    "PT-03",
+    "PT-10",
+    "SF-06",
+    "DUNFORD-POSITIONING"
+  ],
+  "conflictingFrameworkIds": [
+    "NO-COMPETITION-BONUS",
+    "INCUMBENT-COMPETITION-BONUS",
+    "FIRST-MOVER-BINARY"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Review licensed competition definitions and group estimates.",
+      "Validate competition taxonomy by sector and stage.",
+      "Test incremental utility beyond demand, differentiation, and distribution."
+    ],
+    "empiricalQualifications": [
+      "Competition prevalence is descriptive and does not establish causal advantage.",
+      "Competition categories require subjective historical coding.",
+      "Market structure can change quickly after the source decision date."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book, article, interview, or company case passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete licensed competition taxonomy review.",
+      "Reconcile with positioning and monopoly lenses."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial structural competition card replacing competition-count heuristics."
+    }
+  ]
+}
+

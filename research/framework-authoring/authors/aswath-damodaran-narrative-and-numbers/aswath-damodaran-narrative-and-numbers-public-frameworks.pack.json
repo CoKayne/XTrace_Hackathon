@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "aswath_damodaran_narrative_and_numbers_public_frameworks_v0_1",
+  "name": "Aswath Damodaran / Narrative and Numbers Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten independently reviewable cards spanning narrative construction, plausibility, driver mapping, consistency, news updates, life-cycle constraints, and versioned decision handoff.",
+  "cardFiles": [
+    "cards/nn-01-narrative-number-bridge.card.json",
+    "cards/nn-02-independent-business-story.card.json",
+    "cards/nn-03-possible-plausible-probable.card.json",
+    "cards/nn-04-story-to-revenue-map.card.json",
+    "cards/nn-05-story-to-economics-map.card.json",
+    "cards/nn-06-competing-narrative-consistency.card.json",
+    "cards/nn-07-narrative-delta-classifier.card.json",
+    "cards/nn-08-event-to-story-update.card.json",
+    "cards/nn-09-life-cycle-story-constraint.card.json",
+    "cards/nn-10-versioned-narrative-ledger.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Complete lawful review of the 2017 edition with exact chapter and page locators.",
+      "Validate private-company adaptations of the news and narrative-delta taxonomy.",
+      "Backtest narrative-to-driver mappings and thesis-drift controls.",
+      "Complete rights, Framework Fidelity, and Decision Utility review before seed conversion."
+    ]
+  }
+}

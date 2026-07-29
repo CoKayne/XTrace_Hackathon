@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-01",
+  "slug": "venture-fit-fund-outcome",
+  "name": "Venture Fit and Fund Outcome Compatibility",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a company can plausibly create an outcome that matters to this specific fund before evaluating whether it is a good company.",
+    "productLabel": "Venture Fit Lens — based on Scott Kupor public materials",
+    "notAClaimOf": [
+      "a universal minimum TAM or ownership threshold",
+      "a guarantee that a large market creates a venture return",
+      "Scott Kupor or a16z endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor's public explanation of VC incentives and fund economics",
+    "scope": "product_synthesis",
+    "people": [
+      "Scott Kupor"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Venture capital is designed for unusually large, uncertain outcomes. A company can be valuable yet incompatible with a fund if plausible exit value, ownership after dilution, time to liquidity, capital intensity, and reserve needs cannot produce a material fund-level result. All numeric thresholds come from the active Fund Policy, not from an 80/20 slogan.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-A16Z-INVESTOR-2019",
+      "claimIds": [
+        "SHR-CLM-001",
+        "SHR-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official topic list: LP capital, large markets, J-curve, and investor incentives"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SHR-P1-A16Z-RAISE-2019",
+      "claimIds": [
+        "SHR-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official transcript lines 261-278: ownership, pro-rata, cost basis, and fund-impact incentives"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SHR-E1-POWERLAW-ANGELLIST",
+      "claimIds": [
+        "SHR-EQ-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Empirical analysis of heavy-tailed venture outcomes and portfolio-size implications"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "venture_backed_startup"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "A versioned Fund Policy defines fund size, target ownership, reserves, horizon, and material-return threshold.",
+    "The company seeks venture-style capital rather than ordinary cash-flow financing.",
+    "Exit and dilution scenarios are explicitly uncertain."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "fund_policy",
+      "description": "Fund size, initial check, reserve policy, target ownership, horizon, and required return contribution.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Fund Policy",
+        "fund model",
+        "investment mandate"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "market_outcome_scenarios",
+      "description": "Bear, base, and bull market-size and exit-value scenarios with dated assumptions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "market model",
+        "valuation model",
+        "Evidence Pack"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "ownership_dilution_model",
+      "description": "Initial ownership and ownership after plausible future rounds, option pools, and security conversion.",
+      "necessity": "required",
+      "acceptableSources": [
+        "fully diluted cap table",
+        "round model",
+        "waterfall service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "capital_and_time_path",
+      "description": "Capital needs, reserve calls, time to liquidity, and failure or extension cases.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating plan",
+        "fund model",
+        "scenario analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Can a plausible outcome, not only the bull case, materially affect this fund?",
+    "What ownership survives expected dilution and follow-on policy?",
+    "How much additional capital and time are required before liquidity?",
+    "Does the company need VC, or would a different capital source fit better?",
+    "Which assumption most strongly determines fund-level compatibility?"
+  ],
+  "positiveSignals": [
+    "Base and bull scenarios can be reconciled to a material fund result.",
+    "Ownership remains meaningful after realistic dilution.",
+    "Capital requirements fit initial and reserve capacity.",
+    "The company has a credible path to an exit scale beyond the current product niche."
+  ],
+  "redFlags": [
+    "Only a heroic exit scenario returns meaningful capital.",
+    "The analysis substitutes a headline TAM for reachable market and value capture.",
+    "Required follow-on exceeds reserves or concentration limits.",
+    "Target ownership is assumed without modeling round competition and dilution.",
+    "A good small business is forced into a venture return narrative."
+  ],
+  "disconfirmingEvidence": [
+    "Bottom-up reachable market is materially below the top-down TAM.",
+    "Required capital rises faster than ownership-adjusted outcome value.",
+    "Comparable exits or strategic buyers imply a lower ceiling.",
+    "Fund-life timing is inconsistent with commercialization or regulatory timelines.",
+    "Alternative financing can fund the plan with materially less dilution."
+  ],
+  "contraindications": [
+    "Do not use a fixed 80/20 rule or universal ownership target.",
+    "Do not classify venture fit as company quality.",
+    "Do not let fund-return compatibility override integrity, legal, or evidence gates."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Load versioned Fund Policy and cap-table scenarios.",
+      "Compute fund contribution for bear, base, and bull exit cases.",
+      "Separate reachable market evidence from top-down market narrative.",
+      "Expose the most sensitive ownership, capital, and timing assumptions.",
+      "Conclude only on fund compatibility, not investability."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationOwner": "Fund Model and Fund Policy"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only secondary summaries of fund economics are available.",
+      "medium": "Official public media supports the concepts but lacks full timestamps.",
+      "high": "First-party timestamps and licensed chapter locators are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Founder TAM and current round price only.",
+      "medium": "Market and dilution scenarios exist but reserves or exits are weak.",
+      "high": "Bottom-up market, cap table, fund model, capital path, and exit evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Fund Policy or dilution model is missing.",
+      "medium": "Base case is modeled but downside or follow-on is incomplete.",
+      "high": "Bear, base, bull, dilution, reserves, horizon, and alternatives are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The company does not seek venture-style capital.",
+      "medium": "Venture financing is plausible but fund parameters are incomplete.",
+      "high": "The company and fund strategy are both explicitly venture-scale."
+    },
+    "judgmentConfidence": {
+      "low": "Compatibility is narrative only.",
+      "medium": "The result is modelled but sensitive to several unknowns.",
+      "high": "Multiple sourced scenarios remain compatible under sensitivity tests."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-06",
+    "VM-01",
+    "METRICK-FUND-RETURN"
+  ],
+  "conflictingFrameworkIds": [
+    "TAM-ONLY",
+    "COMPANY-QUALITY-EQUALS-VC-FIT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Validate outcome assumptions against historical stage and sector cohorts.",
+      "Test sensitivity to ownership, reserves, dilution, and timing.",
+      "Keep company quality and fund compatibility as separate labels."
+    ],
+    "empiricalQualifications": [
+      "Heavy-tail shape varies by dataset and access.",
+      "Fund-level compatibility is conditional on selection edge and ownership.",
+      "Market size alone does not predict outcome."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book or podcast passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete first-party timestamps for the investor episode.",
+      "Reconcile with Metrick/Yasuda fund-economics models."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}
+

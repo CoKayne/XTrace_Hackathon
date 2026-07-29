@@ -1,0 +1,262 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-07",
+  "slug": "follow-on-reunderwrite",
+  "name": "Double Down or Quit",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Re-underwrites follow-on decisions from current evidence and fund opportunity cost rather than sunk cost.",
+    "productLabel": "Follow-On Re-Underwriting Lens — based on The Venture Mindset public materials",
+    "notAClaimOf": [
+      "a forced binary action in every case",
+      "automatic support for winners",
+      "author endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ilya Strebulaev's public nine-principle keynote",
+    "scope": "person_direct",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Each follow-on round should be evaluated as a fresh allocation decision using updated evidence, current price, ownership, reserves, alternatives, and original thesis milestones. Prior capital is sunk; progress can justify greater concentration, while unresolved or worsened risk can justify stopping. Practical actions include full follow-on, partial pro rata, bridge with milestones, hold, sell where possible, or stop.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-008"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF page 14"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "follow_on",
+      "bridge",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "venture_scale_business"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "equity",
+      "convertible",
+      "secondary"
+    ]
+  },
+  "requiredConditions": [
+    "The original decision thesis and milestones are preserved.",
+    "Current company evidence, round terms, ownership, reserves, and alternatives are available.",
+    "The decision can be evaluated without treating prior investment as a reason to continue."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "original_thesis",
+      "description": "Decision-time thesis, milestones, risks, and falsifiers from the prior round.",
+      "necessity": "required",
+      "acceptableSources": [
+        "original IC memo",
+        "decision journal",
+        "prior Framework Pack outputs"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_progress",
+      "description": "Source-backed progress, misses, belief revisions, customer, product, economics, and team changes.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board materials",
+        "financials",
+        "cohorts",
+        "customer evidence",
+        "company updates"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "round_and_ownership",
+      "description": "Current price, security, dilution, pro rata, liquidation terms, and ownership outcomes.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "cap table",
+        "scenario model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "opportunity_cost",
+      "description": "Reserve capacity and alternative uses of capital under the active Fund Policy.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Fund Policy",
+        "portfolio reserve model",
+        "current pipeline"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which original milestones were met, missed, or made irrelevant?",
+    "Did the most important uncertainty decrease?",
+    "At the new price, what return and ownership remain?",
+    "Is bridge capital buying a defined risk-reducing milestone or delaying recognition?",
+    "Which alternative use of reserves has the highest expected portfolio contribution?",
+    "What evidence supports full follow-on, partial follow-on, hold, or stop?"
+  ],
+  "positiveSignals": [
+    "Original high-risk assumptions were resolved with source-backed evidence.",
+    "The new round price still supports fund-return targets.",
+    "Additional capital buys a clear value-inflecting milestone.",
+    "The company improved quality without hiding changed assumptions.",
+    "Reserve use fits policy and dominates realistic alternatives."
+  ],
+  "redFlags": [
+    "Prior investment is cited as a reason to protect the company.",
+    "Milestones were quietly rewritten after misses.",
+    "Bridge financing has no defined endpoint or new evidence target.",
+    "A headline up-round substitutes for business progress.",
+    "Pro rata is exercised automatically without price review.",
+    "The fund lacks reserves for stronger portfolio companies."
+  ],
+  "disconfirmingEvidence": [
+    "The original key concern remains unresolved after material spend.",
+    "New capital primarily repays old obligations or extends runway without risk reduction.",
+    "Current price implies implausible outcomes.",
+    "A cheaper or stronger alternative use of capital exists.",
+    "Customer, margin, governance, or technical evidence deteriorated."
+  ],
+  "contraindications": [
+    "Do not force every decision into a literal double-or-zero binary.",
+    "Do not include prior invested capital in the marginal go-forward cost.",
+    "Do not treat external round validation as company evidence.",
+    "Do not overwrite the original thesis."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Freeze and compare the original thesis with current evidence.",
+      "Re-run company quality, price, and fund fit independently.",
+      "Calculate ownership and reserve outcomes for each available action.",
+      "Identify sunk-cost and escalation language.",
+      "Choose among full, partial, conditional, hold, or stop actions under policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationsOwnedBy": "Scenario valuation, cap-table, and Fund Policy services"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The principle is known only through secondary summaries.",
+      "medium": "The official keynote supports the principle without chapter detail.",
+      "high": "Hashed keynote and reviewed licensed chapter converge."
+    },
+    "evidenceStrength": {
+      "low": "Founder update and round signaling only.",
+      "medium": "Original thesis and current operating evidence are available.",
+      "high": "Original thesis, current evidence, price, ownership, reserves, and alternatives converge."
+    },
+    "evidenceCoverage": {
+      "low": "Original thesis or current terms are missing.",
+      "medium": "Core evidence exists but opportunity cost or terms sensitivity is weak.",
+      "high": "All action scenarios and evidence deltas are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "No follow-on allocation decision exists.",
+      "medium": "A follow-on exists but the fund has no meaningful choice.",
+      "high": "Capital allocation and escalation risk are material."
+    },
+    "judgmentConfidence": {
+      "low": "Only progress can be described.",
+      "medium": "Marginal attractiveness is estimable with unresolved price or reserve issues.",
+      "high": "Evidence, price, ownership, and opportunity cost support one action."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-06",
+    "FUND-RESERVE-POLICY",
+    "DECISION-JOURNAL"
+  ],
+  "conflictingFrameworkIds": [
+    "AUTOMATIC-PRO-RATA",
+    "SUNK-COST-SUPPORT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Define deterministic action scenarios in Fund Policy.",
+      "Backtest follow-on and stop decisions with original decision-time records.",
+      "Measure escalation-of-commitment errors and missed recovery cases."
+    ],
+    "empiricalQualifications": [
+      "Follow-on availability and information are endogenous.",
+      "Outcomes are highly censored and long-dated.",
+      "Bridge rounds can be rational options or escalation depending on milestone design."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Only a neutral paraphrase of the public keynote principle is stored."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash the keynote revision.",
+      "Align with portfolio reserve and valuation services."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft turns double-down-or-quit into marginal re-underwriting."
+    }
+  ]
+}
+

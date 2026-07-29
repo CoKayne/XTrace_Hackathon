@@ -1,0 +1,269 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-01",
+  "slug": "asymmetric-small-bets",
+  "name": "Home Runs Matter, Strikeouts Don't",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Designs bounded experiments that preserve exposure to rare, large upside without confusing failure tolerance with unlimited loss.",
+    "productLabel": "Asymmetric Small-Bets Lens — based on The Venture Mindset public materials",
+    "notAClaimOf": [
+      "a fixed number of investments",
+      "permission to ignore failure cost",
+      "author endorsement of a specific portfolio"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ilya Strebulaev's public nine-principle keynote with empirical power-law qualification",
+    "scope": "person_direct",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "When outcomes are strongly asymmetric, a portfolio can use many bounded initial bets to preserve exposure to rare winners. Each experiment still needs an explicit loss cap, learning objective, follow-on rule, and fund-capacity check. Heavy-tailed outcomes alone do not determine the optimal number or concentration of investments.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-001"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pages 14-16"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VM-E1-POWERLAW-ANGELLIST",
+      "claimIds": [
+        "VM-EQ-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Power-law fit and portfolio-size simulations"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "portfolio_construction",
+      "pre_seed",
+      "seed"
+    ],
+    "businessModels": [
+      "venture_scale_business",
+      "innovation_experiment"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible",
+      "internal_innovation_budget"
+    ]
+  },
+  "requiredConditions": [
+    "Potential loss is bounded while upside is meaningfully asymmetric.",
+    "The active Fund Policy or innovation portfolio policy defines capital and follow-on limits.",
+    "Each small bet has a learning or option-preservation objective."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "portfolio_policy",
+      "description": "Fund size, check range, reserves, concentration, target count, and loss budget.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Fund Policy snapshot",
+        "innovation portfolio policy"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "bounded_downside",
+      "description": "Maximum capital, time, opportunity cost, and follow-on obligation for the initial bet.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "budget",
+        "reserve model",
+        "experiment plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "upside_mechanism",
+      "description": "Evidence-linked path to a venture-scale or portfolio-material outcome.",
+      "necessity": "required",
+      "acceptableSources": [
+        "scenario model",
+        "market evidence",
+        "company economics",
+        "ownership model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "learning_and_follow_on",
+      "description": "Milestone, evidence to acquire, follow-on criteria, and stop condition.",
+      "necessity": "required",
+      "acceptableSources": [
+        "investment memo",
+        "experiment charter",
+        "follow-on policy"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is loss truly bounded across capital, reserves, time, and reputation?",
+    "What rare upside remains accessible at realistic ownership?",
+    "What does the initial bet learn or preserve?",
+    "What evidence triggers follow-on, and what evidence triggers stop?",
+    "How does the proposed number of bets compare with the fund's demonstrated selection edge and access?"
+  ],
+  "positiveSignals": [
+    "Initial exposure is small relative to portfolio capacity.",
+    "The bet acquires high-value evidence before major capital commitment.",
+    "A realistic successful outcome materially affects the fund.",
+    "Follow-on and stop rules are written before results.",
+    "Portfolio size reflects edge, access, fees, and reserves rather than a slogan."
+  ],
+  "redFlags": [
+    "Failure tolerance is used to excuse unbounded follow-on obligations.",
+    "The small bet has no learning objective.",
+    "Upside uses an enormous TAM without ownership or value-capture math.",
+    "The fund cannot reserve enough capital for winners.",
+    "Portfolio concentration is inferred directly from heavy-tail returns."
+  ],
+  "disconfirmingEvidence": [
+    "Initial bets repeatedly require rescue capital before resolving risk.",
+    "The fund misses winners because target count is too small for its selection accuracy.",
+    "Follow-on decisions exhibit escalation rather than evidence-based updating.",
+    "Opportunity and operating costs make the loss materially larger than the check."
+  ],
+  "contraindications": [
+    "Do not apply to unbounded liability or correlated downside without adaptation.",
+    "Do not use as a company-quality score.",
+    "Do not set portfolio count without Fund Policy and empirical edge evidence."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Quantify total downside and upside exposure.",
+      "Identify the evidence purchased by the initial bet.",
+      "Compare bet size and count with fund capacity and edge.",
+      "Precommit follow-on and stop criteria.",
+      "Keep company quality, price, and portfolio construction separate."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "portfolioCalculationsOwnedBy": "Fund Policy and deterministic portfolio model"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a secondary summary supports the principle.",
+      "medium": "The author keynote supports the principle but the full chapter is unavailable.",
+      "high": "Hashed keynote pages and a reviewed licensed chapter converge."
+    },
+    "evidenceStrength": {
+      "low": "Small-check narrative only.",
+      "medium": "Downside and learning goal are explicit; upside or reserve evidence is weak.",
+      "high": "Downside, upside, learning, reserves, and edge are source-backed."
+    },
+    "evidenceCoverage": {
+      "low": "Policy, downside, upside, or follow-on criteria are missing.",
+      "medium": "All exist but one relies on broad assumptions.",
+      "high": "All inputs and sensitivity ranges are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "Outcomes are symmetric or downside is unbounded.",
+      "medium": "Asymmetry exists but portfolio constraints are unclear.",
+      "high": "Bounded initial loss and rare material upside define the decision."
+    },
+    "judgmentConfidence": {
+      "low": "Only the attractiveness of a small experiment is known.",
+      "medium": "Experiment design is sound but portfolio fit is unresolved.",
+      "high": "Experiment, upside, reserves, and portfolio policy converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-06",
+    "VC-PORTFOLIO-CONSTRUCTION",
+    "REAL-OPTIONS"
+  ],
+  "conflictingFrameworkIds": [
+    "CONCENTRATED-SEVEN-BETS",
+    "FAILURE-IS-NOT-AN-OPTION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Validate portfolio policy against the fund's selection edge and reserves.",
+      "Test correlated downside and opportunity cost.",
+      "Complete book-chapter fidelity audit only after public-source review."
+    ],
+    "empiricalQualifications": [
+      "Heavy-tail evidence does not uniquely determine portfolio size.",
+      "Platform selection and unrealized marks limit available studies.",
+      "Small bets can still consume substantial non-check resources."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No keynote slide or book content is reproduced beyond neutral paraphrase."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash and page-review the official keynote PDF.",
+      "Reconcile with Fund Policy and PT-06."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft with bounded-downside and portfolio-edge controls."
+    }
+  ]
+}
+

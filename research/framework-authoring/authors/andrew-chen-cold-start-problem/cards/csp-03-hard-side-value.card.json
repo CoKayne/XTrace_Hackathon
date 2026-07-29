@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-03",
+  "slug": "hard-side-value",
+  "name": "Hard-Side Value and Retention",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Identifies participants who contribute disproportionate value and tests whether the product solves a durable problem for acquiring and retaining them.",
+    "productLabel": "Hard-Side Lens — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["supply always being the hard side", "high activity proving healthy contribution", "subsidies proving durable hard-side value"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Find the participant group whose contribution creates disproportionate network value and is difficult to acquire or retain. Test whether the product solves that group's important job with durable economics rather than temporary payment or easier-side demand.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-007", "CSP-CLM-008", "CSP-CLM-016"],
+      "locator": {"kind": "pdf_page", "value": "Chapters 7-8, PDF pp. 90-107"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-HARD-2021",
+      "claimIds": ["CSP-CLM-007", "CSP-CLM-008"],
+      "locator": {"kind": "web_section", "value": "Easy Side, Hard Side, and Solve a Hard Problem sections"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "CSP-P1-KICKSTART-2021",
+      "claimIds": ["CSP-CLM-007", "CSP-CLM-016"],
+      "locator": {"kind": "video_timestamp", "value": "Show notes on first creators, minimum viable community, and incentives"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "CSP-01 and CSP-02 are applicable.",
+    "Participant contribution can be measured.",
+    "Hard-side value and platform value capture are analyzed separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "contribution_distribution",
+      "description": "Distribution of content, supply, transactions, invitations, documents, or other value contribution by participant.",
+      "necessity": "required",
+      "acceptableSources": ["product telemetry", "marketplace data", "creator analytics"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "hard_side_job",
+      "description": "Evidence of the hard side's job, pain, alternatives, willingness to participate, and value received.",
+      "necessity": "required",
+      "acceptableSources": ["user interviews", "behavioral data", "workflow study", "switching analysis"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "retention_economics",
+      "description": "Hard-side cohort retention, earnings or benefit, acquisition cost, subsidy, and multi-homing.",
+      "necessity": "required",
+      "acceptableSources": ["cohort data", "unit economics", "participant survey"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which minority creates disproportionate network value?",
+    "What important problem does the product solve for them on day one?",
+    "Do they retain without increasing subsidy?",
+    "Can the platform and other participants capture value without exploiting the hard side?"
+  ],
+  "positiveSignals": [
+    "Contribution concentration and participant pain identify the same hard side.",
+    "Hard-side retention improves within dense atomic networks.",
+    "Value persists as subsidies normalize.",
+    "The hard side expands supply or quality as opposite-side value rises."
+  ],
+  "redFlags": [
+    "The hard side is assumed from a generic marketplace template.",
+    "Acquisition is paid but retention is weak.",
+    "A small group carries the network without adequate benefit.",
+    "Easy-side growth masks hard-side scarcity."
+  ],
+  "disconfirmingEvidence": [
+    "Contribution is broadly distributed rather than concentrated.",
+    "The alleged hard side multi-homes with no meaningful friction.",
+    "Retention collapses when guarantees or incentives fall.",
+    "More hard-side participants degrade earnings or quality."
+  ],
+  "contraindications": [
+    "Do not assume seller, creator, developer, or manager is always the hard side.",
+    "Do not infer durable value from paid acquisition.",
+    "Do not ignore participant bargaining power and platform take-rate effects."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Measure value-contribution concentration.",
+      "Identify hard-side job and alternatives.",
+      "Analyze cohort retention, subsidy, and multi-homing.",
+      "Test value capture and adverse crowding.",
+      "Conclude durable hard side, subsidy-dependent, misidentified, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "participant_contribution_analysis",
+      "requiredOutputs": ["contribution_curve", "hard_side_retention", "hard_side_cac", "subsidy_per_retained_participant", "multihoming_rate"],
+      "prohibition": "The language model must not calculate contribution concentration or cohort economics."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Hard side is asserted.", "medium": "Telemetry and interviews align.", "high": "Auditable contribution, cohort, economics, and alternatives data converge."},
+    "evidenceStrength": {"low": "Activity only.", "medium": "Contribution and pain are supported but durability unclear.", "high": "Contribution, problem, retention, economics, and bargaining are supported."},
+    "evidenceCoverage": {"low": "Acquisition only.", "medium": "Contribution and retention covered; subsidy or multi-homing partial.", "high": "Contribution, pain, acquisition, retention, benefit, subsidy, multi-homing, and value capture complete."},
+    "applicabilityConfidence": {"low": "No differentiated participant roles.", "medium": "Roles exist but hard side is uncertain.", "high": "A material hard side is evidenced within the atomic network."},
+    "judgmentConfidence": {"low": "Hard side unproven.", "medium": "A plausible hard-side strategy.", "high": "A durable, economically supportable hard-side mechanism is evidenced."}
+  },
+  "overlapFrameworkIds": ["CSP-02", "CSP-07", "CSP-09"],
+  "conflictingFrameworkIds": ["SUPPLY-ALWAYS-HARD", "SUBSIDY-EQUALS-VALUE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate contribution and multi-homing metrics.", "Track subsidy normalization.", "Review hard-side welfare and bargaining."],
+    "empiricalQualifications": ["Hard-side identity can change by stage or geography.", "Contribution concentration may reflect product design or inequality rather than healthy network effects."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public book and chapter concepts are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define hard-side change detection across product stages."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

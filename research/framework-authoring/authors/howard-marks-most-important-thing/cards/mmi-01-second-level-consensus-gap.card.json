@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-01",
+  "slug": "second-level-consensus-gap",
+  "name": "Second-Level Consensus Gap",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates a differentiated, evidence-backed view from a merely unusual opinion by comparing company evidence, consensus expectations, and price implications.",
+    "productLabel": "Second-Level Consensus Gap — based on Howard Marks's public materials",
+    "notAClaimOf": ["a contrarian answer being automatically correct", "private reasoning reconstruction", "consensus being directly observable without evidence"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public materials",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "An active thesis should state the prevailing expectation, identify a material alternative that is both different and better supported, show what evidence creates the gap, and test whether the financing price already reflects it. Difference alone is not an edge.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-DIFFER-2022",
+      "claimIds": ["MMI-CLM-001", "MMI-CLM-002", "MMI-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Sections Second-Level Thinking and The Logic of Contrarianism"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-COLLECTION-2025",
+      "claimIds": ["MMI-CLM-001", "MMI-CLM-016", "MMI-CLM-022"],
+      "locator": {"kind": "pdf_page", "value": "Opening synthesis of enduring principles"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The decision date and target company are fixed.",
+    "Consensus is represented by sourced expectations rather than analyst intuition.",
+    "Company evidence and financing terms are available separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "consensus_snapshot",
+      "description": "Dated evidence of prevailing investor, customer, competitor, or market expectations.",
+      "necessity": "required",
+      "acceptableSources": ["financing announcements", "market research", "competitor valuations", "investment memos"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "variant_evidence",
+      "description": "Primary evidence supporting a materially different company or market outcome.",
+      "necessity": "required",
+      "acceptableSources": ["customer evidence", "operating data", "technical validation", "signed contracts"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "price_terms",
+      "description": "Current financing price, security, ownership, and material preferences.",
+      "necessity": "recommended",
+      "acceptableSources": ["term sheet", "cap table", "financing proposal"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What does the relevant consensus appear to expect?",
+    "What precise outcome does this thesis expect instead?",
+    "Why is the variant view better supported rather than merely different?",
+    "Is the proposed difference already reflected in price or terms?"
+  ],
+  "positiveSignals": [
+    "The consensus and variant view are explicit, dated, and falsifiable.",
+    "Primary evidence supports a causal difference that matters to value.",
+    "The price does not fully capitalize the supported upside.",
+    "A credible counterparty explains why the apparent gap may exist."
+  ],
+  "redFlags": [
+    "The system invents a consensus from news sentiment.",
+    "The thesis is simply the opposite of a popular view.",
+    "The variant is immaterial to economics or already priced in.",
+    "Private company opacity is mistaken for market inefficiency."
+  ],
+  "disconfirmingEvidence": [
+    "Competitors or informed investors already underwrite the same thesis.",
+    "Primary operating evidence matches rather than exceeds consensus.",
+    "The financing price embeds more favorable assumptions than the analyst model.",
+    "The claimed edge cannot be stated before the outcome."
+  ],
+  "contraindications": [
+    "Do not use when no defensible consensus snapshot exists.",
+    "Do not treat novelty, confidence, or eloquence as evidence.",
+    "Do not infer investability without separate valuation and fund-fit analysis."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Create a dated consensus statement and cite its evidence.",
+      "State one material variant outcome and its causal evidence.",
+      "Compare the variant with price and terms.",
+      "Record the strongest explanation for why consensus may be right.",
+      "Conclude gap supported, gap unproven, already priced, or not applicable."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Consensus and variant rely on unsourced commentary.", "medium": "Multiple credible sources support the comparison.", "high": "Primary company evidence and observable market terms anchor both sides."},
+    "evidenceStrength": {"low": "Difference is rhetorical.", "medium": "A causal variant exists but price reflection is uncertain.", "high": "The variant is causal, measurable, independently corroborated, and not fully priced."},
+    "evidenceCoverage": {"low": "Only the variant view is described.", "medium": "Consensus and variant are covered but terms or countercase are partial.", "high": "Consensus, variant, price, causal evidence, and countercase are complete."},
+    "applicabilityConfidence": {"low": "No relevant consensus can be bounded.", "medium": "Consensus is approximate but decision context is clear.", "high": "Decision, audience, horizon, and consensus are explicit."},
+    "judgmentConfidence": {"low": "Only a research question is supportable.", "medium": "A tentative gap is supported.", "high": "A material, falsifiable, unpriced gap is supported by convergent evidence."}
+  },
+  "overlapFrameworkIds": ["PT-01", "EI-01", "NN-06"],
+  "conflictingFrameworkIds": ["CONTRARIAN-BY-DEFAULT", "CONSENSUS-AS-FACT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate consensus extraction with expert reviewers.", "Backtest gap labels prospectively.", "Complete chapter-level fidelity review."],
+    "empiricalQualifications": ["Private-market consensus is sparse and selection-biased.", "A correct variant may still produce a poor return at the wrong terms."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Official public doctrine is neutrally paraphrased; no hidden reasoning or persona imitation is included."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define the main system's consensus-snapshot provenance contract."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

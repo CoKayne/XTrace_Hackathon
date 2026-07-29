@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-05",
+  "slug": "best-fit-customers",
+  "name": "Best-Fit Customer Segmentation",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Identifies observable customer characteristics that make differentiated value unusually important and predicts better buying and use outcomes.",
+    "productLabel": "Best-Fit Customer Lens — based on April Dunford's public positioning method",
+    "notAClaimOf": ["the broadest TAM being the best target", "personas without value evidence being segments", "historical customers all belonging in positioning"]
+  },
+  "attribution": {
+    "display": "Based on April Dunford's public positioning method",
+    "scope": "product_synthesis",
+    "people": ["April Dunford"],
+    "organizations": ["AprilDunford.com", "Positioning with April Dunford"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Starting from differentiated value, identify observable company, workflow, technology, urgency, regulatory, or buying characteristics that cause some customers to care more. Verify those characteristics in wins, adoption, retention, expansion, and losses; explicitly exclude bad-fit customers.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-QUICKSTART",
+      "claimIds": ["OA2-CLM-003", "OA2-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Best-fit target customers care strongly about unique value"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-PREP-2026",
+      "claimIds": ["OA2-CLM-005", "OA2-CLM-016"],
+      "locator": {"kind": "video_timestamp", "value": "11:56 and related preparation notes on obvious bad-fit customers"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-VALUE-2026",
+      "claimIds": ["OA2-CLM-015", "OA2-CLM-016"],
+      "locator": {"kind": "video_timestamp", "value": "10:02-17:23, champion-relevant value and objection separation"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "OA2-04 has a differentiated-value hypothesis.",
+    "Customer and deal outcomes can be segmented.",
+    "Segment variables are observable before or early in the sales process."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "customer_characteristics",
+      "description": "Observable attributes tied to urgency and differentiated value, not broad demographic labels.",
+      "necessity": "required",
+      "acceptableSources": ["CRM", "customer interviews", "workflow data", "technographic data", "regulatory context"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "segment_outcomes",
+      "description": "Win, cycle, activation, usage, retention, expansion, margin, and support outcomes by proposed characteristic.",
+      "necessity": "required",
+      "acceptableSources": ["CRM", "product analytics", "billing", "support", "cohort analysis"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "bad_fit_evidence",
+      "description": "Customer types that do not value the difference or produce poor outcomes and why.",
+      "necessity": "required",
+      "acceptableSources": ["loss analysis", "churn interviews", "support burden", "implementation failures"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which observable characteristics make the differentiated outcome urgent?",
+    "Do those customers buy, activate, retain, or expand differently?",
+    "Which historical customers are bad fit and should not define positioning?",
+    "Is the segment reachable and large enough for the company stage?"
+  ],
+  "positiveSignals": [
+    "Segment characteristics predict stronger purchase and use outcomes.",
+    "Best-fit customers articulate the same differentiated value.",
+    "Bad-fit exclusions improve focus and economics.",
+    "The segment can be identified and reached before expensive selling."
+  ],
+  "redFlags": [
+    "The target is defined as everyone in a large industry.",
+    "Personas describe job titles but not why value matters.",
+    "The segment is reverse-engineered from a few prestigious logos.",
+    "Bad-fit customers are retained to protect TAM optics."
+  ],
+  "disconfirmingEvidence": [
+    "Proposed segment characteristics do not predict outcomes.",
+    "High-performing customers care about a different value.",
+    "A narrow segment cannot support the stage's required scale.",
+    "Bad-fit performance improves after a product or service change."
+  ],
+  "contraindications": [
+    "Do not use protected traits or discriminatory proxies.",
+    "Do not infer best fit from customer count alone.",
+    "Do not let TAM size replace outcome evidence."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Derive candidate characteristics from differentiated value.",
+      "Test characteristics against sales and product outcomes.",
+      "Review bad-fit customers and countersegments.",
+      "Assess identifiability, reachability, and stage-appropriate scale.",
+      "Conclude evidenced, emerging, too broad, too narrow, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "best_fit_segment_analysis",
+      "requiredOutputs": ["segment_definition", "win_and_cycle_by_segment", "activation_retention_expansion", "gross_margin_and_support", "segment_size_if_supported"],
+      "prohibition": "The language model must not calculate segment outcomes or market size."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Ideal-customer brainstorm.", "medium": "CRM or customer data with partial reconciliation.", "high": "CRM, product, billing, support, and interviews converge."},
+    "evidenceStrength": {"low": "Plausible persona.", "medium": "Characteristic predicts some outcomes.", "high": "Repeated, prospective characteristic predicts buying and retained value."},
+    "evidenceCoverage": {"low": "Customer labels only.", "medium": "Wins and some use outcomes.", "high": "Win, cycle, activation, retention, expansion, margin, support, loss, and reachability covered."},
+    "applicabilityConfidence": {"low": "No differentiated value or segment variation.", "medium": "Some customers care more.", "high": "Segment selection materially determines GTM outcomes."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Emerging best-fit segment.", "high": "Well-evidenced, reachable best-fit segment."}
+  },
+  "overlapFrameworkIds": ["OA2-04", "OA2-06", "PT-03", "NN-06"],
+  "conflictingFrameworkIds": ["BROAD-TAM-EQUALS-BEST-TARGET", "PERSONA-EQUALS-BEST-FIT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate segment analytics.", "Define privacy and anti-discrimination controls.", "Backtest prospective segment predictions."],
+    "empiricalQualifications": ["Segment outcomes can reflect sales focus and product investment.", "Early samples may be small and selected."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author method is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define minimum cohort size and prohibited segmentation variables."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

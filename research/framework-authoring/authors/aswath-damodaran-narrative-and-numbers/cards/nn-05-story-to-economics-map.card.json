@@ -1,0 +1,288 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-05",
+  "slug": "story-to-economics-map",
+  "name": "Story-to-Economics Driver Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Maps competitive, scaling, capital, and risk claims into margin, reinvestment, duration, failure, and discounting hypotheses.",
+    "productLabel": "Story-to-Economics Map — based on Aswath Damodaran's public narrative-to-value architecture",
+    "notAClaimOf": [
+      "growth and margin being independent",
+      "all risk belonging in a discount rate",
+      "a strategic advantage having a fixed financial value"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public narrative-to-value architecture",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Translate claims about pricing, operating leverage, competition, capacity, capital intensity, durability, regulation, and survival into explicit hypotheses for margin, reinvestment, competitive-advantage duration, failure, and systematic risk. Require the story to pay the operational and capital cost of its growth.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-BRIDGE-2014",
+      "claimIds": [
+        "NN-CLM-007",
+        "NN-CLM-009",
+        "NN-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Spreadsheet-nirvana warning; Steps 3-4; competing Uber narratives and value drivers"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-RESETS-2015",
+      "claimIds": [
+        "NN-CLM-009",
+        "NN-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Apple, Facebook, and Twitter revisions to growth, margin, reinvestment, and value"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-SLIDES-2020",
+      "claimIds": [
+        "NN-CLM-007",
+        "NN-CLM-010"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Business story to growth/profitability, cash-flow, and risk inputs diagram; exact slide number pending"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_non_financial"
+    ],
+    "sectors": [
+      "all_non_financial"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Revenue scenarios from NN-04 or equivalent are available.",
+    "Current economics are separated from steady-state assumptions.",
+    "Competitive advantage, reinvestment, failure, and systematic risk are distinct.",
+    "DSV cards and deterministic services own numerical modeling."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "margin_mechanism",
+      "description": "Evidence for pricing, gross margin, operating leverage, mix, variable costs, and competitive pressure.",
+      "necessity": "required",
+      "acceptableSources": [
+        "unit economics",
+        "cost records",
+        "pricing data",
+        "cohort economics",
+        "comparable mature businesses"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "reinvestment_mechanism",
+      "description": "Capital, working capital, R&D, customer acquisition, hiring, capacity, and infrastructure required for growth.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating plan",
+        "cash flow statement",
+        "headcount plan",
+        "capacity plan",
+        "sales efficiency data"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "duration_and_risk",
+      "description": "Evidence for advantage duration, competitive erosion, regulation, survival, financing, and macro exposure.",
+      "necessity": "required",
+      "acceptableSources": [
+        "competitive research",
+        "regulatory source",
+        "runway data",
+        "contracts",
+        "industry cycles"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Why should margin improve, remain stable, or decline?",
+    "What reinvestment is required to deliver each growth path?",
+    "How long can excess economics survive and why?",
+    "Which risks change cash flows, survival probability, or systematic exposure?",
+    "Does the story assume both maximum growth and maximum margin without tradeoffs?",
+    "Which economic assumption causes the largest value sensitivity?"
+  ],
+  "positiveSignals": [
+    "Margin path follows measured unit economics and a credible convergence mechanism.",
+    "Growth is paired with capital and operational requirements.",
+    "Durability claims have observable competitive evidence.",
+    "Discrete failure and continuous operating risk are separated.",
+    "Bear, Base, and Bull stories remain internally coherent."
+  ],
+  "redFlags": [
+    "Growth is costless in the model.",
+    "Mature-company margin is copied without a convergence path.",
+    "A strategic slogan substitutes for advantage duration.",
+    "All uncertainty is hidden in one discount-rate premium.",
+    "The same evidence is counted in margin, duration, and option value."
+  ],
+  "disconfirmingEvidence": [
+    "Customer acquisition or support cost rises with scale.",
+    "Capacity investment arrives earlier or larger than assumed.",
+    "Competitors compress price or replicate the product.",
+    "Runway or financing constraints prevent the modeled path.",
+    "Regulatory or macro exposure changes the business economics."
+  ],
+  "contraindications": [
+    "Do not let the LLM invent margin, reinvestment, or risk values.",
+    "Do not convert a qualitative moat directly into a fixed multiple.",
+    "Do not double-count risk across cash flow, survival, and discount rate.",
+    "Do not issue an investment conclusion without price and terms."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Extract margin, reinvestment, duration, failure, and risk claims.",
+      "Map each claim to source evidence, mechanism, time path, and counterevidence.",
+      "Test cross-driver consistency within each narrative.",
+      "Identify value-sensitive unsupported assumptions.",
+      "Pass inputs to DSV-03 through DSV-07 and deterministic valuation."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredDriverFamilies": [
+        "margin",
+        "reinvestment",
+        "duration",
+        "failure",
+        "systematic_risk"
+      ],
+      "calculationOwner": "valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Economics come only from management aspiration.",
+      "medium": "Partial company metrics and comparable evidence exist.",
+      "high": "Verified company economics, contracts, costs, and independent competitive evidence converge."
+    },
+    "evidenceStrength": {
+      "low": "Economic inputs are disconnected point estimates.",
+      "medium": "Major mechanisms are supported but duration or capital needs remain uncertain.",
+      "high": "Material drivers have evidence-backed time paths and disconfirmers."
+    },
+    "evidenceCoverage": {
+      "low": "Only margin or growth is covered.",
+      "medium": "Margin and reinvestment are covered but duration or risk is partial.",
+      "high": "Margin, reinvestment, duration, failure, financing, competition, and macro exposure are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The model lacks a stable economic unit.",
+      "medium": "Economics can be modeled but steady state is uncertain.",
+      "high": "Current and target economics have explicit business-model definitions."
+    },
+    "judgmentConfidence": {
+      "low": "Only broad economic questions can be stated.",
+      "medium": "A scenario map is defensible with material priors identified.",
+      "high": "Driver paths are evidence-linked, coherent, and calculation-ready."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-03",
+    "DSV-04",
+    "DSV-05",
+    "H7P-01"
+  ],
+  "conflictingFrameworkIds": [
+    "GROWTH-WITHOUT-REINVESTMENT",
+    "MOAT-EQUALS-FIXED-MULTIPLE",
+    "ALL-RISK-IN-DISCOUNT-RATE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapters 8-10 review.",
+      "Validate cross-driver rules with valuation practitioners.",
+      "Backtest mapping accuracy and double-count controls."
+    ],
+    "empiricalQualifications": [
+      "Steady-state economics are especially uncertain for novel business models.",
+      "Comparable margins may not transfer across stage or accounting treatment.",
+      "Narrative mapping does not establish causal durability."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine is paraphrased; deterministic model interfaces are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete edition-specific page review.",
+      "Define business-model-specific reinvestment fields."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

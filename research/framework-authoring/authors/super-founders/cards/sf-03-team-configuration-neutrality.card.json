@@ -1,0 +1,292 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-03",
+  "slug": "team-configuration-neutrality",
+  "name": "Team Configuration Neutrality",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Stops solo-founder and technical-title heuristics from replacing direct assessment of team coverage, execution, key-person risk, and governance.",
+    "productLabel": "Team Configuration Anti-Gate — based on Super Founders public findings",
+    "notAClaimOf": [
+      "equal execution risk for every team size",
+      "technical capability being optional in technical companies",
+      "solo-founder superiority"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public solo-founder and founder-composition findings",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "In the author's selected comparison groups, solo-founder status and simple technical versus non-technical title combinations did not justify mechanical rejection. The product should evaluate whether the actual team covers present and next-stage work, survives key-person failure, makes decisions, recruits, and governs conflict; it should not add an opposite preference for solo or non-technical founders.",
+  "claimTypes": [
+    "empirical_association",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P1-INC-2021",
+      "claimIds": [
+        "SF-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Solo founders section: comparison with venture-funded non-unicorn group"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-S1-TECHCRUNCH-2021",
+      "claimIds": [
+        "SF-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Interview discussion of 20 percent solo-founder prevalence in both selected groups"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SF-P1-SANDHILL-2022",
+      "claimIds": [
+        "SF-CLM-004",
+        "SF-EQ-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript discussion of technical/non-technical founding-team combinations and warning against proxy rules"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SF-E1-NONSIGNIFICANCE-AEA",
+      "claimIds": [
+        "SF-EQ-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Decision-under-uncertainty discussion on estimates and uncertainty"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Team-size labels are kept separate from capability evidence.",
+    "Stage- and sector-specific work is explicitly mapped.",
+    "The conclusion does not claim configuration equivalence."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "responsibility_map",
+      "description": "Named ownership of product, technology, customer, hiring, finance, regulation, and operations responsibilities.",
+      "necessity": "required",
+      "acceptableSources": [
+        "organization plan",
+        "founder interviews",
+        "operating records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "observed_execution",
+      "description": "Dated examples of the current team delivering and coordinating stage-critical work.",
+      "necessity": "required",
+      "acceptableSources": [
+        "product milestones",
+        "customer records",
+        "hiring records",
+        "references"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "key_person_continuity",
+      "description": "Operational, technical, commercial, and signing-control dependence on individual people.",
+      "necessity": "required",
+      "acceptableSources": [
+        "access-control review",
+        "succession plan",
+        "IP assignments",
+        "customer ownership map"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "governance_alignment",
+      "description": "Founder equity, vesting, roles, decision rights, conflict history, and board expectations.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table",
+        "founder agreements",
+        "board documents",
+        "reference checks"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which necessary work is uncovered regardless of founder count?",
+    "What breaks if one key person is unavailable?",
+    "Does a title such as technical CEO reflect demonstrable capability?",
+    "How does the team resolve decisions and conflict?",
+    "Can missing capability be recruited before it becomes a binding constraint?",
+    "Would the team judgment change if founder count were hidden?"
+  ],
+  "positiveSignals": [
+    "All stage-critical responsibilities have credible owners.",
+    "The team has delivered cross-functional milestones.",
+    "Key-person dependencies are known and mitigated.",
+    "Governance and vesting support continued cooperation.",
+    "Configuration-neutral and full-information reviews converge."
+  ],
+  "redFlags": [
+    "Solo status alone causes rejection or admiration.",
+    "A technical or business title is accepted without work evidence.",
+    "Multiple founders obscure missing ownership or unresolved conflict.",
+    "One person controls customers, code, credentials, finance, and decisions without continuity.",
+    "The hiring plan assumes scarce capability will appear after financing."
+  ],
+  "disconfirmingEvidence": [
+    "A stage-critical responsibility repeatedly fails for lack of capacity.",
+    "Reference checks show unresolved founder conflict.",
+    "IP, customer, or system access is not assigned to the company.",
+    "Hiring evidence contradicts the stated ability to fill gaps.",
+    "Governance creates deadlock or unchecked key-person control."
+  ],
+  "contraindications": [
+    "Do not infer equal risk from an absence of detected group difference.",
+    "Do not waive sector-specific technical, licensing, or safety capability.",
+    "Do not treat cofounder count as a formal score."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Hide founder count and technical labels during the first capability review.",
+      "Map responsibilities, evidence of execution, continuity, and governance.",
+      "Reveal configuration and test whether it creates specific, evidenced risk.",
+      "Separate uncovered work from configuration preference.",
+      "Conclude on team coverage and risk, not ideal founder count."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only folklore about ideal cofounder count is available.",
+      "medium": "Author public findings support removing a hard gate.",
+      "high": "Licensed estimates, uncertainty, and matched external validation are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Titles and founder narrative only.",
+      "medium": "Responsibility map and some observed execution exist.",
+      "high": "Execution, references, continuity, governance, and recruiting evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Responsibilities or key-person dependencies are unknown.",
+      "medium": "Current coverage is known but next-stage hiring or governance is incomplete.",
+      "high": "Current and next-stage work, continuity, hiring, equity, and conflict are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Founding-team configuration is no longer a material uncertainty.",
+      "medium": "The company is later stage but retains key-person risk.",
+      "high": "Early-stage delivery depends directly on the founding team."
+    },
+    "judgmentConfidence": {
+      "low": "Only configuration labels are available.",
+      "medium": "The hard gate is removed but some capability risk is unresolved.",
+      "high": "Configuration-neutral assessment and operational evidence converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VM-05",
+    "PT-07",
+    "SF-02",
+    "WASS-FOUNDERS-DILEMMAS"
+  ],
+  "conflictingFrameworkIds": [
+    "SOLO-FOUNDER-VETO",
+    "TWO-FOUNDER-OPTIMUM",
+    "TECHNICAL-TITLE-SCORE"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Review licensed estimates and uncertainty.",
+      "Validate configuration-neutral capability rubric by stage and sector.",
+      "Test incremental value beyond observed execution and governance."
+    ],
+    "empiricalQualifications": [
+      "The public no-disadvantage finding applies to selected venture-funded groups.",
+      "No detected difference does not prove exact equivalence.",
+      "Configuration can affect bandwidth and key-person risk even if it is not a universal success predictor."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book or interview passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete licensed statistical review of founder-count and composition findings.",
+      "Reconcile governance lens with The Founder's Dilemmas."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial configuration-neutral team-capability card."
+    }
+  ]
+}
+

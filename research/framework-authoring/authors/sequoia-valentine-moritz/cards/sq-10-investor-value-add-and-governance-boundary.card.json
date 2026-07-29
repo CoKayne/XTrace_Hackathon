@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-10",
+  "slug": "investor-value-add-and-governance-boundary",
+  "name": "Investor Value-Add and Governance Boundary",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether an investor can provide specific, consented, governed help without replacing founder responsibility or creating unmanaged conflicts.",
+    "productLabel": "Investor Value-Add and Governance Boundary — synthesis of Don Valentine and Michael Moritz public case accounts",
+    "notAClaimOf": ["investor intervention always creating value", "brand or network guaranteeing help", "replacing management being a default venture practice"]
+  },
+  "attribution": {
+    "display": "Product synthesis from direct Valentine diligence statements and disclosed Moritz/Sequoia behavior in LinkExchange and Zappos",
+    "scope": "product_synthesis",
+    "people": ["Don Valentine", "Michael Moritz", "Alfred Lin"],
+    "organizations": ["Sequoia Capital", "Computer History Museum"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Treat investor help as a capability requiring diligence on both sides. Define the company need, investor competence and availability, founder and board consent, authority, conflicts, confidentiality, success conditions, and exit from temporary operating roles. Brand, testimonials, and selected success cases are not sufficient.",
+  "claimTypes": ["direct_doctrine", "revealed_behavior", "historical_description", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-P1-VALENTINE-NETAPP-CHM",
+      "claimIds": ["SQ-CLM-024"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 14-15: founders conducting diligence on Sequoia and the duration of partnership"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-P1-MORITZ-ZAPPOS",
+      "claimIds": ["SQ-CLM-025", "SQ-CLM-026", "SQ-CLM-027"],
+      "locator": {"kind": "web_section", "value": "Lines 21-37 and 55-60: mentoring, interim CEO role, recruiting a replacement, board and financing support, relationship continuity"},
+      "attributionScope": "revealed_behavior",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-I1-ARC-CURRENT",
+      "claimIds": ["SQ-CLM-026"],
+      "locator": {"kind": "web_section", "value": "Lines 46-65 and 398-416: institution claims about guidance, network, and company-building support"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["preferred", "convertible", "all"]
+  },
+  "requiredConditions": [
+    "The company need and proposed investor role are concrete.",
+    "Founder, board, and legal authority are respected.",
+    "Potential conflicts, confidentiality, allocation, and related interests are reviewed."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "company_need",
+      "description": "Specific gap in recruiting, governance, customers, financing, strategy, operations, or crisis response and why investor help is appropriate.",
+      "necessity": "required",
+      "acceptableSources": ["board materials", "operating plan", "role specification", "founder request", "risk assessment"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "investor_capability_and_capacity",
+      "description": "Relevant prior work, referenceable outcomes including failures, named responsible person, time commitment, and conflicts.",
+      "necessity": "required",
+      "acceptableSources": ["founder references", "portfolio references", "work record", "resource plan", "conflicts register"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "governance_and_consent",
+      "description": "Role, authority, fiduciary duties, consent, confidentiality, information rights, recusal, reporting, and termination.",
+      "necessity": "required",
+      "acceptableSources": ["board consent", "engagement terms", "policies", "legal memo", "conflict disclosure"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "success_and_exit",
+      "description": "Milestones, operating owner, knowledge transfer, replacement or exit plan, and review dates.",
+      "necessity": "required",
+      "acceptableSources": ["role charter", "milestone plan", "succession plan", "board minutes", "post-engagement review"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact company outcome requires investor help?",
+    "Which named investor has demonstrated capability and available time?",
+    "What do founders who received and declined that help report?",
+    "Who retains operating and board authority, and how are conflicts managed?",
+    "When and how does temporary intervention end or transfer?"
+  ],
+  "positiveSignals": [
+    "The company requests or consents to a specific bounded role.",
+    "Capability is verified through diverse references and actual availability.",
+    "Authority, fiduciary duties, conflicts, confidentiality, and reporting are documented.",
+    "Temporary operating help has milestones, knowledge transfer, and an exit plan."
+  ],
+  "redFlags": [
+    "Brand, network size, or testimonials substitute for named capacity.",
+    "The investor promises operating help without time, competence, or consent.",
+    "Board and operating roles blur without conflict or fiduciary controls.",
+    "Intervention has no success conditions, replacement, or termination path."
+  ],
+  "disconfirmingEvidence": [
+    "A strong investor may add most value by not intervening operationally.",
+    "Founder references can be selected and should include difficult and failed cases.",
+    "Management replacement may sometimes be necessary but requires board process, legal duties, and context.",
+    "Hands-on help can increase dependency, slow decisions, or create conflicts."
+  ],
+  "contraindications": [
+    "Do not infer value-add from one LinkExchange or Zappos retrospective.",
+    "Do not recommend management replacement or investor control automatically.",
+    "Do not expose confidential portfolio information or cross-company data without authorization."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define the company need and whether investor involvement is appropriate.",
+      "Verify named capability, availability, references, and conflicts.",
+      "Review founder and board consent, fiduciary authority, confidentiality, and reporting.",
+      "Specify milestones, accountable operator, knowledge transfer, and exit.",
+      "Conclude credible bounded help, conditional help, brand-only claim, conflict risk, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Investor marketing claim.", "medium": "Selected founder references and resource plan.", "high": "Diverse references, governed role, capacity, outcomes, and conflict records."},
+    "evidenceStrength": {"low": "Brand or network promise.", "medium": "Named relevant capability.", "high": "Verified capability, consent, governance, capacity, and bounded execution plan."},
+    "evidenceCoverage": {"low": "Testimonials only.", "medium": "Need, person, and references.", "high": "Need, competence, capacity, conflicts, authority, milestones, failures, and exit covered."},
+    "applicabilityConfidence": {"low": "No defined company need.", "medium": "Specific support opportunity.", "high": "Material board-approved or founder-requested role under consideration."},
+    "judgmentConfidence": {"low": "Brand inference.", "medium": "Bounded capability assessment.", "high": "Independent references and governance artifacts support a specific role."}
+  },
+  "overlapFrameworkIds": ["SHR-08", "BVC-09", "PL-07", "FD-09", "VM-05"],
+  "conflictingFrameworkIds": ["VC-BRAND-AS-VALUE-ADD", "UNBOUNDED-INVESTOR-OPERATION"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Obtain governance and fiduciary review.", "Create bidirectional reference protocol.", "Test capacity and outcome tracking."],
+    "empiricalQualifications": ["The supporting cases are selected success retrospectives.", "Investor intervention effectiveness varies by person, need, consent, governance, and context."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Direct and disclosed-behavior sources are separated; the cross-source method is labeled product synthesis."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Obtain fund counsel, governance, confidentiality, and conflict review."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

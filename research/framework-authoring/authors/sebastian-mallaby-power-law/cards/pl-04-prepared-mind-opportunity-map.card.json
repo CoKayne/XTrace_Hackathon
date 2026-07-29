@@ -1,0 +1,145 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-04",
+  "slug": "prepared-mind-opportunity-map",
+  "name": "Prepared-Mind Opportunity Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Turns an emerging technology or market event into a sourced map of enabling layers, bottlenecks, customers, and company archetypes before searching historical deals.",
+    "productLabel": "Prepared-Mind Pattern — based on Mallaby's public description of Sequoia practice",
+    "notAClaimOf": ["Sequoia endorsing this implementation", "theme prediction", "sector keywords being company evidence"]
+  },
+  "attribution": {
+    "display": "Product synthesis based on Sebastian Mallaby's public historical description of a Sequoia prepared-mind practice",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Sequoia Capital"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Before ranking companies, analyze what a technology or structural change enables, which new problems and constraints it creates, who pays to solve them, and what evidence would reveal adoption. Use the resulting map to retrieve relevant past deals by business exposure, not by keywords alone.",
+  "claimTypes": ["historical_description", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P1-HBR-2022",
+      "claimIds": ["PL-CLM-006", "PL-CLM-009", "PL-CLM-012"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of prepared mind, cloud security, enabling technologies, and network design"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-P2-SAMPLE-2023",
+      "claimIds": ["PL-CLM-004", "PL-CLM-019"],
+      "locator": {"kind": "pdf_page", "value": "Introduction, pp. 1 onward in the official sample"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The triggering technology or market change has sourced evidence.",
+    "The map is dated and versioned.",
+    "Company retrieval uses causal exposure fields."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "change_evidence",
+      "description": "Primary or credible evidence of the technology, regulation, cost curve, or customer shift.",
+      "necessity": "required",
+      "acceptableSources": ["official release", "technical paper", "regulator", "market data", "credible news"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "ecosystem_map",
+      "description": "Enablers, bottlenecks, complements, substitutes, customers, payers, and constraints.",
+      "necessity": "required",
+      "acceptableSources": ["industry research", "expert interview", "customer evidence", "technical analysis"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "historical_deal_fields",
+      "description": "Structured company business model, customer, product, stage, geography, and past concern.",
+      "necessity": "required",
+      "acceptableSources": ["XTrace memory", "deal database"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What changed and which previous constraint moved?",
+    "What new bottlenecks, complements, or risks follow?",
+    "Who experiences the problem and who pays?",
+    "Which historical companies have causal exposure?",
+    "Which original pass condition might the change affect?"
+  ],
+  "positiveSignals": [
+    "The map derives specific business consequences from sourced change.",
+    "Company matches share causal exposure, not only sector labels.",
+    "The original concern is linked to a changed node.",
+    "Countereffects and substitute technologies are included."
+  ],
+  "redFlags": [
+    "The map is a list of fashionable sectors.",
+    "All companies with the same keyword are retrieved.",
+    "Funding activity is treated as end-customer demand.",
+    "The system assumes the event persists."
+  ],
+  "disconfirmingEvidence": [
+    "The company depends on an unchanged bottleneck.",
+    "Customers do not experience or pay for the inferred benefit.",
+    "A substitute captures the value created by the change.",
+    "The original pass reason was unrelated to market timing."
+  ],
+  "contraindications": [
+    "Do not use the map as an investment recommendation.",
+    "Do not attribute this product workflow to Sequoia.",
+    "Do not hide competing ecosystem maps."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Normalize the triggering change and evidence.",
+      "Map enablers, constraints, value capture, and adoption observations.",
+      "Generate causal company archetypes.",
+      "Retrieve historical deals and compare original concerns.",
+      "Output ranked research candidates with reasons and counterchannels."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Trend is based on promotional commentary.", "medium": "Several credible sources establish the change.", "high": "Primary technical, customer, and market sources converge."},
+    "evidenceStrength": {"low": "Keyword relationship only.", "medium": "Causal map exists but company exposure is indirect.", "high": "Change, causal map, payer, exposure, and original concern are evidenced."},
+    "evidenceCoverage": {"low": "Technology only.", "medium": "Ecosystem and companies covered; countereffects partial.", "high": "Change, ecosystem, payer, value capture, constraints, companies, and countereffects complete."},
+    "applicabilityConfidence": {"low": "Change or company domain is ambiguous.", "medium": "Map is relevant but broad.", "high": "Time, geography, industry, stage, and deal fields align."},
+    "judgmentConfidence": {"low": "Trend note only.", "medium": "A plausible revisit candidate exists.", "high": "A causal event-to-past-deal connection is strongly supported."}
+  },
+  "overlapFrameworkIds": ["MMI-05", "BVC-06", "NN-08", "PT-05"],
+  "conflictingFrameworkIds": ["TREND-KEYWORD-MATCH", "SEQUOIA-ENDORSEMENT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale"],
+    "promotionRequirements": ["Validate opportunity-map ontology.", "Prospectively test retrieval precision.", "Add expert review for technical maps."],
+    "empiricalQualifications": ["Emerging technology maps are incomplete and path-dependent.", "Historical deal records may be sparsely structured."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "A public historical description is paraphrased; product workflow is not presented as Sequoia doctrine."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define causal exposure fields shared with MarketEvent and DealMemory."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

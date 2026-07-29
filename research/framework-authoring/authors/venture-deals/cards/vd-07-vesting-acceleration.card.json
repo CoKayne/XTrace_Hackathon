@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-07",
+  "slug": "vesting-acceleration",
+  "name": "Vesting, Repurchase, and Acceleration",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Models service vesting, prior credit, leaver repurchase, pool return, and change-of-control acceleration by holder and event.",
+    "productLabel": "Vesting and Acceleration Lens — based on Feld and Mendelson's public Venture Deals materials",
+    "notAClaimOf": [
+      "four years and one cliff being a universal default",
+      "vesting being only an employee-compensation term",
+      "single or double trigger being universally preferable"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public vesting materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "For each founder, employee, director, and advisor grant, track service start, vesting schedule, prior credit, cliff, repurchase right and price, termination treatment, pool return, and change-of-control acceleration. Compare retention, ownership, and acquisition effects across actual event states rather than applying a market-default schedule.",
+  "claimTypes": [
+    "direct_doctrine",
+    "historical_description",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-VESTING-2005",
+      "claimIds": [
+        "VD-CLM-012",
+        "VD-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Service vesting, founder credit, repurchase, options returning to pool, and single/double-trigger acceleration"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P2-CONTENTS-2019",
+      "claimIds": [
+        "VD-CLM-012",
+        "VD-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 5: vesting and exercise period; Chapter 19: employment, 409A, 83(b), and founders' stock"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VD-P1-WRAP-2005",
+      "claimIds": [
+        "VD-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public-series legal disclaimer"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_companies_with_service_equity"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all_with_counsel_and_tax_mapping"
+    ],
+    "securityTypes": [
+      "founder_common",
+      "restricted_stock",
+      "option",
+      "rsu"
+    ]
+  },
+  "requiredConditions": [
+    "Every grant and founder holding has an executed document and service-start date.",
+    "Vesting, repurchase, termination, acceleration, and exercise rules are holder-specific.",
+    "Acquisition and termination states are defined separately.",
+    "Tax, 409A, 83(b), employment, and enforceability questions go to counsel."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "equity_grants",
+      "description": "Holder, instrument, shares, grant date, service start, cliff, cadence, duration, prior credit, and current vested balance.",
+      "necessity": "required",
+      "acceptableSources": [
+        "grant agreement",
+        "stock purchase agreement",
+        "option plan",
+        "equity ledger"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "leaver_terms",
+      "description": "Termination definitions, repurchase right, price, exercise period, forfeiture, and pool-return rules.",
+      "necessity": "required",
+      "acceptableSources": [
+        "grant agreement",
+        "employment agreement",
+        "option plan",
+        "board approval"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "change_of_control_terms",
+      "description": "Single/double trigger, covered events, termination window, good-reason definition, assumption, substitution, and acceleration amount.",
+      "necessity": "required",
+      "acceptableSources": [
+        "grant agreement",
+        "employment agreement",
+        "transaction plan",
+        "board approval"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "How much of each holder's equity is vested today and at each milestone?",
+    "What happens on voluntary departure, termination, death/disability, or cause?",
+    "Who may repurchase unvested shares, at what price, and by when?",
+    "Does unvested equity return to the pool?",
+    "What acquisition and termination events trigger acceleration?",
+    "How do retention, buyer integration, and remaining-holder ownership change?"
+  ],
+  "positiveSignals": [
+    "All grants reconcile to the equity ledger.",
+    "Founder prior service and future retention are explicitly balanced.",
+    "Leaver and repurchase rules are unambiguous.",
+    "Acceleration triggers and amounts are consistent across documents.",
+    "Acquisition states show employee, founder, buyer, and pool effects."
+  ],
+  "redFlags": [
+    "A default schedule is assumed without grant documents.",
+    "Founder stock is treated as fully owned despite repurchase rights.",
+    "Single/double-trigger labels replace exact definitions.",
+    "Exercise deadlines or option expiration are omitted.",
+    "The system provides tax or employment-law advice."
+  ],
+  "disconfirmingEvidence": [
+    "Board approvals or grant records conflict with the cap table.",
+    "An employment agreement overrides plan language.",
+    "A change-of-control event does not meet the contractual definition.",
+    "Assumption or substitution prevents acceleration.",
+    "Repurchase or exercise windows have expired."
+  ],
+  "contraindications": [
+    "Do not apply a market-standard schedule as company fact.",
+    "Do not calculate without holder-level documents.",
+    "Do not provide tax, employment, or enforceability conclusions.",
+    "Do not let the LLM calculate vested balances."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Reconcile grants and founder holdings to legal records.",
+      "Parse service, cliff, cadence, credit, leaver, repurchase, exercise, and acceleration rules.",
+      "Run current, milestone, termination, and acquisition states.",
+      "Show holder and pool ownership changes.",
+      "Route tax, employment, and legal issues to counsel."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "outputs": [
+        "vested_unvested_by_holder_and_date",
+        "repurchase_and_exercise_deadlines",
+        "acceleration_by_event",
+        "pool_return_and_ownership_effect"
+      ],
+      "guards": [
+        "holder_documents_reconciled",
+        "service_date_and_schedule_exact",
+        "event_definitions_exact",
+        "legal_and_tax_advice_excluded"
+      ],
+      "calculationOwner": "vesting_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only cap-table shares or a verbal schedule are known.",
+      "medium": "Core grants exist but employment or transaction terms are incomplete.",
+      "high": "Grant, plan, ledger, employment, board, and transaction documents reconcile."
+    },
+    "evidenceStrength": {
+      "low": "Vested balances cannot be reproduced.",
+      "medium": "Current vesting is reproducible but a leaver or acquisition state is ambiguous.",
+      "high": "Every holder and state is deterministic."
+    },
+    "evidenceCoverage": {
+      "low": "Only share counts are known.",
+      "medium": "Schedules and grants are covered but leaver, exercise, or acceleration is partial.",
+      "high": "Schedules, credit, leaver, repurchase, exercise, acceleration, pool, and all holders are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No service-based equity exists.",
+      "medium": "Service equity exists with custom jurisdictional terms.",
+      "high": "All grant and event terms are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only document gaps can be listed.",
+      "medium": "Current balances and a bounded event range are usable.",
+      "high": "Retention and ownership effects are reproducible."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-07",
+    "SHR-06",
+    "VD-02",
+    "VD-06"
+  ],
+  "conflictingFrameworkIds": [
+    "UNIVERSAL-VESTING-SCHEDULE",
+    "FOUNDER-SHARES-EQUALS-FULLY-VESTED",
+    "TRIGGER-LABEL-EQUALS-OUTCOME"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Employment, tax, and venture-counsel review.",
+      "Golden-case tests for holder and acquisition states.",
+      "Complete fourth-edition vesting and legal chapter review."
+    ],
+    "empiricalQualifications": [
+      "Vesting conventions vary by geography, role, stage, and negotiation.",
+      "Retention effects depend on compensation and team context beyond documents.",
+      "Acquisition acceleration can affect buyer willingness and employee incentives."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical public conventions are not product defaults; exact outcomes require executed documents."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define vesting event schema and time-zone/date policy.",
+      "Obtain jurisdiction-specific counsel review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

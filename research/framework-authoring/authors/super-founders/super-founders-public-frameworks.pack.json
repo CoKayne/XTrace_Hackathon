@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "super_founders_public_frameworks_v0_1",
+  "name": "Super Founders Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten independently reviewable anti-bias, base-rate, founder, market, competition, defensibility, financing-signal, and outcome-label cards based on Ali Tamaseb's public materials with external empirical qualification.",
+  "cardFiles": [
+    "cards/sf-01-descriptive-base-rate-guardrail.card.json",
+    "cards/sf-02-age-education-pedigree-neutralization.card.json",
+    "cards/sf-03-team-configuration-neutrality.card.json",
+    "cards/sf-04-domain-transferable-capability.card.json",
+    "cards/sf-05-entrepreneurial-practice-signal.card.json",
+    "cards/sf-06-existing-demand-market-timing.card.json",
+    "cards/sf-07-competition-differentiation.card.json",
+    "cards/sf-08-defensibility-mechanism.card.json",
+    "cards/sf-09-financing-accelerator-signal.card.json",
+    "cards/sf-10-unicorn-outcome-label-guardrail.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Complete licensed first-edition chapter, page, definition, and statistical-table review.",
+      "Resolve the public 30,000 versus 40,000 data-point discrepancy without inference.",
+      "Verify machine transcripts against original audio or video timestamps.",
+      "Review missingness, sample exclusions, statistical power, confidence intervals, and multiple-testing handling.",
+      "Complete empirical Decision Utility tests and cross-framework mapping.",
+      "Complete content and rights review before seed conversion."
+    ]
+  }
+}
+

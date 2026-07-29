@@ -1,0 +1,289 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-09",
+  "slug": "power-progression",
+  "name": "Power Progression",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Frames Power as a time-sensitive strategic path across Origination, Take-Off, and Stability without inventing unavailable timing rules.",
+    "productLabel": "Power Progression Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "all Powers being available at every stage",
+      "maturity being measurable by counting Powers",
+      "public synopsis material supporting exact phase-to-Power hard gates"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public Power Progression doctrine",
+    "scope": "product_synthesis",
+    "people": [
+      "Hamilton Helmer",
+      "Reed Hastings"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "The official synopsis presents invention as prior to Power and identifies Origination, Take-Off, and Stability as phases for timing strategic action. The framework is meant to identify a current strategic crux and a limited window for building a mechanism. Because public materials reviewed here do not fully specify each Power's timing rule, this card asks phase-aware questions but does not impose hard gates.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-SYNOPSIS",
+      "claimIds": [
+        "H7P-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official synopsis lines 13-16: invention first, Power Progression, Origination, Take-Off, Stability, and strategic crux"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P2-FOREWORD",
+      "claimIds": [
+        "H7P-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Foreword lines 37-42: near-term strategic imperatives and approximate time fuse"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-010",
+        "H7P-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Founder strategy menu lines 257-270: creative act, evolution over time, genotype versus phenotype, and distinction from product-market fit"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Company phase is inferred from operating evidence rather than round label alone.",
+    "Present Power is separated from a path to Power.",
+    "The current strategic crux and irreversible choices are explicit.",
+    "No exact phase-to-Power rule is invented from incomplete public material."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "phase_evidence",
+      "description": "Evidence of invention, product definition, product-market fit, rapid scaling, market structure, competitive response, and stable economics.",
+      "necessity": "required",
+      "acceptableSources": [
+        "product history",
+        "customer cohorts",
+        "growth data",
+        "market evolution",
+        "competitive events"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "candidate_power_path",
+      "description": "For each relevant Power, current mechanism, missing conditions, required accumulation, and estimated establishment window.",
+      "necessity": "required",
+      "acceptableSources": [
+        "strategy memo",
+        "operating plan",
+        "network roadmap",
+        "cost model",
+        "customer embedding plan"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "strategic_crux",
+      "description": "The current directional choice, alternatives, dependencies, reversibility, decision deadline, and evidence that would change it.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board material",
+        "founder interview",
+        "scenario analysis",
+        "product roadmap",
+        "capital plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "lost_window_and_decay",
+      "description": "Conditions under which the company can no longer establish the candidate Power or an incumbent, entrant, standard, or technology removes the window.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "competitive timeline",
+        "market adoption data",
+        "technology roadmap",
+        "regulatory milestones"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is the company primarily inventing, finding fit, scaling, or defending established economics?",
+    "Which candidate Powers are realistically buildable in the current phase?",
+    "What current decision has a time-sensitive or irreversible effect on that path?",
+    "What must be true before the next phase?",
+    "When does a standard, incumbent, entrant, network, or customer choice close the window?",
+    "Which timing claims require licensed-book verification before becoming hard rules?"
+  ],
+  "positiveSignals": [
+    "The company identifies a specific Power path rather than a generic moat aspiration.",
+    "The current phase is supported by customer and operating evidence.",
+    "A near-term directional choice causally affects the future mechanism.",
+    "Dependencies, decision dates, and lost-window conditions are explicit.",
+    "The team updates the path as customers, technology, and competition evolve."
+  ],
+  "redFlags": [
+    "Round label is used as the only phase evidence.",
+    "All seven Powers appear in a roadmap without prioritization.",
+    "A mature-state mechanism is assumed available before customer value exists.",
+    "The strategic plan is a static top-down document unrelated to market learning.",
+    "Exact Power timing is asserted without a reviewed source."
+  ],
+  "disconfirmingEvidence": [
+    "The candidate mechanism depends on a window that has already closed.",
+    "Customer learning invalidates the original invention or market boundary.",
+    "A standard or incumbent action commoditizes the planned Barrier.",
+    "The required accumulation cannot be financed before competitors catch up.",
+    "The company repeatedly postpones the decisive action without new evidence."
+  ],
+  "contraindications": [
+    "Do not hard-code phase-to-Power mappings until licensed review is complete.",
+    "Do not score maturity by Power count.",
+    "Do not treat a strategic plan as evidence that the mechanism exists.",
+    "Do not ignore product-market fit or execution while discussing Power."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Infer the operating phase from time-stamped evidence.",
+      "List relevant candidate Power paths and their missing conditions.",
+      "Identify the current strategic crux, reversibility, and decision deadline.",
+      "Map establishment windows, dependencies, and disconfirming events.",
+      "Output phase-aware questions and actions without imposing unverified timing gates."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a round label or aspirational strategy is available.",
+      "medium": "Public phase doctrine and internal operating evidence are available.",
+      "high": "Licensed progression rules and time-stamped operating and competitive evidence are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "No current crux or Power path is causal.",
+      "medium": "Phase and path are plausible but timing is uncertain.",
+      "high": "Phase, mechanism dependencies, decision window, and lost-window evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Phase or path is missing.",
+      "medium": "Phase and crux are covered but window or alternatives are incomplete.",
+      "high": "Phase, paths, crux, alternatives, dependencies, deadlines, and lost windows are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No strategic mechanism or time-sensitive decision is identified.",
+      "medium": "A plausible path exists with an uncertain decision window.",
+      "high": "The company faces a material time-sensitive choice affecting future Power."
+    },
+    "judgmentConfidence": {
+      "low": "Only a stage narrative is supported.",
+      "medium": "A phase-aware path and crux can be described.",
+      "high": "Licensed rules and company evidence support a precise time-window judgment."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "VM-02",
+    "PT-05",
+    "SF-06"
+  ],
+  "conflictingFrameworkIds": [
+    "ROUND-LABEL-MATURITY",
+    "POWER-COUNT-MATURITY",
+    "STATIC-STRATEGY-PLAN"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful chapter-level Power Progression review.",
+      "Verify phase-to-Power timing and lost-window rules.",
+      "Validate that timing prompts improve decisions without hindsight leakage."
+    ],
+    "empiricalQualifications": [
+      "Public sources reviewed do not supply complete phase-to-Power rules.",
+      "Company phases are path-dependent and cannot be inferred from financing round alone.",
+      "Timing judgments are especially vulnerable to hindsight and survivorship bias."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Only public phase labels and neutral timing concepts are used; detailed progression rules remain withheld pending lawful review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Highest-priority licensed-edition gap: exact Power Progression mapping.",
+      "Verify official source wording and page locators."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial conservative phase-aware Power Progression card without invented hard gates."
+    }
+  ]
+}

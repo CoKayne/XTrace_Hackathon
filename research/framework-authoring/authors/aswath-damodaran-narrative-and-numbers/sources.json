@@ -1,0 +1,353 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "aswath_damodaran_narrative_and_numbers_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business",
+      "Columbia University Press",
+      "CFA Institute"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "NN-P2-BOOK-2017",
+      "title": "Narrative and Numbers: The Value of Stories in Business",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Columbia University Press",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_catalog_record",
+      "url": "https://cup.columbia.edu/book/narrative-and-numbers/9780231542746/",
+      "edition": "2017 first edition; hardcover ISBN 978-0-231-18048-1; ebook ISBN 978-0-231-54274-6; publisher lists 296 pages",
+      "publishedAt": "2017-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_metadata_and_public_description_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Canonical publisher record for edition, scope, public description, and chapter architecture.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-PREFACE",
+      "title": "Numbers and Narrative — Preface",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author_book_preface",
+      "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/NNPreface.html",
+      "edition": "Public preface for the 2017 book",
+      "publishedAt": "2017",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports the story-number bridge, company-life-cycle examples, management-role transitions, and intended VC use.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-COMPANION-HOME",
+      "title": "Numbers and Narrative — Official Companion Home",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author_book_companion",
+      "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/numbers%26narrative.htm",
+      "edition": "Official companion page accessed 2026-07-28",
+      "publishedAt": "2017",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports the 16-chapter sequence from setting the stage through story-to-value, news, and corporate life cycle.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-BRIDGE-2014",
+      "title": "Numbers and Narrative: Modeling, Story Telling and Investing",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Musings on Markets",
+      "sourceClass": "P1",
+      "sourceType": "official_author_essay",
+      "url": "https://aswathdamodaran.blogspot.com/2014/06/numbers-and-narrative-modeling-story.html",
+      "edition": "Author post dated 2014-06-24",
+      "publishedAt": "2014-06-24",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary public statement of the five-step story-to-value workflow, modeling illusions, narrative tests, driver conversion, and feedback loop.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-CFA-2014",
+      "title": "Numbers and Narratives: Modeling, Storytelling, and Investing",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "CFA Institute Research and Policy Center",
+      "sourceClass": "P1",
+      "sourceType": "official_host_webcast_record",
+      "url": "https://rpc.cfainstitute.org/research/multimedia/2014/numbers-and-narratives-modeling-storytelling-and-investing",
+      "edition": "Archived live webcast record dated 2014-11-20",
+      "publishedAt": "2014-11-20",
+      "eventAt": "2014-11-20",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "CFA summary corroborates the precision, objectivity, and control illusions; testing against history, experience, and common sense; and mapping stories to value drivers.",
+      "immutableRevision": {
+        "status": "pending_video_transcript_review",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-THREE-PS",
+      "title": "Possible, Plausible and Probable: Big Markets and Networking Effects",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Musings on Markets",
+      "sourceClass": "P1",
+      "sourceType": "official_author_essay",
+      "url": "https://aswathdamodaran.blogspot.com/2014/07/possible-plausible-and-probable-big.html",
+      "edition": "Author post dated 2014-07-16",
+      "publishedAt": "2014-07-16",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports the three-layer plausibility test, market-expansion barriers, and local-versus-global network-effect boundary.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-NEWS-2014",
+      "title": "Reacting to Earnings Reports: Narrative Adjustments and Value Effects",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Musings on Markets",
+      "sourceClass": "P1",
+      "sourceType": "official_author_essay",
+      "url": "https://aswathdamodaran.blogspot.com/2014/08/reacting-to-earnings-reports-narrative.html",
+      "edition": "Author post dated 2014-08-06",
+      "publishedAt": "2014-08-06",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports breaks, shifts, changes, dependence on the prior story, and mapping different update classes to probability, simulation, or options.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-RESETS-2015",
+      "title": "Narrative Resets: Revisiting a Tech Trio (Apple, Facebook and Twitter)",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Musings on Markets",
+      "sourceClass": "P1",
+      "sourceType": "official_author_case_analysis",
+      "url": "https://aswathdamodaran.blogspot.com/2015/08/narrative-resets-revisiting-tech-trio.html",
+      "edition": "Author post dated 2015-08-12",
+      "publishedAt": "2015-08-12",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Worked examples of maintaining a prior narrative, observing new evidence, revising growth/margin/reinvestment assumptions, revaluing, and separating value from action.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-STORY-TO-VALUE",
+      "title": "Numbers and Narrative — Story to Numbers",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author_chapter_companion",
+      "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/narrative/storytovalue.htm",
+      "edition": "Official companion page accessed 2026-07-28",
+      "publishedAt": "2017",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports the chapter sequence: telling, testing, bridge to numbers, numbers to value, and feedback loop.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-NEWS-SUPPORT",
+      "title": "Numbers and Narrative — Reacting to News",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author_chapter_companion",
+      "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/narrative/newseffect.htm",
+      "edition": "Official companion page accessed 2026-07-28",
+      "publishedAt": "2017",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports chapters on narrative deltas, news effects, and macro stories, with linked cases.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-LIFECYCLE-SUPPORT",
+      "title": "Numbers and Narrative — The Rest of the Story",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author_chapter_companion",
+      "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/narrative/restofstory.htm",
+      "edition": "Official companion page accessed 2026-07-28",
+      "publishedAt": "2017",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports chapters on corporate life cycle, shifting focus, and the endgame.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-TOOLS",
+      "title": "Numbers and Narrative — Tools",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author_tool_index",
+      "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/narrative/tools.htm",
+      "edition": "Official companion tools page accessed 2026-07-28",
+      "publishedAt": "2017",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports a narrative-linked valuation spreadsheet, probabilistic tools, and explicit presentation of story-to-number connections.",
+      "immutableRevision": {
+        "status": "pending_tool_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-SLIDES-2020",
+      "title": "Numbers and Narrative — Short Presentation",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author_slides",
+      "url": "https://pages.stern.nyu.edu/~adamodar/pdfiles/country/narrative%26numbersshort2020.pdf",
+      "edition": "Public presentation labeled 2020",
+      "publishedAt": "2020",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_slides_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports the company, competition/sector, and macro inputs flowing through business story to growth/profitability, cash-flow, and risk inputs.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_slide_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "NN-P1-THERANOS-2015",
+      "title": "Runaway Stories and Fairy Tale Endings: The Cautionary Tale of Theranos",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Musings on Markets",
+      "sourceClass": "P1",
+      "sourceType": "official_author_case_analysis",
+      "url": "https://aswathdamodaran.blogspot.com/2015/11/runaway-stories-and-fairy-tale-endings.html",
+      "edition": "Author post dated 2015-11",
+      "publishedAt": "2015-11",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Case-level caution about a compelling narrative outrunning verifiable operating and technical evidence.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    }
+  ]
+}

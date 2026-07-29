@@ -1,0 +1,172 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-06",
+  "slug": "onboarding-and-team-development",
+  "name": "Onboarding and Team Development",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether onboarding creates role and organizational clarity and whether continuing team development converts a hire into durable contribution.",
+    "productLabel": "Onboarding and Team Development Lens — based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["a 30-60-90 plan guaranteeing success", "onboarding ending after orientation", "team cohesion meaning similarity"]
+  },
+  "attribution": {
+    "display": "Based on Claire Hughes Johnson's public Scaling People materials",
+    "scope": "person_direct",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["LEADERS Magazine", "First Round Review", "Stanford Technology Ventures Program"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Onboarding should connect a new hire to the role, mission, working norms, relationships, decisions, and outcomes, then continue through observation and feedback after the initial program. Team development should create shared rules while using complementary skills.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-LEADERS-2023",
+      "claimIds": ["SP-CLM-018", "SP-CLM-020"],
+      "locator": {"kind": "pdf_page", "value": "p. 2, lines 120-148: hiring through acclimation, intentional team development, and explicit working practices"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-FIRSTROUND-2023",
+      "claimIds": ["SP-CLM-019"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 138-145: leader onboarding may last roughly three months while many problems appear afterward"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-STANFORD-TEAM-2023",
+      "claimIds": ["SP-CLM-020"],
+      "locator": {"kind": "pdf_page", "value": "Transcript p. 1: hiring order follows product needs; complementary capabilities operate under shared norms"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-FOUNDING-2023",
+      "claimIds": ["SP-CLM-010", "SP-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Team charters, lines 347-353: discoverable purpose, metrics, risks, dependencies, and ways to work with the team"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has recent hires or material internal role transitions.",
+    "Onboarding inputs and later role outcomes can be reviewed lawfully.",
+    "Individual employment judgments remain with authorized humans."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "onboarding_plan_and_context",
+      "description": "Role outcomes, manager, stakeholders, decision rights, mission, norms, systems, information access, and staged learning plan.",
+      "necessity": "required",
+      "acceptableSources": ["onboarding plan", "role charter", "team charter", "access checklist", "manager plan"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "early_and_later_checkpoints",
+      "description": "Consent-based check-ins, observed work, goal progress, relationship mapping, feedback, and adaptation beyond initial orientation.",
+      "necessity": "required",
+      "acceptableSources": ["manager records", "goal reviews", "new-hire survey", "work artifacts", "authorized HR records"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "team_capability_and_norms",
+      "description": "Team capability inventory, shared working norms, responsibility allocation, and development needs.",
+      "necessity": "recommended",
+      "acceptableSources": ["team charter", "skills inventory", "project allocation", "team retrospective"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "onboarding_system_outcomes",
+      "description": "Aggregated time-to-contribution, early attrition, role clarity, access delays, manager load, and later performance, with privacy safeguards.",
+      "necessity": "recommended",
+      "acceptableSources": ["HRIS", "access logs", "surveys", "delivery records", "aggregated performance data"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Does the new hire know the role's outcomes, decisions, stakeholders, and working norms?",
+    "Which relationships and information must be built rather than merely documented?",
+    "What evidence after the initial onboarding period confirms or contradicts adaptation?",
+    "Does the team's capability mix match its current work?",
+    "Which onboarding failures are actually hiring, management, access, or role-design failures?"
+  ],
+  "positiveSignals": [
+    "Role outcomes and decision rights are clear before the start date.",
+    "Onboarding includes product, customer, people, and operating context.",
+    "Managers continue checkpoints after orientation and change support based on evidence.",
+    "Complementary skills have explicit ownership under shared norms.",
+    "The company learns from recurring access, clarity, or adaptation failures."
+  ],
+  "redFlags": [
+    "Onboarding is a generic document dump.",
+    "An executive receives context but no explicit outcomes or stakeholder map.",
+    "Problems after the first months are ignored because onboarding is considered complete.",
+    "Similarity is mistaken for team cohesion.",
+    "Individual outcome data is used without authority, context, or privacy safeguards."
+  ],
+  "disconfirmingEvidence": [
+    "A highly experienced internal transfer needs little formal onboarding but has verified context and relationships.",
+    "A longer time-to-contribution reflects a genuinely long technical or regulatory learning cycle.",
+    "Early friction reveals a role-design problem rather than candidate failure.",
+    "A diverse working-style team performs well through shared norms and clear ownership."
+  ],
+  "contraindications": [
+    "Do not automate individual employment judgments.",
+    "Do not treat onboarding duration as a universal threshold.",
+    "Do not treat assimilation or personality similarity as success.",
+    "Do not use sensitive employee data without authorization and purpose limitation."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Map role context, onboarding content, relationships, and checkpoints.",
+      "Trace a sample of hires from start through later contribution.",
+      "Separate hiring, access, role, manager, and adaptation failure modes.",
+      "Assess complementary capability allocation and shared norms.",
+      "Conclude effective, emerging, incomplete, misdiagnosed, or insufficient at the system level."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "onboarding_system_metrics",
+      "requiredOutputs": ["time_to_required_access", "role_clarity_if_surveyed", "checkpoint_completion", "early_attrition_with_context", "time_to_defined_contribution_if_available"],
+      "prohibition": "The language model must not infer individual suitability or fabricate employment metrics."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Onboarding deck or manager claim.", "medium": "Plans, checkpoints, and selected outcomes.", "high": "Longitudinal system artifacts, lawful outcome data, and consent-based evidence converge."},
+    "evidenceStrength": {"low": "Orientation completion.", "medium": "Role clarity and some contribution evidence.", "high": "Repeated onboarding changes improve defined system outcomes."},
+    "evidenceCoverage": {"low": "Checklist only.", "medium": "Role, content, and early checkpoints.", "high": "Context, access, relationships, outcomes, later adaptation, team fit, failure decomposition, and privacy covered."},
+    "applicabilityConfidence": {"low": "No recent hiring or transition.", "medium": "Occasional material hires.", "high": "Company growth depends on repeated hiring or leader transitions."},
+    "judgmentConfidence": {"low": "Anecdote about one hire.", "medium": "Several traceable onboarding cases.", "high": "Cohort and longitudinal evidence supports a system-level conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-03", "SP-05", "SP-07", "FD-05"],
+  "conflictingFrameworkIds": ["ONBOARDING-CHECKLIST-EQUALS-SUCCESS", "CULTURE-FIT-EQUALS-SIMILARITY"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale"],
+    "promotionRequirements": ["Review licensed onboarding sections.", "Define lawful system metrics and minimum cohorts.", "Obtain employment-domain review."],
+    "empiricalQualifications": ["Onboarding outcomes depend on role difficulty, manager quality, and prior experience.", "Small samples are unstable."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author material is paraphrased; no onboarding template is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Licensed review is needed for complete leader-onboarding procedures."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

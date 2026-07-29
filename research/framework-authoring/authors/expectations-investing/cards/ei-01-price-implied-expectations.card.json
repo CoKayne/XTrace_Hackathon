@@ -1,0 +1,287 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-01",
+  "slug": "price-implied-expectations",
+  "name": "Price-Implied Expectations Inversion",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Reverse-solves the operating expectation required to reconcile a defined price with a deterministic cash-flow model while exposing every fixed assumption.",
+    "productLabel": "Price-Implied Expectations Lens — based on Mauboussin and Rappaport's public Expectations Investing materials",
+    "notAClaimOf": [
+      "a unique forecast being observable from price",
+      "price being intrinsic value",
+      "an expectations gap being an investment recommendation"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Michael J. Mauboussin and Alfred Rappaport's public Expectations Investing materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport"
+    ],
+    "organizations": [
+      "Columbia University Press",
+      "Expectations Investing"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Start with a defined market or transaction value, reconcile it to the operating business, and use a deterministic discounted-cash-flow model to solve for one selected operating driver while all other assumptions are fixed and displayed. The result is a conditional expectation compatible with the chosen inputs, not a uniquely observed belief.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-P2-BOOK-2021",
+      "claimIds": [
+        "EI-CLM-001",
+        "EI-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official description: infer future financial results implied by price, then assess likely revisions"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-8",
+      "claimIds": [
+        "EI-CLM-008",
+        "EI-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Four steps: calculate FCF, value non-operating assets, calculate market equity, determine market-implied forecast period"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-ABOUT-FAQ",
+      "claimIds": [
+        "EI-CLM-001",
+        "EI-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Three-step expectations-investing process and cash-flow rather than earnings-multiple focus"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_with_forecastable_operating_drivers"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "common_equity",
+      "normalized_equity_value"
+    ]
+  },
+  "requiredConditions": [
+    "The valuation target, date, currency, claim owner, and security basis are explicit.",
+    "A coherent operating model reconciles revenue, margin, taxes, reinvestment, and free cash flow.",
+    "Only one driver is solved at a time unless the solver returns a bounded joint feasible set.",
+    "Every fixed anchor and terminal assumption is visible and sensitivity-tested."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "defined_valuation_target",
+      "description": "Observable and normalized enterprise or equity value with date, currency, owner, and source.",
+      "necessity": "required",
+      "acceptableSources": [
+        "public market data",
+        "VCFI-normalized transaction value",
+        "verified cap table and term sheet"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "operating_baseline",
+      "description": "Verified revenue, margin, taxes, working capital, fixed capital, and non-operating items.",
+      "necessity": "required",
+      "acceptableSources": [
+        "audited financials",
+        "management accounts",
+        "verified KPI export",
+        "source-linked analyst model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fixed_assumptions",
+      "description": "Versioned discount rate, terminal rule, explicit-period assumptions, and selected solve variable.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation service",
+        "approved fund policy",
+        "source-linked scenario pack"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact value object and security does the observed price represent?",
+    "Which single driver is being reverse-solved?",
+    "Which assumptions are fixed, and why are those anchors defensible?",
+    "What other combinations of drivers also reconcile to the same price?",
+    "How far is the implied expectation from evidence-supported Bear, Base, and Bull paths?",
+    "Which next fact would most change the gap?"
+  ],
+  "positiveSignals": [
+    "The price target is security-normalized and fully reconciled.",
+    "Operating and financing inputs are dated and source-linked.",
+    "The implied driver falls within a credible, evidence-supported range.",
+    "The conclusion survives sensitivity to terminal and required-return assumptions.",
+    "A specific forthcoming milestone can update the key expectation."
+  ],
+  "redFlags": [
+    "Headline post-money is used without security normalization.",
+    "Several drivers are silently changed until the model matches price.",
+    "Terminal value dominates without a durability mechanism.",
+    "The output is phrased as a unique market belief.",
+    "An implied number is treated as proof that the company will achieve it."
+  ],
+  "disconfirmingEvidence": [
+    "Alternative defensible anchors produce materially different implied expectations.",
+    "The target value cannot be reconciled across enterprise, equity, and security claims.",
+    "Required performance exceeds physical, market, or organizational capacity.",
+    "A lower required return, longer duration, or different terminal rule eliminates the apparent gap.",
+    "Round terms explain a material part of price without operating improvement."
+  ],
+  "contraindications": [
+    "Do not run on a private round before EI-02 and VCFI normalization pass.",
+    "Do not solve multiple unknown drivers as though the solution were unique.",
+    "Do not let the LLM perform the calculation.",
+    "Do not issue Invest Candidate from this lens alone."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Validate the value object and operating-model reconciliation.",
+      "Select one driver or explicitly request a bounded feasible set.",
+      "Send all numeric inputs to the deterministic expectations solver.",
+      "Compare implied outputs with sourced Bear, Base, and Bull paths.",
+      "Report anchors, sensitivity, counterevidence, unknowns, and the next discriminating evidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "identities": [
+        "enterprise_value = present_value(explicit_free_cash_flow) + present_value(continuing_value)",
+        "equity_value = enterprise_value + non_operating_assets - debt - other_senior_claims",
+        "solve selected_driver such that modeled_value(selected_driver, fixed_anchors) = defined_valuation_target"
+      ],
+      "guards": [
+        "value_object_date_currency_owner_aligned",
+        "one_solve_variable_or_joint_set_declared",
+        "all_fixed_anchors_displayed",
+        "terminal_and_discount_sensitivity_run"
+      ],
+      "calculationOwner": "expectations_solver",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Price or operating inputs are unsourced.",
+      "medium": "Price is verified but one material operating or financing anchor is estimated.",
+      "high": "Price, claims, financials, policy, and model version are verified."
+    },
+    "evidenceStrength": {
+      "low": "A point estimate depends on hidden or arbitrary anchors.",
+      "medium": "The solution is reproducible but material sensitivity remains.",
+      "high": "A feasible range survives independent model and sensitivity checks."
+    },
+    "evidenceCoverage": {
+      "low": "Only headline valuation and revenue are known.",
+      "medium": "Core operating inputs exist but terminal or non-operating claims remain approximate.",
+      "high": "Operations, claims, duration, discounting, and sensitivities are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No normalized price or forecastable cash-flow path exists.",
+      "medium": "Method fits but one value-object or forecast issue remains.",
+      "high": "The selected value object and operating model match the method."
+    },
+    "judgmentConfidence": {
+      "low": "Only the missing-input list is defensible.",
+      "medium": "A conditional expectations range is usable with caveats.",
+      "high": "The range and gap are reproducible, source-linked, and sensitivity-bounded."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-01",
+    "DSV-07",
+    "DSV-10",
+    "VCFI-02"
+  ],
+  "conflictingFrameworkIds": [
+    "PRICE-EQUALS-INTRINSIC-VALUE",
+    "ONE-PRICE-ONE-FORECAST",
+    "LLM-DCF"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful 2021 edition chapter review.",
+      "Validate solver identifiability and reconciliation contracts.",
+      "Backtest against expert-reviewed public and private cases."
+    ],
+    "empiricalQualifications": [
+      "A price equation generally admits more than one operating solution.",
+      "Required return and terminal assumptions can dominate the inversion.",
+      "Market price can differ from intrinsic value for reasons outside operating fundamentals."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public publisher and official companion materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Verify exact revised-edition locators and language.",
+      "Define numerical tolerance and multi-solution display rules."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

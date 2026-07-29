@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-10",
+  "slug": "governance-warning-aggregation",
+  "name": "Governance Warning Aggregation",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Aggregates interacting governance warnings into proportionate diligence requests without automating allegations of wrongdoing.",
+    "productLabel": "Governance Warning Aggregation Lens — based on Bill Gurley's public checklist",
+    "notAClaimOf": ["one warning proving fraud", "jurisdiction or founder liquidity proving misconduct", "AI replacing legal, audit, or board judgment"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd governance checklist",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Treat weak oversight, control concentration, audit resistance, non-reconcilable metrics, unusual related interests, large insider liquidity, and suspension of ordinary verification as prompts for escalating diligence. Preserve benign explanations and require documentary, legal, accounting, and human review.",
+  "claimTypes": ["direct_doctrine", "normative_guidance", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-RED-FLAGS-2022",
+      "claimIds": ["BG-CLM-028", "BG-CLM-029", "BG-CLM-030"],
+      "locator": {"kind": "web_section", "value": "Lines 15-50 and checklist items 1-10: explicit caveats, board/control/audit/metrics/counsel/jurisdiction/secondary/overlap/paradigm warnings"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-LATE-STAGE-2015",
+      "claimIds": ["BG-CLM-022", "BG-CLM-023"],
+      "locator": {"kind": "web_section", "value": "Lines 17-28: verification, accounting presentation, and true unit economics"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth", "pre_ipo"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company is being considered for investment or follow-on diligence.",
+    "Warnings are tied to observable artifacts, not rumor, identity, or demographic proxies.",
+    "Qualified humans control any allegation, legal conclusion, or adverse action."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "governance_structure",
+      "description": "Board composition, independence, fiduciary role, voting control, reserved matters, conflicts, and decision records.",
+      "necessity": "required",
+      "acceptableSources": ["charter", "board minutes", "stockholder agreements", "conflict policy", "cap table"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "financial_and_control_verification",
+      "description": "Audit status, internal controls, metric reconciliation, cash custody, access controls, regulatory compliance, and remediation.",
+      "necessity": "required",
+      "acceptableSources": ["audit reports", "general ledger", "bank confirmations", "control matrix", "compliance records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "related_interests_and_liquidity",
+      "description": "Related entities, overlapping interests, related-party transactions, insider sales, use of proceeds, and approvals.",
+      "necessity": "required",
+      "acceptableSources": ["related-party register", "secondary documents", "conflict disclosures", "bank records", "board approvals"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "explanation_and_review",
+      "description": "Management explanation, independent counsel, accounting review, jurisdiction rationale, and evidence that ordinary verification is welcomed.",
+      "necessity": "required",
+      "acceptableSources": ["management response", "legal opinion", "accountant report", "independent director interview", "document production log"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which observable governance condition creates what specific risk?",
+    "Is there a legitimate stage-, jurisdiction-, or transaction-specific explanation?",
+    "Can ordinary documents and independent professionals verify the explanation?",
+    "Do multiple warnings interact to weaken oversight or data reliability?",
+    "What proportionate diligence, covenant, remediation, or human escalation follows?"
+  ],
+  "positiveSignals": [
+    "The board has real oversight and conflicts are disclosed.",
+    "Metrics reconcile and audits or controls are proportionate to maturity.",
+    "Related interests and insider liquidity are transparent and approved.",
+    "Management responds to verification with complete, consistent evidence."
+  ],
+  "redFlags": [
+    "Control is structured to make oversight ineffective.",
+    "Ordinary accounting or audit evidence is resisted.",
+    "Metrics cannot reconcile to books and cash.",
+    "Overlapping interests or large insider sales lack independent approval and disclosure."
+  ],
+  "disconfirmingEvidence": [
+    "A dual-class structure can have legitimate operational reasons with adequate safeguards.",
+    "A nonstandard jurisdiction can reflect customers, talent, regulation, or tax planning reviewed by counsel.",
+    "Some founder liquidity can reduce personal risk without misalignment.",
+    "A custom operating metric can be useful when it fully reconciles to standard accounts."
+  ],
+  "contraindications": [
+    "Do not predict fraud, criminality, intent, or character.",
+    "Do not score geography, nationality, protected traits, voice, or image.",
+    "Do not trigger adverse action without documentary review and accountable humans.",
+    "Do not treat warning counts as probabilities."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Record each warning as an evidence-linked hypothesis.",
+      "Request ordinary governance, accounting, control, and related-party artifacts.",
+      "Document legitimate explanations and independent review.",
+      "Assess interaction and remediation without assigning misconduct probability.",
+      "Conclude standard diligence, enhanced diligence, unresolved material governance risk, remediated, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Rumor or surface trait.", "medium": "Company documents and explanations.", "high": "Independent legal, audit, board, bank, and control evidence converge."},
+    "evidenceStrength": {"low": "One contextual warning.", "medium": "Multiple documented gaps.", "high": "Interacting material gaps persist after independent verification requests."},
+    "evidenceCoverage": {"low": "Checklist observation.", "medium": "Structure, controls, and explanations.", "high": "Governance, finance, related parties, liquidity, jurisdiction, remediation, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No observable warning.", "medium": "One material question.", "high": "Multiple conditions materially affect oversight or data reliability."},
+    "judgmentConfidence": {"low": "Suspicion.", "medium": "Bounded diligence escalation.", "high": "Independent evidence supports a clear governance-risk conclusion without alleging intent."}
+  },
+  "overlapFrameworkIds": ["BG-08", "FD-07", "PT-07", "SHR-08", "VD-05", "SP-10"],
+  "conflictingFrameworkIds": ["RED-FLAG-COUNT-AS-FRAUD", "FOUNDER-PERSONALITY-SCORE"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale"],
+    "promotionRequirements": ["Obtain legal, audit, and governance review.", "Define human escalation and appeal.", "Validate fairness and false-positive controls."],
+    "empiricalQualifications": ["The public checklist is practitioner guidance, not a validated fraud model.", "Warning prevalence and meaning vary by stage and jurisdiction."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public checklist is neutrally paraphrased; no allegation is automated."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Obtain legal/governance review and define human escalation safeguards."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

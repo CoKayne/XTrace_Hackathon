@@ -1,0 +1,277 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-02",
+  "slug": "scale-economies",
+  "name": "Scale Economies",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether greater relevant volume creates a durable unit-cost advantage that smaller rivals cannot economically match.",
+    "productLabel": "Scale Economies Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "large company size being sufficient",
+      "revenue growth proving declining unit cost",
+      "purchasing discounts alone creating durable Power"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public Scale Economies doctrine",
+    "scope": "person_direct",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Scale Economies may exist when increasing relevant volume lowers unit cost enough to create a material leader advantage and a smaller rival cannot reach equivalent economics within the same market boundary. The analysis must identify the cost pool, relevant unit, geographic or segment scope, minimum viable scale, and possible diseconomies rather than use total company size.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-003",
+        "H7P-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Scale Economies section lines 142-163 and Uber geography discussion lines 113-123"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "claimIds": [
+        "H7P-CLM-003"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Official audio 00:32:54-00:37:07: Scale Economies nuances and learning economies"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "software_with_fixed_cost",
+      "content",
+      "marketplace",
+      "manufacturing",
+      "infrastructure",
+      "asset_intensive"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "A relevant output or customer unit is defined.",
+    "A material cost pool declines per unit with relevant scale.",
+    "Competitors cannot cheaply share, rent, outsource, or acquire equivalent scale.",
+    "The market boundary does not erase the scale advantage."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "unit_cost_curve",
+      "description": "Unit cost and contribution economics across multiple volume levels with cost allocation disclosed.",
+      "necessity": "required",
+      "acceptableSources": [
+        "management accounts",
+        "cohort economics",
+        "production data",
+        "cloud cost data",
+        "content amortization"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "cost_pool_materiality",
+      "description": "The scalable cost pool as a share of revenue or total cost and the portion that truly remains fixed or sublinear.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cost accounting",
+        "vendor contracts",
+        "gross margin bridge",
+        "operating model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "competitor_scale_path",
+      "description": "Rival volume, capacity, access to shared infrastructure, minimum viable scale, and time or capital to catch up.",
+      "necessity": "required",
+      "acceptableSources": [
+        "competitive analysis",
+        "industry capacity data",
+        "supplier quotes",
+        "public filings"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "scale_boundary_and_diseconomies",
+      "description": "Geographic, segment, product, quality, congestion, coordination, and complexity limits to scale.",
+      "necessity": "required",
+      "acceptableSources": [
+        "regional economics",
+        "service levels",
+        "customer data",
+        "operational KPIs"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is the relevant unit and which cost pool falls per unit?",
+    "How large and durable is the cost advantage at current and projected scale?",
+    "Can a rival rent or share the same fixed asset rather than recreate it?",
+    "At what geography, segment, or product boundary does scale reset?",
+    "What diseconomies or quality losses emerge as volume grows?",
+    "Does the cost advantage benefit customers, margins, or both?"
+  ],
+  "positiveSignals": [
+    "Audited or reconciled data shows a persistent downward unit-cost curve.",
+    "The cost pool is material and cannot be cheaply outsourced by smaller firms.",
+    "Scale improves bid economics while maintaining service or quality.",
+    "Competitors require substantial time, capital, or demand aggregation to match.",
+    "The advantage remains inside a clearly defined relevant market."
+  ],
+  "redFlags": [
+    "Only company revenue or headcount is cited.",
+    "Unit cost falls because temporary subsidies or supplier discounts expire later.",
+    "Shared cloud, contract manufacturing, or aggregators let small rivals access the same economics.",
+    "Fixed costs are small relative to variable costs.",
+    "Expansion creates congestion, coordination cost, or local-service deterioration."
+  ],
+  "disconfirmingEvidence": [
+    "Smaller rivals achieve similar gross margins or delivered cost.",
+    "A supplier or platform commoditizes the fixed asset.",
+    "Unit cost stops falling before a defensible gap appears.",
+    "The relevant market is local and supports multiple scaled competitors.",
+    "Customers do not value the cost advantage or price competition passes it all through."
+  ],
+  "contraindications": [
+    "Do not use company size as a proxy for Scale Economies.",
+    "Do not extrapolate the cost curve beyond observed operating ranges without scenarios.",
+    "Do not count the same fixed-cost evidence again as Network or Process Power.",
+    "Do not infer investability without valuation."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define relevant unit, market boundary, and material cost pools.",
+      "Estimate observed cost curve and reconcile allocations.",
+      "Compare leader economics with realistic challenger scale paths.",
+      "Stress shared infrastructure, market fragmentation, and diseconomies.",
+      "Conclude on observed, candidate, path, unsupported, or inapplicable Scale Economies."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only founder claims or total company size are available.",
+      "medium": "Internal cost curves and competitor estimates are available.",
+      "high": "Reconciled cost data and independent competitor or industry evidence converge."
+    },
+    "evidenceStrength": {
+      "low": "No unit-cost relationship is measured.",
+      "medium": "Unit cost declines but competitor access or persistence is uncertain.",
+      "high": "A material cost gap persists and rival replication economics are directly evidenced."
+    },
+    "evidenceCoverage": {
+      "low": "Cost pool or relevant unit is missing.",
+      "medium": "Cost curve is covered but market boundary or diseconomies are incomplete.",
+      "high": "Unit economics, materiality, rival path, boundaries, and diseconomies are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Costs are mostly variable or scale is easily rented.",
+      "medium": "Some material fixed or sublinear costs exist.",
+      "high": "The business model structurally depends on large relevant volume."
+    },
+    "judgmentConfidence": {
+      "low": "Only a size narrative is supported.",
+      "medium": "Candidate scale advantage exists with unresolved barrier.",
+      "high": "Observed material unit-cost Benefit and rival scale Barrier are supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "H7P-03",
+    "H7P-08",
+    "SF-08"
+  ],
+  "conflictingFrameworkIds": [
+    "COMPANY-SIZE-MOAT",
+    "REVENUE-GROWTH-SCALE-SCORE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed Scale Economies chapter review.",
+      "Validate cost-curve fields against historical competitor outcomes.",
+      "Define business-model-specific materiality and market-boundary tests."
+    ],
+    "empiricalQualifications": [
+      "Cost allocation choices can manufacture apparent economies.",
+      "Scale may be local and can coexist with multiple competitors.",
+      "Technology, suppliers, or shared infrastructure can rapidly commoditize scale."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Definitions and examples are paraphrased from public interviews."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Review first-edition Benefit and Barrier wording and notation.",
+      "Develop sector-specific cost curve evidence templates."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial market-bounded Scale Economies card."
+    }
+  ]
+}

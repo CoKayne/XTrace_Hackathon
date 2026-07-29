@@ -1,0 +1,170 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-10",
+  "slug": "positioning-change-diligence-bridge",
+  "name": "Positioning Change and VC Diligence Bridge",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Connects market, product, and competitor changes to the company's evidenced positioning chain and produces bounded VC diligence implications.",
+    "productLabel": "Positioning Diligence Bridge — product synthesis from April Dunford's public work",
+    "notAClaimOf": ["April Dunford endorsing an investment judgment", "positioning quality proving product-market fit", "positioning directly setting valuation"]
+  },
+  "attribution": {
+    "display": "Product synthesis from April Dunford's public positioning work",
+    "scope": "product_synthesis",
+    "people": ["April Dunford"],
+    "organizations": ["Positioning with April Dunford"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Monitor material product, competitor, buyer-priority, and market changes. Identify which link in the evidenced positioning chain may have changed, distinguish present customer alternatives from future roadmap threats, and generate diligence questions or operating milestones. Keep positioning judgment separate from PMF, forecast, and valuation calculations.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-AI-2026",
+      "claimIds": ["OA2-CLM-022", "OA2-CLM-023", "OA2-CLM-024"],
+      "locator": {"kind": "web_section", "value": "Change triggers; real vs. future competition; customer feedback methods"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-POST-2026",
+      "claimIds": ["OA2-CLM-020", "OA2-CLM-021", "OA2-CLM-022"],
+      "locator": {"kind": "video_timestamp", "value": "16:24-21:25, messaging consistency and positioning review triggers"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-DECISIONS-2026",
+      "claimIds": ["OA2-CLM-006", "OA2-CLM-007", "OA2-CLM-025"],
+      "locator": {"kind": "video_timestamp", "value": "08:38-17:51, thesis status and customer/investor scope distinction"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "OA2-P1-BOOKS-2026",
+      "claimIds": ["OA2-CLM-001", "OA2-CLM-002", "OA2-CLM-025"],
+      "locator": {"kind": "web_section", "value": "Positioning as marketing and sales foundation"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "late_stage"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "OA2-07 and, where possible, OA2-09 have independent outputs.",
+    "A market or company event is linked to a specific positioning component.",
+    "Market intelligence is distinguished from company customer evidence.",
+    "Deterministic forecast and valuation services remain independent."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "change_event",
+      "description": "Dated product, competitor, buyer-priority, regulation, economic, or technology change with sources and affected scope.",
+      "necessity": "required",
+      "acceptableSources": ["company release", "customer feedback", "competitive evidence", "regulatory source", "market research"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "affected_positioning_links",
+      "description": "Which alternative, capability, value, best-fit, category, or scope assumptions may change and why.",
+      "necessity": "required",
+      "acceptableSources": ["OA2 evidence graph", "customer interviews", "win/loss", "sales-test record"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "commercial_consequence",
+      "description": "Observed or scenario-only effect on pipeline, win rate, cycle, pricing, retention, expansion, CAC, or roadmap.",
+      "necessity": "recommended",
+      "acceptableSources": ["CRM", "billing", "product analytics", "scenario model"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "diligence_action",
+      "description": "Specific evidence request, experiment, milestone, owner, date, and decision relevance.",
+      "necessity": "required",
+      "acceptableSources": ["diligence plan", "operating milestone", "board plan", "research request"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What changed, and which positioning assumption does it threaten or strengthen?",
+    "Is the change present in customer shortlists or only a future roadmap threat?",
+    "What customer and commercial evidence would confirm the effect?",
+    "How should the finding alter diligence, operating milestones, or scenarios without becoming a valuation guess?"
+  ],
+  "positiveSignals": [
+    "The company detects changes through customer and win/loss evidence.",
+    "Affected links and falsifiers are explicit.",
+    "Current positioning and future roadmap are distinguished.",
+    "A dated test and owner exist before messaging or forecasts change."
+  ],
+  "redFlags": [
+    "Every market headline causes a new category or story.",
+    "A future competitor is treated as current without shortlist evidence.",
+    "Positioning claims change while underlying evidence remains stale.",
+    "A qualitative narrative is converted directly into revenue or valuation."
+  ],
+  "disconfirmingEvidence": [
+    "The event is large but irrelevant to best-fit customer priorities.",
+    "Customer shortlists and value remain stable after the event.",
+    "A product change improves capability but not differentiated outcome.",
+    "Observed commercial change is explained by price, capacity, channel, or macro factors."
+  ],
+  "contraindications": [
+    "Do not let market intelligence overwrite company evidence.",
+    "Do not calculate forecast or valuation effects in the language model.",
+    "Do not equate positioning coherence with PMF or investability.",
+    "Do not hide disagreement between market events and customer behavior."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Verify and date the event.",
+      "Map it to specific positioning links and evidence status.",
+      "Separate current customer effect from future roadmap implication.",
+      "Request confirming and disconfirming commercial evidence.",
+      "Produce bounded diligence actions and scenario inputs, not an investment verdict."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "positioning_change_diligence_bridge",
+      "requiredOutputs": ["verified_event", "affected_links", "current_vs_future_competition", "commercial_evidence", "scenario_inputs", "diligence_actions"],
+      "prohibition": "The language model must not calculate forecast effects, valuation, or the final investment decision."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Headline or management assertion.", "medium": "Verified event and partial customer evidence.", "high": "Primary event, customer, CRM, win/loss, and operating data converge."},
+    "evidenceStrength": {"low": "Plausible positioning impact.", "medium": "Specific link changes in some evidence.", "high": "Repeated customer and commercial behavior demonstrates the effect."},
+    "evidenceCoverage": {"low": "Event only.", "medium": "Affected link and some outcomes.", "high": "Event, all affected links, customer evidence, commercial outcomes, alternatives, scenarios, and falsifiers covered."},
+    "applicabilityConfidence": {"low": "No material link to positioning.", "medium": "One plausible affected component.", "high": "Change materially alters customer alternatives, value, segment, or category."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Diligence trigger or scenario only.", "high": "Evidence-backed positioning change with bounded action."}
+  },
+  "overlapFrameworkIds": ["OA2-07", "OA2-09", "MI-01", "NN-10", "EI-10"],
+  "conflictingFrameworkIds": ["MARKET-HEADLINE-EQUALS-REPOSITION", "POSITIONING-QUALITY-EQUALS-VALUATION-PREMIUM"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate event-to-link mapping.", "Require company customer evidence.", "Backtest diligence actions and prohibit valuation leakage."],
+    "empiricalQualifications": ["Positioning change effects are difficult to isolate.", "Commercial outcomes depend on product, price, sales, market, and execution."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The diligence bridge is product synthesis from public author doctrine."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define materiality thresholds and integration with market-event schema."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

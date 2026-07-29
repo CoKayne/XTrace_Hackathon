@@ -1,0 +1,158 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-04",
+  "slug": "commercialization-timing",
+  "name": "Commercialization Timing",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates technical readiness, ecosystem readiness, customer readiness, and commercialization capability to test whether now is a viable time.",
+    "productLabel": "Commercialization Timing Lens — based on Marc Andreessen's public timing essays and talks",
+    "notAClaimOf": ["a previously failed idea now being timely", "technology readiness proving customer readiness", "macro enthusiasm proving execution timing"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public timing essays and talks",
+    "scope": "person_direct",
+    "people": ["Marc Andreessen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Assess timing across independent clocks: the core technology must work at an acceptable cost and reliability, the ecosystem and society must permit adoption, customers must react to a real offer, and the team must be able to commercialize before capital or competitive time runs out.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-TIMING-2014",
+      "claimIds": ["MA-CLM-007", "MA-CLM-008"],
+      "locator": {"kind": "web_section", "value": "Lines 116-137: recurring ideas and technology, social, first-customer, and commercialization timing questions"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-007"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 16-18: timing, technology, market, distribution, and financing risk layers"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "MA-P1-TIMING-2025",
+      "claimIds": ["MA-CLM-008"],
+      "locator": {"kind": "web_section", "value": "Lines 95-122: official episode description on platform shifts and why being too early resembles being wrong"},
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The product depends on at least one uncertain technical, ecosystem, customer, regulatory, or commercialization clock.",
+    "Readiness claims are dated and geography-specific.",
+    "The analysis distinguishes a good idea from a timely investable company."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "technical_readiness",
+      "description": "Performance, reliability, cost, manufacturability, integration, safety, and remaining technical dependencies.",
+      "necessity": "required",
+      "acceptableSources": ["benchmarks", "technical tests", "production data", "certification records", "third-party validation"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "ecosystem_readiness",
+      "description": "Infrastructure, complements, standards, supply chain, regulation, buyer workflow, and social acceptance.",
+      "necessity": "required",
+      "acceptableSources": ["standards", "regulatory sources", "partner evidence", "supply records", "industry adoption data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "customer_readiness",
+      "description": "Real customer reaction, adoption friction, procurement path, budget, willingness to pay, and switching behavior.",
+      "necessity": "required",
+      "acceptableSources": ["pilots", "contracts", "customer interviews", "CRM", "usage and payment records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "commercialization_clock",
+      "description": "Sales, distribution, capital runway, competitive entry, and time required to reach repeatability.",
+      "necessity": "required",
+      "acceptableSources": ["go-to-market plan", "pipeline", "runway model", "competitive timeline", "channel agreements"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which readiness clock is currently the binding constraint?",
+    "What observable event would show that clock has advanced?",
+    "Can the company survive financially until the clocks align?",
+    "Can competitors exploit the same platform shift sooner?",
+    "What evidence distinguishes being early from being technically or commercially wrong?"
+  ],
+  "positiveSignals": [
+    "Technical performance crosses a customer-relevant cost or reliability threshold.",
+    "Required infrastructure, standards, channels, and regulation are becoming available.",
+    "Real customers adopt under realistic pricing and workflow conditions.",
+    "The company has a financed sequence of milestones to bridge remaining timing gaps."
+  ],
+  "redFlags": [
+    "The timing thesis rests on a prior failed attempt becoming fashionable again.",
+    "A lab result is treated as proof of deployability or willingness to pay.",
+    "The ecosystem depends on uncommitted partners or unpassed regulation.",
+    "The company will exhaust capital before a critical readiness milestone."
+  ],
+  "disconfirmingEvidence": [
+    "A small niche may be ready even when the mass market is not.",
+    "A regulated market may have strong committed demand despite slow deployment.",
+    "A technically inferior product may commercialize sooner through superior distribution.",
+    "A platform shift may lower barriers for competitors as well as the company."
+  ],
+  "contraindications": [
+    "Do not use current sector funding as a proxy for customer timing.",
+    "Do not infer that persistence across historical attempts proves the current team is right.",
+    "Do not turn timing conviction into a valuation premium without scenario analysis."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map the technical, ecosystem, customer, regulatory, commercialization, capital, and competitive clocks.",
+      "Identify the binding clock and evidence threshold for readiness.",
+      "Estimate the sequence and duration of remaining milestones.",
+      "Compare that sequence with runway and competitor timing.",
+      "Conclude aligned, plausibly bridging, too early, too late, wrong mechanism, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder timing narrative.", "medium": "Technical and customer evidence.", "high": "Independent technical, ecosystem, customer, and contractual evidence converge."},
+    "evidenceStrength": {"low": "Macro platform story.", "medium": "One or two clocks show readiness.", "high": "Binding clocks are crossed or credibly financed with real customer validation."},
+    "evidenceCoverage": {"low": "Technology only.", "medium": "Technology, customer, and ecosystem.", "high": "All clocks, dependencies, runway, competition, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No material timing dependency.", "medium": "One clear readiness dependency.", "high": "Multiple clocks materially determine outcome."},
+    "judgmentConfidence": {"low": "Historical analogy.", "medium": "Bounded current evidence.", "high": "Current readiness evidence and milestone timing converge."}
+  },
+  "overlapFrameworkIds": ["PT-08", "SF-06", "MA-05", "NN-08"],
+  "conflictingFrameworkIds": ["HISTORICAL-RETRY-IS-PROOF", "SECTOR-FUNDING-AS-TIMING"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define sector-specific readiness clocks.", "Backtest milestone forecasts.", "Add capital and regulatory sensitivity."],
+    "empiricalQualifications": ["Timing judgments have strong hindsight bias.", "Platform shifts can benefit incumbents or competitors instead."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author-direct public timing material is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Add sector-specific clock templates and failed-case review."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-10",
+  "slug": "unicorn-outcome-label-guardrail",
+  "name": "Unicorn Outcome and Valuation Label Guardrail",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Prevents a billion-dollar headline valuation or unicorn-pattern match from being presented as economic value, fund return, or an investment decision.",
+    "productLabel": "Outcome-Label Guardrail — based on Super Founders scope with share-class valuation evidence",
+    "notAClaimOf": [
+      "unicorn status being economically meaningless",
+      "a replacement for valuation or waterfall models",
+      "a forecast of realized return"
+    ]
+  },
+  "attribution": {
+    "display": "Based on the Super Founders billion-dollar-valuation outcome definition and external share-class valuation research",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Super Founders studies whether companies reached a billion-dollar private valuation. That label can be useful for studying an extreme financing outcome, but it is not the same as company enterprise value, common-share fair value, a specific security's payoff, realized investor return, or current investment attractiveness. The runtime must display the label, terms, ownership, dilution, scenarios, and valuation outputs separately.",
+  "claimTypes": [
+    "historical_description",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P2-BOOK-2021",
+      "claimIds": [
+        "SF-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official title, description, and study target: billion-dollar startup valuations"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-INC-2021",
+      "claimIds": [
+        "SF-CLM-001",
+        "SF-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Study design: companies with billion-dollar valuations versus selected non-unicorn comparison group"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SF-E1-VALUATION-NBER",
+      "claimIds": [
+        "SF-EQ-003",
+        "SF-EQ-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and published-version metadata: share-class rights and overstatement in headline post-money valuations"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "pre_ipo"
+    ],
+    "businessModels": [
+      "venture_backed_startup"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all_with_security_law_and_market_convention_review"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The analysis distinguishes research label, financing headline, security value, and realized return.",
+    "Current round documents and fully diluted ownership are available before making price claims.",
+    "All numeric calculations are delegated to deterministic valuation, cap-table, and waterfall services."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "round_terms",
+      "description": "Price per share, invested amount, pre- and post-money convention, liquidation preferences, seniority, participation, conversion, guarantees, vetoes, and other economic rights.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "charter",
+        "stock purchase agreement",
+        "financing model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fully_diluted_cap_table",
+      "description": "All issued, reserved, promised, convertible, and option securities by class and holder.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company cap table",
+        "legal diligence",
+        "cap-table service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "valuation_scenarios",
+      "description": "Bear, base, and bull operating assumptions and enterprise or equity values with sensitivity.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation service",
+        "financial model",
+        "comparable transactions"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "ownership_and_waterfall",
+      "description": "Investor ownership after dilution and payoff by security under exit scenarios.",
+      "necessity": "required",
+      "acceptableSources": [
+        "waterfall service",
+        "cap-table model",
+        "fund model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "realization_status",
+      "description": "Whether the value is last-round mark, model mark, tender price, acquisition proceeds, IPO value, or distributed cash.",
+      "necessity": "required",
+      "acceptableSources": [
+        "transaction records",
+        "fund records",
+        "market data",
+        "valuation policy"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exactly does the billion-dollar figure value and under which convention?",
+    "Which share class established the price and what protections does it have?",
+    "What is the value of the security being considered under each scenario?",
+    "How do dilution, preferences, and future capital change investor payoff?",
+    "Is the observed outcome a mark, liquidity event, or distributed cash?",
+    "Would the company still be attractive at the requested terms without the unicorn label?"
+  ],
+  "positiveSignals": [
+    "Headline and security-specific values are clearly separated.",
+    "All security terms and fully diluted ownership are modeled.",
+    "Bear, base, and bull payoffs can be independently recomputed.",
+    "The company thesis remains credible without the unicorn label.",
+    "Realized and unrealized outcomes are displayed separately."
+  ],
+  "redFlags": [
+    "Last preferred price is multiplied by all shares without rights adjustment.",
+    "Unicorn status is used as proof of intrinsic value or future return.",
+    "Common and preferred interests are treated as identical.",
+    "A financing announcement substitutes for current operating valuation.",
+    "Pattern match to prior unicorns produces an investment recommendation."
+  ],
+  "disconfirmingEvidence": [
+    "Preferences or guarantees create materially different class values.",
+    "A realistic downside waterfall gives the target security little or no return.",
+    "Future financing materially dilutes ownership or adds senior claims.",
+    "The round price implies operating assumptions unsupported by evidence.",
+    "A reported mark has no arm's-length liquidity."
+  ],
+  "contraindications": [
+    "Do not use this card as a valuation calculator.",
+    "Do not output Invest Candidate from a unicorn pattern match.",
+    "Do not equate private post-money, fair value, enterprise value, common value, and realized proceeds.",
+    "Do not make legal or tax conclusions."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Label every value by date, convention, share class, and realization status.",
+      "Send cap-table, valuation, and waterfall calculations to deterministic services.",
+      "Compare requested terms with security-specific bear, base, and bull payoffs.",
+      "Keep Super Founders pattern observations in a separate descriptive section.",
+      "Conclude only on label integrity and missing valuation evidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationOwner": "Valuation, Cap Table, Waterfall, and Fund Model services",
+      "prohibitedEquivalences": [
+        "headline_post_money_equals_fair_value",
+        "unicorn_status_equals_realized_return",
+        "pattern_match_equals_investment_recommendation"
+      ]
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only press valuations or founder claims are available.",
+      "medium": "Official financing announcements and partial terms are available.",
+      "high": "Executed documents, cap table, audited records, and model inputs are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Headline valuation only.",
+      "medium": "Round price and some terms exist but class rights or scenarios are incomplete.",
+      "high": "Terms, cap table, operating evidence, valuation, dilution, and waterfall converge."
+    },
+    "evidenceCoverage": {
+      "low": "Share-class rights or cap table is missing.",
+      "medium": "Current round is modeled but future dilution or realization status is incomplete.",
+      "high": "All classes, terms, scenarios, dilution, payoff, and realization states are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No billion-dollar or financing valuation claim is material.",
+      "medium": "A headline valuation exists but is not central to the decision.",
+      "high": "The investment thesis or report relies materially on unicorn status or round price."
+    },
+    "judgmentConfidence": {
+      "low": "The system cannot distinguish labels and economic value.",
+      "medium": "The label is qualified but some deterministic inputs are missing.",
+      "high": "Every value is correctly scoped and recomputable from reviewed inputs."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SF-01",
+    "SF-09",
+    "SHR-06",
+    "SHR-07",
+    "SHR-10",
+    "METRICK-VC-METHOD",
+    "DAMODARAN-VALUATION"
+  ],
+  "conflictingFrameworkIds": [
+    "UNICORN-EQUALS-VALUE",
+    "LAST-ROUND-PRICE-EQUALS-COMMON-VALUE",
+    "PATTERN-MATCH-EQUALS-INVEST"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Integrate verified deterministic valuation, cap-table, and waterfall services.",
+      "Review transaction-specific legal documents and current valuation policy.",
+      "Validate label-integrity checks on historical financing events."
+    ],
+    "empiricalQualifications": [
+      "Private post-money values can overstate economic value when share classes have different rights.",
+      "The source study's outcome is a financing valuation, not risk-adjusted or realized return.",
+      "Security-specific value depends on terms and scenarios."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book or academic paper passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete licensed outcome-definition review.",
+      "Complete transaction-law and deterministic-service integration review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial outcome-label guardrail separating unicorn status from economic value."
+    }
+  ]
+}
+

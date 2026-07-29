@@ -1,0 +1,270 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-04",
+  "slug": "reserve-follow-on-policy",
+  "name": "Reserve and Follow-On Policy",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Allocates scarce follow-on capital by explicit policy, updated evidence, ownership economics, portfolio concentration, and opportunity cost.",
+    "productLabel": "Reserve and Follow-On Lens — product synthesis anchored to Ramsinghani's fund-construction architecture",
+    "notAClaimOf": [
+      "one correct reserve ratio",
+      "following on solely because a company is a winner",
+      "pro rata rights obligating investment"
+    ]
+  },
+  "attribution": {
+    "display": "Product synthesis anchored to Mahendra Ramsinghani's fund-construction architecture",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "low"
+  },
+  "neutralParaphrase": "Define reserves as a versioned portfolio policy rather than an afterthought. For each follow-on, compare updated company evidence, round price and terms, ownership consequences, remaining milestones, concentration, available reserve, and the alternative use of capital in other portfolio companies or new deals.",
+  "claimTypes": [
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH13-14",
+      "claimIds": [
+        "BVC-CLM-005",
+        "BVC-CLM-006",
+        "BVC-CLM-007",
+        "BVC-CLM-020"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Chapter 13 pp. 129-135 and Chapter 14 pp. 137-153; reserve specifics pending full review"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH1",
+      "claimIds": [
+        "BVC-CLM-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary: fund success measured by return and cash-on-cash outcomes"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "portfolio_management"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Available, allocated, and unallocated reserves are reconciled.",
+    "Follow-on policy and exception authority are explicit.",
+    "Each company has an updated evidence pack, capital path, and scenario value.",
+    "The opportunity cost against other investments is shown."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "reserve_state_and_policy",
+      "description": "Total reserve, company allocations, unallocated capital, recycling, rules, and exception authority.",
+      "necessity": "required",
+      "acceptableSources": [
+        "fund model",
+        "portfolio ledger",
+        "Fund Policy",
+        "administrator records"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "updated_company_case",
+      "description": "Milestone progress, cash runway, financing need, current thesis, counterevidence, and scenario values.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board materials",
+        "company reporting",
+        "updated Framework Pack outputs",
+        "valuation model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "round_and_opportunity_cost",
+      "description": "New round terms, ownership effect, expected contribution, concentration, and alternative uses.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "ownership model",
+        "portfolio comparison",
+        "new-deal pipeline"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What milestone progress changed the company case?",
+    "What ownership and payoff does this follow-on buy?",
+    "Does the round resolve or worsen the original concern?",
+    "What concentration and reserve capacity remain afterward?",
+    "Which other opportunity loses funding if this is funded?",
+    "Is non-participation economically or strategically costly?"
+  ],
+  "positiveSignals": [
+    "Updated evidence improves the risk-adjusted company case.",
+    "Round price and terms preserve attractive ownership economics.",
+    "Follow-on fits explicit policy and concentration.",
+    "Remaining reserve covers higher-priority obligations.",
+    "The investment dominates identified alternative uses under stated scenarios."
+  ],
+  "redFlags": [
+    "Follow-on is automatic because the fund already invested.",
+    "Reserve is allocated by original check size rather than updated evidence.",
+    "Sunk-cost or signaling concerns replace economics.",
+    "Pro rata is exercised without capacity or concentration review.",
+    "A market default ratio is treated as fund policy."
+  ],
+  "disconfirmingEvidence": [
+    "Milestones slipped or the thesis weakened.",
+    "Round pricing outpaced evidence.",
+    "Terms or dilution reduce payoff materially.",
+    "Another portfolio company or new deal has higher marginal contribution.",
+    "Participation would breach reserve or concentration constraints."
+  ],
+  "contraindications": [
+    "Do not use sunk cost as positive evidence.",
+    "Do not assume pro rata must be exercised.",
+    "Do not allocate unverified reserves.",
+    "Do not let the LLM rank capital without deterministic policy."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconcile reserve state and applicable policy.",
+      "Update the company thesis, valuation, and capital path.",
+      "Calculate participation alternatives and portfolio effects.",
+      "Compare marginal fund contribution and opportunity cost.",
+      "Return participate, partial, decline, or escalate as a policy output, not a lens verdict."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "reserveConservation": "sum(company_reserve_allocations) + unallocated_reserve <= total_available_reserve",
+      "comparisonRequired": [
+        "participate_full",
+        "participate_partial",
+        "decline",
+        "alternative_use"
+      ],
+      "calculationOwner": "portfolio_allocation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Reserve state or company update is unverified.",
+      "medium": "Policy and most company data are current but alternatives are incomplete.",
+      "high": "Fund ledger, company data, terms, and alternatives are verified."
+    },
+    "evidenceStrength": {
+      "low": "Decision relies on prior ownership or reputation.",
+      "medium": "Updated evidence and economics support a bounded choice.",
+      "high": "Company, terms, ownership, portfolio, and opportunity-cost evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Only current round and ownership are covered.",
+      "medium": "Reserve and company are covered but alternatives or concentration are partial.",
+      "high": "Reserve, company, terms, capital path, concentration, alternatives, and policy are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No follow-on policy or reserve state exists.",
+      "medium": "Policy applies with a documented exception.",
+      "high": "The round and company map directly to current policy."
+    },
+    "judgmentConfidence": {
+      "low": "Only follow-on questions can be raised.",
+      "medium": "A policy-consistent provisional choice is supportable.",
+      "high": "Alternatives and portfolio effects are reproducibly ranked."
+    }
+  },
+  "overlapFrameworkIds": [
+    "BVC-02",
+    "BVC-03",
+    "VCFI-08",
+    "VD-08"
+  ],
+  "conflictingFrameworkIds": [
+    "SUNK-COST-FOLLOW-ON",
+    "PRO-RATA-ALWAYS-EXERCISE",
+    "UNIVERSAL-RESERVE-PERCENT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapter 13 review.",
+      "Validate allocation policy with fund managers.",
+      "Backtest follow-on alternatives and reserve sufficiency."
+    ],
+    "empiricalQualifications": [
+      "Follow-on access and pricing are endogenous.",
+      "Portfolio alternatives may be incomparable.",
+      "Private marks and forecasts may be stale or biased."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Reserve topic is anchored to public chapter metadata; operational policy is product synthesis pending licensed review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Highest-priority licensed review gap.",
+      "Define marginal-contribution comparison without false precision."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source and product-synthesis draft."
+    }
+  ]
+}

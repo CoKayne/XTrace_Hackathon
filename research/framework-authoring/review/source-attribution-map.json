@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "framework-corpus-review-v0.1",
+  "researchCutoff": "2026-07-28",
+  "runtimeArtifact": false,
+  "corpus": {
+    "packCount": 20,
+    "cardCount": 199,
+    "sourceCount": 270,
+    "uniqueFrameworkIds": 199,
+    "formalDecisionWeightTotal": 0,
+    "publishedCardCount": 0,
+    "approvedCardCount": 0
+  },
+  "sourceClasses": {
+    "P1": 169,
+    "P2": 56,
+    "E1": 35,
+    "A1": 7,
+    "S1": 2,
+    "I1": 1
+  },
+  "attributionScopes": {
+    "product_synthesis": 116,
+    "person_direct": 59,
+    "coauthored_work": 20,
+    "institution_doctrine": 3,
+    "revealed_behavior": 1
+  },
+  "decisionUtilityStatus": {
+    "candidate": 160,
+    "advisory": 39,
+    "validated_decision_factor": 0
+  },
+  "rightsStatus": {
+    "public_source_paraphrase": 180,
+    "pending_review": 19
+  },
+  "corpusWarnings": [
+    "A majority of Cards are product synthesis and must not be displayed as a named person's direct doctrine.",
+    "Candidate means eligible for validation, not validated decision usefulness.",
+    "Nineteen Cards remain rights-pending and cannot be published.",
+    "All packs remain draft and unpublished.",
+    "Source counts measure traceability, not truth, predictive power, independence, or completeness.",
+    "Selected success cases require failed-case and pass-case comparison before promotion."
+  ],
+  "packs": [
+    {"packId": "andrew_chen_cold_start_problem_public_frameworks_v0_1", "cards": 10, "sources": 8, "rightsPendingCardIds": []},
+    {"packId": "april_dunford_obviously_awesome_2e_public_frameworks_v0_1", "cards": 10, "sources": 11, "rightsPendingCardIds": ["OA2-08"]},
+    {"packId": "aswath_damodaran_dark_side_valuation_public_frameworks_v0_1", "cards": 10, "sources": 12, "rightsPendingCardIds": []},
+    {"packId": "aswath_damodaran_narrative_and_numbers_public_frameworks_v0_1", "cards": 10, "sources": 14, "rightsPendingCardIds": []},
+    {"packId": "bill_gurley_public_frameworks_v0_1", "cards": 10, "sources": 9, "rightsPendingCardIds": []},
+    {"packId": "claire_hughes_johnson_scaling_people_public_frameworks_v0_1", "cards": 10, "sources": 14, "rightsPendingCardIds": []},
+    {"packId": "expectations_investing_public_frameworks_v0_1", "cards": 10, "sources": 20, "rightsPendingCardIds": []},
+    {"packId": "hamilton_helmer_7_powers_public_frameworks_v0_1", "cards": 10, "sources": 10, "rightsPendingCardIds": []},
+    {"packId": "howard_marks_most_important_thing_public_frameworks_v0_1", "cards": 10, "sources": 15, "rightsPendingCardIds": []},
+    {"packId": "mahendra_ramsinghani_business_of_vc_public_frameworks_v0_1", "cards": 10, "sources": 15, "rightsPendingCardIds": ["BVC-02", "BVC-03", "BVC-04", "BVC-05", "BVC-09"]},
+    {"packId": "marc_andreessen_public_frameworks_v0_1", "cards": 10, "sources": 10, "rightsPendingCardIds": []},
+    {"packId": "metrick_yasuda_vc_finance_public_frameworks_v0_1", "cards": 10, "sources": 18, "rightsPendingCardIds": ["VCFI-03", "VCFI-04", "VCFI-05", "VCFI-06", "VCFI-07", "VCFI-08", "VCFI-09", "VCFI-10"]},
+    {"packId": "noam_wasserman_founders_dilemmas_public_frameworks_v0_1", "cards": 10, "sources": 14, "rightsPendingCardIds": ["FD-02", "FD-04", "FD-06", "FD-07", "FD-10"]},
+    {"packId": "peter_thiel_public_frameworks_v0_1", "cards": 10, "sources": 23, "rightsPendingCardIds": []},
+    {"packId": "scott_kupor_public_frameworks_v0_1", "cards": 10, "sources": 12, "rightsPendingCardIds": []},
+    {"packId": "sebastian_mallaby_power_law_public_frameworks_v0_1", "cards": 10, "sources": 9, "rightsPendingCardIds": []},
+    {"packId": "sequoia_valentine_moritz_public_frameworks_v0_1", "cards": 10, "sources": 12, "rightsPendingCardIds": []},
+    {"packId": "super_founders_public_frameworks_v0_1", "cards": 10, "sources": 13, "rightsPendingCardIds": []},
+    {"packId": "venture_deals_public_frameworks_v0_1", "cards": 10, "sources": 20, "rightsPendingCardIds": []},
+    {"packId": "venture_mindset_public_frameworks_v0_1", "cards": 9, "sources": 11, "rightsPendingCardIds": []}
+  ]
+}

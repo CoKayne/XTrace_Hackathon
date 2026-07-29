@@ -1,0 +1,472 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "metrick_yasuda_vc_finance_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "Yale School of Management",
+      "University of California, Davis",
+      "John Wiley & Sons",
+      "VCV Tools"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "VCFI-P2-BOOK-2021",
+      "title": "Venture Capital and the Finance of Innovation",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_catalog_record",
+      "url": "https://www.wiley-vch.de/en/areas-interest/finance-economics-law/venture-capital-and-the-finance-of-innovation-978-1-119-49011-1",
+      "edition": "Third edition; April 2021; ISBN 978-1-119-49011-1; publisher catalog states 496 pages",
+      "publishedAt": "2021-04",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_metadata_and_public_description_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports edition metadata, the four-part architecture, and the publisher's high-level description of high-growth enterprise valuation and preferred-stock valuation. It does not support unpublished formula details.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-P2-CONTENTS-2021",
+      "title": "Venture Capital and the Finance of Innovation — Brief Contents",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_excerpt",
+      "url": "https://media.wiley.com/product_data/excerpt/11/11194901/1119490111-3.pdf",
+      "edition": "Third-edition official two-page contents excerpt",
+      "publishedAt": "2021",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_excerpt_metadata_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports chapter titles and official chapter starting pages only. No chapter doctrine is inferred solely from a title.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-P1-YALE-TEXTBOOK",
+      "title": "Textbook: Venture Capital & the Finance of Innovation",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "Yale School of Management",
+      "sourceClass": "P1",
+      "sourceType": "author_official_textbook_page",
+      "url": "https://faculty.som.yale.edu/andrewmetrick/courses/",
+      "edition": "Official third-edition textbook page accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports the book's stated scope: VC finance models, risk and return, historical performance, total valuation, and partial valuation.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-P1-SSRN-CH1-2021",
+      "title": "Venture Capital and the Finance of Innovation — Front Matter and Chapter 1",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "SSRN / authors",
+      "sourceClass": "P1",
+      "sourceType": "author_authorized_sample_chapter",
+      "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=929145",
+      "edition": "Third-edition sample; written March 1, 2021; SSRN abstract 929145",
+      "publishedAt": "2021-03-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-29",
+      "language": "en",
+      "rightsStatus": "public_authorized_excerpt_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "The 36-page third-edition public excerpt was directly reviewed. It contains front matter, the preface, brief contents for Chapters 1-24, and the complete Chapter 1. It supports book architecture, the VC definition, investing/monitoring/exiting scope, and historical stage/industry/region patterns. It does not support substantive methods in Chapters 3-4 or 7-24.",
+      "immutableRevision": {
+        "status": "pdf_reviewed_sha256_recorded",
+        "hashAlgorithm": "sha256",
+        "contentHash": "aec0815b2b2213a8c6ab9510d1e9c05835d36901b62bd79a102bad79996a4709"
+      }
+    },
+    {
+      "sourceId": "VCFI-P1-SSRN-CH5-2021",
+      "title": "The Best Venture Capitalists",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "SSRN / John Wiley & Sons",
+      "sourceClass": "P1",
+      "sourceType": "author_authorized_sample_chapter",
+      "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1687766",
+      "edition": "Third-edition Chapter 5; written March 1, 2021; revised July 20, 2021; 16 pages",
+      "publishedAt": "2021-03-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports that the top-tier list is explicitly subjective and uses historical performance, early unicorn participation, and IPO exit rate as discussion inputs. It is not a universal ranking formula.",
+      "immutableRevision": {
+        "status": "url_and_revision_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-P1-UCD-SYLLABUS-2019",
+      "title": "Venture Capital and the Finance of Innovation — Winter 2019 Syllabus",
+      "authorOrSpeaker": [
+        "Ayako Yasuda"
+      ],
+      "publisher": "University of California, Davis Graduate School of Management",
+      "sourceClass": "P1",
+      "sourceType": "coauthor_course_syllabus",
+      "url": "https://webapps.aws.ucdavis.edu/public/documents/3096549/Syllabus",
+      "edition": "Winter 2019 course using the second edition",
+      "publishedAt": "2019",
+      "eventAt": "2019",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_course_document_neutral_paraphrase_only",
+      "attributionScope": "course_notes_derivative",
+      "attributionNotes": "Provides an official coauthor explanation of course objectives: Reality-Check DCF, comparables, staged financing, convertible preferred, option valuation, fund economics, risk/return, and real options. It predates the third edition and is used as corroboration.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-OVERVIEW",
+      "title": "VCV Tools — Overview",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "VCV Tools",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_tool",
+      "url": "https://www.vcvtools.com/",
+      "edition": "Public companion to the second edition, accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_tool_description_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports the total-versus-partial valuation workflow and the connection among the VC Method, Reality-Check DCF, comparable exit valuation, term sheets, and division of value among founders, investors, GP, and LP.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-AUTO",
+      "title": "AUTO Calculator and Exit Diagram Tool",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "VCV Tools",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_calculator",
+      "url": "https://www.vcvtools.com/auto",
+      "edition": "Public companion tool accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_tool_description_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports required term-sheet inputs, the need for all prior rounds, exit payoff schedules, GP/LP division, LP cost, partial valuation, LP valuation, and implied post-money valuation.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-FLEX",
+      "title": "FLEX Calculator",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "VCV Tools",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_calculator",
+      "url": "https://www.vcvtools.com/flex",
+      "edition": "Public companion tool accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_tool_description_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports component-based partial and LP valuation using option components. It does not by itself validate model assumptions for a given company.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-OPTIONS",
+      "title": "Option Calculators",
+      "authorOrSpeaker": [
+        "Andrew Metrick",
+        "Ayako Yasuda"
+      ],
+      "publisher": "VCV Tools",
+      "sourceClass": "P1",
+      "sourceType": "official_companion_calculator",
+      "url": "https://www.vcvtools.com/optionCalcs",
+      "edition": "Public companion tool accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_tool_description_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports the named European, random-expiration, and binary option tools and their displayed inputs. Runtime implementation and model validation remain a deterministic-service responsibility.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-E1-VC-DECISIONS-2016",
+      "title": "How Do Venture Capitalists Make Decisions?",
+      "authorOrSpeaker": [
+        "Paul Gompers",
+        "William Gornall",
+        "Steven N. Kaplan",
+        "Ilya A. Strebulaev"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_empirical_working_paper",
+      "url": "https://www.nber.org/papers/w22587",
+      "edition": "NBER Working Paper 22587; September 2016; published in Journal of Financial Economics in 2019",
+      "publishedAt": "2016-09",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies the framework with survey evidence from 885 institutional VCs and documents variation by industry, stage, geography, and success. Practice frequency is not normative proof.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-E1-RISK-RETURN-2001",
+      "title": "The Risk and Return of Venture Capital",
+      "authorOrSpeaker": [
+        "John H. Cochrane"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_empirical_working_paper",
+      "url": "https://www.nber.org/papers/w8066",
+      "edition": "NBER Working Paper 8066; January 2001; published in Journal of Financial Economics in 2005",
+      "publishedAt": "2001-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports selection-bias, volatility, arithmetic-versus-geometric return, and financing-round risk qualifications. Its historical sample is not a current target-return table.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-E1-FUND-PERSISTENCE-2020",
+      "title": "Has Persistence Persisted in Private Equity? Evidence from Buyout and Venture Capital Funds",
+      "authorOrSpeaker": [
+        "Robert S. Harris",
+        "Tim Jenkinson",
+        "Steven N. Kaplan",
+        "Ruediger Stucke"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_empirical_working_paper",
+      "url": "https://www.nber.org/papers/w28109",
+      "edition": "NBER Working Paper 28109; November 2020; published in Journal of Corporate Finance in 2023",
+      "publishedAt": "2020-11",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies historical fund-performance evidence by distinguishing ex-post results from information actually available at fundraising. It reports remaining VC persistence, but does not justify copying another fund's hurdle.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-E1-FUND-FEES-2012",
+      "title": "Do Private Equity Managers Earn Their Fees? Compensation, Ownership, and Cash Flow Performance",
+      "authorOrSpeaker": [
+        "David T. Robinson",
+        "Berk A. Sensoy"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_empirical_working_paper",
+      "url": "https://www.nber.org/papers/w17942",
+      "edition": "NBER Working Paper 17942; March 2012; published in Review of Financial Studies in 2013",
+      "publishedAt": "2012-03",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports treating fees, carry, ownership, cash flows, and LP net performance as separate auditable inputs; market conditions affect compensation. It does not supply universal fee assumptions.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-E1-CONTRACT-ANALYSES-2002",
+      "title": "Characteristics, Contracts, and Actions: Evidence from Venture Capitalist Analyses",
+      "authorOrSpeaker": [
+        "Steven N. Kaplan",
+        "Per Strömberg"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_empirical_working_paper",
+      "url": "https://www.nber.org/papers/w8764",
+      "edition": "NBER Working Paper 8764; February 2002; published in Journal of Finance in 2004",
+      "publishedAt": "2002-02",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports the empirical connection among business, management, deal risks, cash-flow rights, control rights, contingencies, and expected monitoring. Associations are not universal causal rules.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-E1-CONTRACTING-2000",
+      "title": "Financial Contracting Theory Meets the Real World: An Empirical Analysis of Venture Capital Contracts",
+      "authorOrSpeaker": [
+        "Steven N. Kaplan",
+        "Per Strömberg"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_empirical_working_paper",
+      "url": "https://www.nber.org/papers/w7660",
+      "edition": "NBER Working Paper 7660; April 2000; published in Review of Economic Studies in 2003",
+      "publishedAt": "2000-04",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_paper_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports separate, state-contingent allocation of cash-flow, voting, board, liquidation, and control rights and the frequent use of convertible securities.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-E1-VALUATIONS-2017",
+      "title": "Squaring Venture Capital Valuations with Reality",
+      "authorOrSpeaker": [
+        "William Gornall",
+        "Ilya A. Strebulaev"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_empirical_working_paper",
+      "url": "https://www.nber.org/papers/w23895",
+      "edition": "NBER Working Paper 23895; October 2017; published in Journal of Financial Economics in 2020",
+      "publishedAt": "2017-10",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Provides empirical evidence that applying the latest preferred-share price to every share can overstate company and common-share value because contractual protections differ.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VCFI-E1-STAGED-FINANCE-2005",
+      "title": "Venture Capital Contracting: Staged Financing and Syndication of Later-stage Investments",
+      "authorOrSpeaker": [
+        "Zsuzsanna Fluck",
+        "Kedran Garrison",
+        "Stewart C. Myers"
+      ],
+      "publisher": "National Bureau of Economic Research",
+      "sourceClass": "E1",
+      "sourceType": "external_theoretical_working_paper",
+      "url": "https://www.nber.org/papers/w11624",
+      "edition": "NBER Working Paper 11624; September 2005",
+      "publishedAt": "2005-09",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_paper_neutral_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies the simple real-option account of staging: staging may improve effort and abandonment flexibility but can create investor hold-up and founder-dilution costs; syndication can alter that trade-off.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    }
+  ]
+}

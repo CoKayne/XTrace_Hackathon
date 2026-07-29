@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-04",
+  "slug": "domain-transferable-capability",
+  "name": "Domain and Transferable Operating Capability",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates same-industry resume, transferable company-building skill, and sector-required expertise while preserving conflicting empirical evidence.",
+    "productLabel": "Domain Capability Lens — based on Super Founders public findings with explicit empirical conflict",
+    "notAClaimOf": [
+      "domain expertise being irrelevant",
+      "outsider status creating superior insight",
+      "general management replacing regulated or scientific competence"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public domain-experience observations and conflicting administrative-data evidence",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Super Founders public materials caution against rejecting consumer and enterprise/SaaS founders solely for lacking same-industry employment and distinguish transferable company-building skill from domain tenure. Large U.S. administrative-data research finds industry experience predicts high-growth success. The product must preserve this disagreement, identify sector-specific non-delegable knowledge, and evaluate actual learning, access, and operating capability rather than choosing one universal rule.",
+  "claimTypes": [
+    "empirical_association",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P1-INC-2021",
+      "claimIds": [
+        "SF-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Industry-experience section: consumer technology, enterprise/SaaS, and healthcare/biotech exception"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-TECHMEME-2019",
+      "claimIds": [
+        "SF-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 00:12:43-00:14:26: transferable operating, team, fundraising, and learning experience"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SF-E1-AGE-INDUSTRY-NBER",
+      "claimIds": [
+        "SF-EQ-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and published paper: prior experience in the specific industry predicts greater rates of high-growth success"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "conflict"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all_with_sector_specific_gating"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Sector-specific required knowledge is defined before assessing the founder resume.",
+    "Same-industry tenure, transferable operating skill, and current domain learning are separate evidence fields.",
+    "The output preserves the empirical disagreement."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "sector_capability_map",
+      "description": "Knowledge, credentials, customer access, safety, regulatory, scientific, and operating capabilities required now and next.",
+      "necessity": "required",
+      "acceptableSources": [
+        "sector expert review",
+        "regulatory analysis",
+        "technical diligence",
+        "customer workflow research"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "transferable_operating_evidence",
+      "description": "Observed company-building, recruiting, fundraising, selling, shipping, and managing outcomes transferable to this venture.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating history",
+        "references",
+        "prior work products",
+        "milestone records"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "domain_learning_evidence",
+      "description": "Current domain model, unknowns, expert network, customer discovery, and changes made after contrary evidence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "founder interviews",
+        "customer calls",
+        "expert references",
+        "product changes"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "nondelegable_gap_plan",
+      "description": "Uncovered capabilities, whether they are delegable, responsible hire or advisor, timing, and failure consequence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "hiring plan",
+        "organization plan",
+        "clinical or regulatory plan",
+        "technical roadmap"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which domain capabilities are essential now rather than merely helpful?",
+    "What company-building skills have transferred across contexts?",
+    "How quickly and accurately has the team learned this domain?",
+    "Which gaps can be hired, and which must be present in the founding team?",
+    "What does the external industry-experience evidence imply for this sector?",
+    "Would the conclusion change if same-industry employer names were hidden?"
+  ],
+  "positiveSignals": [
+    "The team demonstrates accurate domain learning and updates after expert or customer evidence.",
+    "Critical credentials and safety capabilities are present where required.",
+    "Transferable operating skills are tied to observed outcomes.",
+    "Missing expertise has a credible, timely hiring or partnership path.",
+    "The memo explicitly records the external empirical conflict."
+  ],
+  "redFlags": [
+    "Lack of domain experience is celebrated as fresh eyes without evidence.",
+    "Long domain tenure substitutes for customer discovery or execution.",
+    "Regulatory, scientific, or safety needs are called learnable without a timeline.",
+    "General operating success is assumed to transfer to an incompatible context.",
+    "The report suppresses whichever study contradicts the preferred narrative."
+  ],
+  "disconfirmingEvidence": [
+    "Experts identify a foundational error in the team's domain model.",
+    "Customer discovery contradicts the claimed pain or workflow.",
+    "A non-delegable credential or capability is absent.",
+    "The team fails to revise after contrary evidence.",
+    "Sector evidence shows experience is unusually important for this outcome."
+  ],
+  "contraindications": [
+    "Do not output a universal domain-experience score.",
+    "Do not interpret outsider status as automatic differentiation.",
+    "Do not average conflicting studies into false consensus.",
+    "Do not waive legal, safety, clinical, or scientific gates."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define sector-required capabilities before viewing founder pedigree.",
+      "Separate same-industry tenure, transferable operating skill, and current learning.",
+      "Map non-delegable gaps and mitigation timing.",
+      "Present Super Founders and external administrative-data evidence as a live disagreement.",
+      "Conclude on capability coverage and evidence needs, not whether insiders or outsiders are better."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only founder resume or folklore is available.",
+      "medium": "Author public findings and external abstract-level evidence are reviewed.",
+      "high": "Licensed source tables and sector-matched external studies are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "The team asserts it can learn the domain.",
+      "medium": "Customer work and expert references show partial learning.",
+      "high": "Independent experts, customers, credentials, product decisions, and execution converge."
+    },
+    "evidenceCoverage": {
+      "low": "Sector requirements or non-delegable gaps are undefined.",
+      "medium": "Current requirements are known but next-stage gaps are incomplete.",
+      "high": "Required knowledge, access, regulation, science, operations, learning, and hiring are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Domain capability is not a material uncertainty.",
+      "medium": "General operating skill matters and sector constraints are moderate.",
+      "high": "The company faces material domain, regulatory, scientific, or workflow risk."
+    },
+    "judgmentConfidence": {
+      "low": "Evidence is resume-based and the empirical conflict is unresolved.",
+      "medium": "Capabilities are partly observed with explicit gaps.",
+      "high": "Company-specific evidence supports capability coverage despite population-level disagreement."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VM-05",
+    "SF-02",
+    "SF-03",
+    "PT-07"
+  ],
+  "conflictingFrameworkIds": [
+    "DOMAIN-EXPERTISE-REQUIRED-UNIVERSALLY",
+    "OUTSIDER-ADVANTAGE-UNIVERSALLY"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Review licensed sector-specific definitions and estimates.",
+      "Build sector-specific non-delegable capability maps.",
+      "Validate incremental utility of experience and learning measures by sector and stage.",
+      "Preserve disagreement in all report outputs."
+    ],
+    "empiricalQualifications": [
+      "Super Founders and the NBER administrative-data study use different samples and success definitions.",
+      "Healthcare and biotech are explicit exceptions in the author's public summary.",
+      "Same-industry tenure is not identical to tacit knowledge, customer access, or regulatory capability."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book, article, or paper passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete licensed chapter review and external paper table review.",
+      "Create sector-specific capability packs."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial domain-capability card preserving direct empirical conflict."
+    }
+  ]
+}
+

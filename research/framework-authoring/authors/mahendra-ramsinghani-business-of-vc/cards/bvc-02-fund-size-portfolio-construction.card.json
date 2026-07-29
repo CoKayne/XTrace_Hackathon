@@ -1,0 +1,265 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-02",
+  "slug": "fund-size-portfolio-construction",
+  "name": "Fund Size and Portfolio Construction Constraint",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether fund size, investable capital, company count, check sizes, ownership, reserves, fees, and opportunity set form a feasible deployment plan.",
+    "productLabel": "Fund Construction Lens — product synthesis anchored to Ramsinghani's third-edition chapter architecture",
+    "notAClaimOf": [
+      "one optimal portfolio size",
+      "a universal reserve percentage",
+      "diversification guaranteeing venture returns"
+    ]
+  },
+  "attribution": {
+    "display": "Product synthesis anchored to Mahendra Ramsinghani's third-edition fund-construction chapter",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "low"
+  },
+  "neutralParaphrase": "Model the fund as a finite capital and attention budget. Reconcile committed capital, fees, recycling, initial investments, follow-ons, target ownership, company count, stage, pacing, concentration, and available deal flow. Report infeasibility and tradeoffs instead of filling missing policy with an industry constant.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH13-14",
+      "claimIds": [
+        "BVC-CLM-005",
+        "BVC-CLM-006",
+        "BVC-CLM-007",
+        "BVC-CLM-020"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Third edition Chapter 13, pp. 129-135, and Chapter 14, pp. 137-153; detailed rules pending lawful review"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-PRODUCT-2021",
+      "claimIds": [
+        "BVC-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Publisher description identifying portfolio construction as a distinct aspect of the book"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "fund_formation",
+      "investment_period",
+      "harvest_period"
+    ],
+    "businessModels": [
+      "venture_fund"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Fund currency, commitments, fees, term, investment period, recycling, and existing deployment are known.",
+    "Company count, initial check, ownership, reserve, pacing, and concentration policies are explicit.",
+    "Missing values are labeled defaults or ranges rather than facts.",
+    "All capital arithmetic is deterministic."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "fund_economics_and_timeline",
+      "description": "Committed capital, investable capital, fees/expenses, recycling, term, extensions, and investment period.",
+      "necessity": "required",
+      "acceptableSources": [
+        "LPA",
+        "fund model",
+        "user-confirmed Fund Policy",
+        "administrator records"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "deployment_policy",
+      "description": "Company count, check-size ranges, ownership, reserves, follow-on rules, pacing, and concentration limits.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Fund Policy",
+        "IC policy",
+        "historical deployment",
+        "user-confirmed defaults"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_portfolio_state",
+      "description": "Invested, committed, reserved, available, recycled, company exposures, and team capacity.",
+      "necessity": "required",
+      "acceptableSources": [
+        "portfolio ledger",
+        "capital-call records",
+        "fund administrator",
+        "investment tracker"
+      ],
+      "missingEffect": "not_applicable"
+    }
+  ],
+  "decisionQuestions": [
+    "How much capital is actually investable?",
+    "Can planned company count and check ranges fit after reserves and expenses?",
+    "What ownership is feasible at expected round sizes?",
+    "What is the pacing and vintage exposure?",
+    "How much capital and attention remain for new versus existing companies?",
+    "Which policy variable must change if the plan is infeasible?"
+  ],
+  "positiveSignals": [
+    "Capital sources and uses reconcile.",
+    "Checks and ownership are feasible at target rounds.",
+    "Reserve and pacing policies are explicit.",
+    "Concentration and team capacity remain within policy.",
+    "Opportunity set can support the planned deployment."
+  ],
+  "redFlags": [
+    "Committed capital is treated as fully investable.",
+    "Reserves are an unexplained industry percentage.",
+    "Ownership targets cannot be reached with check sizes.",
+    "Portfolio count ignores follow-on and attention capacity.",
+    "A new deal uses capital already reserved for existing companies."
+  ],
+  "disconfirmingEvidence": [
+    "Actual round sizes exceed the construction model.",
+    "Deployment pace is too fast or slow for the investment period.",
+    "Follow-on needs exceed reserves.",
+    "Concentration breaches emerge under realistic dilution and failure.",
+    "The strategy produces too few qualifying opportunities."
+  ],
+  "contraindications": [
+    "Do not claim author-endorsed ratios before full Chapter 13 review.",
+    "Do not use generic market defaults as actual fund policy.",
+    "Do not ignore fees, expenses, or already committed capital.",
+    "Do not let the LLM perform the construction math."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Load fund economics, timeline, policy, and portfolio state.",
+      "Reconcile capital sources and uses.",
+      "Simulate planned initial and follow-on deployment.",
+      "Test ownership, concentration, pacing, and attention constraints.",
+      "Return feasibility, binding constraints, and policy tradeoffs."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "capitalIdentity": "investable_capital = commitments - fees_and_expenses + permitted_recycling",
+      "deploymentIdentity": "planned_initial_capital + planned_follow_on_capital + other_commitments <= investable_capital",
+      "policyDefaultsMustBeLabeled": true,
+      "calculationOwner": "fund_construction_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Fund inputs are generic assumptions.",
+      "medium": "User-confirmed policy exists but administrator data is incomplete.",
+      "high": "LPA, administrator records, policy, and portfolio ledger reconcile."
+    },
+    "evidenceStrength": {
+      "low": "Only fund size and company count are known.",
+      "medium": "Major capital buckets are modeled with some ranges.",
+      "high": "All sources/uses, constraints, and current states are verified."
+    },
+    "evidenceCoverage": {
+      "low": "Fees, reserves, or current deployment are missing.",
+      "medium": "Capital model is complete but capacity or opportunity set is partial.",
+      "high": "Capital, timeline, policy, portfolio, capacity, and opportunity set are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The fund structure or vehicle is incompatible with the model.",
+      "medium": "A conventional venture fund model applies with disclosed exceptions.",
+      "high": "Vehicle terms and policy map directly to the model."
+    },
+    "judgmentConfidence": {
+      "low": "Only a rough construction range is supportable.",
+      "medium": "Feasibility is defensible but one material input is a labeled default.",
+      "high": "Binding constraints and tradeoffs are reproducible from verified inputs."
+    }
+  },
+  "overlapFrameworkIds": [
+    "BVC-01",
+    "BVC-03",
+    "BVC-04",
+    "VCFI-08"
+  ],
+  "conflictingFrameworkIds": [
+    "UNIVERSAL-RESERVE-PERCENT",
+    "COMMITMENTS-EQUALS-INVESTABLE-CAPITAL",
+    "OWNERSHIP-WITHOUT-CHECK-MATH"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapters 13 and 14 review.",
+      "Validate identities and defaults against real fund models.",
+      "Test nonstandard vehicles and recycling rules."
+    ],
+    "empiricalQualifications": [
+      "There is no single optimal venture portfolio construction.",
+      "Actual follow-on opportunity and round sizes are path-dependent.",
+      "Legal fund terms vary by vehicle and jurisdiction."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Topic attribution is supported by public metadata; detailed model is product synthesis pending licensed chapter review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Highest-priority licensed review gap: Chapter 13.",
+      "Align calculation inputs with main system Fund Policy."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source and product-synthesis draft."
+    }
+  ]
+}

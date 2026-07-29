@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-05",
+  "slug": "risk-onion-and-milestone-derisking",
+  "name": "Risk Onion and Milestone De-risking",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Decomposes a startup's category-specific risks and turns the most material uncertainties into evidence-producing milestones.",
+    "productLabel": "Risk Onion and Milestone De-risking Lens — based on Marc Andreessen's public startup writings",
+    "notAClaimOf": ["all risk being removable", "milestone completion eliminating residual risk", "a generic startup checklist"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public startup writings",
+    "scope": "person_direct",
+    "people": ["Marc Andreessen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Identify the layers of risk specific to the company and its category, rank them by materiality, and design the cheapest credible evidence or milestone that reduces each major uncertainty. Keep residual, transferred, and newly created risks explicit.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-009", "MA-CLM-010"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 16-21, onion theory of risk, common risk categories, and examples of risk-reduction evidence"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-005", "MA-CLM-006"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 53-57, adaptive planning under uncertainty"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company and investor define the outcome horizon and decision at risk.",
+    "Risk categories are adapted to the company's sector and stage.",
+    "Risk reduction is evaluated through evidence, not presentation quality."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "risk_register",
+      "description": "Material founder, market, competition, timing, financing, marketing, distribution, technology, product, hiring, regulatory, safety, and category-specific risks.",
+      "necessity": "required",
+      "acceptableSources": ["diligence notes", "technical review", "customer evidence", "financial model", "legal and regulatory review"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "risk_materiality",
+      "description": "Probability range, consequence, timing, dependency, reversibility, and interaction with other risks.",
+      "necessity": "required",
+      "acceptableSources": ["scenario model", "dependency map", "expert review", "historical evidence", "risk workshop"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "milestone_design",
+      "description": "For each priority risk, the test, evidence threshold, cost, owner, deadline, and decision that follows.",
+      "necessity": "required",
+      "acceptableSources": ["milestone plan", "experiment design", "board plan", "financing plan", "product roadmap"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "residual_risk",
+      "description": "Risk remaining, transferred, or newly created after the milestone.",
+      "necessity": "required",
+      "acceptableSources": ["updated risk register", "postmortem", "contract review", "technical review", "scenario model"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which risk can independently prevent the next financing, PMF, or survival milestone?",
+    "What is the lowest-cost credible evidence that would update it?",
+    "Does the proposed milestone test the risk or merely produce activity?",
+    "Which risk remains or moves elsewhere after success?",
+    "What decision follows success, failure, or an ambiguous result?"
+  ],
+  "positiveSignals": [
+    "Risks are company-specific, ranked, and linked to decisions.",
+    "Milestones produce falsifiable customer, technical, economic, or contractual evidence.",
+    "The plan retires uncertainty before irreversible spending.",
+    "Residual and created risks are documented after each test."
+  ],
+  "redFlags": [
+    "The risk register is a generic list with no priority or owner.",
+    "Milestones are fundraising, hiring, press, or product-launch activity without an evidence threshold.",
+    "The company claims risk is removed when it has only shifted to a partner or future round.",
+    "Interacting risks and fatal downside are omitted."
+  ],
+  "disconfirmingEvidence": [
+    "Some uncertainty is irreducible before scale and should be priced rather than falsely tested.",
+    "A large commitment can be rational when a staged experiment is technically impossible.",
+    "A failed milestone can create valuable evidence and improve the decision.",
+    "Founder or hiring risk cannot be reduced to demographic, pedigree, or personality scoring."
+  ],
+  "contraindications": [
+    "Do not treat the historical list of risks as exhaustive.",
+    "Do not infer risk probability from an LLM narrative.",
+    "Do not hide safety, ethics, governance, or regulatory risk inside a generic market score."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define the next decision and outcome horizon.",
+      "Create a category-specific risk map and rank materiality.",
+      "Design an evidence-producing milestone for each priority risk.",
+      "Record success, failure, and ambiguous-result decision rules.",
+      "Update residual, transferred, interacting, and newly created risks."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Unverified risk narrative.", "medium": "Internal records and expert review.", "high": "Independent evidence and observed milestone outcomes."},
+    "evidenceStrength": {"low": "Risk named only.", "medium": "Risk linked to a test.", "high": "Test outcome materially updates a decision and residual risk is measured."},
+    "evidenceCoverage": {"low": "One risk class.", "medium": "Priority risks and milestones.", "high": "Priority, interaction, residual, transferred, and fatal risks covered."},
+    "applicabilityConfidence": {"low": "No defined decision.", "medium": "One material uncertainty.", "high": "Multiple uncertainties determine the next irreversible commitment."},
+    "judgmentConfidence": {"low": "Checklist conclusion.", "medium": "Ranked risks and plausible tests.", "high": "Observed evidence updates support a clear bounded judgment."}
+  },
+  "overlapFrameworkIds": ["MA-03", "MA-04", "PL-03", "VCFI-10", "MMI-03"],
+  "conflictingFrameworkIds": ["GENERIC-RISK-SCORE", "MILESTONE-EQUALS-DERISKED"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define sector-specific risk taxonomies.", "Validate milestone update rules.", "Add expert review for technical, legal, and safety risks."],
+    "empiricalQualifications": ["Risk estimates are judgmental and correlated.", "Evidence can reduce one uncertainty while increasing another."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The public risk-onion concept is paraphrased; no private checklist is inferred."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define residual-risk and interacting-risk review templates."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

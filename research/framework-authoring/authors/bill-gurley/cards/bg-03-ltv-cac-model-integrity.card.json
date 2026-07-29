@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-03",
+  "slug": "ltv-cac-model-integrity",
+  "name": "LTV / CAC Model Integrity",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Audits the definitions, cohort maturity, interactions, incentives, and sensitivities behind LTV/CAC rather than accepting a ratio.",
+    "productLabel": "LTV / CAC Model Integrity Lens — based on Bill Gurley's public writing",
+    "notAClaimOf": ["LTV/CAC being strategy", "forecast LTV being fact", "one ratio authorizing unlimited spend"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd writing",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Use LTV/CAC only as a governed tactical model. Rebuild it from segmented cohorts, full contribution costs, acquisition attribution, churn or retention behavior, timing, and discounting; then test interactions and sensitivity instead of treating the output as certain.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-LTV-2012",
+      "claimIds": ["BG-CLM-007", "BG-CLM-008", "BG-CLM-009"],
+      "locator": {"kind": "web_section", "value": "Lines 10-35 and reasons 1-5: formula inputs, tactical use, misuse, ownership, uncertainty, and variable interaction"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-LTV-2012",
+      "claimIds": ["BG-CLM-010"],
+      "locator": {"kind": "web_section", "value": "Lines 51-53: LTV as measurement tool rather than strategy or advantage"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["saas", "subscription", "consumer", "marketplace", "transactional"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Acquisition and customer contribution can be segmented by cohort and channel.",
+    "Retention maturity and censoring are understood.",
+    "Finance or another independent owner can reproduce the model."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "cohort_retention",
+      "description": "Logo, user, revenue, and contribution retention by acquisition cohort with maturity and reactivation rules.",
+      "necessity": "required",
+      "acceptableSources": ["customer ledger", "billing", "product analytics", "cohort tables"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "full_contribution",
+      "description": "Revenue and all variable service, support, fulfillment, payment, loss, incentive, and success costs.",
+      "necessity": "required",
+      "acceptableSources": ["general ledger", "cost allocation", "vendor records", "operations data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "acquisition_attribution",
+      "description": "Paid spend, sales labor, discounts, referrals, organic customers, brand effects, and channel-specific acquisition counts.",
+      "necessity": "required",
+      "acceptableSources": ["attribution data", "payroll", "CRM", "marketing invoices", "experiment logs"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "model_governance",
+      "description": "Formula version, assumptions, owner, independent review, sensitivity, forecast-versus-actual history, and change log.",
+      "necessity": "required",
+      "acceptableSources": ["model file", "data dictionary", "finance review", "change log", "forecast archive"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which cohort and channel does the ratio describe?",
+    "Are organic customers excluded from paid CAC attribution?",
+    "Are lifetime and retention extrapolations mature and sensitivity-tested?",
+    "How do price, spend, mix, service, churn, and CAC change together?",
+    "Who benefits from the assumptions and who independently validates them?"
+  ],
+  "positiveSignals": [
+    "Cohorts and channel definitions reconcile to source data.",
+    "LTV uses contribution cash flows and conservative retention ranges.",
+    "Forecasts are compared with later actuals.",
+    "Finance independently reviews assumptions and version changes."
+  ],
+  "redFlags": [
+    "One blended LTV/CAC ratio covers different products, channels, or geographies.",
+    "Organic users dilute paid CAC.",
+    "Immature cohorts are extrapolated indefinitely.",
+    "The team requesting more spend controls every model definition."
+  ],
+  "disconfirmingEvidence": [
+    "Low-confidence LTV can still be useful for comparing tightly controlled channel experiments.",
+    "A short-payback business may rely less on lifetime extrapolation.",
+    "Brand and word-of-mouth make exact attribution difficult but should be disclosed rather than ignored.",
+    "Strong unit economics still do not prove defensibility or market size."
+  ],
+  "contraindications": [
+    "Do not compute LTV from a language model.",
+    "Do not compare ratios with different definitions.",
+    "Do not permit a ratio to authorize spend without marginal and cash analysis."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconcile data definitions and cohort maturity.",
+      "Rebuild contribution LTV and fully loaded CAC deterministically.",
+      "Run interaction and sensitivity scenarios.",
+      "Review model ownership and forecast error.",
+      "Conclude decision-useful, tactical-only, optimistic, non-reproducible, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Cohort LTV, CAC, payback, retention curves, discounting, and sensitivities must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Presented ratio.", "medium": "Reproducible internal model.", "high": "Source-data reconciliation, independent review, and forecast-versus-actual history."},
+    "evidenceStrength": {"low": "Immature blended cohort.", "medium": "Segmented cohorts with sensitivity.", "high": "Mature cohorts and repeated forecast calibration."},
+    "evidenceCoverage": {"low": "Ratio only.", "medium": "Retention, contribution, and CAC.", "high": "Cohorts, attribution, interactions, governance, cash timing, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Non-repeat or unsegmentable business.", "medium": "Some repeat behavior.", "high": "Acquisition and retention economics materially drive growth."},
+    "judgmentConfidence": {"low": "Model output accepted.", "medium": "Rebuilt bounded model.", "high": "Reconciled and calibrated evidence supports the judgment."}
+  },
+  "overlapFrameworkIds": ["BG-02", "BG-04", "DSV-04", "EI-03"],
+  "conflictingFrameworkIds": ["BLENDED-LTV-CAC", "LTV-CAC-AS-STRATEGY"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Implement reproducible cohort service.", "Define censoring and attribution policy.", "Backtest model calibration."],
+    "empiricalQualifications": ["LTV estimates are unstable in young cohorts.", "Acquisition and retention variables are endogenous."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public author material is neutrally paraphrased; no formula image is reproduced."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Define contribution-cost and cohort-censoring standards."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

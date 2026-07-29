@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-02",
+  "slug": "real-competitive-alternatives",
+  "name": "Real Competitive Alternatives",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Identifies what best-fit prospects actually use, do, or shortlist instead of the product.",
+    "productLabel": "Competitive Alternatives Lens — based on April Dunford's 2026 public materials",
+    "notAClaimOf": ["competition being only named vendors", "every possible future rival being current competition", "AI search discovering the customer's true shortlist"]
+  },
+  "attribution": {
+    "display": "Based on April Dunford's 2026 public materials",
+    "scope": "person_direct",
+    "people": ["April Dunford"],
+    "organizations": ["Positioning with April Dunford"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Start from what prospects would do if the offering did not exist and what appears in actual current deals. Include status quo, manual process, internal build, adjacent tool, or named competitor, but exclude speculative threats not yet present in buyer consideration.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-COMPETITION-2026",
+      "claimIds": ["OA2-CLM-009", "OA2-CLM-010", "OA2-CLM-011"],
+      "locator": {"kind": "video_timestamp", "value": "03:26-24:49, alternatives, shortlist, stakeholder biases, and AI limitation"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-QUICKSTART",
+      "claimIds": ["OA2-CLM-003", "OA2-CLM-009", "OA2-CLM-012"],
+      "locator": {"kind": "web_section", "value": "Five components and sequence beginning with competitive alternatives"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-AI-2026",
+      "claimIds": ["OA2-CLM-010", "OA2-CLM-011", "OA2-CLM-023"],
+      "locator": {"kind": "web_section", "value": "Position Against Your Real Competition and customer-feedback sections"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "OA2-01 has defined offering and audience scope.",
+    "Current customer behavior can be separated from roadmap threats.",
+    "The evidence includes wins as well as losses."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "deal_shortlists",
+      "description": "Alternatives named or observed in won, lost, no-decision, churned, and replacement deals.",
+      "necessity": "required",
+      "acceptableSources": ["sales call transcripts", "CRM", "win/loss interviews", "RFPs", "customer references"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "status_quo_behavior",
+      "description": "Manual process, internal build, existing stack, do-nothing, or budget reallocation used instead.",
+      "necessity": "required",
+      "acceptableSources": ["customer workflow interviews", "implementation discovery", "lost-deal notes"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "segment_time_context",
+      "description": "Alternative frequency by best-fit segment, use case, geography, stage, and recent time window.",
+      "necessity": "recommended",
+      "acceptableSources": ["CRM analysis", "win/loss dataset", "market research"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What would the target customer do if this product disappeared?",
+    "Which alternatives appear on actual current shortlists?",
+    "How do alternatives differ by best-fit segment and use case?",
+    "Which future threats belong in roadmap monitoring rather than current positioning?"
+  ],
+  "positiveSignals": [
+    "Alternative evidence comes from repeated real deals.",
+    "Status quo and non-vendor choices are included.",
+    "Wins and losses tell a consistent segment-specific story.",
+    "Management distinguishes current shortlist competition from future roadmap threats."
+  ],
+  "redFlags": [
+    "The competitor list comes from search, analyst maps, or founder imagination only.",
+    "Management starts from a desired category or future vision.",
+    "Only losses or only named direct vendors are reviewed.",
+    "Alternatives are aggregated across incompatible customer segments."
+  ],
+  "disconfirmingEvidence": [
+    "A well-known named rival rarely appears in actual deals.",
+    "A manual workflow is the dominant alternative despite a crowded vendor map.",
+    "An emerging technology is important to roadmap but absent from current buying.",
+    "Sales anecdotes do not survive CRM or customer-reference review."
+  ],
+  "contraindications": [
+    "Do not let an LLM manufacture the alternative set.",
+    "Do not treat all category members as current alternatives.",
+    "Do not ignore no-decision and status-quo outcomes."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Extract alternatives from customer and deal evidence.",
+      "Normalize vendor, internal, manual, status-quo, and no-decision alternatives.",
+      "Segment by customer and use case.",
+      "Separate current shortlist from future roadmap threats.",
+      "Conclude demonstrated, partial, internally imagined, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "competitive_alternative_analysis",
+      "requiredOutputs": ["alternative_frequency", "win_loss_by_alternative", "no_decision_rate", "segment_alternative_matrix", "evidence_recency"],
+      "prohibition": "The language model must not calculate frequencies or infer the true shortlist without customer evidence."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Internal brainstorm or web search.", "medium": "Sales notes and some customer interviews.", "high": "CRM, calls, win/loss, RFP, and references converge."},
+    "evidenceStrength": {"low": "Possible competitor.", "medium": "Repeated alternative in a segment.", "high": "Alternative repeatedly changes win, loss, or no-decision behavior."},
+    "evidenceCoverage": {"low": "Named vendors only.", "medium": "Vendors and status quo across some deals.", "high": "Wins, losses, no-decision, churn, status quo, segments, and recency covered."},
+    "applicabilityConfidence": {"low": "No defined customer choice.", "medium": "Some alternative evidence.", "high": "A repeatable current buying context exists."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Partial alternative map.", "high": "Customer-grounded, segment-specific alternative set."}
+  },
+  "overlapFrameworkIds": ["OA2-03", "OA2-05", "H7P-01", "PT-03"],
+  "conflictingFrameworkIds": ["AI-GENERATED-COMPETITOR-LIST-AS-EVIDENCE", "ALL-FUTURE-RIVALS-ARE-CURRENT-ALTERNATIVES"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate CRM and transcript extraction.", "Define recency windows.", "Backtest alternative maps."],
+    "empiricalQualifications": ["Sales records can have selection and documentation bias.", "Alternatives change over time and by segment."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author's public 2026 guidance is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define minimum deal count and evidence-recency standard."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

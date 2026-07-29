@@ -1,0 +1,305 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-10",
+  "slug": "term-sheet-closing-process",
+  "name": "Term Sheet, No-Shop, Diligence, and Closing Process",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates negotiated intent from binding provisions and tracks every diligence, document, consent, exclusivity, and closing condition to completion.",
+    "productLabel": "Deal-Closing Process Lens — based on Feld and Mendelson's public Venture Deals materials",
+    "notAClaimOf": [
+      "a signed term sheet guaranteeing funding",
+      "all term-sheet provisions being nonbinding",
+      "a model document eliminating diligence or legal review"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public fundraising, term-sheet, and no-shop materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals",
+      "Techstars",
+      "National Venture Capital Association"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A term sheet records negotiated intent and may contain binding provisions such as exclusivity, confidentiality, expenses, or governing law, but financing still requires diligence, definitive documents, approvals, conditions, signatures, and funds. Track version changes, responsible party, deadline, evidence, and failure consequence for every item.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-NOSHOP-2005",
+      "claimIds": [
+        "VD-CLM-018"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Shift from investor search to closing, no-shop commitment, and bounded period"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P2-CONTENTS-2019",
+      "claimIds": [
+        "VD-CLM-001",
+        "VD-CLM-018"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 3 fundraising and closing; Chapters 4 and 7 term-sheet and other terms; Chapter 18 why term sheets exist"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P1-COURSE-2026",
+      "claimIds": [
+        "VD-CLM-001",
+        "VD-CLM-018"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Preparing to fundraise, deal, term-sheet terms, negotiation, and sample term sheet"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VD-I1-NVCA-MODELS-2026",
+      "claimIds": [
+        "VD-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Current internally consistent model-document set, alternatives, transaction-cost purpose, and legal disclaimer"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_financing_processes"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all_with_counsel_mapping"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "common_equity",
+      "convertible",
+      "debt"
+    ]
+  },
+  "requiredConditions": [
+    "The signed term sheet and all revisions are versioned.",
+    "Binding and nonbinding provisions are identified by counsel.",
+    "No-shop, confidentiality, expenses, governing law, and termination are tracked separately.",
+    "Diligence, definitive documents, approvals, conditions, signatures, and funding evidence have owners and deadlines."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "term_sheet_versions",
+      "description": "Every draft, redline, signed version, side agreement, binding-status note, and expiration.",
+      "necessity": "required",
+      "acceptableSources": [
+        "signed term sheet",
+        "document management system",
+        "counsel summary"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "closing_checklist",
+      "description": "Diligence requests, definitive documents, corporate and investor approvals, conditions, signatures, consents, and funding mechanics.",
+      "necessity": "required",
+      "acceptableSources": [
+        "counsel closing checklist",
+        "stock purchase agreement",
+        "board and stockholder consents",
+        "funding confirmation"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "exclusivity_and_deadlines",
+      "description": "No-shop scope, term, fiduciary out if any, termination, expense, notice, and all task deadlines.",
+      "necessity": "required",
+      "acceptableSources": [
+        "signed term sheet",
+        "side letter",
+        "deadline register"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which provisions are binding and for how long?",
+    "What alternatives become unavailable during exclusivity?",
+    "Which diligence items or conditions remain unresolved?",
+    "Do definitive documents preserve negotiated economics and control?",
+    "Who owns each approval, signature, consent, and deadline?",
+    "What event terminates obligations or prevents closing?",
+    "Has cash actually settled and have post-closing records been updated?"
+  ],
+  "positiveSignals": [
+    "All versions and redlines are preserved.",
+    "Binding terms and deadlines are counsel-confirmed.",
+    "Diligence requests and closing conditions have owners.",
+    "Definitive documents reconcile with the approved term map.",
+    "Funding and post-closing cap-table records are verified."
+  ],
+  "redFlags": [
+    "Signed term sheet is displayed as closed financing.",
+    "No-shop deadline or scope is missing.",
+    "Material economics change in definitive documents without alert.",
+    "A checklist item is marked complete without source evidence.",
+    "Model documents replace counsel and transaction-specific review."
+  ],
+  "disconfirmingEvidence": [
+    "Diligence discovers a material company, IP, compliance, or cap-table issue.",
+    "Approvals or conditions cannot be satisfied.",
+    "The investor loses financing capacity or authorization.",
+    "Definitive documents materially depart from approved terms.",
+    "No-shop expires, is terminated, or another binding obligation conflicts."
+  ],
+  "contraindications": [
+    "Do not claim a financing is closed before funds settle.",
+    "Do not infer which clauses are binding.",
+    "Do not auto-waive a condition or deadline.",
+    "Do not provide legal-enforceability conclusions."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Version and compare every term-sheet draft and signed document.",
+      "Have counsel classify binding provisions and legal questions.",
+      "Create a source-linked checklist with owner, deadline, dependency, and consequence.",
+      "Reconcile definitive documents to VD-01 through VD-09.",
+      "Mark closed only after approvals, signatures, funding, and post-closing records verify."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "closingGates": [
+        "binding_terms_classified",
+        "diligence_complete_or_waived_by_authorized_party",
+        "definitive_documents_approved",
+        "corporate_and_investor_consents_complete",
+        "conditions_satisfied",
+        "signatures_complete",
+        "funds_settled",
+        "post_closing_cap_table_reconciled"
+      ],
+      "calculationOwner": "deal_process_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Status relies on email narrative or memory.",
+      "medium": "Signed term sheet and checklist exist but one legal or funding item is incomplete.",
+      "high": "Documents, counsel checklist, approvals, signatures, settlement, and records reconcile."
+    },
+    "evidenceStrength": {
+      "low": "Only negotiation status is known.",
+      "medium": "Most closing gates have evidence with one material dependency.",
+      "high": "Every completed gate has source evidence."
+    },
+    "evidenceCoverage": {
+      "low": "Only signed term sheet is covered.",
+      "medium": "Diligence and documents are covered but approvals, funding, or post-close records are partial.",
+      "high": "Versions, binding terms, diligence, documents, approvals, conditions, signatures, funds, and records are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No active financing process exists.",
+      "medium": "Process exists with unusual transaction or jurisdiction.",
+      "high": "The financing and closing workflow are clearly defined."
+    },
+    "judgmentConfidence": {
+      "low": "Only process gaps can be reported.",
+      "medium": "Current stage and blockers are reliable.",
+      "high": "Closing status is auditable."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SHR-07",
+    "VD-01",
+    "VD-02",
+    "VD-03",
+    "VD-05"
+  ],
+  "conflictingFrameworkIds": [
+    "SIGNED-TERM-SHEET-EQUALS-CLOSED",
+    "ALL-TERMS-NONBINDING",
+    "CHECKLIST-WITHOUT-EVIDENCE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Venture-counsel review of binding-status and closing gates.",
+      "Validate redline and checklist extraction.",
+      "Golden-case tests for failed, delayed, and completed closings."
+    ],
+    "empiricalQualifications": [
+      "Term-sheet enforceability and customary timing vary by jurisdiction.",
+      "Even signed deals can fail before settlement.",
+      "Diligence and definitive-document negotiation can materially change economics."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public process doctrine is neutrally paraphrased; counsel determines legal effect."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define binding-term and closing-evidence schemas.",
+      "Complete fourth-edition Chapters 3, 7, 13, and 18 review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

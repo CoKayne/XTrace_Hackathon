@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vsee.example/schemas/framework-pack-authoring-v1.json",
+  "title": "Framework Pack Authoring Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "packId",
+    "name",
+    "version",
+    "description",
+    "cardFiles",
+    "sourceCatalog",
+    "executionPolicy",
+    "review"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "framework-pack-authoring-v1"
+    },
+    "packId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cardFiles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^cards/[a-z0-9-]+\\.card\\.json$"
+      }
+    },
+    "sourceCatalog": {
+      "type": "string",
+      "const": "sources.json"
+    },
+    "executionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "independentLensExecution",
+        "preserveDisagreements",
+        "hiddenChainOfThought",
+        "formalDecisionFactorRule"
+      ],
+      "properties": {
+        "independentLensExecution": {
+          "const": true
+        },
+        "preserveDisagreements": {
+          "const": true
+        },
+        "hiddenChainOfThought": {
+          "const": false
+        },
+        "formalDecisionFactorRule": {
+          "const": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contentStatus",
+        "publicationStatus",
+        "openIssues"
+      ],
+      "properties": {
+        "contentStatus": {
+          "enum": [
+            "draft",
+            "review_ready",
+            "approved",
+            "rejected"
+          ]
+        },
+        "publicationStatus": {
+          "enum": [
+            "unpublished",
+            "published",
+            "retired"
+          ]
+        },
+        "openIssues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

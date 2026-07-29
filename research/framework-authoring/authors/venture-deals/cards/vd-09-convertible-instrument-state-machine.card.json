@@ -1,0 +1,292 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-09",
+  "slug": "convertible-instrument-state-machine",
+  "name": "Convertible Note and SAFE State Machine",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Models every note or SAFE as versioned event rules for financing, sale, dissolution, maturity, amendment, and pro-rata outcomes.",
+    "productLabel": "Convertible Instrument State-Machine Lens — based on Feld and Mendelson's public Venture Deals materials",
+    "notAClaimOf": [
+      "a valuation cap being a priced-round valuation",
+      "all SAFEs or notes using the same conversion base",
+      "convertibles being economically simple because documents are short"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public convertible-instrument materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Treat each convertible note, SAFE, warrant, and side letter as an event-driven contract. Parse cap, discount, interest, maturity, qualified and nonqualified financing, price denominator, sale, dissolution, MFN, pro-rata, amendment, and seniority; then simulate the complete stack in the next financing and downside states.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-CONVERTIBLE-2011",
+      "claimIds": [
+        "VD-CLM-016",
+        "VD-CLM-017"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Series index: discount, valuation caps, conversion mechanics, sale, other terms, warrants, and stage dynamics"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P2-CONTENTS-2019",
+      "claimIds": [
+        "VD-CLM-016",
+        "VD-CLM-017"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 8 convertible debt and alternatives; Chapter 9 cap-table methods with convertible notes"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VD-P2-BOOK-2019",
+      "claimIds": [
+        "VD-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Publisher description: equity and convertible debt among revised legal and procedural topics"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "businessModels": [
+      "all_companies_with_convertible_instruments"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all_with_instrument_version_and_counsel_mapping"
+    ],
+    "securityTypes": [
+      "convertible_note",
+      "pre_money_safe",
+      "post_money_safe",
+      "warrant",
+      "convertible_equity"
+    ]
+  },
+  "requiredConditions": [
+    "Every executed instrument, amendment, side letter, and version is available.",
+    "Each event trigger, price denominator, priority, and holder option is explicit.",
+    "The priced-round term sheet and pre-round cap table are available for conversion analysis.",
+    "Instrument interpretation and jurisdiction are counsel-reviewed."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "instrument_register",
+      "description": "For every instrument: principal or purchase amount, cap, discount, interest, maturity, version, seniority, MFN, pro-rata, warrants, and amendments.",
+      "necessity": "required",
+      "acceptableSources": [
+        "executed note",
+        "executed SAFE",
+        "side letter",
+        "amendment",
+        "warrant"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "event_rules",
+      "description": "Qualified/nonqualified financing, liquidity, dissolution, maturity, extension, conversion election, repayment, and consent thresholds.",
+      "necessity": "required",
+      "acceptableSources": [
+        "executed instrument",
+        "counsel summary"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "next_round_context",
+      "description": "New-money amount, price, pre/post-money method, fully diluted denominator, pool changes, and all concurrent instruments.",
+      "necessity": "required",
+      "acceptableSources": [
+        "new term sheet",
+        "verified cap table",
+        "VD-02 output"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which instrument version and exact event rules apply?",
+    "Does cap, discount, interest, or another price produce conversion?",
+    "What share-price denominator is used?",
+    "What happens in qualified financing, small financing, sale, dissolution, and maturity?",
+    "How do MFN, pro-rata, warrants, and side letters change results?",
+    "What is the combined ownership and payoff of the complete stack?"
+  ],
+  "positiveSignals": [
+    "Every instrument and amendment is present.",
+    "Event rules and denominators are unambiguous.",
+    "Pre-money and post-money instruments are distinguished.",
+    "All instruments convert in one deterministic cap-table model.",
+    "Sale and dissolution outcomes are separately modeled."
+  ],
+  "redFlags": [
+    "A cap is called the company's valuation.",
+    "SAFE version or pre/post-money form is unknown.",
+    "Only the lowest cap is considered.",
+    "Interest, MFN, pro-rata, warrants, or side letters are omitted.",
+    "Conversion is calculated instrument by instrument without stack interaction."
+  ],
+  "disconfirmingEvidence": [
+    "An amendment or MFN election changes economic terms.",
+    "The financing does not meet the qualified threshold.",
+    "The instrument uses a different company-capitalization definition.",
+    "A maturity, sale, or dissolution state occurs before the priced round.",
+    "Consent or majority amendment changes the stack."
+  ],
+  "contraindications": [
+    "Do not infer instrument behavior from SAFE or note label.",
+    "Do not treat a cap as priced valuation.",
+    "Do not calculate an incomplete stack.",
+    "Do not let the LLM perform conversion math."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Inventory every instrument, version, amendment, and side letter.",
+      "Encode event triggers, price rules, priority, options, and consents.",
+      "Reconcile the next-round denominator and new-money terms.",
+      "Simulate financing, sale, dissolution, maturity, and no-financing states.",
+      "Show holder-level ownership, payoff, and unresolved counsel interpretations."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredStates": [
+        "qualified_financing",
+        "nonqualified_financing",
+        "liquidity_event",
+        "dissolution",
+        "maturity_or_expiration",
+        "amendment_or_MFN"
+      ],
+      "guards": [
+        "instrument_versions_pinned",
+        "full_stack_complete",
+        "denominator_definitions_exact",
+        "event_ordering_explicit",
+        "counsel_interpretation_recorded"
+      ],
+      "calculationOwner": "cap_table_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only aggregate convertible amount or cap summary is available.",
+      "medium": "Core instruments exist but one amendment, side letter, or event term is incomplete.",
+      "high": "All executed instruments, versions, amendments, rights, and counsel review reconcile."
+    },
+    "evidenceStrength": {
+      "low": "No complete conversion state can be reproduced.",
+      "medium": "Main financing state is reproducible but one downside or consent state is uncertain.",
+      "high": "All required states are deterministic."
+    },
+    "evidenceCoverage": {
+      "low": "Only amount and cap are known.",
+      "medium": "Cap, discount, and financing are covered but sale, maturity, MFN, or side rights are partial.",
+      "high": "All terms, instruments, versions, states, consents, and round interactions are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Instrument type or version is unknown.",
+      "medium": "The instrument maps with custom drafting.",
+      "high": "Every instrument and state is explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only missing-instrument warnings are possible.",
+      "medium": "A bounded conversion range is usable.",
+      "high": "Ownership and payoff are reproducible across states."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VD-02",
+    "VD-03",
+    "VCFI-09",
+    "EI-02"
+  ],
+  "conflictingFrameworkIds": [
+    "CAP-EQUALS-VALUATION",
+    "ALL-SAFES-IDENTICAL",
+    "INSTRUMENT-BY-INSTRUMENT-WITHOUT-STACK"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Venture-counsel review by supported instrument and jurisdiction.",
+      "Golden-case tests for mixed note/SAFE stacks.",
+      "Complete fourth-edition convertible and cap-table chapter review."
+    ],
+    "empiricalQualifications": [
+      "Instrument forms and definitions evolve over time.",
+      "Small textual changes can materially alter conversion.",
+      "Side letters and majority amendments can create holder-specific outcomes."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public framework is neutrally paraphrased; only executed instrument text controls."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define supported SAFE/note versions.",
+      "Build event-ordering and consent test suite."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

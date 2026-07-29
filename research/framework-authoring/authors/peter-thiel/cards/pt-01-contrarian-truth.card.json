@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-01",
+  "slug": "contrarian-truth",
+  "name": "Contrarian Truth / Secret",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether the company is built on a specific, important, falsifiable insight that the market does not yet fully reflect.",
+    "productLabel": "Contrarian Truth Lens — based on Peter Thiel and Blake Masters public materials",
+    "notAClaimOf": [
+      "Peter Thiel endorsement",
+      "Peter Thiel's private reasoning",
+      "a prediction that contrarian claims are correct"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Peter Thiel and Blake Masters public writings, course materials, and interviews",
+    "scope": "product_synthesis",
+    "people": [
+      "Peter Thiel",
+      "Blake Masters"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A valuable startup may depend on an important view that is not yet widely accepted. The investable question is not whether the view is merely contrarian, but whether it is precise, causally explained, testable, and connected to a business that can create and capture value.",
+  "claimTypes": [
+    "affiliated_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P2-CS183-01",
+      "claimIds": [
+        "PT-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Three questions and contrarian/business question"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-P2-CS183-11",
+      "claimIds": [
+        "PT-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Secrets and what to do with secrets"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PT-P2-BOOK-001",
+      "claimIds": [
+        "PT-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official book description"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "businessModels": [
+      "technology_startup",
+      "b2b_saas",
+      "enterprise_ai",
+      "marketplace",
+      "deep_tech"
+    ],
+    "sectors": [
+      "all_with_a_testable_nonconsensus_thesis"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The company can state a non-obvious claim that is material to customer behavior, technology feasibility, market structure, or timing.",
+    "The claim can be separated from branding language and expressed as a falsifiable proposition.",
+    "The claim has a mechanism connecting it to business value."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "contrarian_claim",
+      "description": "The exact nonconsensus proposition in neutral, falsifiable language.",
+      "necessity": "required",
+      "acceptableSources": [
+        "founder interview",
+        "pitch deck",
+        "technical or market memo"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "causal_mechanism",
+      "description": "Why the proposition would change customer behavior, economics, feasibility, or market structure.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer evidence",
+        "technical evidence",
+        "market structure evidence",
+        "company experiment"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "independent_support",
+      "description": "Evidence available before the outcome that supports the proposition independently of founder assertion.",
+      "necessity": "required",
+      "acceptableSources": [
+        "dated customer data",
+        "technical benchmark",
+        "regulatory record",
+        "market transaction",
+        "independent research"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "falsifier",
+      "description": "A measurable observation or deadline that would show the proposition is wrong.",
+      "necessity": "required",
+      "acceptableSources": [
+        "founder commitment",
+        "test plan",
+        "milestone plan",
+        "investment memo"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact important belief differs from current consensus?",
+    "Who specifically holds the consensus view, and what evidence shows that it is the relevant consensus?",
+    "What causal mechanism would make the company's view correct?",
+    "What evidence existed before later success or publicity?",
+    "What observation would falsify the thesis?",
+    "If the thesis is correct, how does the company capture value rather than merely create it?"
+  ],
+  "positiveSignals": [
+    "The claim is narrow enough to test but important enough to change the business outcome.",
+    "Independent evidence predates the outcome and supports the mechanism.",
+    "The company has designed a low-cost test that could disprove its own thesis.",
+    "The insight explains an observed anomaly better than conventional alternatives.",
+    "Correctness would create a defendable advantage or timing edge."
+  ],
+  "redFlags": [
+    "The claim is only a broad slogan such as 'AI will transform everything.'",
+    "Contrarian is used as a personality badge without a falsifiable mechanism.",
+    "Consensus is defined vaguely or as a straw man.",
+    "All support was created after the company became successful or fashionable.",
+    "The thesis can never be disproved.",
+    "The insight creates social value but no plausible value-capture path."
+  ],
+  "disconfirmingEvidence": [
+    "Prospective customers repeatedly behave in the way predicted by the consensus explanation.",
+    "Independent technical tests reject the claimed performance or cost advantage.",
+    "The timing catalyst is delayed or removed.",
+    "A simpler alternative explains the observed anomaly.",
+    "The company changes the thesis after each failed test without predeclared criteria."
+  ],
+  "contraindications": [
+    "Do not apply as a scoring advantage when no falsifiable nonconsensus thesis exists.",
+    "Do not use disagreement alone as evidence of truth.",
+    "Do not use for a mature commodity business whose investment case is primarily price or execution.",
+    "Do not infer an investor's private agreement with the thesis."
+  ],
+  "decisionMethod": {
+    "kind": "ordinal_anchors",
+    "instructions": [
+      "Extract one atomic nonconsensus claim without promotional language.",
+      "Identify the relevant consensus and evidence that it is actually held.",
+      "Map the causal mechanism from claim to customer or economic outcome.",
+      "List dated support, counterevidence, and a falsifier.",
+      "Conclude only on thesis specificity and evidentiary support, not company investability."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only an uncited summary or attributed anecdote is available.",
+      "medium": "Blake Masters course notes or an edited interview support the doctrine.",
+      "high": "A reviewed coauthored text or direct Peter Thiel recording supports the exact doctrine."
+    },
+    "evidenceStrength": {
+      "low": "Founder assertion or narrative analogy only.",
+      "medium": "One independent, dated observation supports part of the mechanism.",
+      "high": "Multiple independent, dated tests support the mechanism and a meaningful falsifier has survived."
+    },
+    "evidenceCoverage": {
+      "low": "Claim, consensus, mechanism, or falsifier is missing.",
+      "medium": "All four exist but one depends on weak or indirect evidence.",
+      "high": "Claim, consensus, mechanism, independent support, and falsifier are all documented."
+    },
+    "applicabilityConfidence": {
+      "low": "The investment case is not thesis-driven or the claim is immaterial.",
+      "medium": "A thesis exists but value capture or timing connection is indirect.",
+      "high": "The thesis is material to product, market, timing, and value capture."
+    },
+    "judgmentConfidence": {
+      "low": "The lens can only identify a research question.",
+      "medium": "The thesis is coherent and partly supported, with unresolved counterevidence.",
+      "high": "The thesis is specific, independently supported, falsifiable, and robust to the strongest alternative explanation."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-02",
+    "PT-08",
+    "VCM-ANTI-CONSENSUS"
+  ],
+  "conflictingFrameworkIds": [
+    "LEAN-CUSTOMER-DISCOVERY",
+    "BASE-RATE-FIRST"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Define a reproducible rubric that distinguishes precise secrets from post-hoc storytelling.",
+      "Run blinded, time-split tests against a base-rate-and-traction baseline.",
+      "Include passed, failed, and missed companies rather than only famous winners.",
+      "Demonstrate incremental utility beyond market, traction, and moat evidence."
+    ],
+    "empiricalQualifications": [
+      "Contrarian beliefs are not inherently correct.",
+      "Public examples are heavily selected for successful outcomes.",
+      "Narrative quality may cause reviewer overreliance."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book passage or long quotation is reproduced. Final publication still requires source-revision and paraphrase review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Confirm final Zero to One chapter/page locators if a licensed edition becomes necessary after the public-source audit.",
+      "Validate overlap with the Venture Mindset and Super Founders base-rate cards."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source authoring draft with explicit falsification and anti-hindsight controls."
+    }
+  ]
+}
+

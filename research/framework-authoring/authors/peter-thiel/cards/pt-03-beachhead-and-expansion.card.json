@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-03",
+  "slug": "beachhead-and-expansion",
+  "name": "Start Small, Dominate, Expand",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a startup can dominate a real beachhead and expand through credible adjacent markets.",
+    "productLabel": "Beachhead Expansion Lens — based on Peter Thiel's public teaching",
+    "notAClaimOf": [
+      "a requirement to choose the smallest possible market",
+      "proof of future expansion from current niche share",
+      "Peter Thiel endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Peter Thiel's 2014 lecture with corroborating Blake Masters CS183 notes",
+    "scope": "person_direct",
+    "people": [
+      "Peter Thiel",
+      "Blake Masters"
+    ],
+    "organizations": [
+      "Y Combinator",
+      "Stanford University"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "An early startup may gain an advantage by serving a narrowly defined customer group with urgent demand well enough to achieve meaningful share, then expanding along evidence-backed adjacencies. A rhetorically narrow category, a niche with no demand, or an expansion story without a reusable advantage does not satisfy the lens.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P1-LECTURE-2014",
+      "claimIds": [
+        "PT-CLM-003",
+        "PT-CLM-004"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "06:54-18:21"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-P2-CS183-04",
+      "claimIds": [
+        "PT-CLM-003",
+        "PT-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Sections II and IV"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "businessModels": [
+      "b2b_saas",
+      "enterprise_ai",
+      "consumer_network",
+      "marketplace",
+      "deep_tech",
+      "platform"
+    ],
+    "sectors": [
+      "all_with_segmentable_demand"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "A customer beachhead can be defined by common need and substitution behavior.",
+    "The beachhead contains actual demand and can support an initial company.",
+    "The company can explain which asset or capability carries into the next segment."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "beachhead_definition",
+      "description": "Specific customer, job, geography, workflow, and substitute set for the initial market.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer segmentation",
+        "contracts",
+        "usage data",
+        "win-loss analysis"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "beachhead_urgency",
+      "description": "Evidence that the initial segment has urgent demand and willingness to adopt or pay.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer interviews",
+        "signed contracts",
+        "retention cohorts",
+        "usage records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "beachhead_share",
+      "description": "Numerator, denominator, and methodology for share or penetration in the initial segment.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "customer census",
+        "industry registry",
+        "sales records",
+        "third-party market data"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "expansion_sequence",
+      "description": "Ranked adjacent segments with transfer mechanism, additional requirements, and proof thresholds.",
+      "necessity": "required",
+      "acceptableSources": [
+        "expansion plan",
+        "customer pipeline",
+        "product roadmap",
+        "adjacent-market experiments"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is the smallest objective market that has real demand?",
+    "Do customers in that segment share a buying process and substitute set?",
+    "What fraction of the segment can the company reach and serve?",
+    "Which capability improves as beachhead penetration rises?",
+    "What is the first adjacent market, and why is entry easier for this company than for a new entrant?",
+    "What new product, channel, regulatory, or capital burden does expansion require?"
+  ],
+  "positiveSignals": [
+    "The segment is defined through customer behavior rather than stacked adjectives.",
+    "Customers have urgent pain, paid adoption, and strong retention.",
+    "The company has unusually high penetration in a bounded, verifiable segment.",
+    "Data, reputation, workflow integration, distribution, or technology transfers to the next segment.",
+    "The expansion sequence contains explicit proof gates and stop conditions."
+  ],
+  "redFlags": [
+    "The claimed beachhead is a TAM slide category with no observable denominator.",
+    "The niche is uncontested because customers do not care.",
+    "Share is calculated from an artificially narrow founder-defined category.",
+    "Every adjacent market needs a different product and sales motion.",
+    "The expansion plan jumps directly from a tiny niche to a global TAM.",
+    "The current segment has low retention or weak willingness to pay."
+  ],
+  "disconfirmingEvidence": [
+    "Customers use broadly available substitutes despite the proposed category.",
+    "The company cannot grow within the beachhead without severe price concessions.",
+    "Adjacent customers reject the current product or require a different procurement process.",
+    "Expansion erodes margins or eliminates the current defense mechanism.",
+    "A competitor enters the beachhead using an existing adjacent distribution advantage."
+  ],
+  "contraindications": [
+    "Do not treat an arbitrarily narrow label as market dominance.",
+    "Do not use for businesses whose economics require global scale before any useful service is possible without adapting the questions.",
+    "Do not infer expansion merely from a large top-down TAM."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define the beachhead from observed customer alternatives.",
+      "Verify urgency, reachability, penetration, and economics separately.",
+      "Map each adjacency and the asset that transfers.",
+      "Identify what must be rebuilt and what could break.",
+      "Conclude separately on beachhead quality and expansion credibility."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "reason": "Segment share and expansion economics may be calculated, but no validated combined decision score exists."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a secondary summary supports the doctrine.",
+      "medium": "Course notes support the rule without an immutable direct-source revision.",
+      "high": "Reviewed official captions and exact timestamps support the displayed rule."
+    },
+    "evidenceStrength": {
+      "low": "Founder segmentation and TAM narrative only.",
+      "medium": "Paid beachhead demand plus one expansion experiment.",
+      "high": "Verified segment denominator, penetration, economics, and repeated adjacent-market transfer."
+    },
+    "evidenceCoverage": {
+      "low": "Beachhead, demand, or expansion sequence is missing.",
+      "medium": "Beachhead is documented but share or transfer mechanism is indirect.",
+      "high": "All required components and counterevidence are sourced."
+    },
+    "applicabilityConfidence": {
+      "low": "Demand cannot be segmented or requires immediate global scale.",
+      "medium": "A segment exists but the expansion model differs materially.",
+      "high": "A bounded beachhead and transferable expansion asset are central to the strategy."
+    },
+    "judgmentConfidence": {
+      "low": "Only a plausible niche narrative exists.",
+      "medium": "Beachhead quality is supported but expansion remains unproven.",
+      "high": "Both beachhead dominance and an evidence-backed expansion sequence are supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-02",
+    "PT-04",
+    "ACH-COLD-START",
+    "DUN-POSITIONING"
+  ],
+  "conflictingFrameworkIds": [
+    "TAM-FIRST"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Define reproducible objective-market and expansion-transfer measures.",
+      "Test incremental utility beyond retention, growth, and sales efficiency.",
+      "Evaluate sector-specific exceptions requiring immediate scale."
+    ],
+    "empiricalQualifications": [
+      "Successful examples are selected after expansion occurred.",
+      "Small initial markets can reflect either focus or lack of demand.",
+      "Expansion frequently changes product and economics."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Official video caption revision and timestamp approval are required before publication."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Capture official caption hash.",
+      "Reconcile objective market definition with specialist positioning and network-effect cards."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft separating beachhead quality from expansion credibility."
+    }
+  ]
+}
+

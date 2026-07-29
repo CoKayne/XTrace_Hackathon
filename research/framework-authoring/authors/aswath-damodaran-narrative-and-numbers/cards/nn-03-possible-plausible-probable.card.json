@@ -1,0 +1,271 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-03",
+  "slug": "possible-plausible-probable",
+  "name": "Possible–Plausible–Probable Test",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates imaginable upside from evidence-supported alternatives and from a defensible base case.",
+    "productLabel": "Possible–Plausible–Probable Lens — based on Aswath Damodaran's public narrative tests",
+    "notAClaimOf": [
+      "fixed universal probability thresholds",
+      "unlikely outcomes having zero value",
+      "base rates overriding company evidence"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public possible, plausible, and probable distinction",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Classify each material narrative branch by its evidence state. A possible branch is logically available but immature, a plausible branch has a credible causal path and relevant analogues, and a probable branch has enough company-specific evidence to support the central scenario. Preserve lower-probability upside separately rather than silently placing it in the base case.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-THREE-PS",
+      "claimIds": [
+        "NN-CLM-004",
+        "NN-CLM-005",
+        "NN-CLM-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Sections Dueling Narratives, The Acid Test, market-expansion barriers, and Network Benefits"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-STORY-TO-VALUE",
+      "claimIds": [
+        "NN-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 7 Testing the Story and linked Possible, Plausible & Probable material"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "The claim being classified is specific enough to test.",
+    "Stage, geography, customer, and time horizon are explicit.",
+    "The evidence state is separated from numeric scenario probability.",
+    "Conditional possibilities are linked to the milestones that would move them upward."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "claim_and_causal_path",
+      "description": "Specific narrative branch with prerequisites, mechanism, timing, and value-driver consequence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "analyst narrative",
+        "company plan",
+        "technical roadmap",
+        "market model"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "reference_and_first_principles",
+      "description": "Relevant history, reference class, economic logic, or technical constraint.",
+      "necessity": "required",
+      "acceptableSources": [
+        "industry dataset",
+        "historical case",
+        "scientific evidence",
+        "unit economics",
+        "regulatory evidence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "company_specific_progress",
+      "description": "Observed milestones moving the branch from possible toward plausible or probable.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer behavior",
+        "contracts",
+        "cohort data",
+        "technical validation",
+        "regulatory milestone"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is the claim merely imaginable, causally credible, or supported as a central case?",
+    "What has to be true before this branch can occur?",
+    "Which barriers—switching, inertia, incumbents, regulation, capital, or technology—remain?",
+    "Which company evidence distinguishes this case from the reference class?",
+    "What milestone would move the branch one level up or down?"
+  ],
+  "positiveSignals": [
+    "The claim has a complete causal path and bounded market.",
+    "Relevant precedents and first principles support feasibility.",
+    "Company-specific milestones support adoption or execution.",
+    "Barriers and incumbent response are modeled.",
+    "Lower-confidence branches remain outside the base case."
+  ],
+  "redFlags": [
+    "A possible adjacent market is counted as base-case revenue.",
+    "A large TAM is treated as probability evidence.",
+    "A charismatic source substitutes for company-specific proof.",
+    "No barrier or counterexample is considered.",
+    "The LLM assigns precise probabilities without a stated calibration source."
+  ],
+  "disconfirmingEvidence": [
+    "Customer switching or willingness-to-pay is weaker than required.",
+    "An incumbent response closes the proposed entry path.",
+    "Local evidence is extrapolated to a global network effect.",
+    "Technical, regulatory, or capital milestones slip materially.",
+    "A matched reference class shows rare or fragile outcomes."
+  ],
+  "contraindications": [
+    "Do not turn the three labels into universal probability bands.",
+    "Do not discard possible outcomes that may have option value.",
+    "Do not call a branch probable from sector momentum alone.",
+    "Do not use narrative probability as investment recommendation probability."
+  ],
+  "decisionMethod": {
+    "kind": "ordinal_anchors",
+    "instructions": [
+      "Decompose the story into material branches.",
+      "For each branch, record prerequisites, mechanism, barrier, evidence, and counterevidence.",
+      "Assign possible, plausible, or probable using the evidence anchors, without inventing percentages.",
+      "Identify the next milestone that would change the classification.",
+      "Pass distinct branches to scenario calculation."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "orderedStates": [
+        "unsupported",
+        "possible",
+        "plausible",
+        "probable"
+      ],
+      "numericProbabilityAssignment": "prohibited_without_calibrated_external_model",
+      "calculationOwner": "scenario_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The claim rests on promotional or unattributed material.",
+      "medium": "Credible market or technical sources support feasibility.",
+      "high": "Primary company evidence and independent validation support the causal path."
+    },
+    "evidenceStrength": {
+      "low": "Only logical possibility is shown.",
+      "medium": "A plausible mechanism and relevant analogue exist.",
+      "high": "Company-specific execution evidence supports central-case treatment."
+    },
+    "evidenceCoverage": {
+      "low": "Prerequisites and barriers are absent.",
+      "medium": "Mechanism and major barriers are covered but one milestone is unresolved.",
+      "high": "Prerequisites, mechanism, barriers, reference class, progress, and disconfirmers are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The claim lacks stage or market boundaries.",
+      "medium": "The branch is well defined but the reference class is imperfect.",
+      "high": "Claim, stage, market, and relevant evidence are well matched."
+    },
+    "judgmentConfidence": {
+      "low": "Only possible or unsupported can be stated.",
+      "medium": "Plausible is defensible with explicit open milestones.",
+      "high": "Probable is defensible for the current horizon with strong company evidence."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-07",
+    "EI-07",
+    "SF-01",
+    "VM-03"
+  ],
+  "conflictingFrameworkIds": [
+    "POSSIBLE-EQUALS-BASE-CASE",
+    "TAM-EQUALS-PROBABILITY",
+    "UNCALIBRATED-LLM-PROBABILITY"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapter 7 review.",
+      "Calibrate ordinal labels across stage and business model.",
+      "Backtest reviewer agreement and forecast transitions."
+    ],
+    "empiricalQualifications": [
+      "Possible, plausible, and probable are qualitative evidence states, not validated venture-return predictors.",
+      "Novel markets may lack useful reference classes.",
+      "Private-company evidence can be selectively disclosed."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The public three-part distinction is paraphrased; operational anchors are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete exact chapter/page review.",
+      "Validate stage-specific evidence anchors."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

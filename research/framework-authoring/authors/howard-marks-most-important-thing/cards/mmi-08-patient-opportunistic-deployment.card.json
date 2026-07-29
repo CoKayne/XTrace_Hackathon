@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-08",
+  "slug": "patient-opportunistic-deployment",
+  "name": "Patient, Opportunity-Driven Deployment",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a deal is attractive on its own and relative to portfolio opportunity cost, rather than being selected to satisfy deployment pressure.",
+    "productLabel": "Patient Opportunism — based on Howard Marks's public materials",
+    "notAClaimOf": ["waiting indefinitely", "reactive sourcing being sufficient for VC", "market timing replacing fund planning"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public patient-opportunism materials; VC implementation is product synthesis",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Avoid forcing capital into a deal solely because money must be deployed or a theme is fashionable. Preserve capital, time, and follow-on capacity for opportunities whose evidence and terms satisfy the fund's policy, while recognizing that venture sourcing must remain active.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-MOST-2003",
+      "claimIds": ["MMI-CLM-014", "MMI-CLM-015"],
+      "locator": {"kind": "pdf_page", "value": "Section The most important thing is patient opportunism"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-RISK-2024",
+      "claimIds": ["MMI-CLM-008", "MMI-CLM-019"],
+      "locator": {"kind": "web_section", "value": "Risk of taking too little risk"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "MMI-P1-WINNERS-2023",
+      "claimIds": ["MMI-CLM-019", "MMI-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Strategy-specific need for winners versus loss minimization"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Fund deployment horizon, reserves, check range, and pipeline are visible.",
+    "The company and deal pass independently from deployment urgency.",
+    "Waiting and acting both have explicit opportunity costs."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "deal_merit",
+      "description": "Company, terms, fund-fit, and risk evidence independent of deployment schedule.",
+      "necessity": "required",
+      "acceptableSources": ["investment memo", "valuation output", "term sheet", "fund-fit report"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "portfolio_capacity",
+      "description": "Uncalled capital, reserves, concentration, time remaining, and follow-on obligations.",
+      "necessity": "required",
+      "acceptableSources": ["portfolio model", "fund policy"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "pipeline_alternatives",
+      "description": "Comparable current and anticipated opportunities and the cost of delay.",
+      "necessity": "recommended",
+      "acceptableSources": ["deal pipeline", "historical conversion data", "market scan"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Would the fund pursue this deal without deployment pressure?",
+    "What capacity does acting consume, including reserves and partner time?",
+    "What is lost by waiting, and what is lost by acting now?",
+    "Does the opportunity meet policy without a narrative exception?"
+  ],
+  "positiveSignals": [
+    "The deal is attractive before considering deployment schedule.",
+    "Capital and team capacity remain for plausible follow-ons.",
+    "Timing creates a real access or information advantage.",
+    "The comparison set supports acting rather than merely filling allocation."
+  ],
+  "redFlags": [
+    "Fund age or dry powder is the primary investment rationale.",
+    "A hot theme substitutes for company evidence.",
+    "Partner capacity and follow-on obligations are ignored.",
+    "Patience becomes an excuse for passive or weak sourcing."
+  ],
+  "disconfirmingEvidence": [
+    "The same check would breach reserves or concentration under plausible follow-ons.",
+    "Comparable opportunities have materially better evidence or terms.",
+    "Waiting would eliminate a unique allocation despite adequate diligence.",
+    "The fund is systematically underexposed because its thresholds are inconsistent with its mandate."
+  ],
+  "contraindications": [
+    "Do not transplant Oaktree's reactive bargain sourcing as a complete VC sourcing strategy.",
+    "Do not use patience to evade explicit fund pacing obligations.",
+    "Do not force deployment to satisfy a generic annual target."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Evaluate deal merit without deployment context.",
+      "Load deterministic portfolio capacity and opportunity-cost outputs.",
+      "Compare act-now, wait, and pass paths.",
+      "Identify whether urgency is external, evidence-based, or self-created.",
+      "Conclude act, advance with condition, wait with trigger, or pass."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "portfolio_capacity",
+      "requiredOutputs": ["remaining_investable_capital", "reserved_capital", "concentration_after_check", "follow_on_capacity"],
+      "prohibition": "The language model must not estimate fund capacity."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Fund capacity or pipeline is anecdotal.", "medium": "Current portfolio and pipeline records are available.", "high": "Audited fund state, policy, and pipeline history are available."},
+    "evidenceStrength": {"low": "Deployment pressure dominates.", "medium": "Deal merit is supported but alternatives or timing are uncertain.", "high": "Deal merit, capacity, timing, and opportunity cost jointly support action."},
+    "evidenceCoverage": {"low": "Deal only.", "medium": "Deal and fund capacity covered; alternatives partial.", "high": "Deal, capacity, reserves, timing, pipeline, and counterpath are complete."},
+    "applicabilityConfidence": {"low": "Fund state is unknown.", "medium": "Fund state is approximate.", "high": "Mandate, pacing, capacity, and decision date are explicit."},
+    "judgmentConfidence": {"low": "Only a pacing question is supportable.", "medium": "A conditional action is supportable.", "high": "Action is supported independently of pressure and survives opportunity-cost review."}
+  },
+  "overlapFrameworkIds": ["BVC-02", "BVC-04", "BVC-08", "VM-09"],
+  "conflictingFrameworkIds": ["DEPLOYMENT-PRESSURE-GATE", "PASSIVE-VC-SOURCING"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale", "portfolio_policy"],
+    "promotionRequirements": ["Validate portfolio-capacity interface.", "Backtest pacing decisions by fund strategy.", "Complete chapter review."],
+    "empiricalQualifications": ["Opportunity sets are partially unobservable.", "Excessive patience can cause access loss and underdeployment."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Marks's public patient-opportunism concept is paraphrased; VC sourcing and pacing rules are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Specify fund-strategy-specific pacing baselines."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

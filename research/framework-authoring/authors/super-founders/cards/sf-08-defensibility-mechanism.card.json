@@ -1,0 +1,271 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-08",
+  "slug": "defensibility-mechanism",
+  "name": "Defensibility Mechanism",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Requires a measurable mechanism, decay path, and renewal loop for engineering, network, IP, brand, or scale advantages.",
+    "productLabel": "Defensibility Mechanism Lens — based on Super Founders public materials",
+    "notAClaimOf": [
+      "any moat being permanent",
+      "engineering being universally strongest",
+      "network effects existing because a product has users"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public defensibility observations",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "The author describes multiple forms of defensibility, reports engineering as common and network effects as comparatively differentiated in his dataset, and cautions that no barrier is unbreakable. The product should identify the actual mechanism, current evidence, customer value, competitor cost, decay, and the company's ability to renew its lead rather than attach a moat label.",
+  "claimTypes": [
+    "empirical_association",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P1-SANDHILL-2022",
+      "claimIds": [
+        "SF-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 29:30-31:38: engineering, network effect, IP, brand, scale, comparative association, and non-permanence"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-TECHMEME-2019",
+      "claimIds": [
+        "SF-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 00:17:13-00:21:22: differentiated technology and product improvement in existing markets"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Defensibility claims identify a causal mechanism rather than a label.",
+    "Current advantage and future durability are separated.",
+    "The mechanism has stage- and business-model-specific evidence."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "mechanism_definition",
+      "description": "Explicit engineering, network, switching, IP, brand, scale, process, data, or other mechanism and why it raises competitor cost or customer retention.",
+      "necessity": "required",
+      "acceptableSources": [
+        "technical diligence",
+        "product architecture",
+        "customer workflow",
+        "market analysis"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "current_advantage_measurement",
+      "description": "Measured product, cost, performance, retention, liquidity, switching, brand, data, or scale advantage.",
+      "necessity": "required",
+      "acceptableSources": [
+        "benchmark",
+        "cohort data",
+        "customer evidence",
+        "network metrics",
+        "unit economics"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "replication_and_decay",
+      "description": "Competitor resources, time, legal paths, substitutes, technology change, and conditions that erode the advantage.",
+      "necessity": "required",
+      "acceptableSources": [
+        "competitive diligence",
+        "expert review",
+        "scenario analysis",
+        "IP review"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "renewal_loop",
+      "description": "How product iteration, learning, supply, network, brand, or scale keeps the company ahead as the market changes.",
+      "necessity": "required",
+      "acceptableSources": [
+        "roadmap",
+        "iteration history",
+        "R&D data",
+        "customer expansion"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact mechanism makes copying, switching, or competing harder?",
+    "What metric demonstrates the advantage today?",
+    "Who benefits from the mechanism and who bears its cost?",
+    "How can a strong competitor break or bypass it?",
+    "How quickly does the advantage decay?",
+    "What repeatable loop renews the lead?"
+  ],
+  "positiveSignals": [
+    "A named mechanism connects directly to customer value and competitor difficulty.",
+    "Metrics show the advantage strengthening with use, scale, learning, or switching.",
+    "Independent technical or customer evidence corroborates the mechanism.",
+    "The company has repeatedly renewed its lead.",
+    "Counterstrategies remain costly or slow under realistic scenarios."
+  ],
+  "redFlags": [
+    "Moat is a label without mechanism or metric.",
+    "Patent count substitutes for enforceability and commercial relevance.",
+    "User count is called a network effect without cross-user value.",
+    "Engineering lead lacks replication-time evidence.",
+    "The advantage depends on temporary subsidy or exclusive access that soon expires."
+  ],
+  "disconfirmingEvidence": [
+    "Competitors reproduce the core advantage quickly.",
+    "Retention or switching behavior does not improve with the claimed mechanism.",
+    "The IP can be designed around or is not assigned to the company.",
+    "Scale worsens economics or customer value.",
+    "Technology or regulation removes the barrier."
+  ],
+  "contraindications": [
+    "Do not rank moat types using public prevalence alone.",
+    "Do not claim permanence.",
+    "Do not count mechanisms without independent evidence.",
+    "Do not let defensibility override price or customer-value evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Name each proposed mechanism and its beneficiary.",
+      "Map current metrics and independent corroboration.",
+      "Estimate replication path, decay, and bypass scenarios.",
+      "Evaluate the renewal loop and its resource requirements.",
+      "Conclude on mechanism evidence and durability unknowns."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only founder moat labels are available.",
+      "medium": "Author public definitions and some company evidence are reviewed.",
+      "high": "Licensed definitions and independent technical, customer, legal, and market evidence are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Mechanism is asserted without measurement.",
+      "medium": "Current advantage is measured but decay or renewal is uncertain.",
+      "high": "Mechanism, metric, replication, decay, and renewal evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Current mechanism or metric is missing.",
+      "medium": "Current advantage is covered but competitor and renewal paths are incomplete.",
+      "high": "Customer value, metric, competitor cost, decay, bypass, and renewal are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Durability is not material to the company case.",
+      "medium": "The company has an early advantage but the business model is unsettled.",
+      "high": "Value depends materially on maintaining a defensible advantage."
+    },
+    "judgmentConfidence": {
+      "low": "The result is a moat label.",
+      "medium": "A measurable current advantage exists with unresolved durability.",
+      "high": "Multiple independent evidence types support the mechanism and renewal loop."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-02",
+    "PT-04",
+    "SF-07",
+    "HELMER-7-POWERS"
+  ],
+  "conflictingFrameworkIds": [
+    "MOAT-LABEL-SCORE",
+    "PATENT-COUNT-SCORE",
+    "USER-COUNT-NETWORK-EFFECT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Review licensed defensibility taxonomy and estimates.",
+      "Map mechanisms to 7 Powers and business-model-specific metrics.",
+      "Validate incremental utility and decay measures by stage."
+    ],
+    "empiricalQualifications": [
+      "The author's prevalence and comparative findings do not establish causal moat strength.",
+      "Defensibility coding may be subjective and retrospective.",
+      "Mechanisms and technology can change after the source cohort."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book, interview, or company case passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete licensed defensibility chapter review.",
+      "Reconcile with full 7 Powers framework."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial mechanism-and-decay card replacing moat labels."
+    }
+  ]
+}
+

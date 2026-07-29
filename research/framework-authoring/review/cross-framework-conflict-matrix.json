@@ -1,0 +1,230 @@
+{
+  "schemaVersion": "cross-framework-conflict-matrix-v0.1",
+  "researchCutoff": "2026-07-28",
+  "runtimeArtifact": false,
+  "globalPolicy": {
+    "runLensesIndependently": true,
+    "preserveDisagreement": true,
+    "averageLensOutputs": false,
+    "namedInvestorVote": false,
+    "frameworkPopularityWeight": false,
+    "deterministicCalculationsOutsideLLM": true,
+    "decisionPolicyRunsAfterLensExecution": true
+  },
+  "conflictFamilies": [
+    {
+      "conflictId": "CF-01",
+      "name": "Current Market Evidence vs Category Expansion",
+      "sideA": {
+        "position": "Demand and market size require current customer, adoption, price, and capture evidence.",
+        "frameworkIds": ["SQ-02", "MA-02", "SF-06", "DSV-02"]
+      },
+      "sideB": {
+        "position": "A materially different product can create behavior or use cases outside an existing category boundary.",
+        "frameworkIds": ["BG-07", "SQ-07", "PT-01", "SHR-03"]
+      },
+      "resolutionPolicy": "Build conventional, expanded, and failure scenarios. Treat current evidence as the base and category escape as a falsifiable alternative; neither a static TAM nor novelty wins automatically.",
+      "deterministicInputs": ["eligible customers", "penetration", "price", "frequency", "timing", "capture", "unit economics"],
+      "preserveInReport": ["current evidence", "expansion thesis", "falsifier", "scenario spread"]
+    },
+    {
+      "conflictId": "CF-02",
+      "name": "Founder Judgment vs Base-Rate and Bias Discipline",
+      "sideA": {
+        "position": "Founder product command, purpose, learning, and role fit matter at early stage.",
+        "frameworkIds": ["VM-05", "SQ-04", "SHR-02", "SF-04", "SF-05"]
+      },
+      "sideB": {
+        "position": "Pedigree, demographics, charisma, and familiar founder patterns are weak or biased proxies.",
+        "frameworkIds": ["SF-01", "SF-02", "SF-03", "PL-06", "FD-10"]
+      },
+      "resolutionPolicy": "Use standardized behavior and work-sample evidence, blind irrelevant identity where feasible, preserve reference counterevidence, and prohibit demographic, pedigree, charisma, or hours-worked scoring.",
+      "deterministicInputs": [],
+      "preserveInReport": ["observed behavior", "reference disagreement", "bias controls", "unknowns"]
+    },
+    {
+      "conflictId": "CF-03",
+      "name": "Focus vs Exploration and Option Value",
+      "sideA": {
+        "position": "A focused customer, problem, wedge, and resource plan improve learning and execution.",
+        "frameworkIds": ["SQ-01", "PT-03", "OA2-01", "OA2-08"]
+      },
+      "sideB": {
+        "position": "Early uncertainty can justify bounded experiments and staged real options.",
+        "frameworkIds": ["DSV-09", "VCFI-10", "PL-03", "NN-06"]
+      },
+      "resolutionPolicy": "Separate the committed operating thesis from explicitly budgeted experiments. Exploration needs hypotheses, caps, milestones, and stop rules; focus must not suppress stage-appropriate discovery.",
+      "deterministicInputs": ["experiment budget", "milestone cost", "follow-on need", "option payoff scenarios"],
+      "preserveInReport": ["core thesis", "experiment portfolio", "stop rules", "resource dilution"]
+    },
+    {
+      "conflictId": "CF-04",
+      "name": "Product-Market Pull vs Business Economics",
+      "sideA": {
+        "position": "Usage, retention, payment, customer pull, and network replication show product-market progress.",
+        "frameworkIds": ["MA-01", "SQ-03", "SF-06", "CSP-04"]
+      },
+      "sideB": {
+        "position": "Growth can destroy value when contribution economics, burn, capital needs, or cash conversion are weak.",
+        "frameworkIds": ["BG-02", "BG-03", "BG-04", "BG-09", "SQ-06", "DSV-04", "DSV-06"]
+      },
+      "resolutionPolicy": "Report product-market evidence and economic sustainability on separate axes. Neither strong pull nor efficient burn substitutes for the other.",
+      "deterministicInputs": ["cohort retention", "gross margin", "contribution margin", "CAC", "payback", "burn", "runway", "reinvestment"],
+      "preserveInReport": ["pull state", "economic state", "capital path", "conversion milestones"]
+    },
+    {
+      "conflictId": "CF-05",
+      "name": "Established Power vs Adaptation to Change",
+      "sideA": {
+        "position": "Durable mechanisms such as scale, network economies, switching, brand, resources, and process can protect value.",
+        "frameworkIds": ["H7P-01", "H7P-02", "H7P-03", "H7P-04", "H7P-05", "H7P-06", "H7P-07", "H7P-08", "PT-04", "CSP-09"]
+      },
+      "sideB": {
+        "position": "Customer, technology, competition, and regulation can weaken old advantages and require rapid updates.",
+        "frameworkIds": ["MA-03", "SQ-05", "NN-07", "NN-08", "EI-06", "EI-09"]
+      },
+      "resolutionPolicy": "Measure the current stock and reinforcing flow of each power, then stress it under identified changes. Do not let historical strength suppress contrary evidence.",
+      "deterministicInputs": ["retention", "price", "share", "unit cost", "density", "multi-homing", "switching behavior"],
+      "preserveInReport": ["power mechanism", "erosion mechanism", "update event", "remaining duration"]
+    },
+    {
+      "conflictId": "CF-06",
+      "name": "Contrarian Thesis vs Reference-Class Prior",
+      "sideA": {
+        "position": "Non-consensus views can create opportunity when the investor has a specific insight and falsifier.",
+        "frameworkIds": ["PT-01", "PT-10", "MMI-01", "MMI-07", "SHR-03"]
+      },
+      "sideB": {
+        "position": "Base rates, comparable failures, and historical transfer limits should constrain exceptional stories.",
+        "frameworkIds": ["SF-01", "EI-07", "VCFI-01", "PL-10"]
+      },
+      "resolutionPolicy": "Use the reference class as a prior and the contrarian thesis as an explicit evidence-based update. Preserve both the prior and the likelihood-changing evidence; being different is not itself evidence.",
+      "deterministicInputs": ["base rate", "conditional evidence", "scenario probability", "expected value"],
+      "preserveInReport": ["reference class", "variant view", "falsifier", "posterior uncertainty"]
+    },
+    {
+      "conflictId": "CF-07",
+      "name": "Power-Law Concentration vs Portfolio Risk Control",
+      "sideA": {
+        "position": "Rare outliers can dominate venture returns and may justify concentrated follow-on capital.",
+        "frameworkIds": ["VM-01", "VM-07", "VM-09", "PL-01", "PL-02", "PL-07", "PT-06"]
+      },
+      "sideB": {
+        "position": "Fund size, reserves, concentration, ownership, liquidity, and permanent-loss exposure constrain deployment.",
+        "frameworkIds": ["BVC-02", "BVC-04", "BVC-08", "MMI-03", "MMI-04", "MMI-10", "VCFI-05"]
+      },
+      "resolutionPolicy": "Model fund-level return contribution and downside under explicit concentration and reserve limits. Conviction affects scenarios, not the removal of policy or fiduciary constraints.",
+      "deterministicInputs": ["fund size", "check", "ownership", "reserves", "follow-on", "exit distribution", "loss rate", "net fund return"],
+      "preserveInReport": ["outlier case", "portfolio constraint", "downside concentration", "policy status"]
+    },
+    {
+      "conflictId": "CF-08",
+      "name": "Double Down vs Independent Re-Underwriting",
+      "sideA": {
+        "position": "Follow-on capital can compound ownership in demonstrated winners.",
+        "frameworkIds": ["VM-07", "BVC-04", "PL-07"]
+      },
+      "sideB": {
+        "position": "Every follow-on and hold decision should be evaluated from current evidence, price, terms, dilution, and liquidity.",
+        "frameworkIds": ["SHR-09", "SHR-10", "BG-09", "SQ-09", "BVC-10"]
+      },
+      "resolutionPolicy": "Ignore sunk cost and paper marks. Recompute expected return from the current entry or holding value under fund constraints before follow-on, pro-rata, sale, or hold.",
+      "deterministicInputs": ["current price", "ownership", "dilution", "preferences", "reserves", "exit scenarios", "expected return"],
+      "preserveInReport": ["company progress", "current-price case", "fund constraint", "liquidity alternative"]
+    },
+    {
+      "conflictId": "CF-09",
+      "name": "Founder Control vs Investor Governance",
+      "sideA": {
+        "position": "Founder goals, agency, and control can support long-term company building.",
+        "frameworkIds": ["FD-09", "PT-07", "PL-09"]
+      },
+      "sideB": {
+        "position": "Boards, protective rights, succession, conflicts, and bounded investor intervention may be required.",
+        "frameworkIds": ["VD-05", "VD-06", "SHR-08", "FD-07", "FD-08", "SQ-10"]
+      },
+      "resolutionPolicy": "Map wealth-control goals, board duties, security rights, conflicts, succession triggers, and stakeholder consequences. Do not presume founder control or investor control is universally superior.",
+      "deterministicInputs": ["voting power", "board composition", "protective provisions", "drag rights", "waterfall"],
+      "preserveInReport": ["founder objective", "investor right", "fiduciary constraint", "governance trade-off"]
+    },
+    {
+      "conflictId": "CF-10",
+      "name": "Narrative Judgment vs Numerical Valuation",
+      "sideA": {
+        "position": "A coherent story identifies causal drivers, uncertainty, and possible future states.",
+        "frameworkIds": ["NN-01", "NN-02", "NN-03", "NN-04", "NN-05", "NN-06", "NN-07", "NN-08", "NN-09", "SQ-07"]
+      },
+      "sideB": {
+        "position": "Value, price, ownership, dilution, and expected return require reproducible calculations.",
+        "frameworkIds": ["DSV-01", "DSV-02", "DSV-03", "DSV-04", "DSV-07", "DSV-10", "EI-01", "EI-02", "VCFI-02", "VCFI-03"]
+      },
+      "resolutionPolicy": "Use narrative only to define and update model assumptions. Calculate outputs deterministically, show sensitivity, and return model contradictions to the narrative lens rather than hiding them.",
+      "deterministicInputs": ["revenue drivers", "margin", "reinvestment", "risk", "probability", "price", "ownership", "dilution"],
+      "preserveInReport": ["story", "assumption map", "model result", "story-model contradiction"]
+    },
+    {
+      "conflictId": "CF-11",
+      "name": "DCF vs VC Method vs Comparables vs Reverse DCF",
+      "sideA": {
+        "position": "Scenario DCF estimates value from operating drivers, risk, survival, and reinvestment.",
+        "frameworkIds": ["DSV-01", "DSV-02", "DSV-03", "DSV-04", "DSV-05", "DSV-06", "DSV-07"]
+      },
+      "sideB": {
+        "position": "VC Method and comparable exits backsolve ownership and return requirements from uncertain exit outcomes.",
+        "frameworkIds": ["VCFI-03", "VCFI-06", "VCFI-07"]
+      },
+      "sideC": {
+        "position": "Reverse DCF identifies the operating expectations embedded in the offered price.",
+        "frameworkIds": ["EI-01", "EI-02", "EI-04", "EI-08"]
+      },
+      "resolutionPolicy": "Run methods independently with reconciled assumptions. Never average outputs mechanically. Explain discrepancies through survival, terminal value, return target, comparables, preferences, and implied expectations.",
+      "deterministicInputs": ["cash flows", "survival", "discount rate", "terminal assumptions", "exit value", "target return", "ownership", "price"],
+      "preserveInReport": ["method outputs", "shared assumptions", "method-specific assumptions", "discrepancy bridge"]
+    },
+    {
+      "conflictId": "CF-12",
+      "name": "Network Growth vs Ecosystem Economics",
+      "sideA": {
+        "position": "Density, hard-side value, replication, and network effects can improve product utility and defensibility.",
+        "frameworkIds": ["CSP-01", "CSP-02", "CSP-03", "CSP-04", "CSP-05", "CSP-06", "CSP-07", "CSP-08", "CSP-09", "H7P-03", "BG-05"]
+      },
+      "sideB": {
+        "position": "Take rate, bypass, multi-homing, participant surplus, variable cost, and local liquidity can weaken the network.",
+        "frameworkIds": ["BG-06", "BG-02", "CSP-07", "CSP-08", "CSP-09"]
+      },
+      "resolutionPolicy": "Measure network value and economics by local or segment cohort. Growth is positive only when later participants receive greater value and the platform retains sustainable shared surplus.",
+      "deterministicInputs": ["local density", "match rate", "retention", "multi-homing", "take rate", "contribution margin", "bypass"],
+      "preserveInReport": ["network effect", "hard-side condition", "ecosystem economics", "ceiling or negative effect"]
+    },
+    {
+      "conflictId": "CF-13",
+      "name": "Speed and Frugality vs Organizational Capability",
+      "sideA": {
+        "position": "Fast decisions and capital discipline can extend runway and improve focus.",
+        "frameworkIds": ["SQ-05", "SQ-06", "MA-06"]
+      },
+      "sideB": {
+        "position": "Operating systems, onboarding, management, feedback, fairness, and critical talent compound company capability.",
+        "frameworkIds": ["SP-01", "SP-06", "SP-07", "SP-08", "SP-09", "MA-09"]
+      },
+      "resolutionPolicy": "Protect legal, safety, security, customer, and critical organizational capabilities. Evaluate cuts and speed by outcome and reversibility, not activity or lowest cost.",
+      "deterministicInputs": ["runway", "headcount cost", "capacity", "retention", "incident rate", "milestone timing"],
+      "preserveInReport": ["cash benefit", "capability loss", "reversibility", "people and safety impact"]
+    },
+    {
+      "conflictId": "CF-14",
+      "name": "Revisit Opportunity vs Anchoring and Sector Heat",
+      "sideA": {
+        "position": "Passed deals should be reconsidered when company or market evidence changes.",
+        "frameworkIds": ["SQ-08", "BVC-06", "PL-05", "NN-08", "EI-09"]
+      },
+      "sideB": {
+        "position": "Prior marks, sunk cost, category fashion, and outcome narratives can distort current judgment.",
+        "frameworkIds": ["MMI-09", "SHR-10", "SF-09", "PL-10"]
+      },
+      "resolutionPolicy": "Retrieve source-linked prior reasons, map verified changes concern by concern, and rerun current underwriting and price. Similarity or sector heat can trigger research only.",
+      "deterministicInputs": ["dated event", "threshold delta", "current metrics", "current price", "ownership", "expected return"],
+      "preserveInReport": ["prior decision", "changed evidence", "unchanged concern", "current result"]
+    }
+  ]
+}

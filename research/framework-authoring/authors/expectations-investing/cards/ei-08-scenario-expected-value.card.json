@@ -1,0 +1,291 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-08",
+  "slug": "scenario-expected-value",
+  "name": "Scenario Expected Value and Margin-of-Safety Separation",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Keeps scenario probability, company value, security payoff, expected value, price gap, fund return, and action threshold as separate deterministic objects.",
+    "productLabel": "Expected-Value Separation Lens — based on public Expectations Investing and affiliated probabilities/payoffs research",
+    "notAClaimOf": [
+      "Base case being expected value",
+      "positive expected value guaranteeing a good outcome",
+      "company-value margin of safety equaling fund-level return"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Mauboussin and Rappaport's public expected-value material, qualified by later Mauboussin-affiliated probabilities/payoffs research",
+    "scope": "product_synthesis",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport",
+      "Dan Callahan"
+    ],
+    "organizations": [
+      "Expectations Investing",
+      "Morgan Stanley Investment Management"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Define mutually interpretable Bear, Base, and Bull states with explicit probabilities and company values, pass each state through the actual security waterfall, and calculate expected payoff deterministically. Keep that result distinct from price gap, required ownership, gross and net fund return, concentration, and Fund Policy action.",
+  "claimTypes": [
+    "direct_doctrine",
+    "affiliated_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-P1-CHAPTER-SUMMARIES",
+      "claimIds": [
+        "EI-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 7: expected value, margin of safety, and base-rate concepts"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-A1-EXPECTED-VALUE-2025",
+      "claimIds": [
+        "EI-CLM-016"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Public report: probabilities, payoffs, expected value, edge, and position sizing are distinct"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-1",
+      "claimIds": [
+        "EI-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Present value depends on cash-flow amount, required return, and time"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_with_defined_scenarios"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible",
+      "common_equity"
+    ]
+  },
+  "requiredConditions": [
+    "Scenario definitions are coherent across operating, financing, exit, and timing assumptions.",
+    "Scenario probabilities have an explicit source and sum to one when numeric expected value is shown.",
+    "Company value and security payoff are calculated separately.",
+    "Fund Policy owns margin-of-safety and action thresholds."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "scenario_pack",
+      "description": "Versioned Bear, Base, and Bull assumptions with mutually interpretable states and dates.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation model",
+        "Evidence Pack",
+        "approved scenario policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "scenario_probabilities",
+      "description": "Source-linked probabilities or an explicit decision to present scenarios without expected value.",
+      "necessity": "required",
+      "acceptableSources": [
+        "validated base-rate model",
+        "investment committee policy",
+        "expert-calibrated forecast"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "security_and_fund_economics",
+      "description": "State-specific security payoff, ownership, dilution, holding period, fees, and carry where relevant.",
+      "necessity": "required",
+      "acceptableSources": [
+        "VCFI waterfall service",
+        "cap-table model",
+        "fund policy",
+        "LPA"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Are scenarios coherent and sufficiently distinct?",
+    "Where do probabilities come from and how uncertain are they?",
+    "What is company value in each state?",
+    "What does this security receive in each state?",
+    "How do expected payoff, price gap, and fund return differ?",
+    "Which Fund Policy threshold, if any, changes the action?"
+  ],
+  "positiveSignals": [
+    "Scenarios reconcile operating drivers, financing, timing, and exit.",
+    "Probabilities use a suitable prior and explicit company updates.",
+    "The waterfall captures downside protection and dilution by state.",
+    "Positive expected payoff survives probability and terminal sensitivity.",
+    "Fund Policy thresholds are versioned and independently applied."
+  ],
+  "redFlags": [
+    "The Base case is labeled expected value.",
+    "Probabilities are invented to justify the desired conclusion.",
+    "Company value is multiplied by headline ownership without a waterfall.",
+    "Positive expected value is presented as low risk.",
+    "Margin of safety silently mixes security, fund, and company values."
+  ],
+  "disconfirmingEvidence": [
+    "Small probability changes reverse expected payoff.",
+    "Downside states omit financing failure, dilution, or liquidation claims.",
+    "Security payoff diverges materially from ownership percentage.",
+    "Holding period or fee assumptions eliminate the fund-level edge.",
+    "Scenarios share incompatible assumptions or double-count optionality."
+  ],
+  "contraindications": [
+    "Do not calculate expected value without supported probabilities.",
+    "Do not use a company-value distribution as a security-payoff distribution.",
+    "Do not call positive expected value Invest Candidate.",
+    "Do not let the LLM calculate or normalize probabilities."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Validate scenario coherence and probability provenance.",
+      "Calculate company value for each state.",
+      "Pass each state through the VCFI security waterfall and fund economics.",
+      "Calculate expected values and sensitivities deterministically.",
+      "Send results, not a recommendation, to Fund Policy and deterministic Decision Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "identities": [
+        "expected_company_value = sum(probability_s * company_value_s)",
+        "expected_security_payoff = sum(probability_s * security_payoff_s)",
+        "expected_fund_proceeds = sum(probability_s * fund_proceeds_s)"
+      ],
+      "guards": [
+        "probabilities_sum_to_one_or_expected_value_suppressed",
+        "scenario_definitions_coherent",
+        "company_security_fund_values_separate",
+        "Fund_Policy_applied_after_calculation"
+      ],
+      "calculationOwner": "scenario_valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Scenarios or probabilities are unsourced.",
+      "medium": "Scenarios are sourced but probabilities or terms remain approximate.",
+      "high": "Operating evidence, probability model, terms, and Fund Policy are verified."
+    },
+    "evidenceStrength": {
+      "low": "Only a founder Base case is available.",
+      "medium": "Three coherent states exist but probability sensitivity is wide.",
+      "high": "States, probabilities, payoffs, and sensitivity are independently supported."
+    },
+    "evidenceCoverage": {
+      "low": "Only company upside is covered.",
+      "medium": "Company states and terms are covered but fund net economics are partial.",
+      "high": "Operations, probability, company value, security payoff, fund return, and policy are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No coherent or mutually interpretable states exist.",
+      "medium": "The method fits but probabilities are weak.",
+      "high": "Scenario and claim structures are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only unweighted scenarios can be shown.",
+      "medium": "A probability-weighted range is usable with caveats.",
+      "high": "Company, security, and fund outputs are reproducible and policy-ready."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-07",
+    "DSV-10",
+    "VCFI-05",
+    "VCFI-08",
+    "EI-07"
+  ],
+  "conflictingFrameworkIds": [
+    "BASE-CASE-EQUALS-EXPECTED-VALUE",
+    "OWNERSHIP-EQUALS-PAYOFF",
+    "POSITIVE-EV-EQUALS-INVEST"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Validate scenario and probability governance.",
+      "Reconcile outputs with VCFI waterfall and fund economics.",
+      "Backtest calibration and decision thresholds."
+    ],
+    "empiricalQualifications": [
+      "Startup probabilities are difficult to calibrate and highly dependent.",
+      "Expected value can be positive while realized loss probability remains high.",
+      "Illiquidity, follow-on needs, and concentration affect fund action beyond expected payoff."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Coauthored book-level concepts and later affiliated research are separately attributed."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define probability-calibration and scenario-coherence tests.",
+      "Reconcile margin-of-safety terminology with Fund Policy."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

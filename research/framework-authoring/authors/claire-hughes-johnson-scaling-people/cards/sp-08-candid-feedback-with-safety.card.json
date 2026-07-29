@@ -1,0 +1,169 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-08",
+  "slug": "candid-feedback-with-safety",
+  "name": "Candid Feedback with Safety",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether feedback is timely, specific, curious, work-focused, and safe enough to produce learning rather than fear or personal judgment.",
+    "productLabel": "Candid Feedback Lens — based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["brutality being candor", "manager observations being objective truth", "psychological safety eliminating performance standards"]
+  },
+  "attribution": {
+    "display": "Based on Claire Hughes Johnson's public Scaling People materials with product safety qualifications",
+    "scope": "product_synthesis",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["McKinsey & Company", "First Round Review", "Newcomer"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Effective feedback starts from a specific observation about work or behavior, invites the recipient's account and self-assessment, states the manager's perspective without claiming certainty about identity or motives, and produces an owned next step. Directness must remain constructive, lawful, and safe.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-MCKINSEY-2023",
+      "claimIds": ["SP-CLM-022", "SP-CLM-024"],
+      "locator": {"kind": "web_section", "value": "Lines 33-41: explorer not lecturer, hypothesis, observation, questions, and recipient self-assessment"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-FIRSTROUND-2023",
+      "claimIds": ["SP-CLM-024", "SP-CLM-025"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 218-223: task rather than person, curiosity, self-assessment, owned observation, specificity, and difficult candor"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-NEWCOMER-2023",
+      "claimIds": ["SP-CLM-025", "SP-CLM-026"],
+      "locator": {"kind": "web_section", "value": "Lines 41-43 and 73-75: constructive observation, honest conversation, continuous feedback, and lightweight structure for new managers"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-STANFORD-2023",
+      "claimIds": ["SP-CLM-025"],
+      "locator": {"kind": "web_section", "value": "Creating an Open and Honest Culture clip summary: inclusive teams are better prepared for difficult conversations"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Analysis is at the feedback-system level unless authorized individual review is explicitly in scope.",
+    "Sensitive content is access-controlled and purpose-limited.",
+    "Directness is evaluated together with safety, specificity, power, and recourse."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "feedback_expectations_and_channels",
+      "description": "Documented expectations, channels, timing, manager training, escalation, anti-retaliation, and complaint mechanisms.",
+      "necessity": "required",
+      "acceptableSources": ["manager guide", "employee handbook", "training", "escalation policy", "complaint process"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "authorized_feedback_samples",
+      "description": "Consent-based, de-identified examples showing observation, context, recipient input, next step, and later follow-up.",
+      "necessity": "recommended",
+      "acceptableSources": ["authorized review records", "coaching notes", "de-identified examples", "structured interviews"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "safety_and_reciprocity",
+      "description": "Whether upward and peer feedback are possible, disagreement is protected, and retaliation or abusive patterns are investigated.",
+      "necessity": "required",
+      "acceptableSources": ["policy", "case records", "survey with privacy controls", "exit themes", "independent interviews"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "learning_and_followthrough",
+      "description": "Specific agreed actions, support, later review, and observed work change without assuming causality.",
+      "necessity": "recommended",
+      "acceptableSources": ["development plan", "manager follow-up", "work artifacts", "goal review"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is the feedback a specific observation or a judgment about identity and motives?",
+    "Did the recipient have a real opportunity to explain and self-assess?",
+    "Are expectations, support, and next steps clear?",
+    "Can people safely disagree with or give feedback to more powerful colleagues?",
+    "What evidence would show that candor is actually fear, bias, harassment, or retaliation?"
+  ],
+  "positiveSignals": [
+    "Feedback is timely, specific, behavior-focused, and contextual.",
+    "Managers state uncertainty and ask before prescribing.",
+    "Recipients can disagree and help define next steps.",
+    "Upward feedback and protected escalation have observable use.",
+    "Difficult feedback is followed by support and review."
+  ],
+  "redFlags": [
+    "Directness is used to excuse humiliation, threats, harassment, or personal attacks.",
+    "Anonymous hearsay is presented as fact without investigation.",
+    "Managers infer intent or immutable traits.",
+    "Only junior employees receive candid feedback.",
+    "Employees are surprised, lack recourse, or report retaliation."
+  ],
+  "disconfirmingEvidence": [
+    "A blunt message addressed an immediate safety or integrity risk and was proportionate.",
+    "Low survey scores reflect a newly introduced but lawfully managed accountability system; further evidence is needed.",
+    "A recipient disagrees with feedback but the process remains specific, fair, and non-retaliatory.",
+    "Confidentiality limits visible evidence while an independent authorized review exists."
+  ],
+  "contraindications": [
+    "Do not expose private feedback content to unauthorized users.",
+    "Do not infer emotion, intent, personality, or mental health.",
+    "Do not equate harshness with honesty.",
+    "Do not automate disciplinary or employment decisions.",
+    "Do not treat safety as freedom from performance expectations."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map expectations, channels, power relationships, recourse, and privacy.",
+      "Review authorized examples for observation, curiosity, specificity, next steps, and follow-up.",
+      "Seek evidence of reciprocity, retaliation, bias, and abuse.",
+      "Separate system quality from one manager or employee outcome.",
+      "Conclude constructive and safe, emerging, suppressive, unsafe, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Leadership claim or isolated anonymous anecdote.", "medium": "Policies and several authorized examples.", "high": "Policies, repeated de-identified cases, recourse records, and independent evidence converge."},
+    "evidenceStrength": {"low": "Candor slogan.", "medium": "Specific examples show constructive practice.", "high": "Longitudinal evidence shows reciprocal candor, protected disagreement, and useful follow-through."},
+    "evidenceCoverage": {"low": "Feedback frequency only.", "medium": "Content and some follow-up.", "high": "Expectations, content, power, reciprocity, safety, recourse, follow-up, bias, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No people-management context.", "medium": "Informal feedback materially affects work.", "high": "Management and team performance depend on repeated feedback."},
+    "judgmentConfidence": {"low": "Culture impression.", "medium": "Several authorized cases support a bounded conclusion.", "high": "Longitudinal, privacy-safe system evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-02", "SP-07", "SP-09"],
+  "conflictingFrameworkIds": ["BRUTALITY-EQUALS-CANDOR", "PSYCHOLOGICAL-SAFETY-EQUALS-NO-STANDARDS"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale"],
+    "promotionRequirements": ["Review licensed feedback chapter.", "Obtain employment, privacy, and psychological-safety review.", "Validate de-identification and access controls."],
+    "empiricalQualifications": ["Feedback effects depend on trust, power, timing, culture, and manager skill.", "Surveys and complaints can be selected or suppressed."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define authorized evidence, de-identification, recourse, and prohibited-inference controls."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

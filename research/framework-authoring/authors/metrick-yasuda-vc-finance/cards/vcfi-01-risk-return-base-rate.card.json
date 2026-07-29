@@ -1,0 +1,297 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-01",
+  "slug": "risk-return-base-rate",
+  "name": "VC Risk, Return, and Base-Rate Discipline",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Uses stage- and fund-relevant return evidence without importing winner-only averages or another fund's hurdle.",
+    "productLabel": "VC Risk–Return Base-Rate Lens — based on Metrick and Yasuda's public third-edition scope with external empirical qualification",
+    "notAClaimOf": [
+      "historical VC averages predicting the target company's return",
+      "a famous firm's track record defining this fund's hurdle",
+      "arithmetic average returns being suitable deterministic inputs"
+    ]
+  },
+  "attribution": {
+    "display": "Based on the public scope of Metrick and Yasuda's third edition, qualified by public VC return research",
+    "scope": "product_synthesis",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "Yale School of Management",
+      "University of California, Davis"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "VC risk and return inputs should be conditioned on stage, vintage, geography, security, holding period, failure treatment, and fund economics. Winner-only exits, arithmetic averages, ex-post rankings, and another manager's track record are unsuitable as unqualified hurdles. The fund must approve its own return policy while the analysis preserves the historical distribution and selection limitations.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_qualification",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P1-YALE-TEXTBOOK",
+      "claimIds": [
+        "VCFI-CLM-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Textbook abstract: risk and return, historical performance, total valuation, and partial valuation"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-E1-RISK-RETURN-2001",
+      "claimIds": [
+        "VCFI-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and NBER summary: selection correction, volatility, arithmetic/geometric returns, and round-specific risk"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "VCFI-P1-SSRN-CH5-2021",
+      "claimIds": [
+        "VCFI-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: explicitly subjective top-tier list and stated historical inputs"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VCFI-E1-FUND-PERSISTENCE-2020",
+      "claimIds": [
+        "VCFI-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: ex-post versus fundraising-time information and separate VC persistence result"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The analysis date, stage, geography, security, and fund are explicit.",
+    "Failure, unrealized investments, and unfavorable exits are represented rather than silently excluded.",
+    "Fund return requirements come from approved Fund Policy or are labeled draft assumptions.",
+    "Arithmetic, geometric, MOIC, IRR, and PME measures are not conflated."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "fund_policy_return",
+      "description": "Approved gross and net return requirements, holding-period expectations, reserve policy, and concentration limits.",
+      "necessity": "required",
+      "acceptableSources": [
+        "approved fund policy",
+        "limited partnership agreement",
+        "user-confirmed investment policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "matched_return_distribution",
+      "description": "Timestamped return or loss data matched by stage, vintage, geography, sector, security, and measurement method.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "licensed venture dataset",
+        "audited fund cash flows",
+        "peer-reviewed research"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "measurement_definition",
+      "description": "Definition and timing of IRR, MOIC, PME, arithmetic/geometric return, gross/net status, and censoring treatment.",
+      "necessity": "required",
+      "acceptableSources": [
+        "dataset methodology",
+        "fund reporting policy",
+        "research paper"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which return measure and stakeholder does this threshold represent?",
+    "Does the evidence include failures and unrealized positions?",
+    "How well does the cohort match the target stage, vintage, geography, sector, and security?",
+    "Is a target return approved Fund Policy or an imported market convention?",
+    "Has the analysis double-counted failure through both the exit distribution and hurdle?"
+  ],
+  "positiveSignals": [
+    "Fund-specific gross and net targets are separately documented.",
+    "The cohort includes loss and non-exit outcomes.",
+    "Return distributions and measurement definitions are visible.",
+    "Stage and vintage differences are preserved.",
+    "Sensitivity shows how conclusions change under alternative defensible priors."
+  ],
+  "redFlags": [
+    "Only successful IPO and acquisition returns are used.",
+    "A historical arithmetic average becomes the hurdle without review.",
+    "A top-tier ranking is treated as a transferable investment formula.",
+    "Gross MOIC is compared with net IRR.",
+    "The same failure risk appears in exit probability, discount rate, and target multiple."
+  ],
+  "disconfirmingEvidence": [
+    "Matched cohorts produce materially lower returns or higher losses.",
+    "The result disappears after including inactive or failed investments.",
+    "The fund's actual LPA economics make the gross target insufficient for LP goals.",
+    "Holding-period extension reduces the result below policy.",
+    "The selected benchmark was not available at the decision date."
+  ],
+  "contraindications": [
+    "Do not use this lens to predict a single company's success probability.",
+    "Do not infer current hurdles from historical industry averages.",
+    "Do not compare return measures without consistent cash flows and timing.",
+    "Do not let fund reputation substitute for company and deal evidence."
+  ],
+  "decisionMethod": {
+    "kind": "ordinal_anchors",
+    "instructions": [
+      "Identify the fund-approved return objective and measurement method.",
+      "Audit the base-rate cohort for selection, censoring, stage, vintage, and security mismatch.",
+      "Separate empirical prior, company evidence, and Fund Policy.",
+      "Report the usable range, qualifications, and any double-count risk.",
+      "Send only approved numeric inputs to deterministic valuation and policy services."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredDimensions": [
+        "stakeholder",
+        "gross_or_net",
+        "return_measure",
+        "holding_period",
+        "stage",
+        "vintage",
+        "security",
+        "failure_treatment"
+      ],
+      "calculationOwner": "fund_return_policy_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Media-reported returns or winner lists drive the prior.",
+      "medium": "Academic or fund data exists but cohort or measurement mismatch remains.",
+      "high": "Audited fund policy and matched cash-flow data with explicit methodology are available."
+    },
+    "evidenceStrength": {
+      "low": "A single average or anecdote is used.",
+      "medium": "A distribution is available with disclosed selection limitations.",
+      "high": "Multiple matched sources and actual fund cash flows support a stable range."
+    },
+    "evidenceCoverage": {
+      "low": "Only headline returns are present.",
+      "medium": "Stage, measure, and failures are covered but vintage or security is incomplete.",
+      "high": "Stakeholder, cash flows, censoring, stage, vintage, geography, security, and fees are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The cohort materially differs from the decision.",
+      "medium": "Several relevant dimensions match.",
+      "high": "The evidence and policy match the fund, stage, vintage, and security."
+    },
+    "judgmentConfidence": {
+      "low": "Only a broad research prior can be stated.",
+      "medium": "A qualified range can support scenario design.",
+      "high": "The approved policy input and matched evidence support reproducible calculations."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VM-01",
+    "VM-02",
+    "SK-02",
+    "DSV-01"
+  ],
+  "conflictingFrameworkIds": [
+    "WINNERS-ONLY-RETURN-PRIOR",
+    "FAMOUS-FUND-HURDLE",
+    "ARITHMETIC-AVERAGE-AS-POLICY"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete third-edition Chapters 3-5 review.",
+      "Approve fund-specific return definitions and cohort methodology.",
+      "Backtest for selection, censoring, and vintage leakage."
+    ],
+    "empiricalQualifications": [
+      "Historical VC returns are highly sensitive to sample, censoring, measurement, and period.",
+      "Fund persistence evidence does not turn another manager's result into this fund's hurdle.",
+      "Practice varies across industry, stage, geography, and fund success."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author metadata and external empirical abstracts are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Review third-edition cost-of-capital doctrine.",
+      "Define licensed cohort datasets and fund-policy ownership."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

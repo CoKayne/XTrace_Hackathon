@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-04",
+  "slug": "tipping-point-replication",
+  "name": "Tipping Point and Atomic-Network Replication",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether successful atomic networks can be reproduced with improving cost, speed, retention, and reduced manual support.",
+    "productLabel": "Tipping-Point Replication — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["one network proving scalability", "a universal tipping-point count", "new geographies inheriting old liquidity"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "After one atomic network works, evaluate whether the company can create many more. Compare time, cost, hard-side acquisition, density, retention, and subsidy by launch cohort; recognize that each city, team, or segment may restart the cold-start problem.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-004", "CSP-CLM-009", "CSP-CLM-010", "CSP-CLM-016"],
+      "locator": {"kind": "pdf_page", "value": "Part III, Chapters 11-17, PDF pp. 128-197"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-METRICS-2018",
+      "claimIds": ["CSP-CLM-009", "CSP-CLM-015", "CSP-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Local network effects reset by geography and atomic-unit metrics"},
+      "attributionScope": "course_notes_derivative",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "CSP-P1-METCALFE-2021",
+      "claimIds": ["CSP-CLM-010", "CSP-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Tipping-point and saturation vocabulary"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "At least one stable atomic network is evidenced.",
+    "New network launches can be identified as cohorts.",
+    "Launch support and subsidy are measured."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "network_launch_cohorts",
+      "description": "Unit-level launch date, hard-side seed, spend, manual work, time to density, retention, and outcomes.",
+      "necessity": "required",
+      "acceptableSources": ["product analytics", "market launch records", "operations data"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "replication_playbook",
+      "description": "Repeatable launch sequence, owner, channels, norms, and stop criteria.",
+      "necessity": "required",
+      "acceptableSources": ["operating playbook", "launch plan", "postmortem"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "unit_heterogeneity",
+      "description": "Differences across geography, segment, density, culture, regulation, or hard-side supply.",
+      "necessity": "recommended",
+      "acceptableSources": ["cohort segmentation", "market research", "local regulation"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "How many atomic networks reached stable value?",
+    "Are time, cost, subsidy, and manual effort improving by cohort?",
+    "Which local attributes explain success or failure?",
+    "What part of the playbook transfers and what resets?"
+  ],
+  "positiveSignals": [
+    "Several independent units cross a pre-registered operating threshold.",
+    "Time and cost to density improve without weaker retention.",
+    "The hard-side acquisition playbook transfers.",
+    "Failed units produce clear boundary conditions."
+  ],
+  "redFlags": [
+    "One flagship city or team represents all scalability.",
+    "Later cohorts receive hidden higher subsidy.",
+    "Aggregate growth masks failed local launches.",
+    "Thresholds are changed by cohort."
+  ],
+  "disconfirmingEvidence": [
+    "New units do not retain after launch teams leave.",
+    "Cost or subsidy rises with expansion.",
+    "Success depends on a nonreplicable local partnership.",
+    "New markets require a different hard side or interaction."
+  ],
+  "contraindications": [
+    "Do not call global scale before local replication is shown.",
+    "Do not average unit outcomes without dispersion.",
+    "Do not assume adjacent geography or vertical shares the same threshold."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define unit-level success before comparing cohorts.",
+      "Calculate time, cost, subsidy, density, and retention per launch.",
+      "Analyze success/failure heterogeneity.",
+      "Separate repeatable playbook from local exception.",
+      "Conclude replicating, partially replicating, nonreplicable, or insufficient data."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "network_replication_analysis",
+      "requiredOutputs": ["time_to_density_by_cohort", "cost_to_density", "subsidy_by_cohort", "retention_by_cohort", "success_rate", "dispersion"],
+      "prohibition": "The language model must not calculate or redefine success thresholds."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Launch anecdotes.", "medium": "Several cohort records.", "high": "Complete unit-level spend, operations, interaction, and retention data."},
+    "evidenceStrength": {"low": "One successful unit.", "medium": "Multiple units work but efficiency is flat or mixed.", "high": "Repeated units work with stable or improving economics."},
+    "evidenceCoverage": {"low": "Launch count only.", "medium": "Density and retention covered; cost or failures partial.", "high": "Launch, hard side, cost, subsidy, density, retention, failures, and local context complete."},
+    "applicabilityConfidence": {"low": "No stable initial unit.", "medium": "Initial unit exists but expansion is early.", "high": "Multiple comparable launch cohorts exist."},
+    "judgmentConfidence": {"low": "Replication unproven.", "medium": "Conditional replication.", "high": "A repeatable and economically improving launch system is evidenced."}
+  },
+  "overlapFrameworkIds": ["CSP-02", "CSP-03", "CSP-05"],
+  "conflictingFrameworkIds": ["ONE-CITY-PROVES-SCALE", "GLOBAL-SCALE-INHERITANCE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Pre-register unit success thresholds.", "Validate cohort accounting.", "Include failed launches."],
+    "empiricalQualifications": ["Expansion cohorts are selected and environment-dependent.", "Learning curves may reverse as easy markets are exhausted."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public book and affiliated metric concepts are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define comparable-cohort rules for different network archetypes."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

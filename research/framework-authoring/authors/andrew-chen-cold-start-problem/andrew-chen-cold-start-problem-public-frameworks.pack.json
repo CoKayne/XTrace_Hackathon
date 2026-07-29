@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "andrew_chen_cold_start_problem_public_frameworks_v0_1",
+  "name": "Andrew Chen / The Cold Start Problem Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten network-effect cards covering applicability, atomic networks, hard side, replication, acquisition, engagement, economics, ceilings, moats, and valuation translation.",
+  "cardFiles": [
+    "cards/csp-01-network-effect-applicability.card.json",
+    "cards/csp-02-atomic-network-density.card.json",
+    "cards/csp-03-hard-side-value.card.json",
+    "cards/csp-04-tipping-point-replication.card.json",
+    "cards/csp-05-acquisition-effect.card.json",
+    "cards/csp-06-engagement-density-effect.card.json",
+    "cards/csp-07-economic-effect.card.json",
+    "cards/csp-08-ceiling-negative-effects.card.json",
+    "cards/csp-09-moat-multihoming-competition.card.json",
+    "cards/csp-10-network-stage-valuation-bridge.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Confirm display rights for the author-hosted full PDF.",
+      "Validate metric definitions for each network archetype.",
+      "Backtest stage and network-effect classification.",
+      "Complete Framework Fidelity and Decision Utility review."
+    ]
+  }
+}
+

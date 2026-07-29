@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-09",
+  "slug": "founder-power-governance-boundary",
+  "name": "Founder Power and Governance Boundary",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates the founder autonomy needed for speed and ambition from unchecked power that can impair company and investor value.",
+    "productLabel": "Founder-Power Governance Pattern — based on Mallaby's public historical cautions",
+    "notAClaimOf": ["founder control being inherently bad", "WeWork or Uber being universal templates", "investor control being inherently value creating"]
+  },
+  "attribution": {
+    "display": "Historical caution derived from Sebastian Mallaby's public materials, qualified by contract research",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Penguin Press", "Council on Foreign Relations"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Grant enough founder authority to execute a distinctive vision while preserving accurate information, independent challenge, conflict controls, succession options, and enforceable boundaries for conduct that can destroy enterprise value.",
+  "claimTypes": ["historical_description", "empirical_qualification", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P2-BOOK-2022",
+      "claimIds": ["PL-CLM-015", "PL-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Official description of grand-slam incentives, founder power, WeWork/Uber failures, and bias"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-P1-CFR-2022",
+      "claimIds": ["PL-CLM-010", "PL-CLM-015", "PL-CLM-019"],
+      "locator": {"kind": "web_section", "value": "Official CFR description of power, shortcomings, and gatekeeping"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PL-E1-CONTRACTS-2019",
+      "claimIds": ["PL-CLM-014", "PL-CLM-015"],
+      "locator": {"kind": "web_section", "value": "Abstract on optimal equity split, investor bargaining, and startup-value tradeoffs"},
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["common_equity", "preferred_equity", "all"]
+  },
+  "requiredConditions": [
+    "Governance, voting, board, information, and conflict rights are known.",
+    "Founder behavior evidence is distinguished from archetypes.",
+    "Company-value and investor-value effects are evaluated separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "governance_structure",
+      "description": "Board, voting, information, related-party, succession, and protective provisions.",
+      "necessity": "required",
+      "acceptableSources": ["charter", "term sheet", "voting agreement", "board policy"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "behavior_evidence",
+      "description": "Company-specific evidence of integrity, challenge response, disclosure, and conflicts.",
+      "necessity": "required",
+      "acceptableSources": ["reference calls", "board records", "diligence", "founder interview"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "governance_tradeoffs",
+      "description": "How controls affect speed, incentives, future financing, company value, and investor protection.",
+      "necessity": "recommended",
+      "acceptableSources": ["legal analysis", "scenario analysis", "founder negotiation"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which founder powers enable execution and which create unbounded agency risk?",
+    "What information and challenge mechanisms operate in practice?",
+    "How are conflicts and related-party transactions controlled?",
+    "Do investor protections improve joint value or only bargaining share?"
+  ],
+  "positiveSignals": [
+    "Founder authority is paired with reliable disclosure and challenge.",
+    "Independent board or control mechanisms can act before irreversible harm.",
+    "Conflicts and related-party transactions have explicit review.",
+    "Controls preserve execution speed and future financing."
+  ],
+  "redFlags": [
+    "Visionary reputation excuses missing evidence or conflicts.",
+    "Governance exists on paper but cannot be exercised.",
+    "Super-voting or board structure eliminates effective accountability.",
+    "Investor terms transfer value while impairing company success."
+  ],
+  "disconfirmingEvidence": [
+    "References show transparent response to serious challenge.",
+    "Existing controls resolved prior conflicts without operational paralysis.",
+    "Alleged governance concern is only stylistic disagreement.",
+    "Proposed investor control would materially damage recruiting or future rounds."
+  ],
+  "contraindications": [
+    "Do not analogize a founder to a famous failure without company-specific evidence.",
+    "Do not infer integrity from charisma or pedigree.",
+    "Do not assume maximal investor control is optimal."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map authority, information, challenge, conflicts, and enforcement.",
+      "Review company-specific behavior evidence.",
+      "Model company-value and investor-value tradeoffs separately.",
+      "Identify irreversible agency-risk paths.",
+      "Conclude balanced, founder-overpowered, investor-overcontrolled, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder or investor assertions only.", "medium": "Legal documents and several references.", "high": "Executed documents, board evidence, references, and conflict history converge."},
+    "evidenceStrength": {"low": "Archetype analogy only.", "medium": "Specific governance exposure exists but behavior evidence is partial.", "high": "Structure, behavior, enforcement, and tradeoffs are evidenced."},
+    "evidenceCoverage": {"low": "Voting rights only.", "medium": "Governance and behavior covered; tradeoffs partial.", "high": "Authority, board, information, conflict, enforcement, succession, behavior, and value effects complete."},
+    "applicabilityConfidence": {"low": "No material governance issue.", "medium": "Control structure affects the deal.", "high": "Founder/investor power is central to risk and execution."},
+    "judgmentConfidence": {"low": "Only diligence questions.", "medium": "Directional governance concern.", "high": "A bounded governance conclusion survives company-specific counterevidence."}
+  },
+  "overlapFrameworkIds": ["VD-03", "VDCF-08", "SF-09"],
+  "conflictingFrameworkIds": ["FOUNDER-CULT", "MAX-INVESTOR-CONTROL"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Legal review by jurisdiction.", "Validate company/investor value tradeoff framework.", "Test governance evidence taxonomy."],
+    "empiricalQualifications": ["Governance is endogenous to company and investor quality.", "Historical scandals are vivid selected cases."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public historical cautions are paraphrased; no case narrative is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Align with jurisdiction-specific governance and securities-law review."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

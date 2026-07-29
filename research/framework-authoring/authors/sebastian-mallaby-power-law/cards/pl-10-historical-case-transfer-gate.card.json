@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-10",
+  "slug": "historical-case-transfer-gate",
+  "name": "Historical Case Transfer Gate",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Blocks a famous success or failure from becoming a scoring rule until decision-time comparability, base rates, mechanisms, and counterexamples are established.",
+    "productLabel": "Historical Case Transfer Guardrail — derived from The Power Law's public historical method",
+    "notAClaimOf": ["history being predictive by analogy", "elite practices being universally transferable", "a named investor endorsing the product"]
+  },
+  "attribution": {
+    "display": "Product guardrail informed by Sebastian Mallaby's public historical analysis",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Penguin Press", "Council on Foreign Relations"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Use historical venture cases to surface mechanisms, hypotheses, and counterexamples. Before applying a lesson to a current deal, compare stage, era, technology, capital intensity, market structure, terms, and information available at the time, and expose missing base rates and survivorship.",
+  "claimTypes": ["historical_description", "empirical_qualification", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P2-BOOK-2022",
+      "claimIds": ["PL-CLM-011", "PL-CLM-015", "PL-CLM-018", "PL-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Official description of successes, disasters, firm strategies, and industry shortcomings"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-P1-HBR-2022",
+      "claimIds": ["PL-CLM-016", "PL-CLM-017", "PL-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of elite-case focus, data opacity, skill, luck, and reputation feedback"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "PL-E1-SKILL-2014",
+      "claimIds": ["PL-CLM-016", "PL-CLM-017", "PL-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Abstract on noisy VC performance and difficulty identifying skill"},
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A historical case is invoked in a current analysis.",
+    "Decision-time rather than outcome-only evidence can be reconstructed.",
+    "The case contributes no formal weight by default."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "case_record",
+      "description": "Sources for what happened, what was knowable then, decisions, context, and outcome.",
+      "necessity": "required",
+      "acceptableSources": ["primary memo", "contemporaneous record", "well-sourced history", "public filing"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "comparability",
+      "description": "Stage, era, technology, market, capital, security, geography, and causal-mechanism comparison.",
+      "necessity": "required",
+      "acceptableSources": ["case matrix", "current evidence pack"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "countercases",
+      "description": "Failures or alternate cases sharing the same visible traits.",
+      "necessity": "required",
+      "acceptableSources": ["anti-portfolio", "academic dataset", "historical research"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What mechanism, not surface resemblance, makes the case relevant?",
+    "What information was available before the outcome?",
+    "Which contextual differences break transfer?",
+    "What countercases share the same visible features?",
+    "Does the case generate a question or improperly dictate a conclusion?"
+  ],
+  "positiveSignals": [
+    "The causal mechanism is comparable and independently evidenced.",
+    "Decision-time information and countercases are represented.",
+    "The case produces a falsifiable evidence request.",
+    "Outcome prestige does not alter formal weight."
+  ],
+  "redFlags": [
+    "The report says this is the next famous winner.",
+    "Only winners or scandals are retrieved.",
+    "Present knowledge is projected into the historical decision.",
+    "A tactic is copied without its firm system and era."
+  ],
+  "disconfirmingEvidence": [
+    "The current company differs on the relevant causal mechanism.",
+    "The historical result depended on a unique regulatory or capital environment.",
+    "Countercases are more numerous or more comparable.",
+    "The claimed lesson appears only after the outcome."
+  ],
+  "contraindications": [
+    "Do not allow historical analogy to carry formal decision weight.",
+    "Do not imply endorsement by named investors or firms.",
+    "Do not use a case when only a secondary summary is available."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Identify the precise claim the case is being used to support.",
+      "Reconstruct decision-time evidence and mechanism.",
+      "Compare material context fields.",
+      "Retrieve countercases and missing base rates.",
+      "Conclude transferable hypothesis, weak analogy, non-transferable, or insufficient source."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Retold anecdote only.", "medium": "Well-sourced history and some primary record.", "high": "Contemporaneous primary records plus independent history and countercases."},
+    "evidenceStrength": {"low": "Surface similarity.", "medium": "A plausible shared mechanism exists.", "high": "Mechanism is comparable, causal, current, and counter-tested."},
+    "evidenceCoverage": {"low": "Outcome only.", "medium": "Context and mechanism covered; base rate partial.", "high": "Decision-time evidence, context, mechanism, outcome, countercases, and base-rate limitations complete."},
+    "applicabilityConfidence": {"low": "No case is used or context differs materially.", "medium": "Some relevant similarity.", "high": "A precise historical claim materially informs current research."},
+    "judgmentConfidence": {"low": "Analogy must be rejected.", "medium": "Case supports a research hypothesis only.", "high": "Case supplies a bounded transferable mechanism, still with zero formal weight."}
+  },
+  "overlapFrameworkIds": ["SF-10", "MMI-09", "NN-10"],
+  "conflictingFrameworkIds": ["HERO-IMITATION", "SURVIVORSHIP-SCORING", "HISTORICAL-ENDORSEMENT"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question"],
+    "promotionRequirements": ["This guardrail should remain non-scoring.", "Validate case provenance and countercase retrieval.", "Complete full-book review."],
+    "empiricalQualifications": ["Elite histories are selected and narratively coherent after the fact.", "Counterfactual outcomes are not observable."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical material is used only as neutral, source-linked research context."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Make this gate mandatory before runtime case analogies are displayed."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

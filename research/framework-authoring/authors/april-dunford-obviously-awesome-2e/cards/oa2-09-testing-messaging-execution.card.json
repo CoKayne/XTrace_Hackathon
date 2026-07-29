@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-09",
+  "slug": "testing-messaging-execution",
+  "name": "Positioning Test and Messaging Execution",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests positioning in structured live conversations with best-fit prospects, then governs translation into consistent messaging.",
+    "productLabel": "Positioning Test-and-Execution Lens — based on April Dunford's 2026 public materials",
+    "notAClaimOf": ["homepage A/B tests isolating positioning", "message consistency proving market truth", "sales-pitch quality being the same as positioning quality"]
+  },
+  "attribution": {
+    "display": "Based on April Dunford's 2026 public materials",
+    "scope": "person_direct",
+    "people": ["April Dunford"],
+    "organizations": ["Positioning with April Dunford"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Translate the positioning chain into a structured sales conversation and test it with best-fit prospects, observing comprehension, relevance, objections, progression, and losses. After learning, create a governed messaging document for consistency; do not rely on homepage experiments that combine many uncontrolled variables.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-POST-2026",
+      "claimIds": ["OA2-CLM-020", "OA2-CLM-021", "OA2-CLM-022"],
+      "locator": {"kind": "video_timestamp", "value": "03:25-21:25, homepage-test limits, live conversations, sales pitch, messaging document, revisit triggers"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-ANNOUNCE-2026",
+      "claimIds": ["OA2-CLM-004", "OA2-CLM-020", "OA2-CLM-021"],
+      "locator": {"kind": "web_section", "value": "Expanded post-positioning, sales-pitch testing, and messaging section"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-BOOKS-2026",
+      "claimIds": ["OA2-CLM-002", "OA2-CLM-021"],
+      "locator": {"kind": "web_section", "value": "Positioning as GTM foundation and sales-pitch relation"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "OA2-07 has produced a positioning hypothesis.",
+    "Best-fit prospects and actual sellers are available.",
+    "Test scripts, versions, and outcomes can be recorded lawfully."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "sales_test_protocol",
+      "description": "Versioned pitch, best-fit criteria, seller guidance, observation fields, sample, and comparison plan.",
+      "necessity": "required",
+      "acceptableSources": ["test plan", "sales enablement", "call script", "version registry"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "conversation_outcomes",
+      "description": "Comprehension, value recognition, alternatives, objections, next-step conversion, and qualitative loss reasons.",
+      "necessity": "required",
+      "acceptableSources": ["call recordings", "transcripts", "CRM", "win/loss", "seller debrief"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "messaging_governance",
+      "description": "Approved claims, proof, audience, prohibited claims, asset mapping, version, owner, and review triggers.",
+      "necessity": "recommended",
+      "acceptableSources": ["messaging document", "claim registry", "content inventory", "review process"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Do best-fit prospects understand the context and differentiated value in live conversation?",
+    "Which link fails when deals do not progress?",
+    "Are seller, segment, pricing, or product variables confounding the test?",
+    "Does the messaging document preserve evidence and prevent claim drift?"
+  ],
+  "positiveSignals": [
+    "Best-fit prospects consistently understand and restate the value.",
+    "Progression improves without hiding objections or changing qualification.",
+    "Loss evidence produces targeted component revisions.",
+    "Messaging claims remain versioned, sourced, and consistent."
+  ],
+  "redFlags": [
+    "One homepage metric is treated as positioning validation.",
+    "Tests mix different segments, sellers, prices, and messages.",
+    "Only successful calls are reviewed.",
+    "Messaging adds unsupported claims after the positioning exercise."
+  ],
+  "disconfirmingEvidence": [
+    "Comprehension improves but commercial progression does not.",
+    "A strong seller compensates for weak positioning.",
+    "A weak pitch obscures an otherwise sound positioning chain.",
+    "Consistent messaging repeats a wrong market assumption."
+  ],
+  "contraindications": [
+    "Do not claim causal validation from uncontrolled conversations.",
+    "Do not treat messaging consistency as truth.",
+    "Do not expose confidential customer conversations without permission."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Version the positioning and sales-test protocol.",
+      "Test with defined best-fit prospects.",
+      "Review full outcomes including losses and no-decisions.",
+      "Separate positioning from seller, price, product, and process confounds.",
+      "Conclude supported, needs component revision, test-confounded, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "positioning_sales_test_analysis",
+      "requiredOutputs": ["test_versions", "sample_definition", "comprehension_observations", "stage_conversion", "loss_reasons", "confounds"],
+      "prohibition": "The language model must not calculate test effects or claim causality."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Seller impression or homepage metric.", "medium": "Recorded calls and CRM with some controls.", "high": "Versioned calls, CRM, win/loss, seller, and customer evidence converge."},
+    "evidenceStrength": {"low": "Positive reaction.", "medium": "Repeated comprehension and some progression.", "high": "Repeated best-fit outcomes with plausible confounds addressed."},
+    "evidenceCoverage": {"low": "Successful calls only.", "medium": "Calls and progression with gaps.", "high": "Wins, losses, no-decision, segments, sellers, versions, objections, and confounds covered."},
+    "applicabilityConfidence": {"low": "No testable sales motion.", "medium": "Some live selling exists.", "high": "Live sales conversation is a material acquisition mechanism."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Promising but confounded.", "high": "Well-supported positioning test result."}
+  },
+  "overlapFrameworkIds": ["OA2-07", "OA2-10", "NN-09", "EI-04"],
+  "conflictingFrameworkIds": ["HOMEPAGE-AB-TEST-PROVES-POSITIONING", "MESSAGE-CONSISTENCY-EQUALS-TRUTH"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate transcript/CRM analysis.", "Define test quality thresholds.", "Backtest confound controls."],
+    "empiricalQualifications": ["Live tests are observational unless designed otherwise.", "Sales outcomes depend on many non-positioning variables."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author's public 2026 post-positioning guidance is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review licensed post-work chapter and define minimum test protocol."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

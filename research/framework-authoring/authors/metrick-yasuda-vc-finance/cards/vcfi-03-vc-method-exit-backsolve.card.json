@@ -1,0 +1,296 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-03",
+  "slug": "vc-method-exit-backsolve",
+  "name": "VC Method Successful-Exit Backsolve",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Backsolves required ownership from a sourced successful-exit value and an approved target success multiple.",
+    "productLabel": "VC Method Exit-Backsolve Lens — based on Metrick and Yasuda's public VC Method architecture",
+    "notAClaimOf": [
+      "a single successful exit being the expected company value",
+      "target multiples being universal by stage",
+      "the backsolved ownership being commercially obtainable"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Andrew Metrick and Ayako Yasuda's public VC Method architecture",
+    "scope": "product_synthesis",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "Yale School of Management",
+      "University of California, Davis",
+      "VCV Tools"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "The VC Method starts with the total equity value under a defined successful exit, then calculates how much exit proceeds the investment must receive to satisfy an approved target success multiple. Dividing required proceeds by successful-exit equity value gives required exit ownership. A separate retention model then backsolves current ownership. Success probability, downside, hurdle, and dilution must be explicit and must not be counted more than once.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P2-CONTENTS-2021",
+      "claimIds": [
+        "VCFI-CLM-005"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Brief Contents p. 1: Chapter 10 The VC Method, Chapter 11 DCF, Chapter 12 Comparables"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-OVERVIEW",
+      "claimIds": [
+        "VCFI-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "AUTO overview: use with VC Method, Reality-Check DCF, and comparable exit valuation"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-UCD-SYLLABUS-2019",
+      "claimIds": [
+        "VCFI-CLM-005"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 1 and 4: successful exit value, VC Method, DCF, and comparables sequence"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity"
+    ]
+  },
+  "requiredConditions": [
+    "A successful-exit date and total equity value are defined independently.",
+    "Investment cost and approved target success multiple are explicit.",
+    "Failure and downside treatment are explicit and not duplicated.",
+    "Expected retention from current ownership to exit is modeled separately.",
+    "Security rights are handled after ownership backsolve by the partial-valuation service."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "successful_exit_equity_value",
+      "description": "Sourced Bear, Base, and Bull successful-exit equity values and dates.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic DCF service",
+        "deterministic comparable valuation service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "investment_cost",
+      "description": "Current cash investment and any attributable deal or follow-on cost under policy.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "investment proposal",
+        "fund accounting policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "target_success_multiple",
+      "description": "Fund-approved target multiple with holding period, stakeholder, gross/net status, and failure treatment.",
+      "necessity": "required",
+      "acceptableSources": [
+        "approved fund policy",
+        "user-confirmed policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "retention_factor",
+      "description": "Scenario-specific ownership retention from current round to exit with future financing and option-pool assumptions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap-table model",
+        "financing plan",
+        "deterministic dilution service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exactly counts as the successful exit and when?",
+    "How was the exit total equity value estimated?",
+    "Whose target multiple is used and is it gross or net?",
+    "Where are failure and downside reflected?",
+    "What ownership must remain at exit and what current ownership produces it?",
+    "Do security terms and Fund Policy still make the opportunity viable?"
+  ],
+  "positiveSignals": [
+    "Exit value has independent DCF and comparable support.",
+    "Target multiple is approved, versioned, and tied to holding period.",
+    "Failure treatment appears exactly once.",
+    "Current and exit ownership are linked by a transparent retention schedule.",
+    "Results are shown across Bear, Base, and Bull rather than one exit."
+  ],
+  "redFlags": [
+    "The founder's round valuation becomes the exit value.",
+    "A stage stereotype supplies the target multiple.",
+    "Failure probability is embedded in both the target and exit distribution.",
+    "Retention is assumed to be 100 percent despite future rounds.",
+    "Required ownership exceeds available ownership but the result is still called investable."
+  ],
+  "disconfirmingEvidence": [
+    "Reasonable exit values cannot support the required proceeds.",
+    "The approved target multiple makes required exit ownership infeasible.",
+    "Expected dilution materially raises current required ownership.",
+    "Security rights or senior claims reduce payoff below the ownership approximation.",
+    "The conclusion reverses under defensible holding-period changes."
+  ],
+  "contraindications": [
+    "Do not use a successful scenario as an expected value.",
+    "Do not invent a target multiple from public rules of thumb.",
+    "Do not use ownership percentage as a substitute for security payoff.",
+    "Do not issue Invest Candidate from this backsolve alone."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Obtain independently calculated successful-exit equity values.",
+      "Obtain investment cost and approved target success multiple.",
+      "Backsolve required exit proceeds and exit ownership for each scenario.",
+      "Apply scenario-specific retention to calculate current required ownership.",
+      "Send ownership and exit values to security waterfall and Fund Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "identities": [
+        "required_exit_proceeds_s = investment_cost * target_success_multiple",
+        "required_exit_ownership_s = required_exit_proceeds_s / successful_exit_equity_value_s",
+        "required_current_ownership_s = required_exit_ownership_s / expected_retention_factor_s"
+      ],
+      "guards": [
+        "target_success_multiple_source_is_approved_fund_policy",
+        "failure_risk_counted_once",
+        "exit_equity_value_positive",
+        "retention_factor_greater_than_zero_and_at_most_one",
+        "required_ownership_commercially_feasible"
+      ],
+      "calculationOwner": "vc_method_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Exit, target, or retention relies on unsourced conventions.",
+      "medium": "Two inputs are verified but one material parameter remains a labeled prior.",
+      "high": "Valuation, policy, investment cost, and cap-table forecast are verified."
+    },
+    "evidenceStrength": {
+      "low": "One exit point and one rule-of-thumb multiple drive the output.",
+      "medium": "Scenario values and policy exist but retention is approximate.",
+      "high": "Independent exit models and scenario-specific dilution support the backsolve."
+    },
+    "evidenceCoverage": {
+      "low": "Only investment and headline valuation are known.",
+      "medium": "Exit, target, and ownership are covered but terms or downside remain incomplete.",
+      "high": "Exit, holding period, target, failure, dilution, terms, and policy are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No definable successful exit or ownership claim exists.",
+      "medium": "The method fits but material financing uncertainty remains.",
+      "high": "The investment, exit, ownership, and security are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only missing-input questions can be generated.",
+      "medium": "A required-ownership range is usable with caveats.",
+      "high": "The backsolve is reproducible and ready for waterfall and policy checks."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-01",
+    "VCFI-04",
+    "VCFI-06",
+    "VCFI-07",
+    "DSV-10"
+  ],
+  "conflictingFrameworkIds": [
+    "UNIVERSAL-TARGET-MULTIPLE",
+    "SUCCESS-CASE-EQUALS-EXPECTED-VALUE",
+    "NO-DILUTION-BACKSOLVE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapter 10 review.",
+      "Validate target-return and failure-risk treatment with a valuation SME.",
+      "Backtest ownership feasibility and retention scenarios."
+    ],
+    "empiricalQualifications": [
+      "Target multiples vary by fund, period, stage, and measurement.",
+      "Exit values and retention are highly uncertain.",
+      "Simple ownership does not capture preferred security payoff."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The high-level method is synthesized from public architecture; exact third-edition doctrine remains pending licensed review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Verify exact third-edition target-return formulation.",
+      "Confirm treatment of success probability, cost of capital, and retention."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft with conservative formula boundaries."
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-10",
+  "slug": "mark-vs-realization",
+  "name": "Private Mark versus Realized Outcome",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates interim private valuation estimates from realizable stakeholder and fund outcomes.",
+    "productLabel": "Mark / Realization Lens — based on Scott Kupor's public article",
+    "notAClaimOf": [
+      "private marks being useless",
+      "last-round price equalling intrinsic value",
+      "unrealized gains being distributable cash"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor's signed public article on venture-capital marks",
+    "scope": "person_direct",
+    "people": [
+      "Scott Kupor"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Private-company marks are point-in-time estimates that can differ by last-round, waterfall, comparables, and qualitative methods. They should be recorded with method, date, security rights, and uncertainty. They are not equivalent to cash or liquid securities distributed to LPs, and they should not be used as realized-return evidence.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference",
+    "contractual_convention"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-A16Z-MARKS-2016",
+      "claimIds": [
+        "SHR-CLM-014"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Sections distinguishing last-round/waterfall, comparable-company methods, accounting marks, and actual distributions"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "portfolio_monitoring",
+      "follow_on",
+      "fund_reporting",
+      "secondary",
+      "exit"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "common_equity",
+      "preferred_equity",
+      "convertible",
+      "secondary_interest"
+    ]
+  },
+  "requiredConditions": [
+    "A private-company value or fund performance metric is being used.",
+    "Security rights and valuation date can be resolved.",
+    "The purpose of the mark is explicit."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "mark_method",
+      "description": "Valuation date, method, inputs, comparables, adjustments, reviewer, and purpose.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation policy",
+        "quarterly valuation memo",
+        "audit workpaper"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "security_rights",
+      "description": "Share class, preferences, participation, conversion, restrictions, and waterfall treatment.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table",
+        "financing documents",
+        "waterfall service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "operating_and_market_update",
+      "description": "Current operating results, financing conditions, comparable changes, and company-specific risk.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company reporting",
+        "market data",
+        "valuation model"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "realization_record",
+      "description": "Actual cash, liquid securities, escrow, holdback, taxes, fees, and distribution timing.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "distribution records",
+        "closing statement",
+        "fund accounting"
+      ],
+      "missingEffect": "no_effect"
+    }
+  ],
+  "decisionQuestions": [
+    "Is this number a mark, a financing price, a secondary indication, or a realized distribution?",
+    "Which security and waterfall does the number represent?",
+    "What method and date produced the mark?",
+    "How sensitive is it to comparables, financing rights, and operating changes?",
+    "What portion is actually realizable, liquid, or distributable?",
+    "How are TVPI, RVPI, DPI, and realized proceeds kept distinct?"
+  ],
+  "positiveSignals": [
+    "The mark is dated, method-labelled, and reproducible.",
+    "Security rights and stakeholder waterfall are reflected.",
+    "Uncertainty and sensitivity are explicit.",
+    "Realized, unrealized, liquid, and restricted values are separated.",
+    "Follow-on decisions use a fresh underwrite rather than mark momentum."
+  ],
+  "redFlags": [
+    "Last-round post-money is multiplied by headline ownership without waterfall analysis.",
+    "An unrealized mark is described as returned capital.",
+    "Different securities are valued as identical common shares.",
+    "The method changes without explanation.",
+    "A stale mark overrides current operating or market evidence."
+  ],
+  "disconfirmingEvidence": [
+    "A secondary or financing transaction occurs at a materially different economic price.",
+    "Comparable multiples or company performance change materially.",
+    "Preferences, restrictions, or dilution reduce realizable value.",
+    "An expected exit includes escrow, holdback, earnout, or illiquid consideration.",
+    "Auditor or valuation committee rejects the method."
+  ],
+  "contraindications": [
+    "Do not present marks as cash or guaranteed exit value.",
+    "Do not compare fund performance without consistent metric and vintage definitions.",
+    "Do not use a stale mark as the sole follow-on valuation input."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Classify the value type and purpose.",
+      "Reconcile method, security rights, and date.",
+      "Run current sensitivity and waterfall analysis.",
+      "Separate unrealized mark from realizable and realized value.",
+      "Return metric labels, uncertainty, and the next valuation evidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationOwner": "Valuation, Waterfall, and Fund Accounting Services"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a headline financing value is available.",
+      "medium": "The signed article and internal method memo are available.",
+      "high": "Hashed source, valuation policy, security documents, and reviewed calculations converge."
+    },
+    "evidenceStrength": {
+      "low": "Stale last-round price only.",
+      "medium": "A reproducible mark exists with incomplete current evidence.",
+      "high": "Method, rights, operations, market, sensitivity, and realization evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Method or security treatment is missing.",
+      "medium": "Current mark is covered but liquidity or downside is incomplete.",
+      "high": "Mark, rights, sensitivity, liquidity, and realization are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No private valuation or fund metric is being used.",
+      "medium": "The mark is contextual only.",
+      "high": "The mark materially affects reporting, follow-on, or portfolio judgment."
+    },
+    "judgmentConfidence": {
+      "low": "Value type and method are ambiguous.",
+      "medium": "The mark is reproducible with material sensitivity.",
+      "high": "Method, documents, market evidence, and realization status converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DAMODARAN-PRIVATE-VALUATION",
+    "METRICK-FUND-METRICS",
+    "EXPECTATIONS-VALUATION"
+  ],
+  "conflictingFrameworkIds": [
+    "LAST-ROUND-EQUALS-INTRINSIC-VALUE",
+    "TVPI-EQUALS-DPI"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Align metric definitions with fund accounting policy.",
+      "Validate mark error against later transactions and realizations.",
+      "Keep mark-method changes and security rights versioned."
+    ],
+    "empiricalQualifications": [
+      "Private marks are model- and policy-dependent.",
+      "Later transaction prices can also include non-price rights or signalling.",
+      "Realization timing and liquidity affect fund outcomes."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The signed public article is paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Reconcile with Damodaran valuation and fund-accounting frameworks.",
+      "Define system-level value-type labels and metric versioning."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

@@ -1,0 +1,277 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-06",
+  "slug": "strategy-revision-test",
+  "name": "Competitive Strategy Revision Test",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a proposed expectations revision has a competitive mechanism, sufficient reinvestment capacity, and plausible durability.",
+    "productLabel": "Strategy Revision Lens — based on public Expectations Investing and affiliated moat research",
+    "notAClaimOf": [
+      "strategy labels proving financial outcomes",
+      "high growth being value creation",
+      "competitive advantage being permanent"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Mauboussin and Rappaport's public strategy-analysis material, qualified by later Mauboussin-affiliated research",
+    "scope": "product_synthesis",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport",
+      "Dan Callahan"
+    ],
+    "organizations": [
+      "Expectations Investing",
+      "Morgan Stanley Investment Management"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A favorable driver revision is credible only when the company has a specific mechanism to create and capture value, can reinvest enough capital at attractive incremental returns, and can sustain that spread for a defensible period. Strategy evidence disciplines the cash-flow revision; it does not replace the model.",
+  "claimTypes": [
+    "direct_doctrine",
+    "affiliated_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-P1-CHAPTER-SUMMARIES",
+      "claimIds": [
+        "EI-CLM-014"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 4 competitive strategy analysis and Chapter 6 assessment of likely expectations revisions"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-A1-MOAT-2024",
+      "claimIds": [
+        "EI-CLM-014"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Value creation assessed through magnitude, reinvestment, sustainability, industry, and firm evidence"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "EI-A1-ROIC-2022",
+      "claimIds": [
+        "EI-CLM-014",
+        "EI-CLM-018"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Public report: growth creates value when returns on incremental investment exceed the opportunity cost of capital"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_with_testable_strategy_mechanism"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "The proposed revision is mapped to an EI-03 operating driver.",
+    "A value-creation and value-capture mechanism is specified.",
+    "Incremental return, reinvestment opportunity, and duration are treated separately.",
+    "Competing explanations and erosion mechanisms are included."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "strategy_mechanism",
+      "description": "Company-specific evidence explaining why customers choose, pay, stay, or expand and why rivals cannot immediately copy.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer interviews",
+        "cohort data",
+        "contracts",
+        "H7P evidence pack",
+        "competitive research"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "incremental_economics",
+      "description": "Return, unit-economic, capacity, and reinvestment evidence for incremental growth.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cohort economics",
+        "unit economics",
+        "capital plan",
+        "financial model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "erosion_and_response",
+      "description": "Competitor, substitute, customer bargaining, regulation, and technology evidence that could weaken the mechanism.",
+      "necessity": "required",
+      "acceptableSources": [
+        "competitive dataset",
+        "lost-deal analysis",
+        "regulatory source",
+        "technology benchmark",
+        "customer evidence"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact mechanism creates and captures value?",
+    "Which financial driver should that mechanism improve?",
+    "How much capital can be reinvested at attractive incremental returns?",
+    "For how long can the mechanism survive entry, imitation, substitution, or bargaining?",
+    "What evidence would show the strategy is failing?",
+    "Is the proposed revision already embedded in transaction-implied expectations?"
+  ],
+  "positiveSignals": [
+    "Customer behavior and economics support the claimed mechanism.",
+    "Incremental returns improve or remain attractive as the company scales.",
+    "A credible Power or other barrier slows competitive erosion.",
+    "The company has capacity and financing to capture the opportunity.",
+    "Required performance remains below evidence-supported strategy potential."
+  ],
+  "redFlags": [
+    "A strategic slogan replaces customer and financial evidence.",
+    "Growth consumes capital at returns below required return.",
+    "The mechanism relies on competitors not responding.",
+    "Durability is inferred from current growth rate.",
+    "Price already requires a stronger mechanism than evidence supports."
+  ],
+  "disconfirmingEvidence": [
+    "Cohorts, churn, pricing, or win rates deteriorate with scale.",
+    "Competitors replicate the product or distribution advantage.",
+    "Marginal acquisition or delivery costs rise faster than value.",
+    "Reinvestment capacity or funding runs out before scale.",
+    "Regulation or customer concentration weakens value capture."
+  ],
+  "contraindications": [
+    "Do not treat framework labels as evidence.",
+    "Do not infer value creation from revenue growth alone.",
+    "Do not assume historical advantage duration will persist.",
+    "Do not override contradictory H7P, customer, or financial evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "State the proposed operating revision.",
+      "Trace its value-creation, value-capture, reinvestment, and durability mechanisms.",
+      "Compare each mechanism with primary evidence and explicit counterevidence.",
+      "Compare supported performance with EI-01 and EI-04 implied requirements.",
+      "Return a limited strategy judgment and next discriminating evidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Strategy evidence is founder narrative or secondary commentary.",
+      "medium": "Customer or operating evidence supports the mechanism but competition is incompletely sourced.",
+      "high": "Primary customer, operating, financial, and competitive evidence converge."
+    },
+    "evidenceStrength": {
+      "low": "Only a plausible story exists.",
+      "medium": "Mechanism and direction are supported but scale or duration remains uncertain.",
+      "high": "Mechanism, incremental economics, reinvestment, and durability are independently supported."
+    },
+    "evidenceCoverage": {
+      "low": "Only product or TAM is covered.",
+      "medium": "Customer and economics are covered but erosion or capacity is partial.",
+      "high": "Creation, capture, reinvestment, duration, erosion, and implied expectations are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No testable mechanism is specified.",
+      "medium": "The method fits but the company is pre-scale.",
+      "high": "The company has measurable operating and strategic evidence."
+    },
+    "judgmentConfidence": {
+      "low": "Only strategy questions are supportable.",
+      "medium": "A directional revision judgment is defensible.",
+      "high": "The strategy-supported revision and its limits are auditable."
+    }
+  },
+  "overlapFrameworkIds": [
+    "EI-03",
+    "EI-04",
+    "H7P-01",
+    "PT-04"
+  ],
+  "conflictingFrameworkIds": [
+    "STRATEGY-LABEL-EQUALS-EVIDENCE",
+    "GROWTH-EQUALS-VALUE-CREATION",
+    "NO-COMPETITIVE-RESPONSE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Cross-review with H7P and sector specialists.",
+      "Validate incremental-return and durability evidence anchors.",
+      "Backtest strategy revisions against realized operating outcomes."
+    ],
+    "empiricalQualifications": [
+      "Competitive mechanisms are context-dependent and can interact.",
+      "Early growth can coexist with weak value capture.",
+      "Durability is uncertain and endogenous to competitive response."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Coauthored book doctrine and later affiliated research are separately attributed."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define evidence interoperability with H7P.",
+      "Validate pre-scale applicability and limits."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "sebastian_mallaby_power_law_public_frameworks_v0_1",
+  "name": "Sebastian Mallaby / The Power Law Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten historical-pattern cards for heavy-tail portfolios, experimentation, prepared minds, revisits, networks, value creation, institutions, governance, and case-transfer discipline.",
+  "cardFiles": [
+    "cards/pl-01-heavy-tail-portfolio-assumption.card.json",
+    "cards/pl-02-grand-slam-materiality.card.json",
+    "cards/pl-03-staged-discovery-experiment.card.json",
+    "cards/pl-04-prepared-mind-opportunity-map.card.json",
+    "cards/pl-05-pass-revisit-without-anchoring.card.json",
+    "cards/pl-06-network-access-bias-audit.card.json",
+    "cards/pl-07-active-capital-value-plan.card.json",
+    "cards/pl-08-institutional-team-continuity.card.json",
+    "cards/pl-09-founder-power-governance-boundary.card.json",
+    "cards/pl-10-historical-case-transfer-gate.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Complete lawful full-book review and exact episode locators.",
+      "Validate public historical patterns against prospective decisions.",
+      "Audit survivorship, network, and governance biases.",
+      "Complete rights, Framework Fidelity, and Decision Utility review."
+    ]
+  }
+}
+

@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-02",
+  "slug": "price-value-financing-discipline",
+  "name": "Price–Value and Financing Discipline",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Prevents a compelling company story from becoming an investment conclusion until value range, financing price, terms, dilution, and required return are compared.",
+    "productLabel": "Price–Value Discipline — based on Howard Marks's public materials",
+    "notAClaimOf": ["intrinsic value being precisely knowable", "growth being opposed to value", "a low multiple being sufficient evidence of a bargain"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public materials; venture implementation is product synthesis",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Estimate a bounded value distribution from company fundamentals and superior input judgments, then compare it with the full financing economics. A good company is not automatically a good investment, and growth can be valuable when its duration, economics, and risks justify the price.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-VALUE-2021",
+      "claimIds": ["MMI-CLM-003", "MMI-CLM-004", "MMI-CLM-005"],
+      "locator": {"kind": "web_section", "value": "Sections What Is Value Investing, Value versus Growth, and related conclusions"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-MATTERS-2022",
+      "claimIds": ["MMI-CLM-003", "MMI-CLM-009", "MMI-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Sections on long-term value, mispricing, and asymmetry"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["common_equity", "preferred_equity", "safe", "convertible_note", "all"]
+  },
+  "requiredConditions": [
+    "Valuation date, security, financing price, and ownership basis are explicit.",
+    "Bear, Base, and Bull company scenarios are independently defined.",
+    "Deterministic services calculate valuation, dilution, waterfall, and return."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "valuation_scenarios",
+      "description": "Sourced driver assumptions and value outputs for at least Bear, Base, and Bull cases.",
+      "necessity": "required",
+      "acceptableSources": ["deterministic valuation service", "company data", "market data"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "financing_economics",
+      "description": "Pre/post-money value, security rights, dilution, ownership, and capital path.",
+      "necessity": "required",
+      "acceptableSources": ["term sheet", "cap table", "financing proposal"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "assumption_provenance",
+      "description": "Provenance and uncertainty label for every material valuation input.",
+      "necessity": "required",
+      "acceptableSources": ["evidence pack", "model assumption registry"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What range of company value follows from sourced Bear, Base, and Bull assumptions?",
+    "What ownership and payoff does the offered security provide after expected dilution?",
+    "Which growth, margin, duration, and risk assumptions are embedded in the price?",
+    "Is the expected payoff attractive for this fund without requiring an implausible scenario?"
+  ],
+  "positiveSignals": [
+    "The offered price leaves material room relative to a defensible value distribution.",
+    "Base economics do not depend on Bull-only duration or margins.",
+    "Terms preserve meaningful upside without hidden downside asymmetry.",
+    "The price-implied expectations are below independently supported operating evidence."
+  ],
+  "redFlags": [
+    "Company quality substitutes for price analysis.",
+    "A point estimate hides a wide or multimodal outcome distribution.",
+    "Headline valuation omits preferences, dilution, or future capital needs.",
+    "A low multiple is labeled cheap without explaining business quality and risk."
+  ],
+  "disconfirmingEvidence": [
+    "The current round already capitalizes the supported upside.",
+    "Expected dilution or preferences remove investor payoff.",
+    "Required growth duration exceeds market or operational evidence.",
+    "A credible lower-cost financing path changes the economics."
+  ],
+  "contraindications": [
+    "Do not output a precise intrinsic value for a pre-revenue company.",
+    "Do not compare headline valuations across unlike securities.",
+    "Do not infer a bargain from popularity or unpopularity."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Load sourced scenario drivers and deterministic valuation outputs.",
+      "Normalize financing price and security economics.",
+      "Compare implied expectations and investor payoff across scenarios.",
+      "Display counterevidence and the widest material uncertainty.",
+      "Conclude attractive range, demanding range, indeterminate, or not applicable."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "valuation_and_deal_economics",
+      "requiredOutputs": ["bear_value", "base_value", "bull_value", "implied_expectations", "ownership_path", "return_distribution"],
+      "prohibition": "The language model must not calculate or overwrite numeric outputs."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Inputs are founder assertions or generic defaults.", "medium": "Company data and credible benchmarks support major inputs.", "high": "Auditable company evidence, customer data, terms, and independent benchmarks converge."},
+    "evidenceStrength": {"low": "Only headline price is known.", "medium": "Scenarios and terms exist but capital path is incomplete.", "high": "Scenario, terms, dilution, and payoff are deterministically modeled."},
+    "evidenceCoverage": {"low": "Company narrative only.", "medium": "Value and price are covered but security or follow-on is partial.", "high": "Value, price, terms, dilution, ownership, and fund return are complete."},
+    "applicabilityConfidence": {"low": "Security or financing context is unknown.", "medium": "Round economics are approximate.", "high": "Dated round and security economics are explicit."},
+    "judgmentConfidence": {"low": "Only an assumption request is supportable.", "medium": "A directional price/value view is supportable.", "high": "A robust range conclusion survives sensitivity and countercases."}
+  },
+  "overlapFrameworkIds": ["DSV-01", "EI-02", "VDCF-01", "VD-06", "NN-01"],
+  "conflictingFrameworkIds": ["GOOD-COMPANY-EQUALS-GOOD-INVESTMENT", "LOW-MULTIPLE-EQUALS-BARGAIN"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate deterministic deal-economics interface.", "Backtest price/value labels.", "Complete legal chapter review."],
+    "empiricalQualifications": ["Startup value ranges are extremely assumption-sensitive.", "Negotiated private prices may reflect strategic terms not captured by headline valuation."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public principles are paraphrased; venture calculation rules are labeled product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Align security normalization with Venture Deals and Metrick/Yasuda packs."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

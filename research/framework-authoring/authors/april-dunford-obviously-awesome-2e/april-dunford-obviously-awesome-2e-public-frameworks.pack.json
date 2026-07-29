@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "april_dunford_obviously_awesome_2e_public_frameworks_v0_1",
+  "name": "April Dunford / Obviously Awesome Updated and Expanded Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten cards covering readiness, real alternatives, differentiated capabilities and value, best-fit customers, category, multi-product scope, testing, change triggers, and VC diligence translation.",
+  "cardFiles": [
+    "cards/oa2-01-positioning-readiness.card.json",
+    "cards/oa2-02-real-competitive-alternatives.card.json",
+    "cards/oa2-03-differentiated-capabilities.card.json",
+    "cards/oa2-04-differentiated-value.card.json",
+    "cards/oa2-05-best-fit-customers.card.json",
+    "cards/oa2-06-market-category-strategy.card.json",
+    "cards/oa2-07-positioning-chain-coherence.card.json",
+    "cards/oa2-08-multiproduct-scope.card.json",
+    "cards/oa2-09-testing-messaging-execution.card.json",
+    "cards/oa2-10-positioning-change-diligence-bridge.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Review licensed 2026 book and workbook.",
+      "Verify exact five-step wording and page locators.",
+      "Define customer-evidence privacy controls.",
+      "Backtest positioning judgments.",
+      "Complete Framework Fidelity and Decision Utility review."
+    ]
+  }
+}

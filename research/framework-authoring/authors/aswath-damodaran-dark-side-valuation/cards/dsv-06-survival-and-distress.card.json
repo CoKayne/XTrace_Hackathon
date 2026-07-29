@@ -1,0 +1,296 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-06",
+  "slug": "survival-and-distress",
+  "name": "Survival and Distress Adjustment",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Models company failure as a discrete probability and recovery outcome rather than hiding it inside a high discount rate.",
+    "productLabel": "Survival and Distress Lens — based on Aswath Damodaran's public young-company valuation materials",
+    "notAClaimOf": [
+      "industry averages being company-specific probabilities",
+      "failure always producing zero recovery",
+      "survival adjustment replacing runway and financing diligence"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public young-company valuation materials with official cohort-data qualification",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business",
+      "U.S. Bureau of Labor Statistics"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Young-company failure is a discrete outcome that can be modeled separately from going-concern cash flows. A probability-weighted value combines the value if the company continues with the value recovered if it fails. Public survival statistics can inform a starting prior, but the estimate must be conditioned on stage, sector, cohort, geography, runway, capital access, milestones, and the security being valued.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_qualification",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-009"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 36-43: terminal value, survival estimation, failure probability, and going-concern/distress expected value"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-UNCERTAINTY",
+      "claimIds": [
+        "DSV-CLM-002",
+        "DSV-CLM-009"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 6-8: discrete versus continuous risk and explicit probability/consequence treatment"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "DSV-E1-BLS-SURVIVAL",
+      "claimIds": [
+        "DSV-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Establishment survival: cohort tracking and variation by industry"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all_non_financial"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Failure is defined as a specific event or state, not merely underperformance.",
+    "Going-concern and distress outcomes use the same valuation date and security context.",
+    "Survival probability is time-, stage-, sector-, geography-, and cohort-conditioned where data permit.",
+    "Failure risk is not also embedded in revenue, discount rate, or a separate haircut without reconciliation."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "runway_and_financing",
+      "description": "Current cash, burn, obligations, financing needs, capital-access evidence, and milestone schedule.",
+      "necessity": "required",
+      "acceptableSources": [
+        "bank statements",
+        "management accounts",
+        "cash forecast",
+        "financing documents",
+        "board materials"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "survival_prior",
+      "description": "Versioned cohort prior matched as closely as possible to stage, sector, geography, and time.",
+      "necessity": "required",
+      "acceptableSources": [
+        "venture cohort dataset",
+        "industry failure dataset",
+        "official business cohort data",
+        "portfolio base rates"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "company_survival_adjustments",
+      "description": "Company-specific evidence that moves the prior, including milestones, contracts, concentration, product risk, burn, and follow-on access.",
+      "necessity": "required",
+      "acceptableSources": [
+        "technical diligence",
+        "customer contracts",
+        "runway analysis",
+        "fundraising evidence",
+        "regulatory milestones"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "distress_recovery",
+      "description": "Security-specific recovery or distress-sale outcome after liabilities, preferences, and wind-down costs.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table",
+        "term sheet",
+        "asset appraisal",
+        "debt schedule",
+        "waterfall service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What event constitutes failure and over what horizon?",
+    "What matched cohort supports the starting probability?",
+    "Which company-specific evidence should update that prior?",
+    "What financing or milestone sequence makes survival path-dependent?",
+    "What does the analyzed security recover in the failure state?",
+    "Where else in the model might the same failure risk already appear?"
+  ],
+  "positiveSignals": [
+    "Runway and milestone dates are reconciled to verified cash and burn.",
+    "The prior is matched and explicitly adjusted by company evidence.",
+    "Sequential technical, regulatory, commercial, and financing risks are modeled separately when needed.",
+    "Distress recovery reflects actual liabilities and claim priority.",
+    "Double-counting checks reconcile failure across all model components."
+  ],
+  "redFlags": [
+    "A general small-business failure statistic is labeled the startup's probability.",
+    "Failure probability is inferred from founder quality without base-rate evidence.",
+    "Distress value is automatically set to zero.",
+    "A high target IRR and a separate failure haircut both include the same risk.",
+    "The model assumes new financing without testing access, timing, and dilution."
+  ],
+  "disconfirmingEvidence": [
+    "Runway ends before the next value-creating milestone.",
+    "Financing markets or company terms make follow-on capital unavailable.",
+    "A key contract, approval, supplier, or person is more binary than the model shows.",
+    "Liabilities and preferences eliminate recovery for the analyzed security.",
+    "The selected cohort is not comparable to venture-backed, stage-matched companies."
+  ],
+  "contraindications": [
+    "Do not convert an unmatched cohort average into a precise company probability.",
+    "Do not place the same failure risk in both probability and discount rate.",
+    "Do not use enterprise distress recovery as investor recovery without a waterfall.",
+    "Do not treat survival probability as investment-success probability."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Define failure states, horizon, and security.",
+      "Select a matched survival prior and document its limitations.",
+      "Apply evidence-backed company adjustments or use an explicit scenario tree.",
+      "Calculate going-concern and distress recovery values separately.",
+      "Run a double-count check before handing results to the decision service."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "expectedValueIdentity": "expected_value = going_concern_value * (1 - probability_of_failure) + distress_recovery_value * probability_of_failure",
+      "probabilityRangeRequired": true,
+      "securityWaterfallRequired": true,
+      "calculationOwner": "valuation_and_terms_services",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only generic survival statistics or management optimism are available.",
+      "medium": "A matched external cohort and partial runway evidence are available.",
+      "high": "Matched cohort, verified runway, milestones, financing evidence, and security waterfall are available."
+    },
+    "evidenceStrength": {
+      "low": "Probability and recovery are unsupported points.",
+      "medium": "Prior and runway are supported but company adjustment or recovery remains estimated.",
+      "high": "Prior, company updates, sequential risks, and recovery are independently supported."
+    },
+    "evidenceCoverage": {
+      "low": "Only a failure rate is present.",
+      "medium": "Probability, runway, and recovery are covered but financing sequence or claims are incomplete.",
+      "high": "Cohort, company evidence, milestones, financing, liabilities, claims, and recovery are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Failure state, horizon, or security is undefined.",
+      "medium": "The state is defined but cohort matching is weak.",
+      "high": "State, horizon, cohort, financing path, and security are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a survival-risk warning can be stated.",
+      "medium": "A broad probability and recovery range is defensible.",
+      "high": "The expected-value adjustment is evidence-backed and robust to matched alternatives."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-05",
+    "DSV-07",
+    "DSV-10",
+    "VM-08"
+  ],
+  "conflictingFrameworkIds": [
+    "GENERIC-FAILURE-RATE-AS-COMPANY-TRUTH",
+    "FAILURE-RISK-HIDDEN-IN-DISCOUNT-RATE",
+    "DISTRESS-RECOVERY-ALWAYS-ZERO"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition survival and distress review.",
+      "Acquire and validate stage/sector/geography venture survival datasets.",
+      "Calibrate probabilities and recoveries on timestamped outcomes with security-level data."
+    ],
+    "empiricalQualifications": [
+      "BLS establishment survival is not venture-backed startup survival.",
+      "Survival probabilities change with financing regimes and selection.",
+      "Survival is necessary but not sufficient for venture-scale return."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine and government cohort evidence are neutrally summarized."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Identify suitable venture-backed survival datasets and rights."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

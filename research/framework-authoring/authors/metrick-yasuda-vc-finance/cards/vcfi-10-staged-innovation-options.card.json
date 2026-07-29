@@ -1,0 +1,339 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-10",
+  "slug": "staged-innovation-options",
+  "name": "Staged Innovation Finance and Real-Option Trade-Off",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Structures technical, market, regulatory, and financing uncertainty into evidence-producing stages while testing abandonment value and hold-up costs.",
+    "productLabel": "Staged Innovation Finance Lens — based on Metrick and Yasuda's public finance-of-innovation architecture",
+    "notAClaimOf": [
+      "staged financing always creating value",
+      "any milestone being a real option",
+      "investor control being costless to founders or company value"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Andrew Metrick and Ayako Yasuda's public finance-of-innovation architecture, qualified by staged-finance research",
+    "scope": "product_synthesis",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "John Wiley & Sons",
+      "University of California, Davis"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Innovation projects often resolve technical, regulatory, and commercial uncertainty sequentially. Financing can be linked to milestones that produce decision-relevant evidence, preserving choices to invest, wait, redesign, syndicate, or stop. That flexibility has value only when the decision rights, funding access, timing, costs, and alternatives are real. Staging can also create investor hold-up, founder dilution, underinvestment, and signaling costs, so both option benefit and bargaining cost must be assessed.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_qualification",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P2-CONTENTS-2021",
+      "claimIds": [
+        "VCFI-CLM-017"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Brief Contents p. 2: R&D finance, Monte Carlo, real options, binomial trees, game theory, and R&D valuation"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VCFI-P1-UCD-SYLLABUS-2019",
+      "claimIds": [
+        "VCFI-CLM-017"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 1-2 and 4: milestones, future options, technological/market/regulatory uncertainty, flexibility, and real options"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-E1-STAGED-FINANCE-2005",
+      "claimIds": [
+        "VCFI-CLM-018"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Working paper abstract and pp. 2-4: effort and abandonment benefits, investor hold-up, founder dilution, and syndication trade-off"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "VCFI-E1-CONTRACT-ANALYSES-2002",
+      "claimIds": [
+        "VCFI-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: risks, cash-flow and control rights, contingencies, and monitoring associations"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b"
+    ],
+    "businessModels": [
+      "biotech",
+      "deep_tech",
+      "hardware",
+      "regulated_technology",
+      "capital_intensive_software",
+      "all_startups_with_sequential_learning"
+    ],
+    "sectors": [
+      "healthcare",
+      "biotechnology",
+      "energy",
+      "climate",
+      "robotics",
+      "semiconductors",
+      "aerospace",
+      "software",
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "staged_equity",
+      "tranched_financing",
+      "milestone_financing",
+      "preferred_equity"
+    ]
+  },
+  "requiredConditions": [
+    "The project contains sequential uncertainties that can be reduced by identifiable actions.",
+    "Each milestone changes a later decision and has measurable evidence, cost, timing, and owner.",
+    "The investor or company can actually exercise invest, wait, redesign, syndicate, or abandon choices.",
+    "Continuation funding and alternative capital access are modeled.",
+    "Founder incentives, signaling, dilution, and hold-up costs are analyzed alongside flexibility."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "uncertainty_map",
+      "description": "Technical, regulatory, commercial, manufacturing, and financing uncertainties with dependencies.",
+      "necessity": "required",
+      "acceptableSources": [
+        "technical diligence",
+        "regulatory plan",
+        "customer evidence",
+        "manufacturing plan",
+        "financing plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "milestone_tree",
+      "description": "Each stage's action, cost, duration, evidence output, conditional probability, and next choices.",
+      "necessity": "required",
+      "acceptableSources": [
+        "development plan",
+        "clinical plan",
+        "engineering roadmap",
+        "decision-tree model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "decision_rights_and_funding",
+      "description": "Who controls continuation, contractual tranches, syndication, reserves, alternative financing, and abandonment.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "financing agreement",
+        "board rights",
+        "reserve policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "incentive_and_hold_up_analysis",
+      "description": "Founder dilution, effort incentives, bargaining power, signaling, delay, and competitive-capital alternatives.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap-table scenarios",
+        "financing alternatives",
+        "founder interviews",
+        "contract analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which uncertainty is resolved at each stage and what evidence is produced?",
+    "Does that evidence change a real continuation or abandonment decision?",
+    "What does each experiment cost and how long does it take?",
+    "Who controls follow-on funding and can the company access alternatives?",
+    "What option value comes from waiting or stopping?",
+    "What hold-up, dilution, incentive, signaling, or delay cost does staging create?"
+  ],
+  "positiveSignals": [
+    "Milestones are objective, time-bound, and decision-changing.",
+    "Early experiments are cheaper than committing full capital.",
+    "The company retains credible alternative financing or syndication access.",
+    "Rights and reserves make continuation choices executable.",
+    "Founder incentives remain aligned across failure and success paths."
+  ],
+  "redFlags": [
+    "Milestones are vague activity lists rather than information events.",
+    "The company must continue regardless of results.",
+    "The incumbent investor has unilateral financing leverage with no alternative capital.",
+    "Staging delays a time-critical market entry.",
+    "Option value is added on top of cash flows already reflecting the same flexibility."
+  ],
+  "disconfirmingEvidence": [
+    "Milestones do not materially reduce uncertainty.",
+    "Full upfront financing is cheaper or necessary for speed and scale.",
+    "Hold-up or signaling costs exceed abandonment flexibility.",
+    "Follow-on capital is unavailable even after milestone success.",
+    "Competitive entry erodes the benefit of waiting."
+  ],
+  "contraindications": [
+    "Do not call every milestone a real option.",
+    "Do not value flexibility without enforceable decision rights and financing access.",
+    "Do not ignore founder and company bargaining costs.",
+    "Do not double-count flexibility already included in scenario cash flows."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Map sequential uncertainties and dependencies.",
+      "Define evidence-producing milestones, costs, timing, and choices.",
+      "Build a deterministic decision tree with stage cash flows and conditional transitions.",
+      "Evaluate flexibility benefit and hold-up/incentive cost separately.",
+      "Preserve the disagreement and pass normalized results to Fund Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "nodeTypes": [
+        "uncertainty_event",
+        "management_or_investor_decision",
+        "financing_decision",
+        "cash_flow",
+        "terminal_outcome"
+      ],
+      "requiredChoices": [
+        "invest",
+        "wait",
+        "redesign",
+        "syndicate",
+        "abandon"
+      ],
+      "requiredSeparateOutputs": [
+        "staging_flexibility_value",
+        "hold_up_and_incentive_cost",
+        "capital_and_reserve_path",
+        "milestone_evidence_requests"
+      ],
+      "calculationOwner": "decision_tree_and_real_option_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Milestones and probabilities come only from promotional materials.",
+      "medium": "Development plans and some external priors exist but rights or capital access remain uncertain.",
+      "high": "Technical, regulatory, customer, contract, financing, and incentive evidence are verified."
+    },
+    "evidenceStrength": {
+      "low": "A narrative sequence has no measured learning or decision effect.",
+      "medium": "Milestones are measurable but probabilities or alternative funding are approximate.",
+      "high": "Historical cohorts, expert diligence, and executable rights support the tree."
+    },
+    "evidenceCoverage": {
+      "low": "Only technical milestones are covered.",
+      "medium": "Technical and financial paths are covered but incentives or alternatives are incomplete.",
+      "high": "Uncertainty, costs, timing, choices, rights, funding, incentives, and outcomes are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Uncertainty is not sequential or decisions cannot change.",
+      "medium": "Some stages create learning but choices are constrained.",
+      "high": "The project has clear sequential learning and executable choices."
+    },
+    "judgmentConfidence": {
+      "low": "Only milestone questions can be generated.",
+      "medium": "A provisional stage plan can support Advance with caveats.",
+      "high": "Flexibility and hold-up trade-offs are reproducible under tested scenarios."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-07",
+    "DSV-09",
+    "VCFI-04",
+    "SK-06",
+    "VM-08"
+  ],
+  "conflictingFrameworkIds": [
+    "STAGING-ALWAYS-ADDS-VALUE",
+    "MILESTONE-EQUALS-REAL-OPTION",
+    "INVESTOR-CONTROL-IS-COSTLESS"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapters 19-24 review.",
+      "Validate milestone and decision-tree models by sector.",
+      "Backtest staging benefits and hold-up costs without survivor bias."
+    ],
+    "empiricalQualifications": [
+      "Milestone probabilities are sector-, technology-, and cohort-specific.",
+      "Investor rights can improve abandonment discipline while creating bargaining and incentive costs.",
+      "Competitive funding access and syndication materially affect the result."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public finance-of-innovation architecture and external staged-finance research are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete Chapters 19-24 review.",
+      "Create sector-specific evidence and probability policies without turning priors into company facts."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

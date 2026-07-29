@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-08",
+  "slug": "institutional-team-continuity",
+  "name": "Institutional Team and Continuity",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a firm's sourcing, decisions, founder support, and succession survive beyond one celebrated investor.",
+    "productLabel": "Institution-over-Star Pattern — based on Mallaby's public historical analysis",
+    "notAClaimOf": ["large teams being superior", "celebrity investors lacking skill", "one firm model fitting every strategy"]
+  },
+  "attribution": {
+    "display": "Historical pattern derived from Sebastian Mallaby's public materials",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Council on Foreign Relations", "Penguin Press"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Evaluate the investment firm as a system: decision rights, incentives, challenge, attribution, knowledge transfer, younger-partner development, board ownership, and succession. Preserve alternative viable firm models rather than treating one elite firm's design as universal.",
+  "claimTypes": ["historical_description", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P1-HBR-2022",
+      "claimIds": ["PL-CLM-011", "PL-CLM-012", "PL-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of teams, promotion, board attribution, and Sequoia/Kleiner institutional trajectories"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-P1-CWT-2022",
+      "claimIds": ["PL-CLM-009", "PL-CLM-013", "PL-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of Moritz, Sequoia, ecosystems, and institutional machinery"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PL-E1-SKILL-2014",
+      "claimIds": ["PL-CLM-016", "PL-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Abstract on persistent but noisy firm skill"},
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A firm or team, not only a deal, is being evaluated.",
+    "Roles, decision rights, attribution, and succession are observable.",
+    "Firm model is compared with its stated strategy."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "team_system",
+      "description": "Roles, IC rights, challenge process, economics, attribution, and partner development.",
+      "necessity": "required",
+      "acceptableSources": ["firm policy", "IC records", "team interviews", "fund documents"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "continuity",
+      "description": "Succession, departures, founder coverage, knowledge transfer, and key-person exposure.",
+      "necessity": "required",
+      "acceptableSources": ["LP materials", "team history", "key-person terms", "XTrace memory"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "strategy_fit",
+      "description": "Evidence that staffing and incentives fit stage, pace, ownership, and support model.",
+      "necessity": "recommended",
+      "acceptableSources": ["fund strategy", "portfolio load", "deployment data"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who can source, decide, lead, challenge, and support an investment?",
+    "How are junior investors given real responsibility and attribution?",
+    "What fails if one star leaves?",
+    "Does the organization fit its stated pace and value proposition?"
+  ],
+  "positiveSignals": [
+    "Decision challenge and ownership are explicit.",
+    "Knowledge and founder relationships have transfer paths.",
+    "Younger investors receive documented responsibility and development.",
+    "The team model fits portfolio size and stage."
+  ],
+  "redFlags": [
+    "All important decisions depend on one person.",
+    "Attribution and economics discourage collaboration.",
+    "Platform promises exceed staffing capacity.",
+    "Succession exists only as an LP slide."
+  ],
+  "disconfirmingEvidence": [
+    "Performance and access collapse after one departure.",
+    "Decision records show no independent challenge.",
+    "Junior-partner wins are reassigned to senior partners.",
+    "Team design conflicts with deal velocity or board load."
+  ],
+  "contraindications": [
+    "Do not copy an elite firm's organization without strategy fit.",
+    "Do not infer institutional quality from headcount.",
+    "Do not use historical firm survival as a company recommendation."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map roles, rights, incentives, and knowledge flows.",
+      "Identify key-person dependencies.",
+      "Compare organization with strategy and portfolio load.",
+      "Review evidence of partner development and succession.",
+      "Conclude institutionalized, key-person dependent, capacity-misaligned, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Firm marketing only.", "medium": "Policies and interviews support the design.", "high": "Policies, decisions, attribution, workload, and transitions corroborate it."},
+    "evidenceStrength": {"low": "Named team without mechanisms.", "medium": "Roles and succession are described but untested.", "high": "System function is demonstrated across decisions and transitions."},
+    "evidenceCoverage": {"low": "Bios only.", "medium": "Roles and rights covered; incentives or continuity partial.", "high": "Roles, rights, economics, challenge, attribution, workload, development, and succession complete."},
+    "applicabilityConfidence": {"low": "Only a deal is evaluated.", "medium": "Team quality affects execution.", "high": "Firm continuity is material to fund or deal outcomes."},
+    "judgmentConfidence": {"low": "No institutional conclusion.", "medium": "Directional system strength.", "high": "Institutional continuity is evidenced beyond individual reputation."}
+  },
+  "overlapFrameworkIds": ["BVC-07", "SK-09"],
+  "conflictingFrameworkIds": ["STAR-EQUALS-INSTITUTION", "HEADCOUNT-EQUALS-CAPABILITY"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "portfolio_policy"],
+    "promotionRequirements": ["Validate firm-system evidence model.", "Review key-person and succession outcomes.", "Separate firm and individual attribution."],
+    "empiricalQualifications": ["Firm-level performance is noisy and delayed.", "Reputation and access can create persistence independent of decision process."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical organizational observations are paraphrased without simulating any firm's internal process."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Determine whether this remains a fund-diligence-only card."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

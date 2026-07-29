@@ -1,0 +1,276 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-01",
+  "slug": "fund-strategy-sandbox",
+  "name": "Fund Strategy Sandbox and Edge",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Defines the fund's investable sandbox and requires observable evidence for the team's claimed founder-access, selection, and support edge.",
+    "productLabel": "Fund Strategy Sandbox — based on Mahendra Ramsinghani's public third-edition chapter summaries",
+    "notAClaimOf": [
+      "strategy requiring zero exceptions",
+      "past reputation guaranteeing future access",
+      "a broad mandate being an edge"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Mahendra Ramsinghani's public third-edition chapter summaries",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Express strategy as the intersection of team expertise, market opportunity, stage, sector, geography, target founder, check, and support model. Permit documented exceptions inside a bounded sandbox. Test any claimed edge through evidence of differentiated sourcing, judgment, founder choice, or post-investment help.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH11",
+      "claimIds": [
+        "BVC-CLM-002",
+        "BVC-CLM-003",
+        "BVC-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public chapter summary: strategy, sandbox flexibility, white spaces, competition among funds, and edge dimensions"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH10",
+      "claimIds": [
+        "BVC-CLM-002",
+        "BVC-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public chapter summary: manager expertise, strategy, team stability, and consistency"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "fund_formation",
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "A user-confirmed Fund Policy or explicitly labeled default profile exists.",
+    "Strategy dimensions and permissible exceptions are machine-readable.",
+    "Claimed edge has observable evidence and a relevant time window.",
+    "The company thesis remains separate from fund fit."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "fund_strategy",
+      "description": "Stage, sector, geography, business model, check, ownership, risk, support, and exclusion policy.",
+      "necessity": "required",
+      "acceptableSources": [
+        "user-confirmed Fund Policy",
+        "LPA or PPM",
+        "investment committee policy",
+        "fund website"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "team_edge",
+      "description": "Experience, access, sourcing, selection, founder preference, and support evidence relevant to the target market.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deal attribution",
+        "founder references",
+        "sourcing data",
+        "portfolio evidence",
+        "team record"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "opportunity_set",
+      "description": "Current investable company volume and competitive fund landscape within the sandbox.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deal-flow data",
+        "market map",
+        "funding dataset",
+        "competitor-fund research"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact opportunity set is the fund designed to access?",
+    "Why is this team unusually suited to source, select, or help within it?",
+    "Does the current deal fit the sandbox?",
+    "If it is an exception, what is the reason and portfolio cost?",
+    "What evidence would falsify the claimed edge?"
+  ],
+  "positiveSignals": [
+    "Strategy dimensions are explicit and mutually compatible.",
+    "Opportunity set is large enough for planned deployment.",
+    "Edge appears in actual source attribution or founder choice.",
+    "Exceptions are rare, documented, and budgeted.",
+    "Team capacity matches the stated support model."
+  ],
+  "redFlags": [
+    "The strategy is simply 'best companies anywhere.'",
+    "Edge consists only of generic network or brand language.",
+    "Policy changes whenever a fashionable deal appears.",
+    "The fund lacks enough relevant deal flow for construction targets.",
+    "A market default is displayed as the user's real policy."
+  ],
+  "disconfirmingEvidence": [
+    "Most strong deals arrive outside the claimed channel.",
+    "Founders choose competing funds for the same promised edge.",
+    "Team experience is dated or not relevant to current stage.",
+    "Exceptions consume disproportionate capital or attention.",
+    "The investable opportunity set cannot support planned company count."
+  ],
+  "contraindications": [
+    "Do not treat strategy fit as company quality.",
+    "Do not invent fund policy.",
+    "Do not infer edge from prestige alone.",
+    "Do not use this card as an investment veto until policy is user-confirmed."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Load the pinned Fund Policy.",
+      "Map the deal against every strategy dimension.",
+      "Evaluate claimed edge using observable evidence.",
+      "Classify in-sandbox, documented exception, or out-of-scope.",
+      "Send exception costs to portfolio construction and deterministic policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredPolicyDimensions": [
+        "stage",
+        "sector",
+        "geography",
+        "check_size",
+        "ownership",
+        "risk",
+        "exclusions"
+      ],
+      "exceptionRequiresReasonAndBudget": true,
+      "calculationOwner": "fund_policy_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Strategy comes only from public marketing.",
+      "medium": "Internal policy exists but implementation evidence is partial.",
+      "high": "User-confirmed policy, historical decisions, and attribution data agree."
+    },
+    "evidenceStrength": {
+      "low": "Edge is asserted without observed outcomes.",
+      "medium": "Relevant experience and some sourcing or founder evidence exist.",
+      "high": "Repeated sourcing, selection, or support evidence distinguishes the team."
+    },
+    "evidenceCoverage": {
+      "low": "Only sector and stage are known.",
+      "medium": "Policy is mostly covered but edge or opportunity-set evidence is partial.",
+      "high": "Policy, edge, opportunity set, competition, capacity, and exceptions are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No confirmed fund policy exists.",
+      "medium": "A default policy is explicitly labeled and user-editable.",
+      "high": "A current user-confirmed policy is pinned."
+    },
+    "judgmentConfidence": {
+      "low": "Only tentative fit questions are supportable.",
+      "medium": "Strategy fit is clear but edge remains uncertain.",
+      "high": "Fit, edge, opportunity set, and exception impact are well supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SHR-02",
+    "VM-05",
+    "BVC-02",
+    "BVC-08"
+  ],
+  "conflictingFrameworkIds": [
+    "BEST-COMPANIES-ANYWHERE-STRATEGY",
+    "PRESTIGE-EQUALS-EDGE",
+    "UNTRACKED-STRATEGY-EXCEPTION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapter 11 review.",
+      "Validate Fund Policy schema with GPs and LPs.",
+      "Backtest strategy-fit and exception classification."
+    ],
+    "empiricalQualifications": [
+      "Past edge may decay.",
+      "Emerging strategies may lack historical proof.",
+      "Public fund positioning may differ from actual policy."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public chapter doctrine is paraphrased; policy schema and exception gates are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete exact page locators.",
+      "Define default policy profiles by stage."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

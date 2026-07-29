@@ -1,0 +1,145 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-07",
+  "slug": "intelligent-contrarianism",
+  "name": "Intelligent Contrarianism",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Allows a contrarian thesis only when the crowd's behavior, causal error, company evidence, and price implication are all explicit.",
+    "productLabel": "Intelligent Contrarianism — based on Howard Marks's public materials",
+    "notAClaimOf": ["always opposing consensus", "unpopularity proving value", "negative sentiment being a buy signal"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public contrarian materials",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Contrarian action is warranted only after identifying what the crowd is doing, why it is doing it, what material error may exist, and why a different action offers favorable economics. Being unpopular or different is not enough.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-DIFFER-2022",
+      "claimIds": ["MMI-CLM-001", "MMI-CLM-013", "MMI-CLM-014"],
+      "locator": {"kind": "web_section", "value": "The Logic of Contrarianism and The Decision to Risk Being Wrong"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-TEMP-2023",
+      "claimIds": ["MMI-CLM-011", "MMI-CLM-012", "MMI-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Conclusions on extreme times, herd behavior, and the limits of routine calls"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A relevant crowd or consensus and its behavior can be evidenced.",
+    "The thesis identifies a causal error rather than a difference in taste.",
+    "Price, terms, or access can plausibly reward being right."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "crowd_behavior",
+      "description": "Dated evidence of what relevant investors, customers, or competitors are doing and why.",
+      "necessity": "required",
+      "acceptableSources": ["funding data", "terms", "market survey", "customer decisions", "investment memos"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "causal_error",
+      "description": "Primary evidence that a material consensus premise is incomplete or wrong.",
+      "necessity": "required",
+      "acceptableSources": ["customer data", "operating evidence", "technical evidence", "regulatory evidence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "payoff_link",
+      "description": "Evidence that the error creates favorable price, terms, ownership, or access.",
+      "necessity": "required",
+      "acceptableSources": ["term sheet", "valuation model", "allocation proposal"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exactly is the relevant crowd doing?",
+    "Why is it behaving that way?",
+    "Which premise is materially wrong, and what evidence shows it?",
+    "How does being right translate into investor payoff?",
+    "What evidence would show that the crowd is right?"
+  ],
+  "positiveSignals": [
+    "Crowd behavior has created favorable access or terms.",
+    "The variant rests on primary evidence unavailable or underweighted by others.",
+    "The thesis specifies timing and a catalyst or milestone.",
+    "The countercase is strong enough to falsify the thesis."
+  ],
+  "redFlags": [
+    "The only thesis is that few investors like the sector.",
+    "The system opposes consensus without knowing its reasons.",
+    "Consensus is correct about fundamentals but the analyst dislikes its tone.",
+    "No price or payoff advantage follows from the variant."
+  ],
+  "disconfirmingEvidence": [
+    "Informed investors considered and rejected the same supposed edge.",
+    "Customers validate the consensus concern.",
+    "Terms remain demanding despite negative sentiment.",
+    "The company cannot survive long enough for the thesis to resolve."
+  ],
+  "contraindications": [
+    "Do not use as a generic score for unpopular sectors.",
+    "Do not equate a differentiated founder story with a differentiated investment thesis.",
+    "Do not suppress a mainstream lens that reaches a different conclusion."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Describe crowd action and reasons from sources.",
+      "Identify one material alleged error.",
+      "Test the error against primary evidence and the best consensus countercase.",
+      "Connect the error to terms and payoff.",
+      "Conclude intelligent contrarian, reflexive contrarian, already recognized, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Crowd behavior is anecdotal.", "medium": "Several credible sources establish behavior and rationale.", "high": "Primary transaction, customer, and company evidence establishes both crowd and variant."},
+    "evidenceStrength": {"low": "Only disagreement exists.", "medium": "A plausible causal error exists but payoff is uncertain.", "high": "The error, evidence, timing, and payoff are explicit and counter-tested."},
+    "evidenceCoverage": {"low": "Only crowd behavior is known.", "medium": "Crowd and error are covered; price or countercase partial.", "high": "Crowd, rationale, error, countercase, terms, and payoff are complete."},
+    "applicabilityConfidence": {"low": "No relevant consensus group.", "medium": "The crowd is identifiable but heterogeneous.", "high": "The relevant decision-makers and market segment are explicit."},
+    "judgmentConfidence": {"low": "Contrarian label is unsupported.", "medium": "A researchable variant exists.", "high": "A material, economically useful causal error is well supported."}
+  },
+  "overlapFrameworkIds": ["MMI-01", "PT-01", "EI-01"],
+  "conflictingFrameworkIds": ["OPPOSITE-OF-CROWD", "UNPOPULAR-EQUALS-CHEAP"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Prospectively record crowd and variant before outcomes.", "Backtest false-contrarian rate.", "Complete book review."],
+    "empiricalQualifications": ["Consensus may be unobservable or heterogeneous in private markets.", "A correct contrarian thesis can fail due to timing or financing."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Official public concepts are paraphrased without persona simulation."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define acceptable evidence for a private-market consensus snapshot."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

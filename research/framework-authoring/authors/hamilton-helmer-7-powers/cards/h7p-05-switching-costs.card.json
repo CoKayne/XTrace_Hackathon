@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-05",
+  "slug": "switching-costs",
+  "name": "Switching Costs",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether existing customers face real value loss from switching and whether repeat economics let the company capture a durable Benefit.",
+    "productLabel": "Switching Costs Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "retention automatically proving lock-in",
+      "long contracts automatically creating Power",
+      "customer harm or artificial obstruction being a desirable product strategy"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public Switching Costs doctrine",
+    "scope": "product_synthesis",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Switching Costs may exist when an existing customer expects material operational, financial, procedural, relational, data, integration, training, or risk loss from changing suppliers. The company can capture a Benefit only when follow-on purchases or repeat economic interactions exist. Retention alone is ambiguous, and acquisition competition, portability, contract expiry, customer resentment, or new architecture can erode the advantage.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_qualification",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "claimIds": [
+        "H7P-CLM-006"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Official audio 00:37:07-00:40:10: building Switching Costs and their Barrier"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-ACQUIRED-2021",
+      "claimIds": [
+        "H7P-CLM-006"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Canonical interview 00:29:26-00:34:54: translation, repeat interaction, embedded process, and customer acquisition caveats"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "H7P-E1-SWITCHING-DUBE-2009",
+      "claimIds": [
+        "H7P-EQ-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: heterogeneous consumers, imperfect lock-in, and non-monotonic price effects"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "enterprise_software",
+      "infrastructure",
+      "database",
+      "workflow_software",
+      "payments",
+      "recurring_services",
+      "repeat_purchase"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The customer makes repeat purchases or has recurring economic interaction.",
+    "Switching loss is measured from the customer's perspective.",
+    "Retention causes are separated from satisfaction, contract, inertia, and lack of alternatives.",
+    "The company can capture value without destroying the customer relationship."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "switching_loss_map",
+      "description": "Customer-level migration cost, downtime, data loss, retraining, integration work, operational risk, relationship rebuilding, and foregone value.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer interviews",
+        "migration plans",
+        "implementation records",
+        "integrator estimates",
+        "workflow maps"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "repeat_economics",
+      "description": "Renewal, follow-on product, usage, expansion, maintenance, or repeat-purchase economics through which the company may capture Benefit.",
+      "necessity": "required",
+      "acceptableSources": [
+        "contracts",
+        "revenue cohorts",
+        "renewal data",
+        "expansion data",
+        "unit economics"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "retention_causal_decomposition",
+      "description": "Evidence separating true switching loss from customer satisfaction, product superiority, price, contract duration, and missing alternatives.",
+      "necessity": "required",
+      "acceptableSources": [
+        "churn interviews",
+        "renewal experiments",
+        "contract analysis",
+        "competitive win loss",
+        "customer cohorts"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "portability_and_acquisition_pressure",
+      "description": "Data portability, interoperability, migration tools, regulation, new architecture, competitor incentives, and CAC needed to dislodge or acquire customers.",
+      "necessity": "required",
+      "acceptableSources": [
+        "technical diligence",
+        "regulatory analysis",
+        "competitor offers",
+        "sales economics",
+        "migration tests"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What value would an existing customer lose by switching today?",
+    "Which losses are unavoidable and which are intentionally imposed?",
+    "What repeat interaction lets the company capture the Benefit?",
+    "How much must a competitor compensate or assist the customer to switch?",
+    "Could portability, AI migration, standards, or regulation sharply reduce the Barrier?",
+    "Does pricing behavior preserve trust or create an opening for displacement?"
+  ],
+  "positiveSignals": [
+    "Completed migration projects show material cost, time, risk, or workflow disruption.",
+    "Customer cohorts demonstrate repeat economics beyond contract duration.",
+    "Competitors must fund meaningful migration assistance or price concessions.",
+    "Switching loss rises through legitimate accumulated value, not artificial obstruction.",
+    "Portability and interoperability stress tests leave a material residual Barrier."
+  ],
+  "redFlags": [
+    "Retention or net revenue retention is the only evidence.",
+    "Multi-year contracts are treated as permanent switching cost.",
+    "The customer has no follow-on purchase or recurring interaction.",
+    "High churn appears immediately at renewal or contract expiry.",
+    "New migration tools, open standards, or regulation can remove the loss."
+  ],
+  "disconfirmingEvidence": [
+    "Customers switch with little downtime, cost, or value loss.",
+    "A competitor routinely pays migration cost and still earns attractive economics.",
+    "Retention is explained by current product superiority rather than lock-in.",
+    "Customer acquisition competition eliminates the lifetime-value Benefit.",
+    "Artificial friction produces backlash, regulation, or rapid substitute adoption."
+  ],
+  "contraindications": [
+    "Do not infer Switching Costs from retention alone.",
+    "Do not celebrate harmful or deceptive lock-in.",
+    "Do not assume pricing power follows mechanically from customer loss.",
+    "Do not count the same embedding again as Process or Network Power without causal separation."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map switching losses for representative customer cohorts.",
+      "Identify the repeat interaction and possible company Benefit.",
+      "Decompose retention into causal alternatives.",
+      "Stress competitor compensation, migration technology, regulation, and trust.",
+      "Conclude on observed, candidate, path, unsupported, or inapplicable Switching Costs."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only retention metrics or founder claims are available.",
+      "medium": "Customer interviews, contracts, and cohort data are available.",
+      "high": "Observed migration evidence, causal retention analysis, and competitor offers converge."
+    },
+    "evidenceStrength": {
+      "low": "Switching loss is unmeasured.",
+      "medium": "Loss is material but capture or persistence is uncertain.",
+      "high": "Customer loss, repeat Benefit, competitor disadvantage, and persistence are supported."
+    },
+    "evidenceCoverage": {
+      "low": "Migration loss or repeat economics are missing.",
+      "medium": "Core loss and retention are covered but portability or CAC is incomplete.",
+      "high": "Loss, repeat interaction, causal retention, portability, competition, trust, and decay are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The product is transactional or easily replaced.",
+      "medium": "Some customer workflow or data accumulates.",
+      "high": "The product is deeply embedded in recurring customer operations."
+    },
+    "judgmentConfidence": {
+      "low": "Only stickiness language is supported.",
+      "medium": "Candidate switching loss exists with unresolved economic capture.",
+      "high": "Observed customer loss and durable repeat Benefit are supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "H7P-03",
+    "H7P-08",
+    "COLD-START-NETWORK"
+  ],
+  "conflictingFrameworkIds": [
+    "RETENTION-EQUALS-SWITCHING-COST",
+    "LONG-CONTRACT-EQUALS-MOAT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed Switching Costs chapter review.",
+      "Validate migration-loss and causal-retention fields by business model.",
+      "Test whether the lens adds value beyond retention, contract length, and NRR."
+    ],
+    "empiricalQualifications": [
+      "Switching-cost effects on equilibrium price and competition are model-dependent.",
+      "Retention has many causal explanations.",
+      "Portability, migration automation, standards, regulation, and customer backlash can shorten duration."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public interview doctrine and external research are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Verify direct audio locators and precise follow-on-purchase condition.",
+      "Complete first-edition switching-cost category review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial repeat-economics and causal-retention Switching Costs card."
+    }
+  ]
+}

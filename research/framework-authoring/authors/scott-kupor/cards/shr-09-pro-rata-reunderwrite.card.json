@@ -1,0 +1,258 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-09",
+  "slug": "pro-rata-reunderwrite",
+  "name": "Pro-Rata Rights and Independent Re-Underwriting",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Treats pro-rata as an ownership option while requiring each follow-on dollar to compete against current alternatives.",
+    "productLabel": "Pro-Rata Re-Underwrite Lens — based on Scott Kupor's official fundraising transcript",
+    "notAClaimOf": [
+      "pro-rata rights creating a funding obligation",
+      "non-participation proving company weakness",
+      "prior capital justifying future capital"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor's public explanation of pro-rata, ownership, cost basis, and participation expectations",
+    "scope": "person_direct",
+    "people": [
+      "Scott Kupor"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Pro-rata preserves an investor's ownership opportunity but can conflict with new-investor ownership needs. Initial participation expectations should be explicit. Later follow-on decisions require fresh evidence, current price, cost basis, ownership value, reserve availability, concentration, and opportunity-cost analysis; prior investment is not a reason to continue.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-A16Z-RAISE-2019",
+      "claimIds": [
+        "SHR-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official transcript lines 261-278: pro-rata rights, ownership impact, conflicts, cost basis, independent future decisions, and signalling"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed_follow_on",
+      "series_a_follow_on",
+      "series_b_follow_on",
+      "growth_follow_on",
+      "bridge",
+      "down_round"
+    ],
+    "businessModels": [
+      "venture_backed_startup"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The investor has or may exercise follow-on rights.",
+    "Current company evidence and proposed round terms are available.",
+    "Fund reserves, concentration limits, and alternatives are known."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "pro_rata_rights",
+      "description": "Exact contractual participation rights, waivers, exclusions, and deadlines.",
+      "necessity": "required",
+      "acceptableSources": [
+        "investor rights agreement",
+        "side letter",
+        "round documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_reunderwrite",
+      "description": "Current product, market, team, financial, risk, valuation, and critical-evidence assessment.",
+      "necessity": "required",
+      "acceptableSources": [
+        "updated Evidence Pack",
+        "valuation model",
+        "IC memo"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fund_position",
+      "description": "Cost basis, current ownership, reserve budget, concentration, fund life, and alternative opportunities.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Fund Policy",
+        "portfolio model",
+        "fund records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "round_signal_context",
+      "description": "New-investor demand, insider expectations, allocation constraints, and reasons for participation or non-participation.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "round process",
+        "investor communications",
+        "term sheet"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What right exists, and what capital is required to exercise it?",
+    "Would the fund make this investment today without prior ownership?",
+    "What changed since the last decision?",
+    "How does the new price affect expected return and ownership value?",
+    "What reserve, concentration, and opportunity cost does participation consume?",
+    "What signalling interpretation is reasonable, and what alternative explanations exist?"
+  ],
+  "positiveSignals": [
+    "New evidence improves the thesis at a price consistent with return targets.",
+    "Ownership value justifies reserve and concentration use.",
+    "The decision remains attractive after removing sunk cost.",
+    "Participation expectations were previously explicit.",
+    "Signal interpretation is supported by direct process evidence."
+  ],
+  "redFlags": [
+    "The sole rationale is protecting existing investment.",
+    "Pro-rata is treated as an automatic obligation.",
+    "Current valuation and round structure are not re-underwritten.",
+    "Reserve or concentration limits are ignored.",
+    "Non-participation is automatically labelled adverse."
+  ],
+  "disconfirmingEvidence": [
+    "The company misses critical milestones without a credible updated mechanism.",
+    "Current price reduces risk-adjusted return below alternatives.",
+    "Reserve use prevents support for stronger positions.",
+    "Insider participation is driven by signalling defence rather than thesis.",
+    "New rights or preferences materially change the economics."
+  ],
+  "contraindications": [
+    "Do not use sunk cost as evidence.",
+    "Do not infer company quality solely from insider participation.",
+    "Do not exercise rights without current cap-table and waterfall analysis."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Resolve contractual rights and deadlines.",
+      "Perform a fresh company and price underwrite.",
+      "Run fund ownership, reserve, concentration, and opportunity-cost scenarios.",
+      "Separate business evidence from signalling interpretations.",
+      "Conclude on the incremental follow-on dollar."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationOwner": "Portfolio Model, Fund Policy, Cap Table, and Waterfall Service"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Participation expectations are informal.",
+      "medium": "Official transcript and core rights are available.",
+      "high": "Hashed transcript, executed rights, current round, and fund records converge."
+    },
+    "evidenceStrength": {
+      "low": "Sunk-cost or signalling narrative only.",
+      "medium": "Current evidence and price are available but opportunity cost is weak.",
+      "high": "Company, price, rights, fund position, and alternatives are complete."
+    },
+    "evidenceCoverage": {
+      "low": "Rights, current underwrite, or fund capacity is missing.",
+      "medium": "Core inputs exist but signal context or alternatives are incomplete.",
+      "high": "All incremental-decision inputs and counterfactuals are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No follow-on right or decision exists.",
+      "medium": "A follow-on is possible but allocation is immaterial.",
+      "high": "The round materially affects ownership, reserves, or concentration."
+    },
+    "judgmentConfidence": {
+      "low": "The conclusion is driven by prior ownership.",
+      "medium": "The incremental case is supported with unresolved fund trade-offs.",
+      "high": "Fresh underwrite and portfolio opportunity cost converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VM-07",
+    "PORTFOLIO-RESERVE",
+    "METRICK-FOLLOW-ON"
+  ],
+  "conflictingFrameworkIds": [
+    "AUTOMATIC-PRO-RATA",
+    "SUNK-COST-FOLLOW-ON"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Backtest incremental follow-on decisions rather than total company outcomes.",
+      "Validate reserve and opportunity-cost modelling.",
+      "Separate signalling from fundamental evidence."
+    ],
+    "empiricalQualifications": [
+      "Insider participation is endogenous to information, rights, and signalling.",
+      "Fund capacity and alternative set vary by time.",
+      "Maintaining ownership can be valuable but not at every price."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The official transcript is paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Reconcile with Venture Mindset Double Down or Quit.",
+      "Align with portfolio-construction and reserve models."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}
+

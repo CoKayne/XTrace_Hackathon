@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-03",
+  "slug": "adaptive-plan-under-uncertainty",
+  "name": "Adaptive Plan Under Uncertainty",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether plan changes are evidence-led learning toward a valuable market rather than drift, denial, or retrospective storytelling.",
+    "productLabel": "Adaptive Plan Under Uncertainty Lens — based on Marc Andreessen's public startup writings",
+    "notAClaimOf": ["initial planning being useless", "pivot frequency proving adaptability", "changing the story without changing evidence"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public startup writings",
+    "scope": "person_direct",
+    "people": ["Marc Andreessen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Treat the initial plan as a provisional hypothesis. Favor teams that update product, customer, and route-to-market assumptions rapidly when new evidence arrives, while maintaining a versioned record of what changed and why.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-005", "MA-CLM-006"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 53-57, Part 7: initial business-plan uncertainty, rapid evolution, and pursuit of a large market and PMF"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-009", "MA-CLM-010"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 14-21, Part 2: change the facts, identify risk layers, and reduce category-specific uncertainty"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "At least one material product, customer, business-model, or go-to-market assumption exists.",
+    "The company can reconstruct prior versions and decision dates.",
+    "Adaptation is judged against evidence and outcomes rather than consistency for its own sake."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "plan_versions",
+      "description": "Time-stamped product, customer, market, business-model, and go-to-market hypotheses.",
+      "necessity": "required",
+      "acceptableSources": ["board decks", "strategy documents", "product plans", "decision logs", "fundraising materials"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "trigger_evidence",
+      "description": "Customer, product, technical, competitive, regulatory, or economic evidence that triggered each material change.",
+      "necessity": "required",
+      "acceptableSources": ["experiments", "customer interviews", "analytics", "sales records", "technical tests", "market events"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "adaptation_outcomes",
+      "description": "Results after the change, including learning speed, customer value, adoption, economics, and newly introduced risks.",
+      "necessity": "required",
+      "acceptableSources": ["cohort data", "financial records", "product metrics", "postmortems", "risk register"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which prior assumption changed?",
+    "What evidence existed at the decision date?",
+    "Did the change create a more testable path to a valuable market?",
+    "Which risks were reduced, retained, transferred, or created?",
+    "Does the team close learning loops or merely rewrite the narrative?"
+  ],
+  "positiveSignals": [
+    "Material assumptions and changes are time-stamped.",
+    "The team runs low-cost tests before expensive commitments.",
+    "Changes narrow uncertainty and improve customer or economic evidence.",
+    "The company documents failed hypotheses without erasing them."
+  ],
+  "redFlags": [
+    "Past plans are overwritten and cannot be reconstructed.",
+    "Every poor result is reframed as a planned pivot.",
+    "The target customer, market, and metric change simultaneously without a testable hypothesis.",
+    "The company repeats the same failed assumption under new language."
+  ],
+  "disconfirmingEvidence": [
+    "A stable plan may be rational when evidence continues to support it.",
+    "A sharp external shock can justify rapid change before complete measurement.",
+    "A failed experiment can demonstrate high-quality learning.",
+    "Some regulated or hardware changes necessarily have long feedback cycles."
+  ],
+  "contraindications": [
+    "Do not reward change volume.",
+    "Do not penalize a company for abandoning an invalidated plan.",
+    "Do not infer investment quality without current customer, market, financial, and governance evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Construct a versioned hypothesis and decision timeline.",
+      "Link each material change to contemporaneous evidence.",
+      "Map reduced, residual, transferred, and newly created risk.",
+      "Evaluate whether learning improved a specific path to PMF or durable growth.",
+      "Conclude disciplined adaptation, unresolved experimentation, narrative drift, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Retrospective founder account.", "medium": "Contemporaneous plans and metrics.", "high": "Versioned records, decision logs, experiments, and outcomes converge."},
+    "evidenceStrength": {"low": "Story change only.", "medium": "Evidence-linked change with partial outcome.", "high": "Repeated closed learning loops improve validated customer or economic evidence."},
+    "evidenceCoverage": {"low": "Current plan only.", "medium": "Prior plan, trigger, and outcome.", "high": "Full version history, alternatives, risks, outcomes, and failures."},
+    "applicabilityConfidence": {"low": "No material uncertainty or change.", "medium": "One material update.", "high": "Multiple high-stakes updates can be evaluated prospectively."},
+    "judgmentConfidence": {"low": "Retrospective narrative.", "medium": "Bounded evidence supports one learning loop.", "high": "Repeated documented decisions show a consistent adaptation process."}
+  },
+  "overlapFrameworkIds": ["NN-07", "NN-10", "MA-05", "PL-03"],
+  "conflictingFrameworkIds": ["PIVOT-FREQUENCY-SCORE", "STATIC-PLAN-FIDELITY"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define prospective decision-log protocol.", "Backtest learning-loop classifications.", "Review survivorship and hindsight bias."],
+    "empiricalQualifications": ["Successful pivots are subject to survivorship bias.", "Outcome quality can reflect timing and luck as well as process."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical public writings are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define prospective versus retrospective evidence standards."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

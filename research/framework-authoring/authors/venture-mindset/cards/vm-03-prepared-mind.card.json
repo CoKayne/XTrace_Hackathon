@@ -1,0 +1,249 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-03",
+  "slug": "prepared-mind",
+  "name": "Prepare Your Mind",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Turns prior learning into explicit screening hypotheses without letting pattern recognition become stereotype.",
+    "productLabel": "Prepared Mind Lens — based on The Venture Mindset public materials",
+    "notAClaimOf": [
+      "permission to skip evidence",
+      "proof that intuition is accurate",
+      "author endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ilya Strebulaev's public nine-principle keynote",
+    "scope": "person_direct",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Investing upfront in domain knowledge, market maps, failure modes, and explicit hypotheses can improve screening speed when opportunities arrive. Prior patterns must remain testable and cannot replace company-specific evidence or become founder stereotypes.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-003"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF page 14"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VM-P2-BOOK-001",
+      "claimIds": [
+        "VM-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public author excerpt on uncertainty and disruptive innovation"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "market_research",
+      "initial_screening"
+    ],
+    "businessModels": [
+      "venture_investing",
+      "corporate_innovation"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible",
+      "internal_innovation_budget"
+    ]
+  },
+  "requiredConditions": [
+    "The domain has repeated opportunities or identifiable hypotheses worth learning in advance.",
+    "Pre-existing beliefs can be versioned and compared with later evidence."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "prior_hypotheses",
+      "description": "Dated market map, thesis, failure modes, and open questions created before reviewing the company.",
+      "necessity": "required",
+      "acceptableSources": [
+        "market thesis",
+        "sector memo",
+        "anti-portfolio",
+        "historical decisions"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "company_specific_update",
+      "description": "Evidence showing how the company confirms, contradicts, or extends prior beliefs.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company materials",
+        "customer evidence",
+        "technical evidence",
+        "market evidence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "belief_revision",
+      "description": "Recorded change from prior belief, supporting evidence, and remaining uncertainty.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "decision memo",
+        "Framework Registry",
+        "postmortem"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What did the firm believe before seeing this company?",
+    "Which belief is supported or contradicted by new evidence?",
+    "Is fast recognition based on a causal mechanism or superficial similarity?",
+    "Which prior failure mode is relevant, and which is not?",
+    "What evidence would force the thesis to change?"
+  ],
+  "positiveSignals": [
+    "Prior hypotheses are dated and were not rewritten after the pitch.",
+    "The company-specific update identifies mechanisms rather than labels.",
+    "The firm records belief revisions and missed assumptions.",
+    "Screening becomes faster without reducing evidence standards."
+  ],
+  "redFlags": [
+    "A known logo, pedigree, or pattern substitutes for diligence.",
+    "The thesis was written after seeing the desired company.",
+    "Contrary evidence is forced into an old template.",
+    "The firm cannot identify cases where its prepared view was wrong."
+  ],
+  "disconfirmingEvidence": [
+    "Prior patterns repeatedly fail out of sample.",
+    "An apparently similar company has a materially different customer or economic mechanism.",
+    "The screening framework rejects later winners for the same unexamined reason.",
+    "New evidence requires a thesis revision that the team refuses to record."
+  ],
+  "contraindications": [
+    "Do not use pattern similarity as formal evidence.",
+    "Do not infer founder quality from demographic or prestige patterns.",
+    "Do not apply to stable routine decisions where the uncertainty framework adds overhead."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Load only beliefs timestamped before the current company evidence.",
+      "Map new evidence to each prior hypothesis.",
+      "Identify superficial pattern matches and causal matches separately.",
+      "Record belief revision and unresolved contradictions.",
+      "Conclude on learning quality, not deal quality."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a secondary prepared-mind summary is available.",
+      "medium": "The official keynote supports the rule without full chapter details.",
+      "high": "Hashed keynote and reviewed chapter locators converge."
+    },
+    "evidenceStrength": {
+      "low": "Undated intuition or pattern claim.",
+      "medium": "Dated prior thesis and one company-specific update.",
+      "high": "Dated hypotheses, repeated updates, belief revisions, and out-of-sample postmortems exist."
+    },
+    "evidenceCoverage": {
+      "low": "No pre-company thesis exists.",
+      "medium": "Prior thesis and update exist but revision history is incomplete.",
+      "high": "Prior beliefs, updates, contradictions, and revisions are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "The decision is stable and routine.",
+      "medium": "Uncertainty exists but the domain is new to the firm.",
+      "high": "Repeated high-uncertainty opportunities reward advance learning."
+    },
+    "judgmentConfidence": {
+      "low": "Only an intuition can be reconstructed.",
+      "medium": "Prepared hypotheses improve questions but calibration is unknown.",
+      "high": "The process demonstrates faster screening and honest revision across cases."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DECISION-JOURNAL",
+    "ANTI-PORTFOLIO",
+    "MARKET-THESIS"
+  ],
+  "conflictingFrameworkIds": [
+    "PURE-PATTERN-MATCHING",
+    "BLANK-SLATE-ONLY"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Define belief-version and leakage controls.",
+      "Test screening speed and miss rate out of sample.",
+      "Audit for pedigree and demographic proxies."
+    ],
+    "empiricalQualifications": [
+      "Pattern recognition can encode historical selection bias.",
+      "Prepared frameworks can cause confirmation bias.",
+      "Learning benefits differ between disruptive and routine settings."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Only neutral paraphrase of public source concepts is stored."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash the keynote revision.",
+      "Define prepared-thesis versioning with the Framework Registry."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft adds timestamp and anti-pattern-matching safeguards."
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-07",
+  "slug": "economic-effect",
+  "name": "Network Economic-Effect Evidence",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether maturing atomic networks improve monetization or unit economics through observable operating mechanisms.",
+    "productLabel": "Economic-Effect Lens — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["scale automatically producing profits", "GMV equaling platform economics", "subsidized liquidity proving durable monetization"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Determine whether greater relevant participation improves an economic driver—such as match rate, utilization, conversion, take-rate durability, pricing, service cost, or required subsidy—and whether that improvement persists after incentives and mix effects are separated.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-013", "CSP-CLM-014", "CSP-CLM-016"],
+      "locator": {"kind": "pdf_page", "value": "Part IV, Chapters 24-25, PDF pp. 228-237; subsidy discussion, PDF pp. 167-168"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-METRICS-2018",
+      "claimIds": ["CSP-CLM-013", "CSP-CLM-015", "CSP-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Marketplace, economics, concentration, and network-effect metrics"},
+      "attributionScope": "course_notes_derivative",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "CSP-01 applicability is satisfied.",
+    "Atomic-network maturity and economic outcomes can be measured.",
+    "Gross economics can be reconciled with incentives, service costs, and participant payouts."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "unit_economics_by_network",
+      "description": "Revenue, gross profit, contribution, CAC, payback, utilization, and service costs by atomic-network maturity.",
+      "necessity": "required",
+      "acceptableSources": ["general ledger reconciliation", "unit economics model", "network cohort report"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "economic_mechanism",
+      "description": "Specified pathway from density to match, conversion, utilization, pricing, take rate, cost, or subsidy.",
+      "necessity": "required",
+      "acceptableSources": ["transaction telemetry", "pricing test", "capacity analysis", "match report"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "subsidy_incentive_ledger",
+      "description": "Participant incentives, guarantees, discounts, manual operations, and off-ledger support.",
+      "necessity": "required",
+      "acceptableSources": ["promotion ledger", "participant payout file", "operations staffing report"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "maturity_comparison",
+      "description": "Comparable economic cohorts across immature and mature atomic networks.",
+      "necessity": "recommended",
+      "acceptableSources": ["network cohort analysis", "geography or segment comparison"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which economic variable should improve as relevant density rises?",
+    "Does gross-profit or contribution improvement survive subsidy and service-cost reconciliation?",
+    "Is the effect repeated across atomic networks and participant sides?",
+    "Could mix, pricing, selection, or accounting policy explain the result?"
+  ],
+  "positiveSignals": [
+    "Mature networks reach better match, utilization, conversion, or contribution economics.",
+    "Required incentive per retained participant declines without quality loss.",
+    "Participant value and platform monetization improve together.",
+    "Economics reproduce in new networks after a measurable maturation period."
+  ],
+  "redFlags": [
+    "GMV or bookings rise while contribution economics deteriorate.",
+    "Liquidity depends on permanent guarantees, discounts, or manual fulfillment.",
+    "Higher take rate weakens hard-side retention.",
+    "Aggregate margin improvement comes from geographic or customer mix."
+  ],
+  "disconfirmingEvidence": [
+    "Dense networks require increasing subsidy or support.",
+    "The hard side captures all incremental economics or exits after monetization changes.",
+    "Unit economics are no better in mature networks.",
+    "Reported contribution omits incentives, support, fraud, refunds, or participant acquisition."
+  ],
+  "contraindications": [
+    "Do not equate transaction volume with economic network effect.",
+    "Do not model subsidy disappearance without a demonstrated trajectory.",
+    "Do not assume pricing power if participants can multi-home or bypass the platform."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Specify the economic mechanism before reviewing the outcome.",
+      "Reconcile unit economics and all subsidies by network cohort.",
+      "Compare immature and mature networks and participant sides.",
+      "Test mix, pricing, accounting, and selection alternatives.",
+      "Conclude demonstrated, emerging, subsidy-dependent, contradicted, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "network_economic_effect_analysis",
+      "requiredOutputs": ["unit_economics_by_network", "subsidy_adjusted_contribution", "economic_driver_bridge", "maturity_comparison", "participant_value_distribution"],
+      "prohibition": "The language model must not calculate unit economics, subsidy adjustment, or margin bridges."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Unreconciled management economics.", "medium": "Network-cohort model with partial ledger support.", "high": "Audited or reconciled transaction, ledger, subsidy, and cohort data converge."},
+    "evidenceStrength": {"low": "Scale and GMV only.", "medium": "A plausible economic relationship exists but subsidy or causality remains.", "high": "Repeated, subsidy-adjusted operating evidence supports the mechanism."},
+    "evidenceCoverage": {"low": "Revenue or GMV only.", "medium": "Core economics and some subsidies covered.", "high": "Revenue, contribution, incentives, service cost, quality, cohorts, and participant distribution covered."},
+    "applicabilityConfidence": {"low": "No plausible density-economic mechanism.", "medium": "Mechanism is plausible but immaterial or early.", "high": "Network maturity materially influences economics."},
+    "judgmentConfidence": {"low": "Unsupported or subsidy-dependent.", "medium": "Emerging economic effect.", "high": "Repeatable, durable economic effect."}
+  },
+  "overlapFrameworkIds": ["CSP-05", "CSP-06", "CSP-08", "H7P-02", "H7P-03"],
+  "conflictingFrameworkIds": ["SCALE-EQUALS-PROFIT", "GMV-EQUALS-CONTRIBUTION"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate subsidy-adjusted economics.", "Define archetype-specific economic mechanisms.", "Backtest mature-versus-immature comparisons."],
+    "empiricalQualifications": ["Accounting conventions and subsidies can obscure the effect.", "Participant capture can limit platform value."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine and affiliated metrics are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Specify subsidy-adjusted economic templates by business model."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

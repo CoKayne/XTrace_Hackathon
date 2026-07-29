@@ -1,0 +1,283 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-04",
+  "slug": "reinvestment-consistency",
+  "name": "Growth and Reinvestment Consistency",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Makes growth pay for the operating assets, working capital, R&D, acquisition, and capacity needed to produce it.",
+    "productLabel": "Growth and Reinvestment Consistency Lens — based on Aswath Damodaran's public valuation materials",
+    "notAClaimOf": [
+      "growth being free",
+      "sales-to-capital being universal across business models",
+      "accounting expense treatment measuring economic reinvestment correctly"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public valuation materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Revenue and margin growth require reinvestment. A young-company model can use a sales-to-capital relationship to connect incremental revenue to capital needs, but the economic definition of capital must reflect the business model, including working capital, capacity, capitalized R&D, customer acquisition, and other assets that accounting may expense.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-007"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 24-30: revenue and margin forecasts, reinvestment, and sales-to-capital implementation"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-HIGHGROW",
+      "claimIds": [
+        "DSV-CLM-007",
+        "DSV-CLM-019"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 30-39: stable reinvestment, return on capital, terminal value, and sensitivity"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "saas",
+      "marketplace",
+      "consumer",
+      "transactional",
+      "hardware",
+      "deep_tech",
+      "services"
+    ],
+    "sectors": [
+      "all_non_financial"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Revenue growth and reinvestment use the same periods, currency, and scope.",
+    "Economic investment is distinguished from accounting expense classification.",
+    "Working capital, capacity, R&D, customer acquisition, and acquisition spend are considered where material.",
+    "Stable growth and return on capital imply a consistent stable reinvestment rate."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "historical_growth_investment_bridge",
+      "description": "Historical or current relationship between incremental revenue and operating investment.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financial statements",
+        "capital expenditure records",
+        "working capital schedules",
+        "R&D records",
+        "customer acquisition cohorts"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "business_model_capital_map",
+      "description": "Identification of the assets and expenses that economically create future revenue for this business model.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating model",
+        "unit economics",
+        "capacity plan",
+        "accounting policy",
+        "industry benchmarks"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "reinvestment_forecast",
+      "description": "Scenario-specific reinvestment schedule connected to revenue and margin forecasts.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation model",
+        "management operating plan",
+        "capacity and hiring plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "stable_return_on_capital",
+      "description": "Stable-state return on capital and reinvestment assumptions benchmarked to competition and durability.",
+      "necessity": "required",
+      "acceptableSources": [
+        "normalized comparable data",
+        "competitive advantage analysis",
+        "deterministic model"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What investments create the projected revenue in this business?",
+    "What sales-to-capital or equivalent driver is implied each year?",
+    "Are R&D, software, brand, customer acquisition, inventory, or capacity economically capitalized where appropriate?",
+    "Does margin improvement remove costs that are still needed for growth?",
+    "Is the funding plan sufficient for the modeled reinvestment and runway?",
+    "Are stable growth, reinvestment, and return on capital mathematically consistent?"
+  ],
+  "positiveSignals": [
+    "Historical or cohort evidence connects incremental spend to incremental revenue.",
+    "The model recognizes intangible and working-capital investment.",
+    "Scenario-specific capital needs reconcile to runway and financing.",
+    "Growth slows or investment rises when capacity becomes constrained.",
+    "Stable reinvestment follows from a defensible stable return on capital."
+  ],
+  "redFlags": [
+    "Revenue grows rapidly while capital needs approach zero without evidence.",
+    "All R&D or customer acquisition is treated as maintenance expense despite future benefits.",
+    "Hardware, inventory, implementation, or working capital is absent from growth economics.",
+    "Margin expands only because growth investment is removed.",
+    "Terminal growth is assumed without terminal reinvestment."
+  ],
+  "disconfirmingEvidence": [
+    "Past growth required materially more capital than forecast.",
+    "Customer acquisition payback or implementation burden worsens with scale.",
+    "Capacity commitments arrive earlier than the model assumes.",
+    "The company needs financing beyond the modeled plan to sustain growth.",
+    "Stable return on capital exceeds plausible competitive economics without a supported barrier."
+  ],
+  "contraindications": [
+    "Do not apply one sales-to-capital ratio across unrelated business models.",
+    "Do not equate accounting capex with total economic reinvestment.",
+    "Do not double count growth investment in both cash flow and a separate discount.",
+    "Do not infer a terminal return on capital from current early-stage margins."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Map all economically relevant investment categories.",
+      "Estimate scenario-specific sales-to-capital or equivalent operating drivers.",
+      "Calculate reinvestment from incremental revenue and required assets.",
+      "Reconcile capital needs to runway and financing.",
+      "Apply stable-state consistency checks in the valuation service."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "growthReinvestmentIdentity": "reinvestment_t = (revenue_t_plus_1 - revenue_t) / sales_to_capital_ratio_t",
+      "stableReinvestmentIdentity": "stable_reinvestment_rate = stable_growth_rate / stable_return_on_capital",
+      "calculationOwner": "valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a high-level budget or founder estimate is available.",
+      "medium": "Company financials and partial cohort or capacity evidence are available.",
+      "high": "Reconciled accounts, operating cohorts, capacity plans, and normalized benchmarks are verified."
+    },
+    "evidenceStrength": {
+      "low": "Reinvestment is a residual plug.",
+      "medium": "Major capital categories are modeled with several external priors.",
+      "high": "Growth investment relationships are measured and scenario-consistent."
+    },
+    "evidenceCoverage": {
+      "low": "Only accounting capex is included.",
+      "medium": "Capex, working capital, and major intangibles are included but stable economics are incomplete.",
+      "high": "All material investment categories, financing, and stable-state relationships are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The business has no definable revenue or investment driver.",
+      "medium": "Drivers are plausible but current data are sparse.",
+      "high": "Revenue and economic investment units are explicit and measurable."
+    },
+    "judgmentConfidence": {
+      "low": "Only a broad capital-needs warning can be stated.",
+      "medium": "The model is directionally consistent but sensitive to one material proxy.",
+      "high": "Reinvestment, growth, runway, and terminal economics reconcile under verified data."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-02",
+    "DSV-03",
+    "DSV-06",
+    "H7P-02"
+  ],
+  "conflictingFrameworkIds": [
+    "GROWTH-WITHOUT-REINVESTMENT",
+    "ACCOUNTING-CAPEX-EQUALS-ECONOMIC-INVESTMENT",
+    "TERMINAL-GROWTH-WITHOUT-REINVESTMENT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition reinvestment review.",
+      "Define and validate business-model-specific economic-capital mappings.",
+      "Backtest forecast capital needs against actual financing and operating outcomes."
+    ],
+    "empiricalQualifications": [
+      "Sales-to-capital is a simplifying relationship, not a universal causal constant.",
+      "Accounting treatment can obscure intangible investment.",
+      "Financing constraints may change the attainable growth path even when project economics are attractive."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Formulas are standard deterministic identities described by public author materials; prose is neutral paraphrase."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Review intangible-investment normalization by sector."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

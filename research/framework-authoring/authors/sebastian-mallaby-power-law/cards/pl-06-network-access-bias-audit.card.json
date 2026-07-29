@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-06",
+  "slug": "network-access-bias-audit",
+  "name": "Network Access and Bias Audit",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Measures what a venture network contributes to access and evidence while auditing who the same referral system excludes.",
+    "productLabel": "Network-Advantage Pattern — based on Mallaby's public historical analysis",
+    "notAClaimOf": ["warm introductions proving company quality", "network size equaling investment edge", "demographic similarity being founder-market fit"]
+  },
+  "attribution": {
+    "display": "Historical pattern derived from Sebastian Mallaby's public materials",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Council on Foreign Relations", "Penguin Press"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Treat networks as infrastructure that can improve sourcing, information, recruiting, customers, and follow-on access. Record those mechanisms separately from company merit, and audit whether referral dependence narrows the opportunity set or reproduces demographic and cognitive bias.",
+  "claimTypes": ["historical_description", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P1-HBR-2022",
+      "claimIds": ["PL-CLM-009", "PL-CLM-010", "PL-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of deliberate network building, referral bias, team promotion, and partnership culture"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-P1-CFR-2022",
+      "claimIds": ["PL-CLM-009", "PL-CLM-010", "PL-CLM-019"],
+      "locator": {"kind": "web_section", "value": "Official description and endorsements describing venture as a network and noting systemic bias"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PL-P1-CWT-2022",
+      "claimIds": ["PL-CLM-009", "PL-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of access, reputation, and ecosystem concentration"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Sourcing provenance and referral path are stored.",
+    "Network contribution and company evidence are separate fields.",
+    "Opportunity-set coverage can be audited over time."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "sourcing_provenance",
+      "description": "Who introduced the company, relationship path, prior ties, and date.",
+      "necessity": "required",
+      "acceptableSources": ["CRM", "XTrace memory", "email record", "event record"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "network_mechanism",
+      "description": "Specific access, information, customer, recruiting, or financing contribution.",
+      "necessity": "required",
+      "acceptableSources": ["reference call", "customer intro", "recruiting plan", "syndicate evidence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "coverage_audit",
+      "description": "Sourcing-channel, demographic, geography, sector, and conversion coverage.",
+      "necessity": "recommended",
+      "acceptableSources": ["pipeline analytics", "application data", "outreach records"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What concrete advantage did the network provide?",
+    "Would the company evidence remain compelling without the introducer's reputation?",
+    "Which founder populations and ideas are underrepresented in this sourcing channel?",
+    "Does network concentration improve evidence or merely reinforce familiarity?"
+  ],
+  "positiveSignals": [
+    "Network value is tied to a documented mechanism.",
+    "Cold and open sourcing channels receive equivalent evidence review.",
+    "Coverage gaps are measured and have corrective actions.",
+    "Introducer reputation does not substitute for diligence."
+  ],
+  "redFlags": [
+    "Warm introduction is used as a quality score.",
+    "Referral path is missing or hidden.",
+    "Team similarity is labeled trust or founder fit.",
+    "A strong network claim has no customer, recruiting, or access evidence."
+  ],
+  "disconfirmingEvidence": [
+    "The network contribution is available to every competing investor.",
+    "Open-channel deals outperform or are rejected under different standards.",
+    "Referral source has an undisclosed incentive.",
+    "Network homogeneity narrows customer or market understanding."
+  ],
+  "contraindications": [
+    "Do not rank founders by social proximity.",
+    "Do not treat network effects in sourcing as product network effects.",
+    "Do not infer causality from firm reputation and later outcomes."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Trace sourcing and relationship provenance.",
+      "List network mechanisms with evidence.",
+      "Reassess company evidence without authority cues.",
+      "Compare channel coverage and standards.",
+      "Conclude useful access, unproven advantage, bias risk, or conflict."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Network claims are anecdotal.", "medium": "Documented introductions or services exist.", "high": "Auditable provenance, outcomes, and coverage data exist."},
+    "evidenceStrength": {"low": "Proximity only.", "medium": "One concrete mechanism is demonstrated.", "high": "Multiple value mechanisms and bias controls are demonstrated."},
+    "evidenceCoverage": {"low": "Referral only.", "medium": "Mechanism covered; opportunity-set audit partial.", "high": "Provenance, mechanism, company evidence, channel standards, coverage, and conflicts complete."},
+    "applicabilityConfidence": {"low": "No network claim affects the decision.", "medium": "Network access is relevant.", "high": "Sourcing and proposed value-add materially depend on the network."},
+    "judgmentConfidence": {"low": "No network conclusion.", "medium": "A bounded network contribution is supported.", "high": "Value mechanism is evidenced and bias exposure is actively controlled."}
+  },
+  "overlapFrameworkIds": ["BVC-06", "BVC-09", "SF-07"],
+  "conflictingFrameworkIds": ["WARM-INTRO-QUALITY", "NETWORK-SIZE-EQUALS-EDGE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "portfolio_policy"],
+    "promotionRequirements": ["Define sourcing-provenance schema.", "Audit channel outcomes and review standards.", "Establish protected-attribute governance."],
+    "empiricalQualifications": ["Network and skill are endogenous.", "Demographic data may be incomplete or legally sensitive."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical network and bias observations are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review privacy and fairness controls before collecting demographic fields."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

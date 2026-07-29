@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-07",
+  "slug": "behavior-expanding-tam-scenarios",
+  "name": "Behavior-Expanding TAM Scenarios",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether product improvements create new frequency, price points, coverage, or use cases that expand demand beyond a historical category.",
+    "productLabel": "Behavior-Expanding TAM Scenario Lens — based on Bill Gurley's public market-size analysis",
+    "notAClaimOf": ["expanded TAM being guaranteed", "one company capturing all category expansion", "a portfolio-company case being a universal template"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd market-size analysis",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd", "Benchmark"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "When a product materially changes experience, price, reliability, coverage, frequency, or use cases, model the possibility that demand expands beyond historical category spend. Use multiple explicit scenarios and current behavior rather than a single heroic TAM.",
+  "claimTypes": ["direct_doctrine", "revealed_behavior", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-UBER-TAM-2014",
+      "claimIds": ["BG-CLM-019", "BG-CLM-020", "BG-CLM-021"],
+      "locator": {"kind": "web_section", "value": "Lines 19-76: historical-category assumption, product deltas, new use cases, scenario ranges, regulation, competition, and network effects"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-MARKETS-2012",
+      "claimIds": ["BG-CLM-019", "BG-CLM-021"],
+      "locator": {"kind": "web_section", "value": "Factors 6-8: addressable penetration, market expansion, and frequency"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "BG-P1-REVENUE-2011",
+      "claimIds": ["BG-CLM-031"],
+      "locator": {"kind": "web_section", "value": "2011-05-26 update on TAM and optionality; revenue alone remains a poor valuation guide"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["consumer", "marketplace", "platform", "transactional", "enterprise", "hardware_enabled"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company claims a material product delta from the historical alternative.",
+    "Changed behavior can be measured or tested.",
+    "Conflict and survivorship bias in the source case are disclosed."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "historical_baseline",
+      "description": "Prior category spend, behavior, frequency, price, coverage, substitutes, and non-consumption.",
+      "necessity": "required",
+      "acceptableSources": ["official statistics", "industry data", "consumer surveys", "transaction records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "product_delta",
+      "description": "Measured change in price, time, reliability, convenience, quality, coverage, or workflow.",
+      "necessity": "required",
+      "acceptableSources": ["product benchmarks", "customer studies", "transaction data", "experiments"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "behavior_change",
+      "description": "New users, greater frequency, new use cases, substitution, willingness to pay, and cohort persistence.",
+      "necessity": "required",
+      "acceptableSources": ["cohort data", "surveys", "usage logs", "transaction data", "customer interviews"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "constraints_and_capture",
+      "description": "Regulation, competition, local network limits, supply, capital, price elasticity, and the company's plausible capture share.",
+      "necessity": "required",
+      "acceptableSources": ["regulatory sources", "competitive data", "supply model", "scenario model", "market research"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which product delta changes behavior rather than merely share?",
+    "Who becomes a new user and which new use case appears?",
+    "How persistent is the increase in frequency or spend?",
+    "How much demand is substitution versus category expansion?",
+    "What regulation, competition, supply, or local-network constraint limits company capture?"
+  ],
+  "positiveSignals": [
+    "Observed cohorts show persistent new use cases or higher frequency.",
+    "Non-consumers enter because a specific friction falls.",
+    "Independent scenario inputs and company data converge.",
+    "Bear, base, and bull cases separate category expansion from company share."
+  ],
+  "redFlags": [
+    "The company relabels adjacent spend as TAM without behavior evidence.",
+    "One portfolio success or analogy supplies the entire expansion assumption.",
+    "The bull case is presented as base case.",
+    "Constraints and competitor capture are omitted."
+  ],
+  "disconfirmingEvidence": [
+    "A better product can mostly redistribute existing spend.",
+    "Early heavy users may not represent a broader population.",
+    "Lower price can increase units while limiting revenue and contribution.",
+    "Incumbents or other entrants may capture much of the expanded category."
+  ],
+  "contraindications": [
+    "Do not use one deterministic expanded-TAM number.",
+    "Do not hide source conflict or portfolio exposure.",
+    "Do not convert expanded TAM directly into value without economics, share, and price."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Establish historical behavior and product delta.",
+      "Measure new-user, frequency, use-case, and substitution evidence.",
+      "Construct bear, base, and bull expansion scenarios deterministically.",
+      "Apply constraints and plausible company capture separately.",
+      "Conclude observed expansion, plausible but early, share-shift only, overstated, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "TAM scenarios, penetration, frequency, price, substitution, and company-share calculations must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder TAM analogy.", "medium": "Independent market and company data.", "high": "Longitudinal behavior, transaction, and independent market evidence converge."},
+    "evidenceStrength": {"low": "Feature improvement only.", "medium": "Early behavior change.", "high": "Persistent multi-cohort expansion survives price and constraint tests."},
+    "evidenceCoverage": {"low": "Bull TAM.", "medium": "Baseline, delta, and behavior.", "high": "Substitution, scenarios, constraints, capture, economics, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No claimed behavior change.", "medium": "Material product delta.", "high": "Market expansion is central to underwriting."},
+    "judgmentConfidence": {"low": "Analogy.", "medium": "Bounded scenario evidence.", "high": "Observed behavior and independent data support a calibrated range."}
+  },
+  "overlapFrameworkIds": ["MA-02", "DSV-02", "NN-04", "EI-08", "CSP-04"],
+  "conflictingFrameworkIds": ["HISTORICAL-CATEGORY-TAM-ONLY", "HEROIC-EXPANDED-TAM"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Implement scenario service.", "Backtest forecast error.", "Add conflict and survivorship review."],
+    "empiricalQualifications": ["Market expansion forecasts have severe uncertainty.", "Portfolio-company examples are selected and conflicted."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public case analysis is neutrally paraphrased with conflict caveat."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Define substitution and behavior-expansion evidence standards."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

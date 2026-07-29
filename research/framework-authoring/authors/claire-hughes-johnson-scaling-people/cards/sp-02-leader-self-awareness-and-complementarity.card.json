@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-02",
+  "slug": "leader-self-awareness-and-complementarity",
+  "name": "Leader Self-Awareness and Complementarity",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether leaders recognize operating strengths and blind spots and build complementary coverage through observable decisions.",
+    "productLabel": "Self-Awareness and Complementarity Lens — based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["AI inferring personality", "a preferred leadership style", "founder charisma being operating capability"]
+  },
+  "attribution": {
+    "display": "Based on Claire Hughes Johnson's public Scaling People materials",
+    "scope": "person_direct",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["Stanford Technology Ventures Program", "McKinsey & Company"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Assess self-awareness through specific examples of how a leader recognized a limitation, accepted contrary feedback, changed behavior, and recruited or empowered people with complementary capabilities. Do not infer a psychological profile from communication style.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-MCKINSEY-2023",
+      "claimIds": ["SP-CLM-004", "SP-CLM-006"],
+      "locator": {"kind": "web_section", "value": "Book use and leadership/management sections: self-awareness, work style, habits, and distinct practices"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-STANFORD-SELF-2023",
+      "claimIds": ["SP-CLM-004", "SP-CLM-005"],
+      "locator": {"kind": "pdf_page", "value": "Transcript p. 1, 00:00-02:49: strengths inventory, mutual awareness, and complementary people"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-STANFORD-TEAM-2023",
+      "claimIds": ["SP-CLM-005"],
+      "locator": {"kind": "pdf_page", "value": "Transcript p. 1, 00:00-02:49: different skills, shared norms, and assigning work by capability"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P2-YALE-2025",
+      "claimIds": ["SP-CLM-004", "SP-CLM-005"],
+      "locator": {"kind": "web_section", "value": "Profile section on self-awareness, blind spots, calling on others' skills, and scaling through others"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The review concerns observable leadership behavior and role coverage.",
+    "No protected trait, voice, image, or demographic proxy is used.",
+    "Self-report is tested against decisions and independent evidence."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "leader_decision_examples",
+      "description": "Specific decisions where the leader identified a strength, limitation, mistake, or changed view.",
+      "necessity": "required",
+      "acceptableSources": ["decision log", "founder interview", "board records", "postmortems"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "feedback_response",
+      "description": "Dated feedback, the leader's response, and subsequent observable behavior.",
+      "necessity": "required",
+      "acceptableSources": ["360 feedback with consent", "board feedback", "team interviews", "later decisions"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "capability_coverage",
+      "description": "Company-critical capabilities, current owners, gaps, and how hires or delegations complement the leader.",
+      "necessity": "required",
+      "acceptableSources": ["organization chart", "role charters", "hiring plan", "decision rights", "references"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which limitation has the leader named before it became unavoidable?",
+    "What behavior changed after feedback or failure?",
+    "Which company-critical capabilities are deliberately owned by complementary leaders?",
+    "Can team members disagree with the leader and retain real ownership?",
+    "What evidence contradicts the leader's self-description?"
+  ],
+  "positiveSignals": [
+    "A leader accurately names a limitation and acts to cover it.",
+    "Feedback produces a specific behavior or decision change.",
+    "Complementary leaders have clear authority rather than ceremonial titles.",
+    "The team can explain differentiated strengths and route work accordingly."
+  ],
+  "redFlags": [
+    "Self-awareness is asserted through polished language without changed behavior.",
+    "The founder hires replicas and retains all consequential decisions.",
+    "A personality label substitutes for capability evidence.",
+    "Disagreement is framed as disloyalty."
+  ],
+  "disconfirmingEvidence": [
+    "A centralized decision was appropriate during a time-critical or safety-critical event.",
+    "A capability gap is temporary and tied to a funded, time-bound hiring plan.",
+    "Independent references contradict a claimed blind spot or improvement.",
+    "Delegated leaders lack resources or actual decision authority."
+  ],
+  "contraindications": [
+    "Do not perform psychometric or mental-health inference.",
+    "Do not score accent, language fluency, facial expression, gender, age, race, disability, or other protected traits.",
+    "Do not treat one leadership style as universally correct.",
+    "Do not use founder charisma as evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define company-critical capabilities and current owners.",
+      "Collect specific mistake, feedback, and behavior-change examples.",
+      "Compare self-report with independent evidence.",
+      "Test whether complementary leaders possess actual authority.",
+      "Conclude demonstrated, emerging, contradicted, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Leader self-report only.", "medium": "Specific examples plus some team evidence.", "high": "Decision records, repeated behavior, and independent references converge."},
+    "evidenceStrength": {"low": "Trait language.", "medium": "One verified feedback-to-change example.", "high": "Repeated self-correction and complementary delegation improve decisions or execution."},
+    "evidenceCoverage": {"low": "Strengths only.", "medium": "Strengths, gaps, and some coverage.", "high": "Gaps, feedback, behavior change, capability map, authority, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No leadership scaling decision is in scope.", "medium": "Some dependence on the leader exists.", "high": "Company execution depends materially on leadership complementarity."},
+    "judgmentConfidence": {"low": "Personality impression.", "medium": "Bounded behavioral evidence.", "high": "Longitudinal observable evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-05", "SP-06", "FD-03", "SF-04"],
+  "conflictingFrameworkIds": ["FOUNDER-PERSONALITY-SCORE", "CHARISMA-EQUALS-LEADERSHIP"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Review licensed book.", "Define privacy-safe behavioral evidence.", "Obtain fairness review.", "Backtest prospective leadership judgments."],
+    "empiricalQualifications": ["Self-awareness is difficult to measure and vulnerable to impression bias.", "Team composition is endogenous to stage and resources."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define prohibited inferences and consent rules for team evidence."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

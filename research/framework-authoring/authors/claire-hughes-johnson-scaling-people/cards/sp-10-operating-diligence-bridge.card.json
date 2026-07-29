@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-10",
+  "slug": "operating-diligence-bridge",
+  "name": "Operating Diligence Bridge for VC",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Translates stage-appropriate people and operating evidence into bounded VC execution-risk questions without creating a culture score or valuation premium.",
+    "productLabel": "Operating Diligence Bridge — product synthesis based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["Claire Hughes Johnson prescribing a VC score", "headcount growth proving success", "operating maturity establishing investability"]
+  },
+  "attribution": {
+    "display": "Product synthesis based on Claire Hughes Johnson's public Scaling People materials",
+    "scope": "product_synthesis",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["Stripe Press"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "For venture diligence, use stage-appropriate operating evidence to identify specific execution mechanisms and risks: alignment, ownership, cadence, hiring, onboarding, delegation, feedback, and performance. Connect each mechanism to business outcomes and counterevidence; do not collapse the result into culture quality, founder personality, headcount momentum, investment merit, or price.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-BOOK-2023",
+      "claimIds": ["SP-CLM-001", "SP-CLM-031", "SP-CLM-032"],
+      "locator": {"kind": "web_section", "value": "Official scope: company-building systems, hiring, team development, feedback, and performance mechanisms"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-LAUNCH-2023",
+      "claimIds": ["SP-CLM-002", "SP-CLM-003", "SP-CLM-031"],
+      "locator": {"kind": "web_section", "value": "Q&A on post-traction operating structures, consistency, trust, company planning, and management"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-FIRSTROUND-2023",
+      "claimIds": ["SP-CLM-013", "SP-CLM-031", "SP-CLM-032"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 149-157: healthy organization practices are in service of business results and leaders should track outcomes"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "SP-P2-HBS-2022",
+      "claimIds": ["SP-CLM-030", "SP-CLM-032"],
+      "locator": {"kind": "web_section", "value": "Lines 46-50: author's explicit statement that employee-base growth is not strictly a sign of success"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["venture_backed_startup"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["equity", "preferred_equity", "convertible"]
+  },
+  "requiredConditions": [
+    "The company is assessed against stage and complexity, not a fixed maturity ideal.",
+    "Business, customer, governance, integrity, and valuation evidence remain independent lenses.",
+    "Employment evidence is aggregated, authorized, and privacy-safe."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "stage_complexity_and_operating_risk",
+      "description": "Stage, traction, headcount, organization topology, critical dependencies, growth plan, and named execution risks.",
+      "necessity": "required",
+      "acceptableSources": ["company metrics", "organization chart", "operating plan", "risk register", "board materials"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "operating_mechanism_pack",
+      "description": "Evidence from SP-01 through SP-09 relevant to the identified risks, including counterevidence and unknowns.",
+      "necessity": "required",
+      "acceptableSources": ["framework outputs", "company artifacts", "authorized interviews", "decision records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "business_outcome_linkage",
+      "description": "Delivery, product, customer, quality, financial, compliance, and workforce outcomes plausibly connected to each operating mechanism.",
+      "necessity": "required",
+      "acceptableSources": ["product analytics", "customer data", "financial records", "incident data", "delivery records", "aggregated HR data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "forward_execution_plan",
+      "description": "Milestones, hiring and organization plan, capability gaps, owners, resources, and triggers for adding or removing process.",
+      "necessity": "required",
+      "acceptableSources": ["operating plan", "hiring plan", "budget", "board plan", "milestone map"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "independent_investment_lenses",
+      "description": "Separate product, market, customer, financial, governance, integrity, terms, valuation, and portfolio-policy outputs.",
+      "necessity": "required",
+      "acceptableSources": ["Evidence Pack", "independent framework outputs", "deterministic valuation services", "deal terms"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which specific operating risk could prevent the next value-inflection milestone?",
+    "Is the current mechanism proportionate and observable?",
+    "What business outcome supports or contradicts its effectiveness?",
+    "Which capability is missing, and is the plan funded and owned?",
+    "Would the company case change if headcount and culture language were hidden?",
+    "What remains unknown and which artifact would resolve it?"
+  ],
+  "positiveSignals": [
+    "The company names stage-specific execution risks and owners.",
+    "Operating mechanisms address observed bottlenecks and produce traceable outcomes.",
+    "Leaders remove or change process when evidence changes.",
+    "Capability gaps have funded, timed, accountable plans.",
+    "The investment report preserves independent product, market, financial, governance, and valuation conclusions."
+  ],
+  "redFlags": [
+    "Culture rhetoric or employee growth substitutes for execution evidence.",
+    "Operating maturity is converted directly into an investment recommendation or price premium.",
+    "The company installs process to signal sophistication to investors.",
+    "Workforce data are exposed, individualized, or used beyond authorized purpose.",
+    "Contradictory business outcomes are omitted from an operating narrative."
+  ],
+  "disconfirmingEvidence": [
+    "Minimal process is appropriate and effective at the current stage.",
+    "A sophisticated operating system cannot compensate for weak customer demand or excessive price.",
+    "Temporary founder centralization is tied to a credible transition trigger.",
+    "Headcount decline reflects deliberate efficiency rather than operating deterioration.",
+    "Operating weakness has a funded, time-bound remediation plan but remains a risk."
+  ],
+  "contraindications": [
+    "Do not create a culture, founder personality, or employee sentiment score.",
+    "Do not add a valuation premium or formal investment weight.",
+    "Do not let this lens override integrity, governance, terms, or portfolio-policy gates.",
+    "Do not use unauthorized individual employee data.",
+    "Do not attribute this VC translation to Claire Hughes Johnson."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Classify stage, complexity, milestone, and operating risks.",
+      "Run relevant SP cards independently and preserve disagreements.",
+      "Map mechanisms to observable outcomes and counterevidence.",
+      "Separate remediable capability gaps from structural execution risks.",
+      "Report bounded operating implications alongside independent investment and valuation lenses."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "operating_diligence_evidence_summary",
+      "requiredOutputs": ["stage_and_complexity", "critical_milestone_risks", "mechanism_outcome_map", "capability_gap_plan", "independent_lens_references"],
+      "prohibition": "The service must not calculate a culture score, employee score, investment recommendation, or valuation premium."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Investor pitch and culture page.", "medium": "Company artifacts and selected outcomes.", "high": "Longitudinal artifacts, verified outcomes, independent references, and counterevidence converge."},
+    "evidenceStrength": {"low": "Operating narrative.", "medium": "Specific mechanisms and plausible outcome links.", "high": "Repeated prospective evidence connects mechanisms, adaptations, and outcomes."},
+    "evidenceCoverage": {"low": "Headcount and values only.", "medium": "Several operating mechanisms and outcomes.", "high": "Stage, risks, all relevant mechanisms, outcomes, counterevidence, forward plan, and independent lenses covered."},
+    "applicabilityConfidence": {"low": "No material people or coordination risk.", "medium": "Operating execution affects some milestones.", "high": "The next value-inflection milestone depends materially on scaling people or coordination."},
+    "judgmentConfidence": {"low": "Culture impression.", "medium": "Bounded operating-risk conclusion.", "high": "Longitudinal evidence supports a clear but non-determinative operating conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-01", "SP-04", "SP-05", "SP-07", "VM-08", "FD-07"],
+  "conflictingFrameworkIds": ["CULTURE-SCORE", "HEADCOUNT-GROWTH-SCORE", "OPERATING-MATURITY-VALUATION-PREMIUM"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate component cards.", "Define privacy-safe Evidence Pack interface.", "Backtest prospective milestone-risk predictions.", "Complete Framework Fidelity and Decision Utility review."],
+    "empiricalQualifications": ["Operating quality is endogenous to stage, resources, and prior problems.", "Business outcomes have multiple causes and do not validate every mechanism."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The VC translation is product synthesis; public author materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define main-system evidence interfaces and prohibit downstream culture or employee scoring."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

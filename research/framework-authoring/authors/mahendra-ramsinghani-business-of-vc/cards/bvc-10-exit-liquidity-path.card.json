@@ -1,0 +1,288 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-10",
+  "slug": "exit-liquidity-path",
+  "name": "Exit and Liquidity Path",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Builds conditional acquisition, IPO, secondary, continuation, and no-liquidity paths with stakeholder, timing, ownership, and fund-life constraints.",
+    "productLabel": "Exit and Liquidity Lens — based on Ramsinghani's public exit-strategy chapter summary",
+    "notAClaimOf": [
+      "an exit date being predictable",
+      "IPO being the end of investor involvement",
+      "a strategic acquirer being available because one is imaginable"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Mahendra Ramsinghani's public third-edition exit-strategy chapter summary",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Treat liquidity as multiple conditional paths whose feasibility, value, timing, and stakeholder alignment change as the company matures. Identify preconditions for acquisitions, public markets, secondaries, continued private ownership, or failure; then connect each path to security rights, ownership, proceeds, fund life, and action milestones.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH33",
+      "claimIds": [
+        "BVC-CLM-018"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary: acquisitions, IPOs, private exchanges, preconditions, evolving value/timing, and stakeholder alignment"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-BOOK-2021",
+      "claimIds": [
+        "BVC-CLM-018",
+        "BVC-CLM-019"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Part Five, Chapters 33-36, pp. 407-449"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "BVC-P2-CH29",
+      "claimIds": [
+        "BVC-CLM-016",
+        "BVC-CLM-018"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Board oversight and team responsibilities relevant to exit preparation"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "series_a",
+      "series_b",
+      "growth",
+      "late_stage",
+      "portfolio_management",
+      "distressed"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Security rights, ownership, fund life, and stakeholder roles are known.",
+    "Each exit path has observable preconditions and blockers.",
+    "Exit values and dates are scenarios, not commitments.",
+    "Waterfall and fund-return calculations are deterministic."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "company_exit_readiness",
+      "description": "Scale, growth, margin, governance, audit, legal, management, customer, and strategic-asset readiness.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board materials",
+        "audited financials",
+        "legal review",
+        "market evidence",
+        "management assessment"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "path_specific_market",
+      "description": "Potential acquirer logic, public-market comparables, secondary demand, financing market, and transaction constraints.",
+      "necessity": "required",
+      "acceptableSources": [
+        "M&A precedents",
+        "banker input",
+        "public market data",
+        "secondary indications",
+        "regulatory source"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "stakeholder_and_fund_constraints",
+      "description": "Founder, board, employees, investors, preferences, drag rights, tax, fund term, and reserve context.",
+      "necessity": "required",
+      "acceptableSources": [
+        "governance documents",
+        "cap table",
+        "LPA",
+        "board minutes",
+        "legal and tax advice"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which liquidity paths are currently feasible?",
+    "What preconditions or blockers define each path?",
+    "Who would acquire the company and for what strategic asset?",
+    "What must be true for public-market readiness?",
+    "How do rights and ownership distribute proceeds?",
+    "Does path timing fit the fund's life and stakeholder objectives?"
+  ],
+  "positiveSignals": [
+    "Multiple paths have explicit preconditions and evidence.",
+    "Strategic acquirer logic is company-specific.",
+    "Governance, audit, and legal readiness match the path.",
+    "Stakeholder incentives and rights are mapped.",
+    "Fund-life and proceeds scenarios are consistent."
+  ],
+  "redFlags": [
+    "Exit is a fixed year and multiple in the base model.",
+    "Named acquirers have no strategic rationale or precedent.",
+    "IPO is treated as immediate full liquidity.",
+    "Preference or lockup effects are ignored.",
+    "Stakeholder disagreement is hidden."
+  ],
+  "disconfirmingEvidence": [
+    "Likely acquirers build internally or face antitrust limits.",
+    "Public-market conditions or governance readiness deteriorate.",
+    "Secondary indications are nonbinding or heavily discounted.",
+    "Fund term is shorter than plausible path timing.",
+    "Rights or stakeholder incentives block the proposed transaction."
+  ],
+  "contraindications": [
+    "Do not promise an exit.",
+    "Do not give legal, tax, or fiduciary advice.",
+    "Do not calculate proceeds without a waterfall.",
+    "Do not let imagined acquirers justify valuation."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Enumerate acquisition, IPO, secondary, continued-private, and downside paths.",
+      "Attach preconditions, blockers, evidence, timing ranges, and counterevidence.",
+      "Map stakeholder rights and alignment.",
+      "Run deterministic proceeds and fund-return scenarios.",
+      "Identify the next readiness action without presenting a path as guaranteed."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredPaths": [
+        "acquisition",
+        "ipo_or_public_listing",
+        "secondary",
+        "continued_private",
+        "downside_or_no_liquidity"
+      ],
+      "waterfallRequired": true,
+      "calculationOwner": "exit_and_waterfall_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Exit claims come only from founder aspiration.",
+      "medium": "Market precedents and partial readiness evidence exist.",
+      "high": "Primary company readiness, credible counterparties, and independent market evidence converge."
+    },
+    "evidenceStrength": {
+      "low": "Paths are imaginable but lack preconditions.",
+      "medium": "One or more paths are plausible with major conditions.",
+      "high": "Path-specific evidence, readiness, and stakeholder alignment are strong."
+    },
+    "evidenceCoverage": {
+      "low": "Only a target multiple and date are known.",
+      "medium": "Market and company readiness are covered but rights or fund timing is partial.",
+      "high": "Paths, readiness, market, rights, stakeholders, timing, waterfall, and fund life are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The company is too early for path-specific evidence.",
+      "medium": "Exit hypotheses are relevant but distant.",
+      "high": "The company and fund are at a stage where path planning is actionable."
+    },
+    "judgmentConfidence": {
+      "low": "Only generic exit questions are supportable.",
+      "medium": "Conditional paths and next actions are defensible.",
+      "high": "Readiness, timing, proceeds, and alignment can be scenario-modeled credibly."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-07",
+    "VD-06",
+    "BVC-03",
+    "BVC-09"
+  ],
+  "conflictingFrameworkIds": [
+    "FIXED-EXIT-DATE",
+    "IMAGINED-ACQUIRER-EQUALS-VALUE",
+    "IPO-EQUALS-IMMEDIATE-LIQUIDITY"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapters 33-36 review.",
+      "Validate path taxonomy with transaction experts.",
+      "Backtest timing and readiness indicators."
+    ],
+    "empiricalQualifications": [
+      "Exit markets change quickly.",
+      "Strategic buyer behavior is difficult to predict.",
+      "Transaction timing and value are path-dependent."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public exit-strategy doctrine is paraphrased; path schema and deterministic handoff are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete Chapters 34-36 review.",
+      "Define jurisdiction-specific readiness and rights adapters."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

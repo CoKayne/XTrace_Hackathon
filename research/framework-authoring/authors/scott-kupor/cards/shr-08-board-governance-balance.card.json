@@ -1,0 +1,283 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-08",
+  "slug": "board-governance-balance",
+  "name": "Board Role, Rights, and Conflict Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Makes board authority, information, stakeholder incentives, and independent judgment visible before a difficult decision.",
+    "productLabel": "Board Governance Lens — based on Scott Kupor public materials",
+    "notAClaimOf": [
+      "an independent title proving independent judgment",
+      "the board managing daily operations",
+      "legal or fiduciary advice"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor's public discussion of board balance and difficult-company scenarios",
+    "scope": "product_synthesis",
+    "people": [
+      "Scott Kupor",
+      "Frank Chen"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "A startup board combines governance, strategic support, and stakeholders whose economic interests can diverge. Map appointment rights, voting, vetoes, fiduciary duties, information, expertise, and conflicts. Independent directors can add balance and missing expertise, but independence must be tested in behavior and relationships, not assumed from the seat label.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference",
+    "contractual_convention",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-A16Z-RAISE-2019",
+      "claimIds": [
+        "SHR-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official transcript lines 249-258: board balance, common/preferred representation, independents, and IPO evolution"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SHR-P1-A16Z-BOARD-2019",
+      "claimIds": [
+        "SHR-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official episode scope: board value, transparency, conflicting interests, down round, acquisition, and IPO"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SHR-E1-NVCA-MODEL-2026",
+      "claimIds": [
+        "SHR-EQ-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Current voting, investor-rights, and model-document index"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "initial_board",
+      "scaling",
+      "down_round",
+      "recapitalization",
+      "acquisition",
+      "pre_ipo"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "common_equity",
+      "preferred_equity"
+    ]
+  },
+  "requiredConditions": [
+    "The company has or proposes a board with formal authority.",
+    "Governing documents and current board composition are available.",
+    "The analysis is reviewed for applicable law and fiduciary duties."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "governance_documents",
+      "description": "Charter, bylaws, voting agreement, protective provisions, board consents, committees, and delegations.",
+      "necessity": "required",
+      "acceptableSources": [
+        "executed governance documents",
+        "board records",
+        "counsel review"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "director_map",
+      "description": "Appointment source, tenure, relationships, expertise, economic exposure, conflicts, and removal rights for each director.",
+      "necessity": "required",
+      "acceptableSources": [
+        "director questionnaires",
+        "cap table",
+        "conflict disclosures",
+        "board records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "decision_information",
+      "description": "Materials, alternatives, valuations, stakeholder impacts, and uncertainties available before the board decision.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board package",
+        "financial model",
+        "legal advice",
+        "minutes"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "board_effectiveness",
+      "description": "Evidence of preparation, challenge, information requests, follow-through, and role boundaries.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "minutes",
+        "action log",
+        "board evaluation"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who appoints, removes, votes, and vetoes?",
+    "Which economic interests diverge in this exact scenario?",
+    "What information and alternatives did each director receive before deciding?",
+    "Does an independent director have actual independence and relevant capability?",
+    "Is the board governing and advising, or displacing management?",
+    "Which legal or fiduciary question requires counsel?"
+  ],
+  "positiveSignals": [
+    "Authority and reserved matters match executed documents.",
+    "Conflicts and stakeholder effects are disclosed before deliberation.",
+    "Board materials include alternatives and counterevidence.",
+    "Independent judgment is visible in questions and decisions.",
+    "Management retains clear operating accountability."
+  ],
+  "redFlags": [
+    "Seat labels substitute for rights and relationship analysis.",
+    "Material conflicts are undisclosed or discussed after the decision.",
+    "The board receives advocacy rather than alternatives.",
+    "Investor directors optimize a class payout without company-level analysis.",
+    "The board micromanages daily operations while strategic risks go unexamined."
+  ],
+  "disconfirmingEvidence": [
+    "Documents allocate different authority than the team believes.",
+    "An apparently independent director has undisclosed dependencies.",
+    "Minutes omit material alternatives, conflicts, or objections.",
+    "A transaction creates sharply different common and preferred outcomes.",
+    "Counsel identifies a duty or process problem."
+  ],
+  "contraindications": [
+    "Do not issue fiduciary, legal, or governance conclusions without counsel.",
+    "Do not infer independence from title alone.",
+    "Do not collapse board, management, common, and preferred interests into one voice."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Resolve formal authority from executed documents.",
+      "Map director appointment, economics, relationships, and conflicts.",
+      "Reconstruct the pre-decision information set and alternatives.",
+      "Preserve individual objections and stakeholder effects.",
+      "Return governance questions and legal-review needs, not legal conclusions."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Board practice is known through summaries.",
+      "medium": "Official transcript/topic pages and documents are available.",
+      "high": "First-party timestamps, complete governance documents, and counsel review converge."
+    },
+    "evidenceStrength": {
+      "low": "Informal role descriptions only.",
+      "medium": "Documents and composition are known but decision process is incomplete.",
+      "high": "Authority, conflicts, information, alternatives, and minutes are complete."
+    },
+    "evidenceCoverage": {
+      "low": "Authority, conflict, or decision materials are missing.",
+      "medium": "Current governance is covered but difficult scenarios are not.",
+      "high": "Ordinary and difficult-scenario governance evidence is covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No formal board or board-level decision exists.",
+      "medium": "The board exists but rights are simple.",
+      "high": "Multiple classes, conflicts, or a material transaction make governance central."
+    },
+    "judgmentConfidence": {
+      "low": "The conclusion relies on seat labels.",
+      "medium": "Formal rights are clear with unresolved behavioral independence.",
+      "high": "Documents, process, behavior, and legal review converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VENTURE-DEALS-GOVERNANCE",
+    "WASS-CONTROL",
+    "STARTUP-BOARDS"
+  ],
+  "conflictingFrameworkIds": [
+    "INDEPENDENT-TITLE-EQUALS-INDEPENDENCE",
+    "BOARD-AS-MANAGEMENT"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete first-party board-video timestamps.",
+      "Map current jurisdiction-specific governance documents.",
+      "Validate process indicators without predicting legal outcomes."
+    ],
+    "empiricalQualifications": [
+      "Formal independence and behavioral independence can differ.",
+      "Board value is context- and capability-dependent.",
+      "Applicable duties and standards vary by jurisdiction and scenario."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public materials are paraphrased; confidential board records require separate handling."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete first-party timestamp review.",
+      "Complete jurisdiction and counsel workflow review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}
+

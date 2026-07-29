@@ -1,0 +1,312 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-09",
+  "slug": "event-revision-map",
+  "name": "Event-to-Expectation Revision Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Converts a sourced market or company event into a company-specific revision hypothesis only after exposure, causal driver, direction, lag, magnitude, and counterevidence are established.",
+    "productLabel": "Event Revision Lens — based on Mauboussin and Rappaport's public event-analysis architecture",
+    "notAClaimOf": [
+      "a sector event automatically benefiting every company in that sector",
+      "news sentiment being a valuation driver",
+      "a medium-confidence alert resolving the original investment concern"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Michael J. Mauboussin and Alfred Rappaport's public event-analysis architecture",
+    "scope": "product_synthesis",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport"
+    ],
+    "organizations": [
+      "Expectations Investing"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Classify a new event, verify its date and sources, identify a historical company with relevant exposure, and map the event through an operating factor to a value trigger. Estimate direction, lag, and bounded magnitude only when evidence supports them. Otherwise report the event and company connection as a research hypothesis rather than a financial conclusion.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-P1-CHAPTER-SUMMARIES",
+      "claimIds": [
+        "EI-CLM-017"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 12: macroeconomic shocks, management changes, regulation, litigation, stock splits, and issuance as event sources"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-CBS-ABSTRACT",
+      "claimIds": [
+        "EI-CLM-004",
+        "EI-CLM-017"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Expectations infrastructure linking economic forces to sales, costs, and investment"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "EI-P1-ABOUT-FAQ",
+      "claimIds": [
+        "EI-CLM-004",
+        "EI-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Value triggers, revision factors, and focus on the key trigger"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_with_identifiable_event_exposure"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "The event has at least one primary or independently corroborated source with publication and event dates.",
+    "The historical company identity and prior relationship are resolved.",
+    "A company-specific exposure connects the event to an EI-03 factor and value trigger.",
+    "Direction, lag, magnitude range, confidence, and counterevidence are separate fields.",
+    "Only medium-confidence or higher matches become proactive alerts under current product policy."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "verified_event",
+      "description": "Deduplicated event with title, event date, publication date, source URLs, event class, geography, and affected entities.",
+      "necessity": "required",
+      "acceptableSources": [
+        "regulator",
+        "company filing",
+        "company announcement",
+        "funding announcement",
+        "reputable news source",
+        "VC official announcement"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "historical_company_context",
+      "description": "Resolved company, prior interaction, status, original interest, concern, and relevant sector or technology.",
+      "necessity": "required",
+      "acceptableSources": [
+        "XTrace memory",
+        "verified uploaded document",
+        "company registry",
+        "user confirmation"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "company_exposure",
+      "description": "Evidence that the company is causally exposed through customers, suppliers, regulation, geography, technology, capital, or competition.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company document",
+        "contract",
+        "product description",
+        "customer evidence",
+        "supply-chain evidence",
+        "regulatory scope"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "original_concern_state",
+      "description": "Previous decision reason and the milestone or condition that would change it.",
+      "necessity": "required",
+      "acceptableSources": [
+        "meeting note",
+        "investment memo",
+        "XTrace decision memory",
+        "user-confirmed note"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What happened, when did it happen, and which sources independently support it?",
+    "Which historical company is actually exposed and through what mechanism?",
+    "Which sales, margin, investment, duration, or risk driver changes?",
+    "Is the effect positive, negative, mixed, or indeterminate?",
+    "What lag, magnitude range, and capacity constraint apply?",
+    "Does the event address the original concern or merely make the sector more visible?",
+    "What should the investor verify or do next?"
+  ],
+  "positiveSignals": [
+    "Primary evidence verifies the event and date.",
+    "Company exposure is specific and source-linked.",
+    "The causal path reaches a material driver with a plausible lag.",
+    "The event directly addresses a recorded milestone or prior concern.",
+    "Independent company evidence corroborates market-level change."
+  ],
+  "redFlags": [
+    "Keyword overlap is the only company connection.",
+    "News sentiment is used as direction or magnitude.",
+    "A competitor's funding is assumed to benefit the company.",
+    "The event is old, duplicated, or based on circular reporting.",
+    "The alert says the original concern is resolved without company evidence."
+  ],
+  "disconfirmingEvidence": [
+    "The company serves a different geography, customer, technology, or regulatory scope.",
+    "Competitors capture the benefit first or make the event harmful.",
+    "The company lacks capacity, capital, certification, or distribution.",
+    "The event is temporary, reversed, delayed, or already anticipated.",
+    "Original concern related to team, governance, or economics that the event does not change."
+  ],
+  "contraindications": [
+    "Do not recommend a company from sector similarity alone.",
+    "Do not infer company performance when only market-level evidence exists.",
+    "Do not suppress negative or mixed effects.",
+    "Do not generate an Invest Candidate from an event alert."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Verify, date, classify, and deduplicate the event.",
+      "Retrieve historical companies without filtering by prior status: passed, watching, evaluating, or invested.",
+      "For each candidate, require a company exposure and EI-03 causal path.",
+      "Score source reliability, exposure strength, materiality, and counterevidence separately.",
+      "Alert only medium-confidence or higher matches; include weaker events in the market summary.",
+      "Output what happened, expected impact, historical context, counterevidence, confidence, sources, and next action."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "alertGates": [
+        "event_verified",
+        "company_identity_resolved",
+        "company_exposure_supported",
+        "driver_path_complete",
+        "confidence_at_least_medium"
+      ],
+      "confidenceDimensions": [
+        "source_reliability",
+        "exposure_strength",
+        "causal_path_strength",
+        "materiality",
+        "counterevidence_severity",
+        "original_concern_relevance"
+      ],
+      "calculationOwner": "opportunity_matching_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "A single secondary or unattributed source supports the event.",
+      "medium": "A credible source plus one corroborator support the event.",
+      "high": "Primary evidence and independent corroboration agree on event and date."
+    },
+    "evidenceStrength": {
+      "low": "Only sector or keyword similarity exists.",
+      "medium": "Company exposure and direction are supported but magnitude or concern resolution is uncertain.",
+      "high": "Event, exposure, causal path, materiality, and company update converge."
+    },
+    "evidenceCoverage": {
+      "low": "Event is known but company context is absent.",
+      "medium": "Event, company, and exposure are covered but lag, magnitude, or counterevidence is partial.",
+      "high": "Event, identity, history, exposure, driver, lag, magnitude, concern, and counterevidence are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The company has no demonstrated exposure.",
+      "medium": "The event applies but transmission depends on unresolved conditions.",
+      "high": "The event directly affects a verified company driver."
+    },
+    "judgmentConfidence": {
+      "low": "Market-summary mention only.",
+      "medium": "A proactive Watch or re-evaluation alert is defensible.",
+      "high": "A bounded revision hypothesis and specific diligence action are well supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "EI-03",
+    "EI-05",
+    "VM-07",
+    "SHR-09"
+  ],
+  "conflictingFrameworkIds": [
+    "KEYWORD-MATCH-EQUALS-OPPORTUNITY",
+    "SECTOR-NEWS-EQUALS-COMPANY-RESULT",
+    "EVENT-EQUALS-CONCERN-RESOLVED"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Backtest event matching precision, recall, and alert fatigue.",
+      "Validate confidence gates with VC reviewers.",
+      "Calibrate event classes, source hierarchy, and causal mapping."
+    ],
+    "empiricalQualifications": [
+      "Public news often arrives after sophisticated investors have reacted.",
+      "Market-level signals may not translate to company-level economics.",
+      "Sparse private-company updates limit verification of concern resolution."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Event categories are based on public companion summaries; the alert workflow and confidence gates are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete lawful Chapter 12 review.",
+      "Define confidence scoring without opaque LLM self-rating.",
+      "Validate source and event taxonomies."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft aligned with the product's event-to-deal workflow."
+    }
+  ]
+}

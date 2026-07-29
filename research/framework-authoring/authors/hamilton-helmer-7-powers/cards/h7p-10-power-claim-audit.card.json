@@ -1,0 +1,301 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-10",
+  "slug": "power-claim-audit",
+  "name": "Power Claim Audit",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Audits boundaries, evidence reuse, overlap, price separation, and falsifiability across all seven independent Power lenses.",
+    "productLabel": "Power Claim Audit — product synthesis constrained by Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "an eighth Power",
+      "a Helmer-authored scoring formula",
+      "the number of supported mechanisms determining investment quality"
+    ]
+  },
+  "attribution": {
+    "display": "Product audit derived from Hamilton Helmer's public taxonomy and explicit doctrine boundaries",
+    "scope": "product_synthesis",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "The seven Power mechanisms are independent lenses, but a company claim may reuse the same underlying evidence, apply only within a narrow market, describe only a future path, or be fully reflected in price. This audit preserves each lens judgment while identifying causal overlap, contradictory explanations, unsupported boundaries, hindsight leakage, and valuation dependencies. It does not average or count Power labels.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-011",
+        "H7P-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Interview lines 111-123 and 261-270: multiple mechanisms, firm-specific complexity, and market-local caveats"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P2-STRATEGY-CAPITAL",
+      "claimIds": [
+        "H7P-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official firm page lines 3-25 and 78-80: competitive outcome hypotheses, future earning power, and evidence-led discussion"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "claimIds": [
+        "H7P-CLM-013"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Official audio 00:01:31-00:05:05 and 00:46:40-00:50:42: durable cash-flow concept and time lag"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-EQ-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public cases show overlapping scale, network, switching, and process explanations; de-duplication is an explicit product inference"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Every applicable Power lens has executed independently.",
+    "Every conclusion includes evidence, counterevidence, unknowns, and a status.",
+    "Market and competitor boundaries are normalized across lenses.",
+    "Valuation and terms outputs are available separately or explicitly missing."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "independent_lens_outputs",
+      "description": "Complete outputs from H7P-01 through H7P-09 with source-linked company evidence and status.",
+      "necessity": "required",
+      "acceptableSources": [
+        "framework execution result",
+        "evidence pack",
+        "decision trace"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "evidence_lineage_map",
+      "description": "Mapping from each displayed fact or metric to source, known-at date, transformation, and every lens using it.",
+      "necessity": "required",
+      "acceptableSources": [
+        "evidence lineage",
+        "source catalog",
+        "calculation trace"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "mechanism_overlap_map",
+      "description": "Causal graph showing whether scale, network, switching, brand, resource, process, and counter-positioning claims are distinct or alternate explanations.",
+      "necessity": "required",
+      "acceptableSources": [
+        "causal graph",
+        "analyst review",
+        "framework comparison"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "valuation_and_terms",
+      "description": "Deterministic valuation scenarios, entry price, security terms, ownership, dilution, and return distribution.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "valuation service",
+        "term sheet",
+        "cap table",
+        "waterfall service"
+      ],
+      "missingEffect": "no_effect"
+    }
+  ],
+  "decisionQuestions": [
+    "Which lens conclusions rely on the same underlying evidence?",
+    "Are multiple labels alternate descriptions of one causal mechanism?",
+    "Do all lenses use the same customer, geography, market, and competitor boundaries?",
+    "Which claims describe current Power versus only a path?",
+    "Which evidence was unavailable at the simulated decision date?",
+    "How do price and terms change the investment conclusion even if Power is supported?"
+  ],
+  "positiveSignals": [
+    "All lens results remain visible and disagreements are preserved.",
+    "Duplicate evidence and alternate causal explanations are explicitly marked.",
+    "Market boundaries and competitor classes are consistent.",
+    "Every claim is falsifiable and uses decision-date evidence.",
+    "Valuation and terms are handled by deterministic services."
+  ],
+  "redFlags": [
+    "A total moat score averages the lenses.",
+    "The same retention or margin evidence is counted several times.",
+    "Current success is used to infer past Power.",
+    "A mechanism appears only after widening or narrowing the market opportunistically.",
+    "Supported Power is converted directly into Invest Candidate."
+  ],
+  "disconfirmingEvidence": [
+    "Independent lens conclusions collapse after evidence de-duplication.",
+    "A simpler explanation such as current product superiority explains all metrics.",
+    "Decision-date evidence did not support the claimed mechanism.",
+    "A broader relevant market removes the Barrier.",
+    "Expected durability is fully or excessively reflected in price and terms."
+  ],
+  "contraindications": [
+    "Do not average, vote, or count Power labels.",
+    "Do not hide lens disagreement in a single narrative.",
+    "Do not permit hindsight evidence in simulated decisions.",
+    "Do not replace deterministic valuation or Fund Policy."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Collect independent lens outputs without changing their conclusions.",
+      "Normalize boundaries and map every evidence item to all uses.",
+      "Mark duplicates, alternate explanations, conflicts, and timing leakage.",
+      "Separate present Power, path to Power, and unsupported claims.",
+      "Hand the audited mechanism set to valuation and deterministic Decision Policy without creating a composite Power score."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Lens outputs lack source lineage.",
+      "medium": "Most evidence and timing are traceable.",
+      "high": "All facts, transformations, boundaries, and decision dates are independently auditable."
+    },
+    "evidenceStrength": {
+      "low": "Claims depend on duplicated or retrospective metrics.",
+      "medium": "Mechanisms are plausible after partial de-duplication.",
+      "high": "Distinct mechanisms survive de-duplication, counterfactuals, and decision-date controls."
+    },
+    "evidenceCoverage": {
+      "low": "Applicable lens outputs or lineage are missing.",
+      "medium": "Lens outputs are complete but overlap, boundaries, or valuation is incomplete.",
+      "high": "Lenses, lineage, overlap, boundaries, timing, valuation, and terms are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Fewer than two mechanism claims or no aggregation risk exists.",
+      "medium": "Several claims share some evidence.",
+      "high": "Multiple overlapping Power claims materially affect the investment thesis."
+    },
+    "judgmentConfidence": {
+      "low": "A composite label cannot be audited.",
+      "medium": "Distinct and duplicate mechanisms are mostly separated.",
+      "high": "Every mechanism, disagreement, duplicate, boundary, and valuation dependency is explicit."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "H7P-02",
+    "H7P-03",
+    "H7P-04",
+    "H7P-05",
+    "H7P-06",
+    "H7P-07",
+    "H7P-08",
+    "H7P-09",
+    "VALUATION-SERVICE",
+    "DETERMINISTIC-DECISION-POLICY"
+  ],
+  "conflictingFrameworkIds": [
+    "POWER-COUNT-SCORE",
+    "MOAT-AVERAGE-SCORE",
+    "HINDSIGHT-POWER-ATTRIBUTION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Validate cross-lens causal de-duplication with historical decision traces.",
+      "Complete licensed definitions for every component lens.",
+      "Demonstrate reproducible reviewer agreement on overlap and boundaries."
+    ],
+    "empiricalQualifications": [
+      "Overlap assessment is a product inference, not a Helmer scoring formula.",
+      "Historical success can contaminate Power classification.",
+      "Power evidence does not determine whether an investment price offers adequate return."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "This is a product audit using neutral public doctrine; it is not attributed as an author-created eighth framework."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define a main-system causal overlap representation.",
+      "Review boundary normalization and decision-date leakage tests."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial non-scoring cross-lens Power claim audit."
+    }
+  ]
+}

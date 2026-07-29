@@ -1,0 +1,302 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-03",
+  "slug": "liquidation-participation-conversion",
+  "name": "Liquidation Preference, Participation, and Conversion",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Parses preference, participation, caps, dividends, conversion, seniority, and exit consideration into a state-specific waterfall.",
+    "productLabel": "Liquidation and Conversion Lens — based on Feld and Mendelson's public Venture Deals materials",
+    "notAClaimOf": [
+      "1x describing the complete payoff",
+      "ownership percentage determining every exit allocation",
+      "preferred rights guaranteeing return"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public liquidation, participation, and conversion materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "At each exit value and form of consideration, determine the applicable preference amount and seniority, participation and cap, dividends, and voluntary or automatic conversion rights. Compute proceeds class by class and round by round; do not approximate the result from headline ownership or a single multiple.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-LIQUIDATION-2004",
+      "claimIds": [
+        "VD-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Preference as downside protection, preference-versus-as-converted choice, exit consideration, and typical IPO conversion"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P1-PARTICIPATION-2004",
+      "claimIds": [
+        "VD-CLM-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Participation, caps, medium-exit effects, and interactions with later rounds"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P1-CONVERSION-2005",
+      "claimIds": [
+        "VD-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Voluntary conversion, conversion rate, and automatic conversion in qualified IPO contexts"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-E1-COOLEY-TERMS-2024",
+      "claimIds": [
+        "VD-CLM-006",
+        "VD-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Q3 2024 sample prevalence of 1x and nonparticipating structures"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_preferred_equity_financings"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "united_states",
+      "other_with_counsel_mapping"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "common_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "All preferred rounds, common shares, convertibles, and senior claims are included.",
+    "Preference multiple, base, dividends, participation, cap, seniority, conversion, and event definitions are exact.",
+    "Cash, public-stock, private-stock, escrow, earn-out, and management carve-out consideration are separately modeled.",
+    "The calculation uses executed documents and counsel-confirmed interpretation."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "liquidation_terms",
+      "description": "For every class: preference multiple/base, dividends, seniority, participation, cap, conversion ratio, and automatic-conversion conditions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "charter",
+        "stock purchase agreement",
+        "side letter",
+        "counsel summary"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "capital_stack",
+      "description": "Fully diluted holder and claim schedule, including debt and every financing round.",
+      "necessity": "required",
+      "acceptableSources": [
+        "verified cap table",
+        "debt schedule",
+        "instrument register"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "exit_states",
+      "description": "Bear/Base/Bull exit values, dates, consideration forms, escrows, earn-outs, fees, and carve-outs.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation scenario",
+        "transaction proposal",
+        "Fund Policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What amount is senior to each preferred class?",
+    "Which classes participate, and to what cap?",
+    "When does each class prefer conversion?",
+    "How do dividends, escrow, earn-outs, debt, and carve-outs change proceeds?",
+    "What happens in low, middle, and high exit states?",
+    "Where do founder, employee, investor, and fund incentives diverge?"
+  ],
+  "positiveSignals": [
+    "Every round and claim reconciles to legal documents.",
+    "Preference, participation, cap, and conversion are separately represented.",
+    "Crossover points are calculated for all classes.",
+    "All consideration forms and senior claims are included.",
+    "Stakeholder proceeds are shown across the full exit range."
+  ],
+  "redFlags": [
+    "The model stores only a 1x label.",
+    "Fully diluted ownership is multiplied by exit value.",
+    "Participating, capped, seniority, or dividend terms are omitted.",
+    "Later rounds are analyzed independently.",
+    "Private-stock consideration is accepted at face value without valuation."
+  ],
+  "disconfirmingEvidence": [
+    "A side letter changes one holder's preference or conversion.",
+    "Debt or transaction costs absorb proceeds before equity.",
+    "A management carve-out changes allocations.",
+    "The actual exit fails a qualified-event definition.",
+    "Crossover and participation interactions differ from the summary."
+  ],
+  "contraindications": [
+    "Do not calculate with a missing material round or claim.",
+    "Do not infer terms from market convention.",
+    "Do not treat preference as guaranteed return.",
+    "Do not let the LLM perform waterfall math."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Parse every class and claim from executed documents.",
+      "Build the priority, participation, cap, conversion, and consideration rules.",
+      "Run a deterministic waterfall over the exit-value range.",
+      "Show crossover points and stakeholder proceeds.",
+      "Route interpretation conflicts to counsel and final economics to VCFI/Fund Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredComponents": [
+        "senior_claim_priority",
+        "preference_base_and_multiple",
+        "dividend_treatment",
+        "participation_and_cap",
+        "conversion_choice",
+        "consideration_valuation",
+        "fees_escrow_earnout_carveout"
+      ],
+      "outputs": [
+        "payoff_by_holder_and_state",
+        "conversion_crossover_points",
+        "effective_ownership_by_state"
+      ],
+      "calculationOwner": "security_waterfall_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only term-sheet shorthand or press-release valuation exists.",
+      "medium": "Core charter and cap table exist but one claim or consideration term is incomplete.",
+      "high": "Executed documents, claims, cap table, and counsel interpretation reconcile."
+    },
+    "evidenceStrength": {
+      "low": "Only ownership-based approximation is possible.",
+      "medium": "A multi-class waterfall is possible with one bounded term.",
+      "high": "All payoffs and crossover points are deterministic."
+    },
+    "evidenceCoverage": {
+      "low": "Only investment and preference multiple are known.",
+      "medium": "Core preferred terms are covered but debt, carve-outs, or consideration are partial.",
+      "high": "All classes, claims, rights, consideration, costs, and exit states are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The instrument or jurisdiction does not map to the model.",
+      "medium": "Preferred structure fits with custom terms.",
+      "high": "All state-contingent claims are express and supported."
+    },
+    "judgmentConfidence": {
+      "low": "Only missing-term questions are defensible.",
+      "medium": "A bounded payoff range is usable.",
+      "high": "Stakeholder economics are reproducible and Fund-Policy ready."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-08",
+    "VCFI-09",
+    "SHR-07",
+    "EI-02"
+  ],
+  "conflictingFrameworkIds": [
+    "ONE-X-COMPLETE-PAYOFF",
+    "OWNERSHIP-EQUALS-EXIT-PROCEEDS",
+    "PREFERENCE-EQUALS-GUARANTEED-RETURN"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "US venture-counsel review.",
+      "Golden-case tests for multi-round preferences and consideration types.",
+      "Reconcile with VCFI waterfall service."
+    ],
+    "empiricalQualifications": [
+      "Market prevalence changes by period and sample.",
+      "Exit consideration and side arrangements can materially change economics.",
+      "Multi-round interactions can disadvantage an earlier investor despite a protective term."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author doctrine is neutrally paraphrased; exact payoff depends on executed documents."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete fourth-edition and NVCA clause mapping.",
+      "Define private-stock and earn-out valuation handling."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

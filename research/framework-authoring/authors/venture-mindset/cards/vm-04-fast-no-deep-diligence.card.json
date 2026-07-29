@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-04",
+  "slug": "fast-no-deep-diligence",
+  "name": "Say No 100 Times",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Uses explicit fast-reject rules to protect attention while demanding deep, adversarial diligence for surviving candidates.",
+    "productLabel": "Fast No / Deep Diligence Lens — based on The Venture Mindset public materials",
+    "notAClaimOf": [
+      "a fixed 100-to-1 rejection quota",
+      "a universal 118-hour diligence minimum",
+      "author endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Strebulaev and Dang public keynote, article, and Stanford interview materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [
+      "TIME",
+      "Stanford Graduate School of Business"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "A large pipeline requires fast, explainable screening so scarce attention can be concentrated on a few serious candidates. Surviving candidates receive deeper diligence and a decision memo that records risks, assumptions, scenarios, unknowns, and reasons—not advocacy. Numerical slogans such as 100 rejections or 118 hours are descriptive, not hard requirements.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-004"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF page 14"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VM-P1-TIME-2024",
+      "claimIds": [
+        "VM-CLM-004",
+        "VM-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "118-hour diligence, fast rejection, and investment memo discussion"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VM-P1-STANFORD-FAST-NO",
+      "claimIds": [
+        "VM-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Fast rejection and why-not-invest framing"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "initial_screening",
+      "due_diligence",
+      "investment_committee"
+    ],
+    "businessModels": [
+      "venture_investing",
+      "corporate_innovation"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible",
+      "internal_innovation_budget"
+    ]
+  },
+  "requiredConditions": [
+    "The pipeline materially exceeds deep-diligence capacity.",
+    "Fast-reject reasons can be mapped to mandate, evidence, or explicit policy.",
+    "Surviving candidates have a defined critical-evidence profile."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "screening_policy",
+      "description": "Versioned mandate, hard exclusions, evidence requests, and reversible screening rules.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Fund Policy",
+        "screening rubric",
+        "Decision Policy"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "rejection_trace",
+      "description": "Exact rejected rule, supporting evidence, missing evidence, and re-open condition.",
+      "necessity": "required",
+      "acceptableSources": [
+        "decision record",
+        "CRM",
+        "investment memo"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "diligence_plan",
+      "description": "Highest-risk hypotheses, required evidence, owner, cost, and decision impact.",
+      "necessity": "required",
+      "acceptableSources": [
+        "diligence plan",
+        "Critical Evidence Profile",
+        "IC memo"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "decision_memo",
+      "description": "Source-grounded risks, assumptions, scenarios, unknowns, counterarguments, and decision.",
+      "necessity": "required",
+      "acceptableSources": [
+        "versioned investment memo"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which rule allows a confident fast no?",
+    "Is the apparent red flag contrary evidence or merely missing evidence?",
+    "What re-open condition should be stored?",
+    "Which few hypotheses deserve deep diligence?",
+    "Does the memo expose risk and unknowns or sell the deal?",
+    "What did the team believe at decision time, before later outcomes?"
+  ],
+  "positiveSignals": [
+    "Fast-reject reasons are explicit, source-backed, and reversible when conditions change.",
+    "Missing data create an evidence request rather than a fabricated negative fact.",
+    "Diligence targets the most decision-sensitive unknowns.",
+    "The memo preserves bear, base, bull, counterargument, and blocking evidence.",
+    "Anti-portfolio reviews test both false positives and false negatives."
+  ],
+  "redFlags": [
+    "A fixed rejection quota replaces judgment.",
+    "Team prestige or sector dislike is an unstated reject rule.",
+    "The memo is written as a founder pitch.",
+    "Hours spent are used as diligence quality.",
+    "Rejected deals lack a reason or re-open trigger.",
+    "FOMO overrides missing critical evidence."
+  ],
+  "disconfirmingEvidence": [
+    "The same rule repeatedly rejects later winners.",
+    "Deep diligence adds volume but does not reduce material uncertainty.",
+    "Reviewers cannot reconstruct the decision from the memo.",
+    "Rejection reasons change after outcomes are known.",
+    "Pipeline growth reduces attention below safe levels."
+  ],
+  "contraindications": [
+    "Do not hard-code 100 rejections or 118 hours.",
+    "Do not convert absence of evidence into adverse evidence.",
+    "Do not let fast screening bypass legal, integrity, or safety gates.",
+    "Do not overwrite original memos after outcomes."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Apply versioned screening rules and preserve fired-rule trace.",
+      "Classify each issue as disconfirming evidence, missing evidence, or mandate mismatch.",
+      "Build a risk-ranked diligence plan for survivors.",
+      "Generate a witness-style memo with sources and counterarguments.",
+      "Store re-open conditions and later postmortems separately."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "hardRejectsOwnedBy": "Versioned Decision Policy"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only secondary slogans are available.",
+      "medium": "Public author articles and keynote support the process.",
+      "high": "Hashed public sources and licensed chapter locators converge."
+    },
+    "evidenceStrength": {
+      "low": "Unlogged partner intuition.",
+      "medium": "Screening and memo exist but postmortem or counterevidence is weak.",
+      "high": "Rule trace, critical evidence, memo, and outcome review are complete."
+    },
+    "evidenceCoverage": {
+      "low": "Reject reason or diligence plan is missing.",
+      "medium": "Process is recorded but re-open or anti-portfolio review is incomplete.",
+      "high": "All stages and decision-time evidence are preserved."
+    },
+    "applicabilityConfidence": {
+      "low": "Pipeline volume does not exceed diligence capacity.",
+      "medium": "Attention allocation matters but policy is immature.",
+      "high": "Large pipeline and scarce partner time make staged diligence essential."
+    },
+    "judgmentConfidence": {
+      "low": "Only throughput can be assessed.",
+      "medium": "Process discipline exists but error rates are unknown.",
+      "high": "Traceability, uncertainty reduction, and postmortem calibration converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DECISION-JOURNAL",
+    "CRITICAL-EVIDENCE-PROFILE",
+    "ANTI-PORTFOLIO"
+  ],
+  "conflictingFrameworkIds": [
+    "FOMO-FIRST",
+    "PITCH-ADVOCACY-MEMO"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Measure false-reject and false-advance rates over time.",
+      "Validate that critical-evidence prioritization improves decision quality.",
+      "Preserve original decision-time records against hindsight editing."
+    ],
+    "empiricalQualifications": [
+      "118 hours is descriptive, not prescriptive.",
+      "Fast rejection may amplify historical sourcing and pattern biases.",
+      "Diligence effort is endogenous to initial conviction."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No TIME article or book passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash the public article and keynote revisions.",
+      "Align with deterministic Decision Policy and Critical Evidence Profile."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft converts slogans into auditable staged diligence."
+    }
+  ]
+}
+

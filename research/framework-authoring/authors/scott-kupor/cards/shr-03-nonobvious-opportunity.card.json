@@ -1,0 +1,253 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-03",
+  "slug": "nonobvious-opportunity",
+  "name": "Nonobvious Opportunity with a Falsifier",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether an unpopular-looking opportunity contains a verifiable advantage rather than rewarding contrarian appearance.",
+    "productLabel": "Nonobvious Opportunity Lens — based on an authorized Scott Kupor book excerpt",
+    "notAClaimOf": [
+      "contrarianism as evidence",
+      "unpopular ideas being inherently superior",
+      "a substitute for market, execution, or valuation work"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor's authorized discussion of good ideas that initially look bad",
+    "scope": "person_direct",
+    "people": [
+      "Scott Kupor"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Obvious attractive ideas invite competition and may surrender excess returns. A venture investor should examine ideas that initially appear unattractive but have a source-backed hidden mechanism. The same process must actively search for attractive-looking ideas with concealed flaws. Unpopularity is a search filter, not positive evidence.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-WIRED-2019",
+      "claimIds": [
+        "SHR-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Authorized excerpt discussion of good/bad ideas, apparent quality, competition, and economic rents"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "businessModels": [
+      "technology_startup",
+      "new_market",
+      "business_model_innovation"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The apparent negative consensus can be stated precisely.",
+    "The company proposes a specific mechanism that makes the consensus incomplete.",
+    "At least one near-term observation could falsify the hidden mechanism."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "consensus_map",
+      "description": "The prevailing belief, who holds it, why, and when it was observable.",
+      "necessity": "required",
+      "acceptableSources": [
+        "market research",
+        "customer interviews",
+        "competitor behavior",
+        "investment records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "hidden_mechanism",
+      "description": "Causal mechanism explaining why the apparent negative can reverse or be bypassed.",
+      "necessity": "required",
+      "acceptableSources": [
+        "product evidence",
+        "technical evidence",
+        "customer evidence",
+        "regulatory evidence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "falsifier",
+      "description": "A dated test or threshold that would reject the hidden-mechanism thesis.",
+      "necessity": "required",
+      "acceptableSources": [
+        "experiment plan",
+        "milestone plan",
+        "customer cohort",
+        "technical benchmark"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "competition_response",
+      "description": "Why incumbents or obvious entrants cannot rapidly copy or neutralize the advantage.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "competitive analysis",
+        "7 Powers evidence",
+        "market structure"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exactly makes the opportunity look bad today?",
+    "Is that appearance caused by a real defect, timing, measurement error, or conventional assumption?",
+    "What hidden mechanism changes the economics?",
+    "What would prove the mechanism wrong within the next decision window?",
+    "If the insight becomes obvious, what prevents rapid entry and rent compression?",
+    "Could this instead be a bad idea that merely tells a compelling story?"
+  ],
+  "positiveSignals": [
+    "The negative consensus and its causal assumption are explicit.",
+    "Independent evidence supports the hidden mechanism.",
+    "A cheap, near-term falsification test exists.",
+    "Customer or technical behavior improves before investor sentiment changes.",
+    "The advantage has a plausible durability or compounding path."
+  ],
+  "redFlags": [
+    "The only evidence is that other investors disagree.",
+    "The thesis cannot name a falsifier.",
+    "Founder rhetoric substitutes for mechanism.",
+    "The apparent negative is a legal, integrity, safety, or unit-economic defect.",
+    "Success requires all competitors and incumbents to remain irrational."
+  ],
+  "disconfirmingEvidence": [
+    "The negative consensus is supported by repeated customer behavior.",
+    "The mechanism fails a technical or commercial benchmark.",
+    "Adoption depends on subsidies that worsen with scale.",
+    "Incumbents copy the advantage without meaningful cost.",
+    "The company changes its explanation after each failed test."
+  ],
+  "contraindications": [
+    "Do not award points for being unpopular.",
+    "Do not use the lens to excuse contrary integrity, safety, legal, or financial evidence.",
+    "Do not convert a nonobvious insight into a valuation conclusion."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "State the consensus and timestamp it.",
+      "State the hidden mechanism without founder adjectives.",
+      "Separate supporting evidence from narrative.",
+      "Define the fastest decision-changing falsifier.",
+      "Compare with the attractive-looking hidden-flaw hypothesis."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The concept is known only from secondary summaries.",
+      "medium": "The authorized excerpt is available but locators are not pinned.",
+      "high": "Authorized excerpt and licensed chapter locators converge."
+    },
+    "evidenceStrength": {
+      "low": "Investor disagreement or founder assertion only.",
+      "medium": "One independent mechanism test supports the thesis.",
+      "high": "Multiple independent tests support the mechanism and reject alternatives."
+    },
+    "evidenceCoverage": {
+      "low": "Consensus, mechanism, or falsifier is missing.",
+      "medium": "Core elements exist but competitive response is incomplete.",
+      "high": "Consensus, mechanism, falsifier, competition, and failure modes are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The thesis is obvious or the defect is already proven.",
+      "medium": "A nonobvious mechanism is plausible but not unique.",
+      "high": "The opportunity is genuinely misread and testable."
+    },
+    "judgmentConfidence": {
+      "low": "The conclusion is rhetorical.",
+      "medium": "Evidence supports the mechanism with material unknowns.",
+      "high": "Tests, countertests, and durability evidence converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-01",
+    "PT-02",
+    "PT-08"
+  ],
+  "conflictingFrameworkIds": [
+    "CONSENSUS-MOMENTUM",
+    "CONTRARIAN-BY-DEFAULT"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Pre-register consensus, mechanism, and falsifier before outcome knowledge.",
+      "Compare against a no-contrarianism baseline.",
+      "Measure false-positive rates for attractive stories with hidden defects."
+    ],
+    "empiricalQualifications": [
+      "Nonobviousness is difficult to measure without hindsight.",
+      "Competition may validate a market while reducing value capture.",
+      "Founder and investor narratives are vulnerable to post-hoc revision."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The authorized excerpt is paraphrased without reproducing its taxonomy."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Reconcile overlap with Peter Thiel Contrarian Truth and Monopoly cards.",
+      "Design a hindsight-resistant nonobviousness test."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

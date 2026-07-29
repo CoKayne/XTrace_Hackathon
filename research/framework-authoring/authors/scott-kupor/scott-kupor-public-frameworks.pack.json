@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "scott_kupor_public_frameworks_v0_1",
+  "name": "Scott Kupor / Secrets of Sand Hill Road Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten independently reviewable cards covering VC fit, early-stage evaluation, investor incentives, financing, cap tables, deal economics, governance, follow-on decisions, and private marks.",
+  "cardFiles": [
+    "cards/shr-01-venture-fit-fund-outcome.card.json",
+    "cards/shr-02-people-product-market.card.json",
+    "cards/shr-03-nonobvious-opportunity.card.json",
+    "cards/shr-04-investor-incentive-alignment.card.json",
+    "cards/shr-05-milestone-financing-valuation-path.card.json",
+    "cards/shr-06-fully-diluted-cap-table.card.json",
+    "cards/shr-07-term-sheet-waterfall.card.json",
+    "cards/shr-08-board-governance-balance.card.json",
+    "cards/shr-09-pro-rata-reunderwrite.card.json",
+    "cards/shr-10-mark-vs-realization.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Complete licensed first-edition chapter and page review.",
+      "Create first-party timestamps for the investor and board videos.",
+      "Review all legal mappings against transaction-specific current documents.",
+      "Complete empirical Decision Utility tests and cross-framework mapping.",
+      "Complete content and rights review before seed conversion."
+    ]
+  }
+}
+

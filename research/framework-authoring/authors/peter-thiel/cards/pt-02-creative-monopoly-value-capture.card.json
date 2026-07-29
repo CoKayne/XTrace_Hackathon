@@ -1,0 +1,318 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-02",
+  "slug": "creative-monopoly-value-capture",
+  "name": "Creative Monopoly & Value Capture",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates value creation from the company's ability to retain durable economics in an objectively defined market.",
+    "productLabel": "Contrarian Monopoly Lens — based on Peter Thiel's public monopoly and competition teaching",
+    "notAClaimOf": [
+      "a legal monopoly determination",
+      "Peter Thiel endorsement",
+      "proof that all competition is harmful"
+    ]
+  },
+  "attribution": {
+    "display": "Based primarily on Peter Thiel's 2014 Competition Is for Losers lecture",
+    "scope": "person_direct",
+    "people": [
+      "Peter Thiel"
+    ],
+    "organizations": [
+      "Y Combinator",
+      "Stanford University"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "A company can create substantial customer or social value yet capture little economic value. This lens asks whether the company has a real, non-rhetorical basis for differentiation and durable value capture, while explicitly testing market-definition bias and the possibility that competition may also stimulate innovation.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P1-LECTURE-2014",
+      "claimIds": [
+        "PT-CLM-001",
+        "PT-CLM-002",
+        "PT-CLM-003",
+        "PT-CLM-005"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "00:20-22:52"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-P2-CS183-04",
+      "claimIds": [
+        "PT-CLM-002",
+        "PT-CLM-003",
+        "PT-CLM-005"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Sections I-IV"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PT-E1-COMPETITION-INNOVATION",
+      "claimIds": [
+        "PT-EQ-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and empirical inverted-U result"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "b2b_saas",
+      "enterprise_ai",
+      "consumer_network",
+      "marketplace",
+      "deep_tech",
+      "platform"
+    ],
+    "sectors": [
+      "technology"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The company's value proposition and relevant customer alternatives can be identified.",
+    "The market can be evaluated from actual substitution behavior rather than a founder-defined category alone.",
+    "At least one candidate value-capture mechanism can be tested."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "customer_value",
+      "description": "Measured customer outcome, willingness to pay, or avoided cost created by the product.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer contract",
+        "customer interview",
+        "usage record",
+        "ROI study"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "market_substitution",
+      "description": "Evidence showing what customers actually use instead, switch from, or compare during purchase.",
+      "necessity": "required",
+      "acceptableSources": [
+        "win-loss data",
+        "customer interview",
+        "procurement record",
+        "pricing experiment"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "value_capture",
+      "description": "Pricing power, gross margin, retention, take rate, or other evidence that the company retains part of created value.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financial statements",
+        "cohort data",
+        "contracts",
+        "pricing history"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "defense_mechanism",
+      "description": "Evidence for proprietary technology, network effects, scale economics, brand, switching costs, or another durable mechanism.",
+      "necessity": "required",
+      "acceptableSources": [
+        "technical benchmark",
+        "unit economics",
+        "network cohort",
+        "customer workflow evidence",
+        "IP and replication analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "competitive_response",
+      "description": "Evidence about current and likely competitor responses, substitutes, and entry paths.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "competitor data",
+        "customer interview",
+        "market research",
+        "former employee or expert interview"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What measurable value does the company create, and for whom?",
+    "What fraction can the company plausibly capture after competition and supplier power?",
+    "What do customers treat as substitutes in real purchase decisions?",
+    "Is the claimed market definition objectively supported or rhetorically narrow?",
+    "Which defense mechanism exists today, and which is only an aspiration?",
+    "How would incumbents, open source, bundlers, or adjacent entrants respond?",
+    "Could moderate competition improve innovation without destroying value capture?"
+  ],
+  "positiveSignals": [
+    "Customers demonstrate high willingness to pay relative to delivered value.",
+    "Win-loss and switching behavior support a real differentiated category.",
+    "Gross margin, retention, expansion, or take rate shows value capture rather than usage alone.",
+    "A defense mechanism strengthens with adoption or scale.",
+    "Competitor replication requires time, data, distribution, capital, or workflow change that customers resist.",
+    "The company can name conditions under which its market-power thesis would fail."
+  ],
+  "redFlags": [
+    "A large TAM is presented as evidence of company value capture.",
+    "The market is defined by stacking adjectives without distinct customer substitution behavior.",
+    "High growth is purchased through structurally uneconomic pricing.",
+    "The company claims network effects when only aggregate user count is growing.",
+    "Proprietary technology has no measured advantage or can be cheaply replicated.",
+    "The moat depends only on current incumbent inattention.",
+    "Management treats all competition as invalidating rather than learning from it."
+  ],
+  "disconfirmingEvidence": [
+    "Customers readily multi-home or switch at low cost.",
+    "Price increases produce disproportionate churn or immediate substitution.",
+    "Gross margin or contribution margin deteriorates with scale.",
+    "A competitor reproduces the core benefit without comparable accumulated assets.",
+    "Bundling by an incumbent removes willingness to pay.",
+    "The alleged network does not improve value or retention as participation grows."
+  ],
+  "contraindications": [
+    "Do not use market share alone as proof of durable power.",
+    "Do not infer a legal monopoly or recommend anticompetitive conduct.",
+    "Do not apply as a decisive factor when the company has no customer-value or substitution evidence.",
+    "Do not penalize all competitive markets without analyzing innovation incentives and execution."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Calculate or describe customer value creation separately from company value capture.",
+      "Build an objective substitute set using customer behavior.",
+      "Test each candidate defense mechanism independently.",
+      "Stress-test durability against competitor, supplier, customer, technology, and regulatory responses.",
+      "Keep current evidence, future aspiration, and product inference in separate fields."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "reason": "No validated composite score exists. Quantitative inputs remain separately calculated evidence."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only unattributed summaries support the doctrine.",
+      "medium": "Course notes support the doctrine but direct source revision is incomplete.",
+      "high": "Reviewed official video captions and exact timestamps support each displayed rule."
+    },
+    "evidenceStrength": {
+      "low": "Founder market narrative and competitor list only.",
+      "medium": "Customer substitution plus one value-capture or defense indicator.",
+      "high": "Repeated customer behavior, economics, and mechanism-specific evidence withstand credible counterexamples."
+    },
+    "evidenceCoverage": {
+      "low": "Value creation, substitution, capture, or defense is missing.",
+      "medium": "All components exist, but competitive response or durability evidence is incomplete.",
+      "high": "All components and major counterevidence are documented with dated sources."
+    },
+    "applicabilityConfidence": {
+      "low": "The business is regulated utility-like, commodity, or too early to identify a customer and substitute set.",
+      "medium": "The lens applies but one key mechanism remains prospective.",
+      "high": "Differentiation and durable value capture are central to the investment thesis."
+    },
+    "judgmentConfidence": {
+      "low": "Only a candidate differentiation story exists.",
+      "medium": "Current value capture is visible but durability is unresolved.",
+      "high": "Objective market evidence, current economics, and durable mechanism evidence converge while counterevidence is weak."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-03",
+    "PT-04",
+    "HEL-7P",
+    "ACH-COLD-START",
+    "MAUB-EXPECTATIONS"
+  ],
+  "conflictingFrameworkIds": [
+    "LEAN-CUSTOMER-DISCOVERY",
+    "COMPETITION-INNOVATION-INVERTED-U"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Capture and hash the official lecture caption revision and approve exact timestamped paraphrases.",
+      "Define non-overlapping bottom-level evidence shared with 7 Powers and network-effect cards.",
+      "Test whether the lens adds out-of-sample discrimination beyond retention, margin, growth, and market structure.",
+      "Calibrate by stage and business model using both failed and successful companies."
+    ],
+    "empiricalQualifications": [
+      "Competition can have an inverted-U relationship with innovation.",
+      "Market share and gross margin do not alone establish durable market power.",
+      "Public monopoly examples are selected on ex-post success."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The runtime seed must use the official Y Combinator video revision, caption hash, and approved timestamps; the third-party searchable transcript is research-only."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Capture and review official captions for all source ranges.",
+      "Resolve overlap ownership with 7 Powers and specialist network-effect cards.",
+      "Specify a competition-mechanism qualification using the authorized empirical paper."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft aligned to the product's source-grounded Contrarian Monopoly lens."
+    }
+  ]
+}

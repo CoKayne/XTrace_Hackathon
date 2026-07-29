@@ -1,0 +1,294 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-05",
+  "slug": "lifecycle-risk-placement",
+  "name": "Lifecycle Risk Placement",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates systematic, company-specific, discrete, financing, and liquidity risks and lets risk evolve as the company matures.",
+    "productLabel": "Lifecycle Risk Placement Lens — based on Aswath Damodaran's public valuation materials",
+    "notAClaimOf": [
+      "one discount rate representing every risk",
+      "historical startup target returns being costs of capital",
+      "today's private-company risk persisting unchanged forever"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public valuation materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Risk should enter a valuation through the component that represents it. Company-specific execution affects expected cash flows, discrete failure can be modeled with probabilities and consequences, systematic exposure affects required return, and security rights or illiquidity require separate treatment. As a company matures, diversifies ownership, changes leverage, and stabilizes operations, its risk and cost of capital may change.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-UNCERTAINTY",
+      "claimIds": [
+        "DSV-CLM-002"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 6-8: estimation/economic, micro/macro, discrete/continuous risk and model placement"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-008",
+        "DSV-CLM-009"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 31-43: cost of equity/capital over time, owner diversification, terminal risk, and survival"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-HIGHGROW",
+      "claimIds": [
+        "DSV-CLM-008"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 28-30: beta convergence and lifecycle cost-of-capital schedule"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all_non_financial"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The valuation distinguishes expected cash-flow risk, systematic risk, discrete failure, financing, claim rights, and liquidity.",
+    "Investor diversification assumptions are explicit.",
+    "Discount rates match the cash-flow definition and currency.",
+    "Lifecycle changes in operating risk, leverage, and terminal state are modeled."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "risk_register",
+      "description": "Material risk with cause, affected variable, timing, correlation, probability type, and model location.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company diligence",
+        "industry data",
+        "regulatory evidence",
+        "competitive analysis",
+        "financing records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "systematic_risk_inputs",
+      "description": "Currency-consistent risk-free rate, market premium, operating-risk comparables, leverage, and country exposure where relevant.",
+      "necessity": "required",
+      "acceptableSources": [
+        "official market data",
+        "public comparable filings",
+        "versioned valuation dataset"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "lifecycle_schedule",
+      "description": "Evidence-backed schedule for changes in business mix, leverage, ownership diversification, and stable risk.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating plan",
+        "financing plan",
+        "comparable lifecycle data",
+        "scenario model"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "separate_adjustments",
+      "description": "Explicit survival, liquidity, claim-right, and dilution adjustments outside the cost of capital where applicable.",
+      "necessity": "required",
+      "acceptableSources": [
+        "valuation service",
+        "terms service",
+        "survival model",
+        "cap table"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which risks change expected cash flows and which are systematic?",
+    "Which outcomes are discrete enough for explicit probability treatment?",
+    "Whose diversification is assumed in the cost of equity?",
+    "Does the discount rate match FCFF or equity cash flow, currency, and leverage?",
+    "How and why should risk decline or change over the forecast horizon?",
+    "Are survival, illiquidity, and security terms already reflected elsewhere?"
+  ],
+  "positiveSignals": [
+    "Every material risk has one explicit model location.",
+    "Discount-rate inputs are versioned, currency-consistent, and comparable-based.",
+    "Company-specific risks alter cash flows or scenarios rather than arbitrary premiums.",
+    "The lifecycle schedule reflects identifiable operating and financing transitions.",
+    "Separate claim and liquidity services prevent hidden adjustments."
+  ],
+  "redFlags": [
+    "A VC target IRR is labeled the company's cost of capital.",
+    "A single discount rate absorbs every concern.",
+    "The terminal company retains seed-stage risk forever without explanation.",
+    "The discount rate and cash-flow definition are mismatched.",
+    "The same failure or liquidity risk appears in multiple locations."
+  ],
+  "disconfirmingEvidence": [
+    "The selected comparables have materially different operating or country exposure.",
+    "Modeled risk declines without any change in business, financing, or diversification.",
+    "Changing an arbitrary risk premium is the main way analysts reach the desired value.",
+    "Claim rights or dilution materially change investor payoff but are absent.",
+    "Risk-free rate, inflation, currency, and cash flows use inconsistent units."
+  ],
+  "contraindications": [
+    "Do not use an arbitrary startup discount-rate table without decomposing its contents.",
+    "Do not mix FCFF with cost of equity or equity cash flow with WACC.",
+    "Do not double count survival, liquidity, key-person, or dilution risk.",
+    "Do not assume public-market diversification for a concentrated owner without stating it."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Create the risk register and assign each risk one primary model location.",
+      "Normalize systematic-risk inputs and cash-flow scope.",
+      "Build an evidence-backed lifecycle risk schedule.",
+      "Run double-counting and cash-flow/discount-rate consistency checks.",
+      "Send rate and probability inputs to deterministic services."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "matchingRules": [
+        "fcff_requires_cost_of_capital",
+        "equity_cash_flow_requires_cost_of_equity",
+        "currency_of_rate_must_equal_currency_of_cash_flow"
+      ],
+      "doubleCountCheckRequired": true,
+      "calculationOwner": "valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Risk inputs come from generic tables or unsourced premiums.",
+      "medium": "Versioned market data and partial company risk evidence are available.",
+      "high": "Market, comparable, company, financing, and security evidence are verified and synchronized."
+    },
+    "evidenceStrength": {
+      "low": "Risk placement is qualitative and overlapping.",
+      "medium": "Major risks are placed but lifecycle or claims remain estimated.",
+      "high": "Risk locations, lifecycle changes, and separate adjustments are evidence-backed."
+    },
+    "evidenceCoverage": {
+      "low": "Only a discount rate is provided.",
+      "medium": "Systematic, company, and failure risks are covered but liquidity or claims are incomplete.",
+      "high": "All material risk, financing, liquidity, claim, and lifecycle dimensions are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Cash-flow scope, currency, or security is not defined.",
+      "medium": "Scope is defined but concentrated ownership or lifecycle assumptions are unresolved.",
+      "high": "Cash-flow, investor, security, currency, and lifecycle contexts are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only risk questions and inconsistency warnings can be stated.",
+      "medium": "The placement is usable with several conservative assumptions.",
+      "high": "Risk is consistently placed and robust under alternative sourced inputs."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-01",
+    "DSV-06",
+    "DSV-07",
+    "DSV-10"
+  ],
+  "conflictingFrameworkIds": [
+    "ONE-DISCOUNT-RATE-FOR-ALL-RISKS",
+    "TARGET-IRR-EQUALS-COST-OF-CAPITAL",
+    "STATIC-RISK-FOREVER"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition risk chapter review.",
+      "Review lifecycle and total-beta interpretations with a valuation expert.",
+      "Validate double-counting detection on expert-reviewed startup models."
+    ],
+    "empiricalQualifications": [
+      "Cost-of-capital estimates are model-dependent and change with market data.",
+      "Private concentrated investors may evaluate total risk differently from diversified marginal investors.",
+      "Risk reduction is not automatic with age; business model and financing can make risk rise."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public valuation doctrine is neutrally paraphrased; no tables or passages are reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Resolve how concentrated-investor risk policy interacts with fund policy."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

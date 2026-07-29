@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-09",
+  "slug": "moat-multihoming-competition",
+  "name": "Network Moat, Multi-homing, and Competition",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether competitors can reproduce atomic networks or attract the hard side despite incumbent scale.",
+    "productLabel": "Network Moat Lens — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["largest network being unassailable", "registered users equaling switching cost", "network effects eliminating competition"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Assess defensibility from the competitor's perspective: can it seed an adjacent atomic network, attract or subsidize the hard side, enable multi-homing, or exploit a new geography or use case where the incumbent's density resets? Distinguish participation scale from durable barriers.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-019", "CSP-CLM-020", "CSP-CLM-022"],
+      "locator": {"kind": "pdf_page", "value": "Part VI, Chapters 32-38, PDF pp. 316-383; hard-side competition, PDF pp. 356-369"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-METRICS-2018",
+      "claimIds": ["CSP-CLM-019", "CSP-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Switching, multi-homing, concentration, and geographic metrics"},
+      "attributionScope": "course_notes_derivative",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "CSP-P1-HARD-2021",
+      "claimIds": ["CSP-CLM-007", "CSP-CLM-008", "CSP-CLM-019"],
+      "locator": {"kind": "web_section", "value": "Hard side, hard problem, and adjacent-network expansion"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth", "late_stage"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "CSP-01 applicability is satisfied.",
+    "Relevant competitors and alternative behaviors are identified.",
+    "Participant switching and multi-homing can be observed."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "participant_switching",
+      "description": "Switching, multi-homing, bypass, exclusivity, and workflow embedding by participant side.",
+      "necessity": "required",
+      "acceptableSources": ["participant survey", "behavioral telemetry", "contract review", "competitive win-loss"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "hard_side_competition",
+      "description": "Contribution concentration, retention, earnings or utility, competitor incentives, and hard-side migration.",
+      "necessity": "required",
+      "acceptableSources": ["role-level cohort", "supply analytics", "creator or seller panel", "competitor offer data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "replication_cost",
+      "description": "Time, capital, subsidy, distribution, and operational burden required to seed competing atomic networks.",
+      "necessity": "required",
+      "acceptableSources": ["competitive case study", "internal replication history", "market-entry data"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "local_reset_risk",
+      "description": "Evidence that new geography, segment, or use case resets density and participant loyalty.",
+      "necessity": "recommended",
+      "acceptableSources": ["geographic cohorts", "segment cohorts", "competitor launch data"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What prevents the hard side from joining or leading a rival network?",
+    "How costly is it for participants to multi-home or bypass the platform?",
+    "Can a rival seed one attractive atomic network and expand adjacently?",
+    "Does incumbent scale transfer into new geographies, segments, and use cases?"
+  ],
+  "positiveSignals": [
+    "Participants lose meaningful utility when splitting activity across rivals.",
+    "The hard side retains without escalating subsidies or contractual lock-in alone.",
+    "Competitors require substantial time and capital to reproduce local density.",
+    "The company repeatedly carries advantages into adjacent atomic networks."
+  ],
+  "redFlags": [
+    "Participants routinely multi-home with little friction.",
+    "A small hard-side cohort can migrate and bring the easy side.",
+    "Incumbent advantages disappear in each new geography.",
+    "Reported switching costs are merely historical data, brand, or registered accounts."
+  ],
+  "disconfirmingEvidence": [
+    "A new competitor reaches local liquidity rapidly.",
+    "Hard-side contributors receive better economics or tools elsewhere and migrate.",
+    "Users bypass the platform after discovery.",
+    "Cross-network identity, inventory, or content portability lowers switching friction."
+  ],
+  "contraindications": [
+    "Do not award a moat label from scale alone.",
+    "Do not infer exclusivity from inactive registered accounts.",
+    "Do not aggregate local network strength across unseeded markets."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Map participant switching, multi-homing, and bypass behavior by side.",
+      "Identify the hard side and competitor acquisition path.",
+      "Estimate observed replication burden across atomic networks.",
+      "Test whether advantage transfers or resets in new contexts.",
+      "Conclude durable, conditional, local-only, contestable, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "network_competition_analysis",
+      "requiredOutputs": ["multi_homing_rate", "switching_behavior", "hard_side_retention", "bypass_rate", "competitor_replication_history", "local_reset_analysis"],
+      "prohibition": "The language model must not invent switching costs, replication costs, or moat scores."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Management assertion of moat.", "medium": "Participant and competitive data are available but incomplete.", "high": "Behavioral, contractual, cohort, and competitive evidence converge."},
+    "evidenceStrength": {"low": "Scale or brand only.", "medium": "Some switching or replication friction exists.", "high": "Repeated competitor attempts and participant behavior demonstrate durable friction."},
+    "evidenceCoverage": {"low": "Incumbent user count only.", "medium": "Switching and competition covered for some sides or markets.", "high": "All participant sides, bypass, multi-homing, replication, and local resets covered."},
+    "applicabilityConfidence": {"low": "No network-mediated barrier.", "medium": "Barrier exists in limited atomic networks.", "high": "Network structure materially shapes competitive outcomes."},
+    "judgmentConfidence": {"low": "Contestability unknown.", "medium": "Conditional or local moat.", "high": "Durable, evidenced network moat."}
+  },
+  "overlapFrameworkIds": ["CSP-03", "CSP-04", "CSP-08", "H7P-03", "H7P-06"],
+  "conflictingFrameworkIds": ["BIGGEST-NETWORK-WINS", "REGISTERED-USERS-EQUALS-SWITCHING-COST"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate participant-side moat metrics.", "Backtest competitor replication outcomes.", "Define evidence required for local-to-global transfer."],
+    "empiricalQualifications": ["Platform policy and interoperability can rapidly alter switching.", "Moats may be local, temporary, or participant-side asymmetric."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine and affiliated metrics are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define acceptable competitor replication and multi-homing measurement windows."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

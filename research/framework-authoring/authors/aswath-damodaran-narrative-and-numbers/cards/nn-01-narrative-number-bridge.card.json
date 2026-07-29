@@ -1,0 +1,275 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-01",
+  "slug": "narrative-number-bridge",
+  "name": "Narrative-to-Number Bridge",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Requires every material valuation input to belong to a coherent, testable business story and every material story claim to reach an observable driver.",
+    "productLabel": "Narrative-to-Number Bridge — based on Aswath Damodaran's public Narrative and Numbers materials",
+    "notAClaimOf": [
+      "storytelling replacing company evidence",
+      "a complex spreadsheet being objective",
+      "DCF being the only valid calculation method"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public Narrative and Numbers materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Start with a company-specific story, test it against evidence and first principles, translate its important claims into value drivers, send those drivers to a calculation model, and keep the story open to revision. Reject both a story with no numerical consequences and numbers that imply an incoherent business.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-BRIDGE-2014",
+      "claimIds": [
+        "NN-CLM-001",
+        "NN-CLM-003",
+        "NN-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Sections The Numbers Game, Narrative as Valuation, and Numbers plus Narrative; five-step process"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-PREFACE",
+      "claimIds": [
+        "NN-CLM-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Preface paragraphs describing valuation as a bridge between storytellers and number crunchers"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "NN-P1-CFA-2014",
+      "claimIds": [
+        "NN-CLM-001",
+        "NN-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Program summary: three modeling illusions, narrative testing, and conversion to value drivers"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "The company, valuation date, business definition, and security context are identified.",
+    "Founder claims, analyst interpretation, verified facts, and model assumptions remain distinguishable.",
+    "Material story claims have explicit driver links and falsifiable observations.",
+    "Calculations are performed by deterministic services rather than free-form LLM arithmetic."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "source_story",
+      "description": "Founder, company, customer, market, and investor materials from which the story is reconstructed.",
+      "necessity": "required",
+      "acceptableSources": [
+        "pitch deck",
+        "meeting note",
+        "company filing",
+        "customer evidence",
+        "market research"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "driver_evidence",
+      "description": "Evidence for revenue, margin, reinvestment, risk, duration, and optionality claims.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company operating data",
+        "contracts",
+        "cohort data",
+        "industry data",
+        "verified public source"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "counter_narrative",
+      "description": "At least one materially different, internally coherent explanation of the same evidence.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "independent analyst",
+        "competitor evidence",
+        "customer interview",
+        "investment-team dissent"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What business story explains how this company creates and captures value?",
+    "Which statements are facts, assumptions, interpretations, or aspirations?",
+    "Which driver changes if each material claim is true?",
+    "What evidence would make the story weaker or false?",
+    "Do the numbers describe a business that can exist outside the spreadsheet?"
+  ],
+  "positiveSignals": [
+    "Every material driver traces to a sourced story claim.",
+    "The story survives historical, experiential, and first-principles tests.",
+    "Verified operating evidence supports the next forecast interval.",
+    "Counter-narratives are represented without being prematurely averaged.",
+    "The resulting model exposes rather than hides uncertainty."
+  ],
+  "redFlags": [
+    "Precision or model complexity is used as evidence of truth.",
+    "Founder language is copied as the analyst conclusion.",
+    "Growth, margin, and reinvestment assumptions are mutually inconsistent.",
+    "A compelling story has no measurable milestone.",
+    "The model produces a price before the business story is defined."
+  ],
+  "disconfirmingEvidence": [
+    "Observed customer behavior contradicts the proposed value proposition.",
+    "Required capacity or capital is missing from the story.",
+    "Comparable historical businesses failed at the same causal link.",
+    "A simpler counter-narrative explains the evidence better.",
+    "New facts force a different business definition."
+  ],
+  "contraindications": [
+    "Do not infer truth from narrative coherence alone.",
+    "Do not infer objectivity from a deterministic calculation.",
+    "Do not compress disagreements into an average story.",
+    "Do not output an investment recommendation from this bridge alone."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Reconstruct the company story from sourced materials.",
+      "Label facts, assumptions, interpretations, and aspirations.",
+      "Test the story and map each material claim to a value driver.",
+      "Record counter-narratives and the first unsupported causal link.",
+      "Pass only explicit driver hypotheses to deterministic calculation."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The story is based only on unsourced promotional claims.",
+      "medium": "Company materials are supplemented by at least one credible independent source.",
+      "high": "Primary company evidence, customers, and independent sources converge."
+    },
+    "evidenceStrength": {
+      "low": "Claims do not reach observable drivers.",
+      "medium": "Major driver links exist but one critical bridge remains assumed.",
+      "high": "Material claims have direct evidence, driver mappings, and serious counter-tests."
+    },
+    "evidenceCoverage": {
+      "low": "Only the opportunity and product are described.",
+      "medium": "Market, business model, and economics are covered but risk or reinvestment is partial.",
+      "high": "Opportunity, customer, competition, revenue, margin, reinvestment, risk, duration, and counter-story are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Company identity or business boundary is unstable.",
+      "medium": "A story can be built but stage-specific evidence is sparse.",
+      "high": "The business, stage, security, and valuation purpose are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a preliminary research story is supportable.",
+      "medium": "A bounded narrative and driver hypothesis are defensible.",
+      "high": "The narrative is versioned, evidence-linked, falsifiable, and calculation-ready."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-01",
+    "EI-03",
+    "PT-01",
+    "VM-05"
+  ],
+  "conflictingFrameworkIds": [
+    "STORY-ONLY-VALUATION",
+    "SPREADSHEET-OBJECTIVITY",
+    "FOUNDER-STORY-EQUALS-ANALYST-STORY"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful chapter review.",
+      "Validate story-to-driver extraction with expert reviewers.",
+      "Backtest whether the bridge reduces unsupported model assumptions."
+    ],
+    "empiricalQualifications": [
+      "Coherent stories can still be wrong.",
+      "Sparse private-company evidence can make multiple stories observationally equivalent.",
+      "Narrative quality has not been established here as a standalone predictor of venture returns."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine is neutrally paraphrased; no source text or hidden reasoning is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete 2017 edition page review.",
+      "Define machine-readable story-driver edges in the system layer."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

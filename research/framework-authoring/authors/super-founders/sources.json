@@ -1,0 +1,340 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "super_founders_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [
+      "DCVC"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "SF-P2-BOOK-2021",
+      "title": "Super Founders: What Data Reveals About Billion-Dollar Startups",
+      "authorOrSpeaker": [
+        "Ali Tamaseb"
+      ],
+      "publisher": "PublicAffairs / Hachette Book Group",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_page",
+      "url": "https://www.hachettebookgroup.com/titles/ali-tamaseb/super-founders/9781541768420/?lens=publicaffairs",
+      "edition": "First US hardcover; ISBN 9781541768420; 320 pages",
+      "publishedAt": "2021-05-18",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "publisher_metadata_and_description_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports edition, outcome definition, dataset headline, and four public findings; not chapter-level statistical detail.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-P1-BOOK-SITE-2021",
+      "title": "Super Founders official book website",
+      "authorOrSpeaker": [
+        "Ali Tamaseb"
+      ],
+      "publisher": "Ali Tamaseb",
+      "sourceClass": "P1",
+      "sourceType": "official_book_site",
+      "url": "https://www.superfoundersbook.com/",
+      "edition": "Public site accessed July 28, 2026",
+      "publishedAt": "2021",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports the 30,000 data-point, 65-angle positioning and headline findings; it is promotional, not a methodology appendix.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-P1-INC-2021",
+      "title": "What Data Reveals About Why Some Startups Reach Billion-Dollar Valuations",
+      "authorOrSpeaker": [
+        "Ali Tamaseb"
+      ],
+      "publisher": "Inc.",
+      "sourceClass": "P1",
+      "sourceType": "signed_public_article",
+      "url": "https://www.inc.com/ali-tamaseb/super-founders-billion-dollar-valuation-unicorn-startup.html",
+      "edition": "May 18, 2021",
+      "publishedAt": "2021-05-18",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_article_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary public summary of study design and findings on solo founders, domain experience, competition, and prior entrepreneurship.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-P1-TECHMEME-2019",
+      "title": "Land of the “Super Founders” With Ali Tamaseb",
+      "authorOrSpeaker": [
+        "Ali Tamaseb",
+        "Brian McCullough"
+      ],
+      "publisher": "Techmeme Ride Home transcript on Medium",
+      "sourceClass": "P1",
+      "sourceType": "public_podcast_transcript",
+      "url": "https://medium.com/@brianmcc/land-of-the-super-founders-with-ali-tamaseb-382788688828",
+      "edition": "January 20, 2019 transcript",
+      "publishedAt": "2019-01-20",
+      "eventAt": "2019",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_transcript_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary support for the author's explicit no-causation boundary, cohort limits, and anti-bias purpose.",
+      "immutableRevision": {
+        "status": "pending_audio_timestamp_and_transcript_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-P1-SANDHILL-2022",
+      "title": "Deciphering Super Founders with author and DCVC partner Ali Tamaseb",
+      "authorOrSpeaker": [
+        "Ali Tamaseb",
+        "Erasmus Elsner"
+      ],
+      "publisher": "Sand Hill Road",
+      "sourceClass": "P1",
+      "sourceType": "public_interview_machine_transcript",
+      "url": "https://medium.com/sand-hill-road/deciphering-super-founders-with-author-and-dcvc-partner-ali-tamaseb-5317f23e93dd",
+      "edition": "2021 interview; transcript published January 25, 2022",
+      "publishedAt": "2022-01-25",
+      "eventAt": "2021",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_transcript_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Detailed public support for founder, market, competition, defensibility, capital, and funding observations. Machine transcript requires original-media verification.",
+      "immutableRevision": {
+        "status": "pending_original_video_timestamp_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-P1-MEDIUM-PREVIEW-2021",
+      "title": "What I Learned About Startups by Collecting 30,000 Data Points",
+      "authorOrSpeaker": [
+        "Ali Tamaseb"
+      ],
+      "publisher": "Ali Tamaseb on Medium",
+      "sourceClass": "P1",
+      "sourceType": "signed_public_article",
+      "url": "https://alitamaseb.medium.com/what-i-learned-about-startups-by-collecting-30-000-data-points-f10657724b2a",
+      "edition": "May 2021 public preview",
+      "publishedAt": "2021-05",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_article_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports variable-family scope and the anti-bias intent; not a substitute for complete results.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-S1-TECHCRUNCH-2021",
+      "title": "A new book aims to blow up assumptions about the best founding teams",
+      "authorOrSpeaker": [
+        "Ali Tamaseb",
+        "Connie Loizos"
+      ],
+      "publisher": "TechCrunch",
+      "sourceClass": "S1",
+      "sourceType": "edited_public_interview",
+      "url": "https://techcrunch.com/2021/05/18/super_founders/",
+      "edition": "May 18, 2021",
+      "publishedAt": "2021-05-18",
+      "eventAt": "2021-05-17",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_interview_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Corroborates manual data collection, comparison group, prior entrepreneurship, solo founders, and education. Edited wording is secondary to signed author sources.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-E1-AGE-INDUSTRY-NBER",
+      "title": "Age and High-Growth Entrepreneurship",
+      "authorOrSpeaker": [
+        "Pierre Azoulay",
+        "Benjamin Jones",
+        "J. Daniel Kim",
+        "Javier Miranda"
+      ],
+      "publisher": "NBER; published in American Economic Review: Insights",
+      "sourceClass": "E1",
+      "sourceType": "administrative_data_empirical_study",
+      "url": "https://www.nber.org/papers/w24489",
+      "edition": "NBER Working Paper 24489, April 2018; published version 2020",
+      "publishedAt": "2018-04",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports age anti-stereotype but conflicts with a broad no-domain-experience inference.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_table_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-E1-SERIAL-NBER",
+      "title": "Skill vs. Luck in Entrepreneurship and Venture Capital: Evidence from Serial Entrepreneurs",
+      "authorOrSpeaker": [
+        "Paul Gompers",
+        "Anna Kovner",
+        "Josh Lerner",
+        "David Scharfstein"
+      ],
+      "publisher": "NBER; published in Journal of Financial Economics",
+      "sourceClass": "E1",
+      "sourceType": "venture_backed_empirical_study",
+      "url": "https://www.nber.org/papers/w12592",
+      "edition": "NBER Working Paper 12592, October 2006; published version 2010",
+      "publishedAt": "2006-10",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies prior entrepreneurship by separating prior successful, prior failed, and first-time founders.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_table_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-E1-VALUATION-NBER",
+      "title": "Squaring Venture Capital Valuations with Reality",
+      "authorOrSpeaker": [
+        "William Gornall",
+        "Ilya A. Strebulaev"
+      ],
+      "publisher": "NBER; published in Journal of Financial Economics",
+      "sourceClass": "E1",
+      "sourceType": "share_class_valuation_empirical_study",
+      "url": "https://www.nber.org/papers/w23895",
+      "edition": "NBER Working Paper 23895, October 2017; published version 2019",
+      "publishedAt": "2017-10",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies billion-dollar post-money valuation as an outcome label rather than economic value across share classes.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_model_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-E1-ACCELERATOR-RFS",
+      "title": "The Effects of Business Accelerators on Venture Performance: Evidence from Start-Up Chile",
+      "authorOrSpeaker": [
+        "Juanita Gonzalez-Uribe",
+        "Michael Leatherbee"
+      ],
+      "publisher": "The Review of Financial Studies",
+      "sourceClass": "E1",
+      "sourceType": "regression_discontinuity_empirical_study",
+      "url": "https://academic.oup.com/rfs/article/31/4/1566/4104437",
+      "edition": "Volume 31, Issue 4, April 2018, pages 1566-1603",
+      "publishedAt": "2017-09-05",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Shows program components can matter and discourages treating accelerator participation as a simple founder-quality proxy.",
+      "immutableRevision": {
+        "status": "pending_paper_hash_and_design_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-E1-ACCELERATOR-NBER-2026",
+      "title": "Beyond Demo Day: Sorting and Value Added in Startup Accelerators",
+      "authorOrSpeaker": [
+        "Youn Baek",
+        "Deepak Hegde"
+      ],
+      "publisher": "NBER",
+      "sourceClass": "E1",
+      "sourceType": "working_paper_accelerator_value_added",
+      "url": "https://www.nber.org/papers/w35063",
+      "edition": "NBER Working Paper 35063, April 2026",
+      "publishedAt": "2026-04",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "New evidence on sorting and heterogeneous accelerator value added; track revisions before publication use.",
+      "immutableRevision": {
+        "status": "new_working_paper_pending_replication_and_revision_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SF-E1-NONSIGNIFICANCE-AEA",
+      "title": "Statistical Significance, p-Values, and the Reporting of Uncertainty",
+      "authorOrSpeaker": [
+        "Guido W. Imbens"
+      ],
+      "publisher": "Journal of Economic Perspectives",
+      "sourceClass": "E1",
+      "sourceType": "peer_reviewed_methods_article",
+      "url": "https://www.aeaweb.org/articles?id=10.1257%2Fjep.35.3.157",
+      "edition": "Volume 35, Number 3, Summer 2021, pages 157-174",
+      "publishedAt": "2021",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_complimentary_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports reporting effect estimates and uncertainty instead of translating non-significance into proved equivalence.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_methods_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    }
+  ]
+}
+

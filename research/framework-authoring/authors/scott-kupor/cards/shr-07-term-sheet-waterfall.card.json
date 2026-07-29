@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-07",
+  "slug": "term-sheet-waterfall",
+  "name": "Term-Sheet Economics and Scenario Waterfall",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Compares valuation and structure through reproducible stakeholder payouts rather than headline post-money.",
+    "productLabel": "Term-Sheet Waterfall Lens — based on Scott Kupor's official public teaching",
+    "notAClaimOf": [
+      "2019 Silicon Valley terms being current universal standards",
+      "a legal or tax opinion",
+      "the highest valuation being the best economic deal"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor's public explanation of liquidation preferences, participation, anti-dilution, and structured deals",
+    "scope": "person_direct",
+    "people": [
+      "Scott Kupor"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "A financing offer is a bundle of price, security, preferences, participation, anti-dilution, governance, and precedent. Compare clean and structured alternatives with a deterministic waterfall across downside, flat, and upside outcomes. The 1x non-participating preference is presented as a simpler founder-friendly reference in the 2019 source, not a universal legal default.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-A16Z-RAISE-2019",
+      "claimIds": [
+        "SHR-CLM-010",
+        "SHR-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official transcript lines 206-237: preferences, participation, anti-dilution, valuation/structure trade-off, and precedent"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SHR-P1-A16Z-TERM-2019",
+      "claimIds": [
+        "SHR-CLM-010",
+        "SHR-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official video page describing economic term implications"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SHR-E1-NVCA-MODEL-2026",
+      "claimIds": [
+        "SHR-EQ-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Current model-document index, options, and legal disclaimer"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "down_round",
+      "recapitalization"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "convertible",
+      "warrant",
+      "common_equity"
+    ]
+  },
+  "requiredConditions": [
+    "The complete proposed term sheet and current capitalization are available.",
+    "The deterministic waterfall supports the exact security definitions.",
+    "Qualified legal review is available for transaction-specific interpretation."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "complete_term_bundle",
+      "description": "Price, round size, preference, participation, dividends, conversion, anti-dilution, pool, governance, transfer, and side rights.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "draft financing documents",
+        "side letters"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_cap_table",
+      "description": "Reconciled fully diluted capitalization before the financing.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap-table service",
+        "stock ledger",
+        "counsel reconciliation"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "payout_scenarios",
+      "description": "Stakeholder payouts under wind-down, low, flat, moderate, and high exit values plus future down-round cases.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic waterfall service",
+        "legal review"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "alternative_terms",
+      "description": "At least one clean-price alternative or explicit reason no alternative exists.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "competing term sheet",
+        "negotiation scenario",
+        "market terms"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who receives what at each exit value and why?",
+    "Where do preferences convert, participate, cap, or stack?",
+    "How do anti-dilution and pool changes reallocate ownership?",
+    "Which structure creates precedent or compounding rights in later rounds?",
+    "Is a clean lower price economically better than the higher structured price?",
+    "Which legal interpretation or missing document could change the waterfall?"
+  ],
+  "positiveSignals": [
+    "All terms map to signed or proposed language and deterministic calculations.",
+    "Stakeholder payout curves are visible across downside and upside.",
+    "The offer avoids unexplained double-dip or full-ratchet effects.",
+    "Price and structure are compared together.",
+    "Future-round precedent and governance consequences are explicit."
+  ],
+  "redFlags": [
+    "The decision relies on headline post-money valuation.",
+    "Preferences, participation, anti-dilution, or pool changes are omitted.",
+    "Different share classes are treated as economically identical.",
+    "The LLM performs or explains a waterfall that cannot be reproduced.",
+    "2019 conventions are presented as current legal rules."
+  ],
+  "disconfirmingEvidence": [
+    "A side letter or draft provision changes priority or participation.",
+    "A low-exit scenario transfers substantially more value than the team understood.",
+    "Full-ratchet or stacked preferences amplify future dilution.",
+    "A lower clean valuation produces better founder, employee, or company outcomes.",
+    "Counsel interpretation conflicts with the model."
+  ],
+  "contraindications": [
+    "Do not rank offers without complete terms and a reconciled cap table.",
+    "Do not issue legal, tax, or fiduciary advice.",
+    "Do not treat a 1x non-participating reference as a universal market rule."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Inventory economic and governance terms as one bundle.",
+      "Validate definitions against current documents and counsel.",
+      "Run deterministic payout and dilution scenarios.",
+      "Compare clean and structured alternatives.",
+      "Return stakeholder deltas, precedent risks, unknowns, and legal blockers."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationOwner": "Deterministic Waterfall Service",
+      "legalReviewRequired": true
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Terms are known through summaries.",
+      "medium": "Official transcript and draft documents are available.",
+      "high": "Hashed sources, executed language, current models, and counsel review converge."
+    },
+    "evidenceStrength": {
+      "low": "Headline valuation only.",
+      "medium": "Core economics are modeled with unresolved side rights.",
+      "high": "Complete documents and stakeholder waterfalls reconcile."
+    },
+    "evidenceCoverage": {
+      "low": "A material security or right is missing.",
+      "medium": "Current financing is covered but future downside or precedent is incomplete.",
+      "high": "Current, exit, down-round, dilution, and precedent scenarios are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No differentiated security or structure exists.",
+      "medium": "The financing is mostly clean but some rights matter.",
+      "high": "Multiple preferences, classes, or structured alternatives materially change economics."
+    },
+    "judgmentConfidence": {
+      "low": "Payouts cannot be reproduced.",
+      "medium": "Results are reproducible with unresolved legal interpretation.",
+      "high": "Calculations, documents, and counsel review converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VENTURE-DEALS-TERM-SHEET",
+    "METRICK-PREFERRED-WATERFALL"
+  ],
+  "conflictingFrameworkIds": [
+    "HIGHEST-POST-MONEY-WINS",
+    "ALL-PREFERRED-EQUAL"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Validate against counsel-approved transaction examples.",
+      "Pin applicable document versions and jurisdiction.",
+      "Prohibit non-reproducible LLM calculations."
+    ],
+    "empiricalQualifications": [
+      "Terms and market norms change across time, stage, and geography.",
+      "Legal definitions control over conceptual labels.",
+      "Economic fairness is stakeholder- and scenario-dependent."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public teaching is paraphrased; transaction documents require their own rights handling."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete legal and deterministic-service integration review.",
+      "Reconcile with Venture Deals and Metrick/Yasuda."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}
+

@@ -1,0 +1,304 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "aswath_damodaran_dark_side_valuation_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business",
+      "Pearson FT Press"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "DSV-P2-BOOK-2018",
+      "title": "The Dark Side of Valuation: Valuing Young, Distressed, and Complex Businesses",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Pearson FT Press",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_catalog_record",
+      "url": "https://www.pearson.com/en-us/subject-catalog/p/dark-side-of-valuation-the-valuing-young-distressed-and-complex-businesses/P200000000206/9780134854106",
+      "edition": "Third edition; published April 24, 2018; paperback ISBN 9780134854106; eText ISBNs 9780134854205 and 9780134854274",
+      "publishedAt": "2018-04-24",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_metadata_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports edition, publication date, publisher, and ISBN metadata only. It does not support chapter-level doctrine.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-SUPPORT-3E",
+      "title": "The Dark Side of Valuation — Third Edition Support Site",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_book_support_site",
+      "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/DSV3ed.htm",
+      "edition": "Official third-edition support site accessed July 28, 2026",
+      "publishedAt": "2018",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Maps the third edition's chapters to official illustrations, data, spreadsheets, readings, blog posts, and videos. The site is a chapter map, not a substitute for the complete book.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "title": "Valuing Young, Start-up and Growth Companies: Estimation Issues and Valuation Challenges",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "author_working_paper",
+      "url": "https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/younggrowth.pdf",
+      "edition": "May 2009 public working paper; 67 PDF pages",
+      "publishedAt": "2009-05",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_author_paper_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary public support for systematic young-company DCF, revenue construction, margin convergence, reinvestment, lifecycle risk, survival, relative valuation, equity claims, illiquidity, and limited real-option use.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-HIGHGROW",
+      "title": "The Dark Side of Valuation: Firms with no Earnings, no History and no Comparables",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "author_public_paper",
+      "url": "https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/HighGrow.pdf",
+      "edition": "Public paper accessed July 28, 2026; 50 PDF pages",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_author_paper_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Corroborates stable-growth constraints, margin convergence, lifecycle risk, terminal value sensitivity, and the separation of firm and equity value.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_publication_date_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-UNCERTAINTY",
+      "title": "Myth 3 about DCF: You Cannot Value Businesses When There Is Lots of Uncertainty",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "author_public_slides",
+      "url": "https://pages.stern.nyu.edu/~adamodar/pdfiles/blog/DCFMythUncertainty.pdf",
+      "edition": "Public slide deck accessed July 28, 2026; 13 PDF pages",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_author_slides_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports uncertainty classification, risk placement, simplicity, explicit distributions, and the warning that avoiding valuation does not remove uncertainty.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_publication_date_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-PROBABILISTIC",
+      "title": "Probabilistic Approaches: Scenario Analysis, Decision Trees and Simulations",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "author_public_chapter",
+      "url": "https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/probabilistic.pdf",
+      "edition": "Public chapter accessed July 28, 2026; 61 PDF pages",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_author_chapter_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports coherent scenarios, probability-weighted values, decision trees for sequential risk, simulation caveats, and double-counting controls.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_publication_date_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-MULTIPLES",
+      "title": "Multiples: First Principles",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "author_public_chapter",
+      "url": "https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/multiples.pdf",
+      "edition": "Public chapter accessed July 28, 2026; 22 PDF pages",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_author_chapter_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary public support for consistent multiple definitions, distribution awareness, fundamental drivers, comparable selection, and difference controls.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_publication_date_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-REALOPTIONS",
+      "title": "Real Options: Fact and Fantasy",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "author_public_paper",
+      "url": "https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/realopt.pdf",
+      "edition": "Public paper accessed July 28, 2026; 75 PDF pages",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_author_paper_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports real-option gates including underlying optionality, exclusivity, time limits, competitive erosion, and estimation limitations.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_publication_date_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-VC-PRICING-2016",
+      "title": "Venture Capital: It Is a Pricing, Not a Value, Game!",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Musings on Markets",
+      "sourceClass": "P1",
+      "sourceType": "author_blog_post",
+      "url": "https://aswathdamodaran.blogspot.com/2016/10/venture-capital-it-is-pricing-not-value.html",
+      "edition": "Author blog post published October 2, 2016",
+      "publishedAt": "2016-10-02",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_blog_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports explicit separation of intrinsic value and pricing, and cautions about small samples, stale private transactions, opaque security rights, feedback loops, and market lag.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-VALUATION-INTRO",
+      "title": "An Introduction to Valuation",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "NYU Stern School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author_educational_page",
+      "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/background/valintro.htm",
+      "edition": "Official educational page accessed July 28, 2026",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports bias, imprecision, estimation uncertainty, company uncertainty, macro uncertainty, and cash-flow/growth/risk foundations.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_publication_date_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-P1-BIG-MARKET-2015",
+      "title": "Big Markets, Over Confidence and the Macro Delusion!",
+      "authorOrSpeaker": [
+        "Aswath Damodaran"
+      ],
+      "publisher": "Musings on Markets",
+      "sourceClass": "P1",
+      "sourceType": "author_blog_post",
+      "url": "https://aswathdamodaran.blogspot.com/2015/08/big-markets-over-confidence-and-macro.html",
+      "edition": "Author blog post published August 25, 2015",
+      "publishedAt": "2015-08-25",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_blog_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Qualifies top-down revenue stories by requiring competition, feasible share capture, business-model economics, and avoidance of double counting market size.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "DSV-E1-BLS-SURVIVAL",
+      "title": "Entrepreneurship and the U.S. Economy",
+      "authorOrSpeaker": [
+        "U.S. Bureau of Labor Statistics"
+      ],
+      "publisher": "U.S. Bureau of Labor Statistics",
+      "sourceClass": "E1",
+      "sourceType": "official_government_cohort_data",
+      "url": "https://www.bls.gov/bdm/entrepreneurship/entrepreneurship.htm",
+      "edition": "Business Employment Dynamics overview last modified April 28, 2016",
+      "publishedAt": "2016-04-28",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_government_data",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies survival priors: establishment survival varies by industry, cohort, and business-cycle context. Establishment survival is not identical to venture-backed startup survival.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    }
+  ]
+}

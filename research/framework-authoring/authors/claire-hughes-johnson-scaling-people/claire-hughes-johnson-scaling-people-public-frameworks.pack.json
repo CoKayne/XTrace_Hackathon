@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "claire_hughes_johnson_scaling_people_public_frameworks_v0_1",
+  "name": "Claire Hughes Johnson / Scaling People Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten cards covering stage-appropriate operating systems, self-awareness, founding documents, cadence, hiring, onboarding, management, feedback, performance, and VC operating diligence.",
+  "cardFiles": [
+    "cards/sp-01-stage-appropriate-operating-system.card.json",
+    "cards/sp-02-leader-self-awareness-and-complementarity.card.json",
+    "cards/sp-03-founding-documents-and-lived-norms.card.json",
+    "cards/sp-04-operating-cadence-and-accountability.card.json",
+    "cards/sp-05-hiring-evidence-system.card.json",
+    "cards/sp-06-onboarding-and-team-development.card.json",
+    "cards/sp-07-manager-leverage-and-communication.card.json",
+    "cards/sp-08-candid-feedback-with-safety.card.json",
+    "cards/sp-09-performance-expectations-and-fairness.card.json",
+    "cards/sp-10-operating-diligence-bridge.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Review the licensed 2023 book and add exact chapter/page locators.",
+      "Verify complete hiring, onboarding, performance, and exit procedures.",
+      "Define privacy, fairness, and human-review controls for employment evidence.",
+      "Backtest operating judgments against prospective outcomes.",
+      "Complete Framework Fidelity and Decision Utility review."
+    ]
+  }
+}

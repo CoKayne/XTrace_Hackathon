@@ -1,0 +1,273 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-06",
+  "slug": "existing-demand-market-timing",
+  "name": "Existing Demand and Market Timing",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a large present or emerging demand exists now and whether the product solves it materially better, without dismissing habit-forming or category-creating products.",
+    "productLabel": "Demand-and-Timing Lens — based on Super Founders public materials",
+    "notAClaimOf": [
+      "existing markets always being superior",
+      "painkiller language proving willingness to pay",
+      "market size alone creating venture returns"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public market, timing, painkiller, and differentiation observations",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "The public framework favors evidence of a sufficiently large current demand and correct timing, often in an existing market where new technology can create a substantially better product. Defined pain is useful evidence, but products that create habits, communities, brands, or new behavior can also succeed. The product therefore tests demand, urgency, adoption constraints, timing catalysts, and differentiation rather than using painkiller or TAM labels as gates.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_association",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P1-TECHMEME-2019",
+      "claimIds": [
+        "SF-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 00:16:13-00:22:14: existing demand, market timing, incumbents, differentiated technology, and large markets"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-SANDHILL-2022",
+      "claimIds": [
+        "SF-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 24:56-27:21: painkiller and vitamin definitions, prevalence, habits, community, and brand"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Demand and timing evidence is dated.",
+    "Existing pain, new behavior, and market size are evaluated separately.",
+    "The product's improvement and adoption constraints can be tested."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "customer_demand",
+      "description": "Observed current behavior, spend, workarounds, urgency, or repeated use from target customers.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer interviews",
+        "usage data",
+        "contracts",
+        "workflow observation",
+        "spend records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "timing_catalysts",
+      "description": "Dated technology, regulation, cost, behavior, infrastructure, or capital changes enabling adoption now.",
+      "necessity": "required",
+      "acceptableSources": [
+        "market research",
+        "regulatory source",
+        "cost curve",
+        "technology benchmark",
+        "customer evidence"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "product_delta",
+      "description": "Measured improvement over the current alternative in performance, cost, time, risk, or experience.",
+      "necessity": "required",
+      "acceptableSources": [
+        "benchmark",
+        "pilot result",
+        "customer test",
+        "technical diligence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "adoption_constraints",
+      "description": "Switching costs, workflow change, regulation, budget ownership, sales cycle, and dependency constraints.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer diligence",
+        "sales data",
+        "regulatory analysis",
+        "implementation plan"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What demand exists today independent of the company's pitch?",
+    "Why is this moment materially better than two years earlier or later?",
+    "What exact alternative do customers use and pay for now?",
+    "How large is the measured improvement and for whom?",
+    "If the product is a vitamin, what creates repeat behavior, habit, community, or brand?",
+    "Which adoption constraint can invalidate timing?"
+  ],
+  "positiveSignals": [
+    "Customers already spend money, time, or risk on the problem.",
+    "A dated catalyst removes a previous adoption constraint.",
+    "Measured product improvement changes customer behavior.",
+    "Usage, contracts, or retention corroborate stated urgency.",
+    "A category-creating product shows repeat behavior rather than only stated interest."
+  ],
+  "redFlags": [
+    "Painkiller is asserted without budget, behavior, or urgency evidence.",
+    "Top-down TAM substitutes for reachable demand.",
+    "A technology breakthrough lacks a customer adoption mechanism.",
+    "Timing is justified only by increased venture funding.",
+    "The product is described as ten-times better without a comparable metric."
+  ],
+  "disconfirmingEvidence": [
+    "Customers tolerate the current alternative and do not allocate budget.",
+    "The catalyst is reversible, delayed, or unrelated to adoption.",
+    "Pilot users do not retain or expand.",
+    "Switching, regulation, or deployment offsets the product improvement.",
+    "Bottom-up reachable demand is materially below the narrative market."
+  ],
+  "contraindications": [
+    "Do not use painkiller or vitamin as a binary score.",
+    "Do not infer company traction from sector funding.",
+    "Do not treat incumbent revenue as automatically reachable market.",
+    "Do not make market-timing claims without dated evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Document current demand and alternatives before reviewing TAM.",
+      "Identify dated timing catalysts and adoption constraints.",
+      "Measure product delta and customer response.",
+      "Evaluate habit, community, or brand evidence for category-creating products.",
+      "Conclude on demand-and-timing evidence without deciding valuation."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only founder market narrative is available.",
+      "medium": "Author public materials and some customer evidence are reviewed.",
+      "high": "Licensed source definitions and independently verified market and customer evidence are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Top-down market size and stated interest only.",
+      "medium": "Customer workarounds and pilots support demand.",
+      "high": "Paid use, retention, expansion, benchmarks, and dated catalysts converge."
+    },
+    "evidenceCoverage": {
+      "low": "Demand or timing evidence is missing.",
+      "medium": "Demand and catalyst exist but adoption or reachable market is incomplete.",
+      "high": "Demand, alternative, catalyst, product delta, adoption, and reachable market are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The question is not about startup market timing.",
+      "medium": "Demand exists but timing is not the main uncertainty.",
+      "high": "Company outcome depends materially on demand formation or a current catalyst."
+    },
+    "judgmentConfidence": {
+      "low": "The conclusion is narrative.",
+      "medium": "Demand and timing are plausible with unresolved adoption constraints.",
+      "high": "Independent demand, product, timing, and adoption evidence converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-03",
+    "PT-08",
+    "SHR-02",
+    "DUNFORD-POSITIONING"
+  ],
+  "conflictingFrameworkIds": [
+    "TAM-ONLY",
+    "NO-COMPETITION-EQUALS-NEW-MARKET",
+    "PAINKILLER-BINARY-GATE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Define stage- and business-model-specific demand evidence.",
+      "Validate timing catalyst taxonomy against historical cohorts.",
+      "Test incremental utility beyond traction and market size."
+    ],
+    "empiricalQualifications": [
+      "The public findings describe past billion-dollar valuation outcomes.",
+      "Painkiller and vitamin labels require subjective coding.",
+      "Industry themes and timing from 2005-2018 may not generalize."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book or interview passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Review licensed market, timing, and painkiller definitions.",
+      "Reconcile with positioning and category-creation frameworks."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial demand-and-timing card with category-creation exception."
+    }
+  ]
+}
+

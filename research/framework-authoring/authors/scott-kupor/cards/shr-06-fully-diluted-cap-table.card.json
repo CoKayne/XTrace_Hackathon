@@ -1,0 +1,272 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-06",
+  "slug": "fully-diluted-cap-table",
+  "name": "Continuous Fully Diluted Cap-Table Visibility",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Makes the ownership consequences of every SAFE, note, option pool, and proposed round visible before the next close.",
+    "productLabel": "Cap-Table Visibility Lens — based on Scott Kupor's official fundraising transcript",
+    "notAClaimOf": [
+      "SAFEs or notes being inherently harmful",
+      "a legal or tax opinion",
+      "an approximate ownership table being sufficient"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor's warning about cumulative rolling convertible dilution",
+    "scope": "person_direct",
+    "people": [
+      "Scott Kupor"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Simple rolling convertibles reduce transaction friction but can hide cumulative ownership transfer. After every instrument or proposed financing, calculate a fully diluted cap table under relevant conversion, discount, cap, option-pool, and round scenarios. The framework identifies missing or surprising ownership effects; a deterministic cap-table engine performs the math.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference",
+    "contractual_convention"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-A16Z-RAISE-2019",
+      "claimIds": [
+        "SHR-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official transcript lines 194-203: SAFE simplicity, rolling closes, and conversion dilution surprise"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SHR-E1-NVCA-MODEL-2026",
+      "claimIds": [
+        "SHR-EQ-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Current model-document index and tailoring disclaimer"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "safe",
+      "convertible_note",
+      "equity",
+      "preferred_equity",
+      "option",
+      "warrant"
+    ]
+  },
+  "requiredConditions": [
+    "The company has or proposes equity-linked instruments.",
+    "All executed documents and capitalization records are available.",
+    "The deterministic engine supports the instrument definitions and jurisdiction."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "executed_instruments",
+      "description": "Every signed equity, SAFE, note, warrant, option, side letter, amendment, and transfer document.",
+      "necessity": "required",
+      "acceptableSources": [
+        "executed financing documents",
+        "stock ledger",
+        "board approvals"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "capitalization_ledger",
+      "description": "Issued, outstanding, reserved, vested, unvested, exercised, cancelled, and promised securities.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table system",
+        "stock ledger",
+        "option plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "conversion_scenarios",
+      "description": "Relevant price, cap, discount, interest, MFN, pre/post-money, pool, and round-size scenarios.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic cap-table service",
+        "legal review",
+        "round model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "stakeholder_reconciliation",
+      "description": "Reconciliation of company, counsel, platform, and investor capitalization records.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "company certification",
+        "counsel reconciliation",
+        "investor confirmation"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What does each instrument become under each financing scenario?",
+    "Who bears dilution from caps, discounts, interest, or option-pool changes?",
+    "Are pre-money and post-money definitions consistent?",
+    "Do side letters or MFN rights alter the apparent terms?",
+    "What ownership surprises appear before and after the proposed round?",
+    "Can every output be reproduced from signed documents?"
+  ],
+  "positiveSignals": [
+    "All instruments reconcile to signed documents and the stock ledger.",
+    "Conversion logic is deterministic and versioned.",
+    "Stakeholders see pre- and post-round fully diluted ownership.",
+    "Option-pool and pro-rata assumptions are explicit.",
+    "Sensitivity results identify rather than hide dilution."
+  ],
+  "redFlags": [
+    "The company maintains only a headline ownership table.",
+    "Rolling closes are not recomputed after each instrument.",
+    "Pre/post-money, cap, discount, or MFN definitions are ambiguous.",
+    "Promised options or side letters are omitted.",
+    "The LLM performs ownership arithmetic without a reproducible engine."
+  ],
+  "disconfirmingEvidence": [
+    "Counsel, platform, and company records do not reconcile.",
+    "A signed side letter changes conversion or participation.",
+    "The proposed pool top-up materially changes founder or investor ownership.",
+    "A scenario output cannot be reproduced from documents.",
+    "A missing transfer, cancellation, or exercise changes the denominator."
+  ],
+  "contraindications": [
+    "Do not infer instrument terms from a pitch deck or email summary.",
+    "Do not let the language model invent or approximate cap-table math.",
+    "Do not publish a legal or tax conclusion without qualified review."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Inventory and reconcile all securities and rights.",
+      "Parse instrument definitions with human and legal review.",
+      "Run deterministic conversion and financing scenarios.",
+      "Display stakeholder-level ownership and dilution deltas.",
+      "Return missing documents and unreconciled items as blockers."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationOwner": "Deterministic Cap Table Service",
+      "legalReviewRequired": true
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Instrument terms are known only through summaries.",
+      "medium": "Official transcript and most executed documents are available.",
+      "high": "Hashed source, complete executed documents, and current legal mapping are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Pitch-deck cap table only.",
+      "medium": "Executed instruments exist but reconciliation is incomplete.",
+      "high": "All documents, ledger entries, and deterministic scenarios reconcile."
+    },
+    "evidenceCoverage": {
+      "low": "One or more security classes or side rights are missing.",
+      "medium": "Current cap table is complete but proposed-round sensitivity is incomplete.",
+      "high": "Current, conversion, proposed round, pool, and follow-on scenarios are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No equity-linked instruments exist.",
+      "medium": "The capitalization is simple and a single scenario is relevant.",
+      "high": "Multiple convertibles, pools, or financing alternatives create material complexity."
+    },
+    "judgmentConfidence": {
+      "low": "Ownership cannot be reproduced.",
+      "medium": "Most ownership is reproducible with minor unresolved items.",
+      "high": "All outputs reconcile and pass legal review."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VENTURE-DEALS-CAP-TABLE",
+    "METRICK-PREFERRED-EQUITY"
+  ],
+  "conflictingFrameworkIds": [
+    "HEADLINE-OWNERSHIP-ONLY",
+    "LLM-CAP-TABLE-MATH"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Validate calculations against counsel-approved examples.",
+      "Pin instrument versions and jurisdiction.",
+      "Require full reconciliation before formal use."
+    ],
+    "empiricalQualifications": [
+      "Instrument conventions change over time and jurisdiction.",
+      "Ownership outcomes depend on exact signed definitions.",
+      "Cap-table accuracy does not determine company quality."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The transcript is paraphrased; actual transaction documents retain their own rights and confidentiality."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Align with current instrument parsers and legal review workflow.",
+      "Reconcile with Venture Deals and Metrick/Yasuda."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

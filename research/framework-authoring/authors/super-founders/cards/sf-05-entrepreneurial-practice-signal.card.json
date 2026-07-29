@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-05",
+  "slug": "entrepreneurial-practice-signal",
+  "name": "Entrepreneurial Practice Signal",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates what founders learned and transferred from prior value-creation attempts without rewarding serial-founder status or famous exits mechanically.",
+    "productLabel": "Entrepreneurial Practice Lens — based on Super Founders public findings",
+    "notAClaimOf": [
+      "first-time founders being inferior",
+      "all prior failures increasing future success",
+      "prior exit size being founder quality"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public Super Founder concept with serial-entrepreneur empirical qualification",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "The author observes that prior attempts to build, sell, organize, or create value can reveal transferable skill and learning, including small outcomes that venture narratives call failures. Because many billion-dollar founders were first-time entrepreneurs and external evidence distinguishes prior success from prior failure, the product evaluates observed learning, resources, and behavior rather than serial-founder count or exit prestige.",
+  "claimTypes": [
+    "empirical_association",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P1-INC-2021",
+      "claimIds": [
+        "SF-CLM-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Takeaways: prior entrepreneurship and creating something that generated value"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-SANDHILL-2022",
+      "claimIds": [
+        "SF-CLM-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 20:59-24:56: first-time founders, repeat attempts, arbitrary outcome threshold, resources, network, and learning"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SF-E1-SERIAL-NBER",
+      "claimIds": [
+        "SF-EQ-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and published-version metadata: performance persistence and distinction between prior successful, prior failed, and first-time entrepreneurs"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Prior experience is decomposed into actions, outcomes, learning, resources, and transferability.",
+    "First-time founder status is not a negative score.",
+    "Prior success and prior failure are not combined into one flag."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "prior_attempt_timeline",
+      "description": "Dated prior companies, projects, products, organizations, or side ventures and their actual outcomes.",
+      "necessity": "required",
+      "acceptableSources": [
+        "founder history",
+        "company records",
+        "public archives",
+        "references"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "learning_transfer_map",
+      "description": "Specific decisions, mistakes, capabilities, networks, and resources from prior attempts that apply to the current company.",
+      "necessity": "required",
+      "acceptableSources": [
+        "founder interview",
+        "reference checks",
+        "decision records",
+        "current operating evidence"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "prior_outcome_classification",
+      "description": "Outcome separated into success, failure, shutdown, acquihire, small exit, cash-generating operation, or unresolved.",
+      "necessity": "required",
+      "acceptableSources": [
+        "transaction records",
+        "financial records",
+        "public announcements",
+        "independent references"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "current_behavioral_confirmation",
+      "description": "Evidence that claimed learning appears in current hiring, product, customer, financing, or governance decisions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating records",
+        "current references",
+        "milestone history",
+        "decision log"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What did the founder actually build or cause to happen before?",
+    "Which lesson changed a current decision?",
+    "Was the prior outcome success, failure, or unresolved under a consistent definition?",
+    "Which resources or network are transferable rather than merely prestigious?",
+    "Does current behavior confirm the claimed lesson?",
+    "What evidence would a first-time founder need to demonstrate the same capability?"
+  ],
+  "positiveSignals": [
+    "The founder names a prior mistake and shows a changed current behavior.",
+    "Prior work created measurable value even without a large exit.",
+    "Relevant recruiting, customer, technical, or capital networks transfer to the current plan.",
+    "Current execution confirms the claimed capability.",
+    "A first-time founder demonstrates equivalent learning through other evidence."
+  ],
+  "redFlags": [
+    "Serial-founder count or famous exit is used as a standalone score.",
+    "Prior failure is romanticized without changed behavior.",
+    "A prior company's success is attributed entirely to one founder without role evidence.",
+    "Transferability is asserted across incompatible sectors or stages.",
+    "First-time founder status is treated as missing skill."
+  ],
+  "disconfirmingEvidence": [
+    "References contradict the founder's account of prior role or outcome.",
+    "The same failure mechanism reappears in the current company.",
+    "Prior networks or capabilities are inaccessible or irrelevant.",
+    "Prior success depended on conditions absent now.",
+    "Current decisions show no evidence of claimed learning."
+  ],
+  "contraindications": [
+    "Do not use a binary serial-founder factor.",
+    "Do not reward prior failure without observable learning.",
+    "Do not let prior success override current company, price, integrity, or governance evidence.",
+    "Do not penalize first-time founders."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Create a verified timeline of prior value-creation attempts.",
+      "Classify each outcome and the founder's actual role.",
+      "Map claimed lessons and resources to current decisions.",
+      "Seek disconfirming references and repeated failure mechanisms.",
+      "Conclude on transferable practice, not founder prestige or count."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Prior history is based only on founder self-report.",
+      "medium": "Author findings and some external outcome evidence are reviewed.",
+      "high": "Licensed estimates, external empirical tables, and independent records are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Prior-title or exit label only.",
+      "medium": "Verified prior outcome and plausible learning are available.",
+      "high": "Independent role evidence and current behavioral confirmation converge."
+    },
+    "evidenceCoverage": {
+      "low": "Prior outcome or role is unverified.",
+      "medium": "Timeline and learning exist but transferability or current behavior is incomplete.",
+      "high": "Role, outcome, lesson, transfer, network, and current confirmation are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No relevant prior attempt exists.",
+      "medium": "Prior experience exists but context differs materially.",
+      "high": "The current company draws on closely related company-building capabilities."
+    },
+    "judgmentConfidence": {
+      "low": "The conclusion is prestige-based.",
+      "medium": "Transferable learning is plausible but partly unverified.",
+      "high": "Verified prior evidence and current behavior support the same mechanism."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VM-05",
+    "SF-02",
+    "SF-04",
+    "PT-07"
+  ],
+  "conflictingFrameworkIds": [
+    "SERIAL-FOUNDER-BONUS",
+    "FIRST-TIME-FOUNDER-PENALTY",
+    "FAILURE-AUTOMATICALLY-TEACHES"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Review licensed definitions and estimates for prior entrepreneurship.",
+      "Validate role, outcome, and learning features separately on decision-date data.",
+      "Test incremental utility beyond founder access, current traction, and investor selection."
+    ],
+    "empiricalQualifications": [
+      "Many billion-dollar founders in the author's public account were first-time entrepreneurs.",
+      "External evidence distinguishes prior successful founders from prior failed founders.",
+      "Prior entrepreneurial history may proxy for skill, access, wealth, or selection."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No founder case narrative or book text is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Review complete book definition of Super Founder.",
+      "Review external serial-entrepreneur paper tables and sample."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial practice-and-learning card replacing serial-founder prestige."
+    }
+  ]
+}
+

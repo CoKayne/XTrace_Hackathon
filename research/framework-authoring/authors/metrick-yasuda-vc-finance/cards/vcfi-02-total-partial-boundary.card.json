@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-02",
+  "slug": "total-partial-boundary",
+  "name": "Total Valuation and Partial Valuation Boundary",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Separates company value from the value of each contractual claim and from the fund's final decision.",
+    "productLabel": "Total–Partial Valuation Boundary — based on Metrick and Yasuda's public VC finance architecture",
+    "notAClaimOf": [
+      "one valuation number answering every stakeholder's question",
+      "preferred and common shares having identical value",
+      "security value alone determining the investment decision"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Andrew Metrick and Ayako Yasuda's public textbook and companion-tool architecture",
+    "scope": "coauthored_work",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "Yale School of Management",
+      "University of California, Davis",
+      "VCV Tools"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "The company-level exit value is a total valuation. Each founder, employee, preferred round, GP, and LP owns a different contingent claim on that total value. Term sheets and the fund agreement determine partial values. The report must keep exit company value, current company value, security value, implied round valuation, GP value, LP value, and policy classification separate.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P2-BOOK-2021",
+      "claimIds": [
+        "VCFI-CLM-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Publisher description and Parts II-III: enterprise valuation, preferred stock, total valuation, and partial valuation"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-YALE-TEXTBOOK",
+      "claimIds": [
+        "VCFI-CLM-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official textbook abstract: total and partial valuation"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-OVERVIEW",
+      "claimIds": [
+        "VCFI-CLM-001",
+        "VCFI-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "AUTO and FLEX overview: total exit value and division among founders, rounds, GP, and LP"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "common_equity",
+      "preferred_equity",
+      "convertible",
+      "options"
+    ]
+  },
+  "requiredConditions": [
+    "Every value has a date, currency, entity, claim type, and stakeholder.",
+    "Enterprise value and equity value are bridged explicitly.",
+    "Company value is estimated before contractual claims are allocated.",
+    "Fund Policy receives normalized outputs rather than a mixed headline valuation."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "company_total_value",
+      "description": "Versioned exit and current company value distributions with enterprise-to-equity bridge.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "claim_stack",
+      "description": "All equity and convertible claims, shares, preferences, seniority, participation, conversion, caps, and option pool.",
+      "necessity": "required",
+      "acceptableSources": [
+        "charter",
+        "term sheets",
+        "cap table",
+        "financing documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fund_economics",
+      "description": "Deal cost, committed capital, fees, carry, reserves, ownership, and LP/GP allocation rules.",
+      "necessity": "required",
+      "acceptableSources": [
+        "limited partnership agreement",
+        "approved fund policy",
+        "fund accounting records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which company-level value is being estimated and at what date?",
+    "Which exact security and stakeholder owns the claim?",
+    "How do the terms transform company exit value into claim payoff?",
+    "How does claim value transform into GP and LP value?",
+    "Which remaining policy gates are outside valuation?"
+  ],
+  "positiveSignals": [
+    "Every displayed value includes scope, owner, date, and currency.",
+    "Company total value and claim partial value are shown side by side.",
+    "A complete waterfall reconciles all distributions to total proceeds.",
+    "GP and LP values reconcile to fund economics.",
+    "The final decision cites separate valuation, terms, and policy results."
+  ],
+  "redFlags": [
+    "The latest post-money is called intrinsic company value.",
+    "A preferred share price is applied to all common shares.",
+    "A claim payoff is reported without the company outcome producing it.",
+    "GP carry is omitted from LP return.",
+    "The LLM emits a blended number with no reproducible bridge."
+  ],
+  "disconfirmingEvidence": [
+    "The cap table or terms cannot reconcile to issued securities.",
+    "Alternative plausible term interpretations materially change allocation.",
+    "The enterprise-to-equity bridge is incomplete.",
+    "GP/LP economics cannot reconcile to the LPA.",
+    "Policy classification changes despite unchanged normalized inputs."
+  ],
+  "contraindications": [
+    "Do not compare values belonging to different claims or dates.",
+    "Do not infer partial value from ownership percentage alone.",
+    "Do not call implied post-money intrinsic value.",
+    "Do not let this content card output Invest Candidate."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Label every value by time, entity, claim, stakeholder, currency, and method.",
+      "Obtain independent company total valuation.",
+      "Run contractual waterfall and partial valuation.",
+      "Apply GP/LP economics.",
+      "Pass normalized outputs to deterministic Fund Policy while preserving all intermediate reconciliations."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredLayers": [
+        "exit_company_total_value",
+        "current_company_total_value",
+        "security_partial_value",
+        "round_implied_valuation",
+        "gp_value",
+        "lp_value",
+        "fund_policy_result"
+      ],
+      "reconciliationRule": "sum_of_exit_claim_payoffs_equals_distributable_exit_equity_value",
+      "calculationOwner": "valuation_terms_and_fund_economics_services",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only media valuations and informal cap-table notes are available.",
+      "medium": "Valuation and partial terms exist but one material layer is unaudited.",
+      "high": "Verified company evidence, legal terms, cap table, LPA, and deterministic outputs are available."
+    },
+    "evidenceStrength": {
+      "low": "A single headline number drives every layer.",
+      "medium": "Total and partial values are separated but one bridge remains estimated.",
+      "high": "All layers reconcile under multiple scenarios."
+    },
+    "evidenceCoverage": {
+      "low": "Only round valuation is known.",
+      "medium": "Company and security layers are covered but fund economics are incomplete.",
+      "high": "Company, claims, rounds, GP, LP, and policy are fully covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The security or stakeholder cannot be identified.",
+      "medium": "The claim is clear but prior rounds or fund terms are incomplete.",
+      "high": "All owners, claims, dates, and governing documents are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a data request can be issued.",
+      "medium": "Some layer-specific values are usable with material caveats.",
+      "high": "All values reconcile and can enter deterministic policy."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-10",
+    "SK-04",
+    "VM-08"
+  ],
+  "conflictingFrameworkIds": [
+    "ONE-VALUATION-FOR-ALL-CLAIMS",
+    "POSTMONEY-EQUALS-INTRINSIC",
+    "GROSS-EQUALS-LP-NET"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete third-edition total and partial valuation review.",
+      "Validate all reconciliation identities and data owners.",
+      "Obtain valuation, venture-counsel, and fund-operations review."
+    ],
+    "empiricalQualifications": [
+      "Reported private-company valuations frequently use a preferred round price across unlike claims.",
+      "Claim values are model-dependent when exit timing and volatility are unobservable.",
+      "Jurisdiction and security documents may change the waterfall."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The public textbook architecture and companion-tool descriptions are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition Chapters 7-18 review.",
+      "Define runtime value-object schema and reconciliation tests."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-09",
+  "slug": "long-horizon-partnership-and-holding",
+  "name": "Long-Horizon Partnership and Holding",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Aligns company-building time, investor-founder partnership, fund constraints, and liquidity decisions instead of forcing a short-horizon outcome.",
+    "productLabel": "Long-Horizon Partnership and Holding — synthesis of separately attributed Don Valentine and Michael Moritz public statements",
+    "notAClaimOf": ["holding indefinitely", "patience rescuing weak economics", "fund-life or fiduciary constraints being optional"]
+  },
+  "attribution": {
+    "display": "Product synthesis from direct Don Valentine and Michael Moritz public statements, preserved separately in source references",
+    "scope": "product_synthesis",
+    "people": ["Don Valentine", "Michael Moritz"],
+    "organizations": ["Sequoia Capital", "Computer History Museum", "Stanford Technology Ventures Program", "Stanford Graduate School of Business"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Venture partnerships and company building often span many years. Before investing or pressing for liquidity, align the expected company journey with fund life, reserves, ownership, governance, LP obligations, and realistic exit paths. Continue holding only when updated prospects and stakeholder constraints support it, not because of sunk cost or prestige.",
+  "claimTypes": ["direct_doctrine", "historical_description", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-P1-VALENTINE-NETAPP-CHM",
+      "claimIds": ["SQ-CLM-024"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 14-15: bidirectional diligence and multi-year financing partnership"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-P1-MORITZ-GSB-2019",
+      "claimIds": ["SQ-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Section Play the Long Game: long journeys, patience, people, and large market opportunity"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-P1-MORITZ-STVP-2016",
+      "claimIds": ["SQ-CLM-023"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 245-263: continued holding, LP comfort, inopportune liquidity, and interest-rate uncertainty"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["preferred", "common", "convertible", "all"]
+  },
+  "requiredConditions": [
+    "The fund's legal structure, life, extensions, LP terms, reserves, and liquidity obligations are known.",
+    "Company financing needs, milestones, ownership, and exit paths are modeled.",
+    "Holding decisions are periodically re-underwritten rather than inherited."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "company_time_horizon",
+      "description": "Milestones, financing rounds, regulatory or technical duration, growth path, and plausible exit windows.",
+      "necessity": "required",
+      "acceptableSources": ["operating plan", "technical roadmap", "regulatory plan", "financing model", "exit scenarios"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fund_constraints",
+      "description": "Fund life, extensions, concentration limits, reserves, recycling, LP rights, distributions, and decision authority.",
+      "necessity": "required",
+      "acceptableSources": ["LPA", "side letters", "fund model", "reserve policy", "investment policy"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_holding_case",
+      "description": "Updated company prospects, valuation scenarios, ownership, dilution, downside, alternatives, and expected return from today.",
+      "necessity": "required",
+      "acceptableSources": ["current Evidence Pack", "valuation model", "cap table", "waterfall", "market evidence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "liquidity_and_stakeholders",
+      "description": "Company, founder, employee, LP, co-investor, regulatory, and market constraints on timing and method of liquidity.",
+      "necessity": "required",
+      "acceptableSources": ["board records", "shareholder agreements", "tender terms", "LP communication", "legal review"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "How long could the company reasonably require to reach value-creating milestones?",
+    "Can the fund legally and economically support that duration and follow-on need?",
+    "What is the expected return from holding today rather than the return since initial investment?",
+    "What alternatives exist: hold, partial sale, continuation, distribution, secondary, or full exit?",
+    "Whose interests and rights change under each liquidity path?"
+  ],
+  "positiveSignals": [
+    "Company and fund timelines are explicitly compatible.",
+    "Reserves and ownership needs are modeled under downside and dilution.",
+    "Holding is supported by current prospects and expected return from today's value.",
+    "Liquidity alternatives and stakeholder impacts are documented."
+  ],
+  "redFlags": [
+    "A long journey is used to excuse missed milestones indefinitely.",
+    "The fund lacks reserves or legal duration for the company's capital needs.",
+    "Sunk cost, paper mark, prestige, or relationship substitutes for re-underwriting.",
+    "Liquidity is delayed or forced without considering LP, company, employee, and fiduciary obligations."
+  ],
+  "disconfirmingEvidence": [
+    "An early sale can be rational when risk-adjusted value and stakeholder outcomes are superior.",
+    "Long holding can destroy value through dilution, concentration, opportunity cost, or governance drift.",
+    "A strong company can be incompatible with a particular fund's duration or ownership model.",
+    "LP flexibility described in one Sequoia context does not apply to other funds."
+  ],
+  "contraindications": [
+    "Do not transplant Sequoia's disclosed LP flexibility to another fund.",
+    "Do not treat patience as a substitute for milestones, economics, or governance.",
+    "Do not calculate holding return, dilution, or waterfall inside the language model."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Map company milestones, financing needs, and exit windows.",
+      "Parse fund-life, reserve, concentration, LP, and authority constraints.",
+      "Calculate hold, partial-liquidity, and exit scenarios from current value.",
+      "Review stakeholder and fiduciary impacts with legal input.",
+      "Conclude aligned hold, conditional hold, seek liquidity, incompatible horizon, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Fund life, reserves, ownership, dilution, waterfall, expected return, concentration, and liquidity scenario arithmetic must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Informal horizon expectation.", "medium": "Company plan and fund model.", "high": "Legal fund documents, cap table, financial scenarios, and stakeholder records."},
+    "evidenceStrength": {"low": "Long-term narrative.", "medium": "Compatible timelines and reserves.", "high": "Legal, economic, ownership, and stakeholder evidence support a specific path."},
+    "evidenceCoverage": {"low": "Company vision only.", "medium": "Company and fund horizon.", "high": "Milestones, financing, fund terms, ownership, return, liquidity, and stakeholder impact covered."},
+    "applicabilityConfidence": {"low": "No material duration decision.", "medium": "Long-horizon company or approaching liquidity.", "high": "Active investment, reserve, extension, secondary, or exit choice."},
+    "judgmentConfidence": {"low": "Patience heuristic.", "medium": "Bounded horizon fit.", "high": "Reconciled legal and deterministic scenario evidence supports the decision."}
+  },
+  "overlapFrameworkIds": ["BVC-08", "BVC-10", "SHR-09", "VM-09", "VCFI-04"],
+  "conflictingFrameworkIds": ["PATIENCE-AS-AUTO-HOLD", "FUND-LIFE-IGNORED"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Integrate fund-document parser and legal review.", "Validate hold-versus-exit scenarios.", "Define fiduciary and conflict controls."],
+    "empiricalQualifications": ["Public statements describe Sequoia-specific experience and constraints.", "Optimal holding period varies by fund, company, market, and security."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Direct public statements are separately attributed; cross-source framework is labeled product synthesis."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Obtain fund counsel and fiduciary review before decision use."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

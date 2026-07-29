@@ -1,0 +1,280 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-05",
+  "slug": "bet-on-jockey",
+  "name": "Bet on the Jockey",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates observable founder adaptability and execution while preventing team narrative from overriding business evidence.",
+    "productLabel": "Jockey Lens — based on The Venture Mindset public materials with empirical qualification",
+    "notAClaimOf": [
+      "team primacy in every stage or sector",
+      "prestige as founder quality",
+      "author endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Strebulaev public materials and VC survey evidence, qualified by deal-selection research",
+    "scope": "product_synthesis",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Early-company plans change, so founders' integrity, learning speed, relevant capability, recruiting, and execution can be material. The lens uses observed behavior and references, keeps stage and sector in view, and does not let founder narrative, pedigree, or charisma substitute for product, customer, economics, or price evidence.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_association",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-006"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pages 14 and 17"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VM-E1-VC-DECISIONS",
+      "claimIds": [
+        "VM-CLM-006",
+        "VM-EQ-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Survey results on team importance and stage/industry variation"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VM-E1-DEAL-SELECTION",
+      "claimIds": [
+        "VM-EQ-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Noisy initial scores and business-factor results"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Founder and team behavior can be assessed from more than self-description.",
+    "Stage- and sector-specific capability needs are explicit.",
+    "Team judgment remains separate from business and price judgments."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "observed_execution",
+      "description": "Dated commitments, outcomes, errors, and response to setbacks.",
+      "necessity": "required",
+      "acceptableSources": [
+        "operating records",
+        "customer evidence",
+        "product milestones",
+        "board records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "independent_references",
+      "description": "Multi-sided evidence from people who worked with, bought from, or reported to the team.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer references",
+        "employee references",
+        "cofounder references",
+        "prior investor references"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "stage_capability_map",
+      "description": "Current and next-stage critical roles, demonstrated strengths, gaps, and hiring plan.",
+      "necessity": "required",
+      "acceptableSources": [
+        "organization plan",
+        "reference evidence",
+        "operating review"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "business_evidence",
+      "description": "Product, customer, market, economics, and price evidence kept outside the team score.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Evidence Pack",
+        "valuation model",
+        "customer records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What has the team actually learned or changed after contrary evidence?",
+    "Which commitments were met, missed, or redefined?",
+    "Which capabilities are proven for this stage and sector?",
+    "What do independent references agree and disagree about?",
+    "Can the team recruit stronger people and share control?",
+    "Would the business still be attractive if founder names and pedigree were hidden?"
+  ],
+  "positiveSignals": [
+    "The team updates beliefs after evidence and explains revisions.",
+    "Independent references converge on integrity and execution.",
+    "Founders identify gaps and recruit complementary strength.",
+    "Past setbacks produce specific learning and changed behavior.",
+    "The investment case remains credible after anonymizing prestige."
+  ],
+  "redFlags": [
+    "Charisma, school, employer, or investor prestige dominates the assessment.",
+    "Claims of adaptability lack a concrete changed decision.",
+    "References are only founder-selected admirers.",
+    "The team repeats misses without revising mechanism or plan.",
+    "Strong founder narrative is used to excuse weak customer or economic evidence."
+  ],
+  "disconfirmingEvidence": [
+    "References reveal recurring integrity or collaboration failures.",
+    "The team hides or post-hoc redefines failed commitments.",
+    "A stage-critical capability remains unfilled without a credible plan.",
+    "Business evidence worsens despite strong team ratings.",
+    "Anonymous reviewers materially lower the assessment after prestige removal."
+  ],
+  "contraindications": [
+    "Do not use protected traits, pedigree, charisma, or eccentricity as score inputs.",
+    "Do not let team judgment override deterministic price or policy gates.",
+    "Do not assume the team factor has equal predictive value across stages and sectors."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Anonymize prestige where possible.",
+      "Map observed behaviors and independent references.",
+      "Assess capability against current and next stage.",
+      "List contradictory business evidence separately.",
+      "Conclude on team adaptability without producing company investability."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Team-first doctrine is known only through secondary summaries.",
+      "medium": "Author keynote and VC self-report evidence are available.",
+      "high": "Hashed sources and authorized empirical sections are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Founder interview and prestige only.",
+      "medium": "Observed execution plus one independent reference.",
+      "high": "Longitudinal behavior, diverse references, hiring, and stage outcomes converge."
+    },
+    "evidenceCoverage": {
+      "low": "Execution or reference evidence is missing.",
+      "medium": "Current capability is covered but next-stage gaps are weak.",
+      "high": "Behavior, references, roles, gaps, and business counterevidence are complete."
+    },
+    "applicabilityConfidence": {
+      "low": "The company is mature and team adaptability is not a primary uncertainty.",
+      "medium": "Team matters but business evidence dominates this stage.",
+      "high": "Early uncertainty makes adaptation and execution central."
+    },
+    "judgmentConfidence": {
+      "low": "Only founder narrative is available.",
+      "medium": "Observed strengths exist with unresolved gaps.",
+      "high": "Behavior, references, capability, and anonymized review converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-07",
+    "SUPER-FOUNDERS-BASE-RATES",
+    "WASS-FOUNDERS-DILEMMAS"
+  ],
+  "conflictingFrameworkIds": [
+    "HORSE-FIRST",
+    "TEAM-ALWAYS-DOMINATES"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Review full deal-selection study and stage interactions.",
+      "Develop blinded, behavior-based team rubric.",
+      "Test incremental utility beyond traction and business factors."
+    ],
+    "empiricalQualifications": [
+      "Survey evidence describes VC beliefs, not causal optimality.",
+      "Initial team scores can be noisy.",
+      "Business-factor importance can rise with stage and context."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No founder case narrative or book text is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete authorized empirical paper review.",
+      "Reconcile with PT-07 and Super Founders."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft replaces founder mystique with observable behavior and stage fit."
+    }
+  ]
+}
+

@@ -1,0 +1,262 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-02",
+  "slug": "age-education-pedigree-neutralization",
+  "name": "Age, Education, and Pedigree Neutralization",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Prevents founder age, school prestige, dropout mythology, and brand employers from substituting for observable capability.",
+    "productLabel": "Founder Pedigree Anti-Bias Lens — based on Super Founders public findings",
+    "notAClaimOf": [
+      "age blindness where legal or operational context matters",
+      "proof that accumulated experience has no value",
+      "a preference for or against any educational path"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public founder-background findings with external age evidence",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Public findings do not support a narrow young, elite-school, or dropout archetype as a necessary condition for a billion-dollar startup. The product should hide protected and prestige traits where possible, evaluate accumulated capabilities and execution directly, and never invert the stereotype into a preference for older, non-elite, or credentialed founders.",
+  "claimTypes": [
+    "empirical_association",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P2-BOOK-2021",
+      "claimIds": [
+        "SF-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official publisher description and edition metadata"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-SANDHILL-2022",
+      "claimIds": [
+        "SF-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 16:31-20:59: dropout prevalence, education-level comparison, university distribution, and years of work"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SF-E1-AGE-INDUSTRY-NBER",
+      "claimIds": [
+        "SF-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and published-version metadata: successful high-growth founders are often middle-aged"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The system can separate protected or prestige traits from capability evidence.",
+    "Applicable legal and fairness requirements are followed.",
+    "The lens does not infer missing capability from school, employer, or age."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "anonymized_review",
+      "description": "A review of the investment case with age, school, employer brand, and other prestige cues hidden where feasible.",
+      "necessity": "required",
+      "acceptableSources": [
+        "blinded memo",
+        "structured founder profile",
+        "independent reviewer"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "observable_capabilities",
+      "description": "Stage- and sector-specific skills demonstrated through work products, outcomes, decisions, and references.",
+      "necessity": "required",
+      "acceptableSources": [
+        "product evidence",
+        "operating records",
+        "reference checks",
+        "technical diligence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "execution_history",
+      "description": "Dated examples of learning, recruiting, selling, building, or managing under constraints.",
+      "necessity": "required",
+      "acceptableSources": [
+        "milestone history",
+        "customer records",
+        "team records",
+        "references"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Would the founder assessment change if school, employer, age, and investor names were hidden?",
+    "Which required capability is directly observed rather than inferred from pedigree?",
+    "What accumulated experience is relevant to the company's next stage?",
+    "Which gaps can be recruited or learned, and which are immediately essential?",
+    "Is the memo replacing one stereotype with its opposite?"
+  ],
+  "positiveSignals": [
+    "Assessment remains stable after prestige cues are hidden.",
+    "Stage-critical skills are demonstrated through outcomes or independent references.",
+    "Experience is connected to an explicit capability rather than brand status.",
+    "The team can describe and fill capability gaps."
+  ],
+  "redFlags": [
+    "Young, dropout, elite-school, famous-employer, or investor-backed identity is treated as quality.",
+    "Older age or credentials are mechanically treated as a negative or positive.",
+    "The team section contains biography but little observed behavior.",
+    "A prestige-neutral review changes the conclusion materially without new evidence."
+  ],
+  "disconfirmingEvidence": [
+    "The founder lacks a non-delegable capability required now.",
+    "Independent work products contradict claimed capability.",
+    "References reveal inability to learn, recruit, or execute.",
+    "The sector imposes licensing or scientific requirements not captured by general experience."
+  ],
+  "contraindications": [
+    "Do not expose protected traits to the scoring model.",
+    "Do not turn a broad prevalence finding into a founder-quality probability.",
+    "Do not use this anti-bias card to waive specific regulatory or technical requirements."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Create a prestige-neutral version of the founder evidence.",
+      "Map required capabilities to observable outcomes and references.",
+      "Compare blinded and unblinded judgments.",
+      "List genuine capability gaps separately from demographic or pedigree impressions.",
+      "Conclude only whether pedigree-driven reasoning should be removed."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only startup folklore or secondary book summaries are available.",
+      "medium": "Author interviews and publisher findings are reviewed.",
+      "high": "Licensed chapter estimates and matched external studies are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Founder biography and self-description only.",
+      "medium": "Some work products and one independent reference exist.",
+      "high": "Blinded review, longitudinal outcomes, and diverse references converge."
+    },
+    "evidenceCoverage": {
+      "low": "Required capabilities are undefined.",
+      "medium": "Current capabilities are covered but next-stage gaps are incomplete.",
+      "high": "Current and next-stage capabilities, gaps, references, and outcomes are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Founder evaluation is not a material uncertainty.",
+      "medium": "Founder capability matters but the company is beyond early stage.",
+      "high": "Early-stage uncertainty makes capability evidence material and pedigree bias plausible."
+    },
+    "judgmentConfidence": {
+      "low": "The review cannot separate prestige from capability.",
+      "medium": "Pedigree bias is reduced but evidence remains incomplete.",
+      "high": "Blinded and unblinded evidence-based assessments converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VM-05",
+    "SF-01",
+    "SF-05"
+  ],
+  "conflictingFrameworkIds": [
+    "ELITE-SCHOOL-SCORE",
+    "YOUNG-DROPOUT-ARCHETYPE",
+    "BRAND-EMPLOYER-PROXY"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Test blinded founder-review protocol for bias reduction and information loss.",
+      "Validate capability measures by stage and sector.",
+      "Complete fairness and legal review."
+    ],
+    "empiricalQualifications": [
+      "Age and education findings depend on cohort and outcome definition.",
+      "External evidence supports middle-aged high-growth founders but not a universal age optimum.",
+      "Removing pedigree as a gate does not prove all experience is irrelevant."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book or interview wording is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Review full education and age estimates in licensed edition.",
+      "Complete protected-trait and fairness review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial anti-pedigree card using blinded capability review."
+    }
+  ]
+}
+

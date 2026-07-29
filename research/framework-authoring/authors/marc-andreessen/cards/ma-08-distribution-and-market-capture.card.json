@@ -1,0 +1,158 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-08",
+  "slug": "distribution-and-market-capture",
+  "name": "Distribution and Market Capture",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether the company has a repeatable and economically viable route from early adopters to the broader reachable market.",
+    "productLabel": "Distribution and Market Capture Lens — based on Marc Andreessen's public post-PMF interview",
+    "notAClaimOf": ["a better product selling itself", "growth spend being a moat", "network effects being automatically durable"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public interview with Elad Gil",
+    "scope": "coauthored_work",
+    "people": ["Marc Andreessen", "Elad Gil"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "After evidence of PMF, evaluate whether the company can reach customers beyond its early-adopter cohort through repeatable distribution. Product quality, channel economics, competitive response, and durability should be assessed together.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-POSTPMF-2018",
+      "claimIds": ["MA-CLM-016", "MA-CLM-017", "MA-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Lines 120-170: take the market, early adopters versus the rest, distribution advantage, and network-effect fragility"},
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-002", "MA-CLM-009"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 29-36 and 16-18: market pull and distribution/marketing risk"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "MA-A1-PUF-PMF-2019",
+      "claimIds": ["MA-CLM-003"],
+      "locator": {"kind": "web_section", "value": "Lines 117-124: narrow early-user fit versus broad market"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["consumer", "enterprise", "saas", "marketplace", "transactional", "hardware_enabled"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A specific customer segment shows at least emerging PMF evidence.",
+    "The company seeks to grow beyond its initial cohort or channel.",
+    "Distribution is reviewed separately from product desirability and market size."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "channel_funnel",
+      "description": "Channel-specific reach, conversion, activation, sales cycle, payback, retention, and expansion.",
+      "necessity": "required",
+      "acceptableSources": ["attribution data", "CRM", "product analytics", "billing", "sales records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "cohort_transition",
+      "description": "Differences between early adopters and later customers in needs, price, onboarding, retention, and buying behavior.",
+      "necessity": "required",
+      "acceptableSources": ["cohort analysis", "customer research", "win-loss data", "support records", "pricing experiments"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "distribution_advantage",
+      "description": "Exclusive or advantaged access, brand, data, partnerships, sales capability, virality, network effects, and evidence of durability.",
+      "necessity": "required",
+      "acceptableSources": ["channel contracts", "network metrics", "brand studies", "referral data", "competitive evidence"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "competitive_and_saturation",
+      "description": "Competitor acquisition, channel crowding, marginal CAC, multihoming, switching, and market saturation.",
+      "necessity": "required",
+      "acceptableSources": ["market data", "channel benchmarks", "customer interviews", "competitive analysis", "cohort trends"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which channel reaches the next customer cohort and at what full economic cost?",
+    "How do later customers differ from early adopters?",
+    "Does scale improve or weaken conversion, retention, and unit economics?",
+    "What prevents competitors from buying or copying the same distribution?",
+    "Are network or brand effects measured and durable under multihoming and competitive entry?"
+  ],
+  "positiveSignals": [
+    "At least one channel produces repeatable retained customers with viable economics.",
+    "The company adapts product and message to later cohorts without destroying core value.",
+    "Distribution advantage strengthens with scale or privileged access.",
+    "Marginal acquisition and retention remain healthy as spend and reach expand."
+  ],
+  "redFlags": [
+    "Growth depends on one temporary platform subsidy or arbitrage.",
+    "Aggregate growth masks worsening marginal CAC or retention.",
+    "The company assumes early adopters represent the majority market.",
+    "Network effects are claimed from user count without density, retention, or cross-side value."
+  ],
+  "disconfirmingEvidence": [
+    "A deliberately narrow high-value market may not require mass-market distribution.",
+    "Temporary poor economics can be rational when a channel is in a measured learning phase.",
+    "An apparently replicable channel may be strengthened by proprietary data, integration, or brand.",
+    "Strong product-led growth does not eliminate onboarding, support, and market-access costs."
+  ],
+  "contraindications": [
+    "Do not recommend market capture before credible PMF evidence.",
+    "Do not equate spend, reach, or user count with durable distribution.",
+    "Do not reward dominance without customer value, lawful conduct, and sustainable economics."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Confirm the bounded PMF state and define the next customer cohort.",
+      "Compute channel funnels and economics outside the narrative lens.",
+      "Compare early and later cohorts and marginal performance.",
+      "Test distribution durability, competition, and saturation.",
+      "Conclude repeatable capture engine, promising but unscaled, fragile channel, premature scaling, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "CAC, payback, conversion, retention, cohort, marginal-spend, and concentration math must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Channel narrative or aggregate growth.", "medium": "Channel and cohort records.", "high": "Auditable funnel economics, cohorts, contracts, and independent customer evidence."},
+    "evidenceStrength": {"low": "Reach without retention.", "medium": "One repeatable channel.", "high": "Multiple periods show viable marginal economics and durable advantage."},
+    "evidenceCoverage": {"low": "Top-line users.", "medium": "Funnel, retention, and economics.", "high": "Cohort transition, marginal economics, competition, durability, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No PMF or expansion need.", "medium": "Emerging PMF and one channel.", "high": "Distribution is the binding post-PMF constraint."},
+    "judgmentConfidence": {"low": "Growth story.", "medium": "Bounded channel evidence.", "high": "Convergent cohort and marginal evidence support a durable conclusion."}
+  },
+  "overlapFrameworkIds": ["PT-05", "CSP-05", "CSP-09", "OA2-09", "MA-01"],
+  "conflictingFrameworkIds": ["BETTER-PRODUCT-SELLS-ITSELF", "USER-COUNT-AS-MOAT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define model-specific funnel anchors.", "Validate marginal-economics service.", "Backtest channel durability and saturation."],
+    "empiricalQualifications": ["Channels change as platforms and competition evolve.", "Causal attribution among product, brand, network, and spend can be difficult."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The edited interview and affiliated qualification are neutrally paraphrased with attribution scopes preserved."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define channel-specific evidence anchors and network-effect qualification interface."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

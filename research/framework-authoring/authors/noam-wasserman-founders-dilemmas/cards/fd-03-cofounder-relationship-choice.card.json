@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-03",
+  "slug": "cofounder-relationship-choice",
+  "name": "Cofounder Complementarity and Relationship Risk",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether the cofounder configuration adds needed capability while containing coordination and relationship risk.",
+    "productLabel": "Cofounder-Choice Lens — based on Noam Wasserman's public work",
+    "notAClaimOf": ["friends being bad cofounders", "strangers being objective", "solo or team founding being categorically superior"]
+  },
+  "attribution": {
+    "display": "Based on Noam Wasserman's public work",
+    "scope": "product_synthesis",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School", "Kauffman Entrepreneurs"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Compare the resources gained from cofounding—skills, network, capital, credibility, and shared burden—with the costs of ownership dilution, coordination, control, and relationship conflict. Use observed working history and difficult-conversation behavior, not relationship category, as evidence.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-KAUFFMAN-2016",
+      "claimIds": ["FD-CLM-005", "FD-CLM-006", "FD-CLM-007"],
+      "locator": {"kind": "web_section", "value": "Should I Co-found? With Whom? and Relationships transcripts"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P1-NOAM-FRIENDS-2020",
+      "claimIds": ["FD-CLM-006", "FD-CLM-007"],
+      "locator": {"kind": "web_section", "value": "Author discussion of friends, coworkers, and strangers"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P2-HBS-COURSE-2011",
+      "claimIds": ["FD-CLM-005", "FD-CLM-006", "FD-CLM-008"],
+      "locator": {"kind": "web_section", "value": "Building the Team—finance and founders"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Two or more founders retain material roles, ownership, or control.",
+    "The team can be evaluated through consented evidence and references.",
+    "Capability complementarity and conflict process can be examined separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "cofounder_resource_map",
+      "description": "Capabilities, networks, capital, roles, time commitment, and dependencies contributed by each founder.",
+      "necessity": "required",
+      "acceptableSources": ["role history", "work artifacts", "references", "founder agreement"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "relationship_work_history",
+      "description": "Duration and context of prior relationship plus observed work and conflict behavior.",
+      "necessity": "required",
+      "acceptableSources": ["independent references", "project history", "founder interviews", "board observations"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "conflict_governance",
+      "description": "Decision, escalation, deadlock, departure, IP, and communication arrangements.",
+      "necessity": "required",
+      "acceptableSources": ["founder agreement", "board charter", "operating norms", "conflict examples"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What capability or resource does each founder uniquely add?",
+    "Have the founders observed one another under deadline, ambiguity, failure, and disagreement?",
+    "Which personal relationship costs could inhibit a necessary business decision?",
+    "How are deadlock, departure, underperformance, and role evolution handled?"
+  ],
+  "positiveSignals": [
+    "Cofounders contribute complementary, demonstrated capabilities.",
+    "They can recount a meaningful disagreement and a fair resolution.",
+    "Personal and business expectations are explicit and documented.",
+    "The team has an agreed leader or escalation path where required."
+  ],
+  "redFlags": [
+    "A cofounder was selected primarily for friendship, availability, or prestige.",
+    "Founders have never worked together but assume personal trust is sufficient.",
+    "The team avoids hard conversations to protect a relationship.",
+    "One founder is operationally indispensable while governance remains unresolved."
+  ],
+  "disconfirmingEvidence": [
+    "Friends or family demonstrate strong professional boundaries and repeated conflict resolution.",
+    "Strangers lack trust, shared values, or verified working compatibility.",
+    "A solo founder has recruited a complementary leadership bench and credible governance.",
+    "Overlapping founder skills are intentional and reduce a key-person bottleneck."
+  ],
+  "contraindications": [
+    "Do not assign categorical scores to friend, family, coworker, or stranger relationships.",
+    "Do not infer interpersonal risk from protected traits or communication style.",
+    "Do not confuse résumé complementarity with working compatibility."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map founder resources and dependencies.",
+      "Review relationship and work history using concrete episodes.",
+      "Test conflict, deadlock, departure, and role-change arrangements.",
+      "Seek disconfirming references for both apparent strength and apparent risk.",
+      "Conclude complementary and adaptive, conditionally aligned, exposed, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder claims only.", "medium": "Multiple founders and some references agree.", "high": "Independent references, artifacts, agreements, and observed behavior converge."},
+    "evidenceStrength": {"low": "Relationship label or résumé.", "medium": "Specific complementary work or conflict example.", "high": "Repeated joint execution and adaptive conflict resolution."},
+    "evidenceCoverage": {"low": "Backgrounds only.", "medium": "Resources and some relationship history covered.", "high": "Resources, commitment, conflict, deadlock, departure, and evolution covered."},
+    "applicabilityConfidence": {"low": "No material cofounder dependency.", "medium": "Some shared ownership or execution.", "high": "Company outcome materially depends on cofounder coordination."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Conditional alignment or specific gap.", "high": "Well-supported team strength or risk."}
+  },
+  "overlapFrameworkIds": ["FD-04", "FD-05", "SF-03"],
+  "conflictingFrameworkIds": ["FRIENDS-ARE-BAD-COFOUNDERS", "STRANGERS-ARE-BETTER-COFOUNDERS"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define independent-reference protocol.", "Backtest relationship-risk flags.", "Complete licensed Chapters 3-4 review."],
+    "empiricalQualifications": ["Relationship categories are heterogeneous.", "Observed outcomes are affected by selection and venture context."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Specify privacy-safe founder-reference procedures."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-10",
+  "slug": "value-price-decision-separation",
+  "name": "Value, Price, and Investment Decision Separation",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Keeps intrinsic value, market pricing, security economics, and the fund's investment decision as separate auditable outputs.",
+    "productLabel": "Value–Price–Decision Separation Lens — based on Aswath Damodaran's public valuation and VC-pricing materials",
+    "notAClaimOf": [
+      "an intrinsic value being the transaction price",
+      "a low price-to-value ratio guaranteeing return",
+      "valuation alone determining whether the fund should invest"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public valuation and venture-pricing materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Intrinsic value estimates cash-flow, growth, and risk fundamentals; pricing estimates what markets pay for comparable claims. A venture investment adds a third layer because the offered security, preferences, ownership, dilution, reserves, exit path, and fund policy determine the investor's payoff. These outputs should be shown side by side, with the gap and assumptions explained, but no layer should silently substitute for another.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-VC-PRICING-2016",
+      "claimIds": [
+        "DSV-CLM-015",
+        "DSV-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Value versus price; VC pricing methods; private-market data problems; security optionality; entry and exit context"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-VALUATION-INTRO",
+      "claimIds": [
+        "DSV-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Introduction and Inside the Valuation Process: cash flows, growth, risk, bias, uncertainty, and price anchoring"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-SUPPORT-3E",
+      "claimIds": [
+        "DSV-CLM-015"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 18: The Cynic's Corner — Value versus Price"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-020"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 12-18 and 46-55: VC valuation shortcuts, investor/founder negotiation, multiple equity claims, and illiquidity"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Intrinsic value and comparable pricing are computed independently before comparison.",
+    "Current round pre-money, post-money, investment amount, security, and rights are explicit.",
+    "Enterprise value, total equity value, common-equivalent value, and investor security value are not conflated.",
+    "The final investment classification is produced only by the deterministic Decision Policy using Fund Policy."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "intrinsic_value_output",
+      "description": "Versioned Bear, Base, and Bull intrinsic values with input provenance and sensitivities.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "pricing_output",
+      "description": "Versioned comparable pricing range with sample, dates, distribution, normalization, and caveats.",
+      "necessity": "required",
+      "acceptableSources": [
+        "pricing service",
+        "licensed transaction data",
+        "public market data"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "round_and_security_terms",
+      "description": "Round price, investment amount, ownership, preferences, conversion, participation, anti-dilution, option pool, and expected future dilution.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "charter",
+        "cap table",
+        "financing documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fund_policy",
+      "description": "Stage-specific target ownership, check size, reserve, concentration, risk preference, target return, and decision gates.",
+      "necessity": "required",
+      "acceptableSources": [
+        "approved fund policy",
+        "user-confirmed policy settings"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is the intrinsic value range and which assumptions drive it?",
+    "What is the market pricing range for economically comparable claims?",
+    "What does the offered security cost and receive under each outcome?",
+    "How do headline pre/post-money values differ from common-equivalent and investor values?",
+    "What expected ownership and dilution follow from the round?",
+    "Does the opportunity satisfy the fund's deterministic policy after all three layers are separated?"
+  ],
+  "positiveSignals": [
+    "Intrinsic value and pricing are independently sourced and versioned.",
+    "The report displays Bear, Base, Bull, pricing range, round price, and value gaps without collapsing them.",
+    "Security rights and dilution are calculated by a waterfall or ownership service.",
+    "The output distinguishes model uncertainty from market disagreement.",
+    "The decision trace identifies exactly which Fund Policy gate passed or failed."
+  ],
+  "redFlags": [
+    "The current round valuation is copied into the intrinsic model.",
+    "A recent preferred round is called the company's common-equity value.",
+    "A positive intrinsic-value gap automatically becomes Invest Candidate.",
+    "Price and value use different dates, currencies, or claim types.",
+    "The LLM invents missing terms or fund preferences."
+  ],
+  "disconfirmingEvidence": [
+    "The value gap disappears under reasonable sourced assumptions.",
+    "Liquidation preferences or dilution materially reduce investor payoff.",
+    "The pricing sample is stale or incomparable.",
+    "The required check or ownership breaches Fund Policy.",
+    "The exit distribution cannot support the fund's return threshold despite attractive company value."
+  ],
+  "contraindications": [
+    "Do not label price above base intrinsic value as definitively overvalued without range, terms, and uncertainty.",
+    "Do not label price below value as an investment recommendation.",
+    "Do not compare enterprise value to equity round price.",
+    "Do not let a content framework override deterministic Fund Policy."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Obtain independent intrinsic and pricing outputs.",
+      "Normalize valuation date, currency, enterprise/equity scope, and security.",
+      "Calculate investor economics, ownership, dilution, and waterfall.",
+      "Display value-price gaps by scenario with evidence and counterevidence.",
+      "Submit normalized outputs to deterministic Fund Policy; preserve each lens and disagreement."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredIndependentOutputs": [
+        "intrinsic_value_range",
+        "market_pricing_range",
+        "security_specific_payoff",
+        "ownership_and_dilution",
+        "fund_policy_result"
+      ],
+      "gapIdentities": [
+        "intrinsic_gap_s = intrinsic_equity_value_s - normalized_round_equity_price",
+        "pricing_gap = normalized_market_pricing_midpoint - normalized_round_equity_price"
+      ],
+      "decisionOwner": "deterministic_decision_policy",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The analysis relies on headline valuation and unsourced assumptions.",
+      "medium": "Intrinsic and pricing outputs exist but terms or fund policy are partially estimated.",
+      "high": "Company evidence, model outputs, transactions, terms, cap table, and approved policy are verified."
+    },
+    "evidenceStrength": {
+      "low": "Only one model or one price point is available.",
+      "medium": "Independent value and price ranges exist but one material security or policy input remains uncertain.",
+      "high": "All layers are independently supported and normalized."
+    },
+    "evidenceCoverage": {
+      "low": "Only headline pre-money or post-money is covered.",
+      "medium": "Value, price, and round are covered but waterfall or dilution is incomplete.",
+      "high": "Intrinsic, pricing, terms, claims, ownership, dilution, exit, and fund policy are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The security or round cannot be identified.",
+      "medium": "Round scope is clear but several terms are missing.",
+      "high": "Company, round, security, valuation date, and fund policy are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a research or terms request can be produced.",
+      "medium": "Value-price gaps are usable but final policy gates remain unresolved.",
+      "high": "Normalized outputs support a reproducible deterministic policy result."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-01",
+    "DSV-06",
+    "DSV-08",
+    "SK-04",
+    "VM-08"
+  ],
+  "conflictingFrameworkIds": [
+    "ROUND-PRICE-EQUALS-INTRINSIC-VALUE",
+    "UNDERVALUED-EQUALS-INVEST",
+    "VALUATION-ALONE-EQUALS-DECISION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapter 18 and young-company claims review.",
+      "Complete Venture Deals and VC Finance integrations for terms and waterfall.",
+      "Validate normalization, gap, and policy handoffs on timestamped deal cases."
+    ],
+    "empiricalQualifications": [
+      "Intrinsic value and market pricing can diverge for long periods.",
+      "Private-market prices are affected by access, negotiation, security design, and financing conditions.",
+      "An attractive company may still be a poor fund investment at the offered terms or ownership."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public value-versus-price doctrine is neutrally paraphrased; system handoff rules are labeled product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Integrate and validate security and Fund Policy services."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

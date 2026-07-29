@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-02",
+  "slug": "problem-size-and-market-evolution",
+  "name": "Problem Size and Market Evolution",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Builds market scenarios from the scale of a real problem, customer pull, and plausible market evolution rather than a static headline TAM.",
+    "productLabel": "Problem Size and Market Evolution — based on Don Valentine's public Cisco account, with Sequoia institution corroboration",
+    "notAClaimOf": ["market size being the only investment criterion", "a historical one-billion-dollar threshold", "Cisco's outcome transferring to another company"]
+  },
+  "attribution": {
+    "display": "Based on Don Valentine's direct Cisco oral history; institution-level Sequoia market guidance is attributed separately",
+    "scope": "person_direct",
+    "people": ["Don Valentine"],
+    "organizations": ["Sequoia Capital", "Computer History Museum"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Start with the customer problem: how widespread and consequential it is, what existing change makes a solution necessary, and how large demand could plausibly become. Build explicit scenarios from evidence and do not substitute a legacy threshold or a top-down market label for adoption and economics.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "historical_description", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-P1-VALENTINE-CISCO-STORY",
+      "claimIds": ["SQ-CLM-005"],
+      "locator": {"kind": "web_section", "value": "Lines 15-37: technical problem, dedicated team, nature and potential size of the problem"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-P1-VALENTINE-CISCO-CHM",
+      "claimIds": ["SQ-CLM-005", "SQ-CLM-006"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 4-5 and 13-15: problem severity, observed demand, customer reference, and market emphasis"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SQ-I1-ENDURING",
+      "claimIds": ["SQ-CLM-003", "SQ-CLM-004"],
+      "locator": {"kind": "web_section", "value": "Lines 10-13: large markets, growth or change, and historical market reference"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups", "saas", "enterprise", "consumer", "marketplace", "transactional", "hardware_enabled"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The addressed problem and paying or using population are defined.",
+    "Market scenarios are time-bounded and tied to adoption mechanisms.",
+    "Market attractiveness is evaluated separately from company capture and valuation."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "problem_prevalence_and_severity",
+      "description": "Number and type of affected customers, frequency, economic or operational consequence, and current workaround.",
+      "necessity": "required",
+      "acceptableSources": ["customer research", "industry records", "workflow data", "budgets", "loss or risk records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "market_change",
+      "description": "Technology, regulation, cost, distribution, behavior, or infrastructure change that could expand or contract demand.",
+      "necessity": "required",
+      "acceptableSources": ["primary regulations", "technical benchmarks", "customer budgets", "adoption data", "industry datasets"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "adoption_and_willingness_to_pay",
+      "description": "Current use, backlog, sales cycle, conversion, payment, retention, and evidence across independent segments.",
+      "necessity": "required",
+      "acceptableSources": ["contracts", "billing", "CRM", "usage logs", "cohort records", "customer references"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "market_scenarios",
+      "description": "Bear, base, and bull assumptions for eligible customers, penetration, price, frequency, geography, and timing.",
+      "necessity": "required",
+      "acceptableSources": ["market model", "pricing evidence", "adoption curves", "competitive map", "substitution analysis"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What problem is being solved, for whom, and how costly is non-resolution?",
+    "Which external change makes the market likely to grow, shrink, or reorganize?",
+    "What direct evidence shows customers are moving rather than merely expressing interest?",
+    "How do bear, base, and bull scenarios differ in adoption, price, timing, and capture?",
+    "Could a large market still yield weak company economics or poor investor returns?"
+  ],
+  "positiveSignals": [
+    "The problem is important, repeated, and supported by independent customer evidence.",
+    "A specified market change improves feasibility or urgency.",
+    "Customers use, pay, renew, or queue for a solution without unsustainable subsidy.",
+    "Scenario assumptions and market-capture constraints are explicit."
+  ],
+  "redFlags": [
+    "A global category total is presented as the company's obtainable market.",
+    "A historical market threshold is reused without inflation, geography, timing, or fund-return context.",
+    "Industry excitement substitutes for customer budgets and adoption.",
+    "The company assumes market growth automatically becomes company revenue."
+  ],
+  "disconfirmingEvidence": [
+    "A severe problem can support a durable smaller business without venture-scale outcomes.",
+    "A large market can remain unattractive because of fragmentation, regulation, price pressure, or weak capture.",
+    "Early backlog may be concentrated, non-binding, or created by scarcity.",
+    "New technology can shrink incumbent spending rather than expand total value."
+  ],
+  "contraindications": [
+    "Do not use the historical one-billion-dollar reference as a current cutoff.",
+    "Do not infer a market score from one selected Cisco retrospective.",
+    "Do not derive valuation or ownership needs before separate fund-return and terms analysis."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define the problem, customer population, consequence, and substitute.",
+      "Identify evidence-backed market changes and adoption mechanisms.",
+      "Construct deterministic bear, base, and bull market scenarios.",
+      "Separate total market, serviceable market, obtainable share, and company economics.",
+      "Conclude expanding, bounded, uncertain, contracting, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Market sizing, penetration, price, timing, sensitivity, and fund-return arithmetic must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Pitch TAM or sector label.", "medium": "Industry data and internal customer evidence.", "high": "Primary market data, verified customers, contracts, and reproducible scenarios."},
+    "evidenceStrength": {"low": "Problem narrative only.", "medium": "Problem and early adoption evidence.", "high": "Problem, change mechanism, broad adoption, payment, and scenario evidence converge."},
+    "evidenceCoverage": {"low": "Top-down total only.", "medium": "Customer and adoption covered.", "high": "Prevalence, severity, price, adoption, timing, competition, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Undefined customer or market.", "medium": "Specific segment and time window.", "high": "Stage, geography, model, and adoption mechanism are explicit."},
+    "judgmentConfidence": {"low": "Single TAM number.", "medium": "Bounded market assessment.", "high": "Auditable scenarios remain robust across sensitivities."}
+  },
+  "overlapFrameworkIds": ["MA-02", "BG-07", "DSV-08", "VM-02", "PT-05"],
+  "conflictingFrameworkIds": ["LEGACY-ONE-BILLION-MARKET-CUTOFF", "HEADLINE-TAM-AS-CAPTURE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define stage and sector scenario templates.", "Backtest market forecasts and capture assumptions.", "Integrate fund-return and valuation services."],
+    "empiricalQualifications": ["Valentine's statements arise from a selected Cisco retrospective.", "Market forecasts are highly sensitive to adoption, price, timing, and competition."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Direct and institution claims are paraphrased and attributed separately."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Add external base rates for market forecast error."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

@@ -1,0 +1,290 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-02",
+  "slug": "fully-diluted-price-pool",
+  "name": "Fully Diluted Price, Option Pool, and Ownership",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Recalculates price per share and ownership from the actual fully diluted definition, including pre-money pool top-ups, warrants, and convertible securities.",
+    "productLabel": "Fully Diluted Deal-Algebra Lens — based on Feld and Mendelson's public price materials",
+    "notAClaimOf": [
+      "headline pre-money fixing founder dilution",
+      "one standard option-pool percentage",
+      "authorized shares always belonging in the denominator"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public Venture Deals price and cap-table materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "The effective financing price depends on the agreement's fully diluted denominator. Reconcile issued common, preferred as-converted, granted and ungranted options, warrants, pool top-up, and convertibles; then calculate price, post-round ownership, and dilution. The option pool should be tied to a hiring plan rather than a universal percentage.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-PRICE-2005",
+      "claimIds": [
+        "VD-CLM-003",
+        "VD-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Pre/post-money, fully diluted definition, option-pool top-up, and warrants"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P2-CONTENTS-2019",
+      "claimIds": [
+        "VD-CLM-003",
+        "VD-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 5 valuation, price, employee option pool, warrants; Chapter 9 capitalization table"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VD-P1-COURSE-2026",
+      "claimIds": [
+        "VD-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Preparing to Fundraise: valuation and cap tables"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_venture_backed_companies"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all_with_verified_cap_table_rules"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "common_equity",
+      "convertible",
+      "warrant",
+      "option"
+    ]
+  },
+  "requiredConditions": [
+    "A dated fully diluted cap table reconciles to legal records.",
+    "The term sheet's denominator definition is extracted exactly.",
+    "Pool top-up timing and hiring need are explicit.",
+    "All notes, SAFEs, warrants, and side letters are included or excluded by a stated rule."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "pre_round_cap_table",
+      "description": "Issued shares, as-converted preferred, grants, available pool, warrants, convertibles, and ownership by holder.",
+      "necessity": "required",
+      "acceptableSources": [
+        "verified cap table",
+        "charter",
+        "equity ledger",
+        "instrument register"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "pricing_definition",
+      "description": "Investment amount, pre-money, price-per-share formula, fully diluted definition, and closing mechanics.",
+      "necessity": "required",
+      "acceptableSources": [
+        "signed term sheet",
+        "stock purchase agreement",
+        "charter"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "option_pool_plan",
+      "description": "Existing unallocated pool, requested top-up, role-by-role hiring plan, grant ranges, and expected runway.",
+      "necessity": "required",
+      "acceptableSources": [
+        "approved hiring plan",
+        "compensation plan",
+        "board materials"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which securities and reserved shares are in the pre-money denominator?",
+    "How many new shares does the investment purchase?",
+    "Is the pool top-up pre-money, post-money, or shared?",
+    "How much pool is already unallocated and what hiring plan justifies more?",
+    "How do warrants and convertibles affect ownership?",
+    "What are founder, employee, existing-investor, and new-investor outcomes?"
+  ],
+  "positiveSignals": [
+    "Legal records and cap table reconcile.",
+    "The denominator exactly matches the term sheet.",
+    "Pool size is supported by a role-level hiring plan.",
+    "Convertible and warrant treatment is explicit.",
+    "Ownership is shown pre-round, post-round, and after planned pool grants."
+  ],
+  "redFlags": [
+    "Headline pre-money is used without price-per-share algebra.",
+    "A fixed pool percentage is auto-filled.",
+    "Authorized, issued, granted, and reserved shares are conflated.",
+    "Notes or SAFEs are absent from the denominator.",
+    "Warrants lower effective price but remain off-model."
+  ],
+  "disconfirmingEvidence": [
+    "The cap table does not reconcile to the charter or ledger.",
+    "A side letter changes conversion or pro-rata treatment.",
+    "The pool exceeds the supported hiring plan.",
+    "A different denominator interpretation materially changes ownership.",
+    "Additional closings or tranches change price or share count."
+  ],
+  "contraindications": [
+    "Do not calculate from headline values alone.",
+    "Do not infer missing instruments.",
+    "Do not use a market-average pool as company fact.",
+    "Do not let the LLM calculate cap-table outputs."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Reconcile the legal cap table and instrument register.",
+      "Parse the exact fully diluted definition and pool timing.",
+      "Send all instruments to the cap-table service.",
+      "Show ownership and dilution under the signed structure and material alternatives.",
+      "Flag every unresolved denominator or document conflict."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "identities": [
+        "price_per_share = negotiated_pre_money_value / defined_pre_money_fully_diluted_shares",
+        "new_investor_shares = investment_amount / price_per_share",
+        "post_money_ownership_holder = post_closing_as_converted_shares_holder / post_closing_fully_diluted_shares"
+      ],
+      "guards": [
+        "cap_table_reconciled",
+        "denominator_definition_pinned",
+        "pool_timing_explicit",
+        "convertibles_and_warrants_included",
+        "no_floating_point_share_rounding_without_policy"
+      ],
+      "calculationOwner": "cap_table_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only headline valuation or founder spreadsheet is available.",
+      "medium": "Cap table and term sheet exist but one instrument or pool assumption is incomplete.",
+      "high": "Legal ledger, cap table, instruments, term sheet, and hiring plan reconcile."
+    },
+    "evidenceStrength": {
+      "low": "Ownership cannot be reproduced.",
+      "medium": "Ownership is reproducible with one labeled range.",
+      "high": "All shares and instruments are deterministic and audited."
+    },
+    "evidenceCoverage": {
+      "low": "Only investment amount and valuation are known.",
+      "medium": "Core shares and pool are covered but warrants or convertibles remain partial.",
+      "high": "All issued, reserved, convertible, warrant, pool, tranche, and holder data are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No priced equity or definable conversion exists.",
+      "medium": "The method fits but a custom instrument complicates denominator rules.",
+      "high": "A complete priced-round and cap-table structure exists."
+    },
+    "judgmentConfidence": {
+      "low": "Only missing-data questions are possible.",
+      "medium": "A bounded ownership range is usable.",
+      "high": "Price and ownership are reproducible for every holder."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SHR-06",
+    "VCFI-04",
+    "VCFI-09",
+    "EI-02"
+  ],
+  "conflictingFrameworkIds": [
+    "HEADLINE-PREMONEY-EQUALS-EFFECTIVE-PRICE",
+    "UNIVERSAL-OPTION-POOL",
+    "MISSING-CONVERTIBLE-DENOMINATOR"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Venture-counsel review of denominator semantics.",
+      "Golden-case tests for pool, warrant, and convertible combinations.",
+      "Reconcile with VCFI and Venture Deals fourth-edition examples."
+    ],
+    "empiricalQualifications": [
+      "Cap-table conventions and pool timing vary by deal.",
+      "Hiring plans can change after the financing.",
+      "Side letters and secondary transactions can alter effective ownership economics."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are neutrally paraphrased; calculations require signed documents."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define share-rounding and multi-closing rules.",
+      "Complete fourth-edition cap-table chapter review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

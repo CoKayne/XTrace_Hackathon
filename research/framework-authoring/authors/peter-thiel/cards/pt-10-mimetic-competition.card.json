@@ -1,0 +1,277 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-10",
+  "slug": "mimetic-competition",
+  "name": "Mimetic Competition Avoidance",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether attention and capital flows reflect independent value evidence or self-reinforcing imitation and crowding.",
+    "productLabel": "Mimetic Competition Lens — based on Peter Thiel's public lecture",
+    "notAClaimOf": [
+      "proof that crowds are always wrong",
+      "a rule to reject popular sectors",
+      "Peter Thiel endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Peter Thiel's direct 2014 public lecture",
+    "scope": "person_direct",
+    "people": [
+      "Peter Thiel"
+    ],
+    "organizations": [
+      "Y Combinator",
+      "Stanford University"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "The fact that many founders or investors pursue the same category is not independent proof of value. A funding wave can reflect genuine demand, enabling technology, imitation, or all three. The lens requires separating fundamental change from crowd behavior and evaluating how crowding affects price, competition, talent, and company differentiation.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P1-LECTURE-2014",
+      "claimIds": [
+        "PT-CLM-008"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "36:59-42:43"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-E1-COMPETITION-INNOVATION",
+      "claimIds": [
+        "PT-EQ-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and inverted-U result"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_venture_scale_businesses"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "A market-attention, financing, hiring, or startup-entry wave is material to the thesis.",
+    "The system can compare fundamental indicators with attention and capital indicators.",
+    "Company-specific differentiation and entry price can be evaluated separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "fundamental_change",
+      "description": "Dated customer, technical, regulatory, cost, or supply evidence explaining why the sector changed.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer data",
+        "technical benchmark",
+        "regulatory source",
+        "market transaction"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "attention_and_capital",
+      "description": "Financing volume, deal count, entrants, valuations, hiring, or media attention using consistent windows.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financing database",
+        "VC announcements",
+        "company formation data",
+        "job data",
+        "news corpus"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "company_specific_edge",
+      "description": "Evidence that this company is differentiated despite crowding.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer behavior",
+        "technical evidence",
+        "distribution evidence",
+        "unit economics"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "crowding_cost",
+      "description": "Effect of crowding on entry price, customer acquisition, talent, supplier terms, and competition.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "valuation benchmark",
+        "salary data",
+        "CAC trend",
+        "competitor analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What fundamental change preceded the attention and funding wave?",
+    "Are multiple capital sources reacting to independent customer evidence or to one another?",
+    "How has crowding changed company entry price and expected return?",
+    "Does this company have source-backed differentiation from new entrants?",
+    "Does competition improve market education or destroy value capture?",
+    "Which indicator would show the wave is reversing?"
+  ],
+  "positiveSignals": [
+    "Customer demand, technical feasibility, or regulation changed before funding accelerated.",
+    "The company has evidence created before the category became fashionable.",
+    "Crowding educates customers or builds infrastructure that the company uniquely leverages.",
+    "Company-specific retention, economics, or technology remain differentiated.",
+    "Entry valuation still supports fund-return targets under conservative assumptions."
+  ],
+  "redFlags": [
+    "Financing volume itself is the main proof of market quality.",
+    "Sources repeat the same syndicated announcement and are counted as independent signals.",
+    "The company narrative mirrors sector buzzwords without distinct evidence.",
+    "Valuation expands faster than operating evidence.",
+    "Talent, CAC, or supplier costs worsen as entrants multiply.",
+    "The company cannot explain why it will win after incumbents and well-funded entrants respond."
+  ],
+  "disconfirmingEvidence": [
+    "Customer adoption remains flat while deal count rises.",
+    "Funding is concentrated in repeated follow-on rounds rather than new demand.",
+    "Category entrants have undifferentiated products and declining economics.",
+    "The company's early evidence disappears after incentives end.",
+    "A funding reversal removes key suppliers, distribution, or customer budgets."
+  ],
+  "contraindications": [
+    "Do not reject a sector merely because it is popular.",
+    "Do not treat independent investment announcements as independent demand evidence without deduplication.",
+    "Do not average positive market momentum and negative price effects into one score.",
+    "Do not infer innovation harm from competition without context."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Build separate timelines for fundamentals and attention/capital.",
+      "Deduplicate syndicated sources and shared underlying events.",
+      "Evaluate company-specific edge and crowding cost independently.",
+      "Preserve both interpretations when the wave may be fundamental and mimetic.",
+      "Report the most decision-relevant reversal indicator."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only secondary commentary supports the doctrine.",
+      "medium": "The direct lecture is identifiable but official captions are not yet hashed.",
+      "high": "Official caption revision and exact timestamped paraphrase are approved."
+    },
+    "evidenceStrength": {
+      "low": "Headlines and funding announcements only.",
+      "medium": "One fundamental series and one crowding series are available.",
+      "high": "Multiple independent fundamental series, company evidence, price, and crowding effects converge."
+    },
+    "evidenceCoverage": {
+      "low": "Fundamentals, crowding, or company edge is missing.",
+      "medium": "All exist but causal timing or price effect is incomplete.",
+      "high": "All evidence, timelines, deduplication, and reversal indicators are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "No material attention or capital wave exists.",
+      "medium": "A wave exists but has little effect on company economics.",
+      "high": "Market attention and crowding materially affect the investment case."
+    },
+    "judgmentConfidence": {
+      "low": "Only a possible crowd narrative can be identified.",
+      "medium": "Fundamental and mimetic components are partly separable.",
+      "high": "Timelines, independent signals, company edge, price, and reversal tests converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-02",
+    "PT-08",
+    "VENTURE-MINDSET-ANTI-HERDING",
+    "HOWARD-MARKS-SECOND-LEVEL"
+  ],
+  "conflictingFrameworkIds": [
+    "MOMENTUM-FOLLOWING",
+    "COMPETITION-INNOVATION-INVERTED-U"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Define reproducible fundamental-versus-attention indicators by sector.",
+      "Test whether the lens improves timing or pricing decisions beyond market trend inputs.",
+      "Control source dependence and event syndication.",
+      "Evaluate both missed hot sectors and crowded failures."
+    ],
+    "empiricalQualifications": [
+      "Crowds can aggregate information as well as imitate.",
+      "Competition can have conditional positive innovation effects.",
+      "Funding and valuation data are delayed and composition-sensitive."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No long lecture passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Capture official caption hash.",
+      "Define event-dependence and crowding measures with the Market Intelligence system.",
+      "Reconcile with Venture Mindset and Howard Marks cards."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft separates fundamental change, mimetic attention, company edge, and entry-price effects."
+    }
+  ]
+}

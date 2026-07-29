@@ -1,0 +1,247 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VM-08",
+  "slug": "value-creation-incentives",
+  "name": "Make the Pie Bigger",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether ownership and incentives reward durable value creation without creating governance or retention distortions.",
+    "productLabel": "Value-Creation Incentives Lens — based on The Venture Mindset public materials",
+    "notAClaimOf": [
+      "more equity always being better",
+      "a replacement for legal term review",
+      "author endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ilya Strebulaev's public nine-principle keynote",
+    "scope": "person_direct",
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Equity and incentive design should allow people who create durable company value to participate meaningfully in the upside. The analysis must also consider vesting, dilution, retention, governance, downside behavior, option exercise, and whether incentives reward real value rather than short-term metrics.",
+  "claimTypes": [
+    "direct_doctrine",
+    "normative_guidance",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "claimIds": [
+        "VM-CLM-009"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF page 14"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups",
+      "corporate_innovation"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "options",
+      "internal_innovation_compensation"
+    ]
+  },
+  "requiredConditions": [
+    "Material contributors, value-creation responsibilities, and incentive instruments can be identified.",
+    "The analysis includes legal and tax review outside this lens.",
+    "Dilution and governance consequences can be modeled."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "cap_table_and_pool",
+      "description": "Current and pro forma ownership, option pool, vesting, exercise, and dilution.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table",
+        "option plan",
+        "term sheet"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "value_creation_roles",
+      "description": "Critical roles, responsibilities, milestones, and retention risks.",
+      "necessity": "required",
+      "acceptableSources": [
+        "organization plan",
+        "employment agreements",
+        "operating plan"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "incentive_behavior",
+      "description": "How metrics, vesting, cliffs, acceleration, and control affect actual decisions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "compensation policy",
+        "board records",
+        "scenario analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who creates the next stage of value and how much upside can they retain?",
+    "Do incentives reward durable value or short-term metric gaming?",
+    "What happens under departure, acquisition, termination, and down-round scenarios?",
+    "Does the option pool support the hiring plan after dilution?",
+    "Are control rights and economics aligned?"
+  ],
+  "positiveSignals": [
+    "Critical contributors retain meaningful, understandable upside.",
+    "Vesting and milestones support retention and long-term value.",
+    "The hiring plan is funded by a realistic option pool.",
+    "Incentives remain coherent across success, delay, failure, and acquisition.",
+    "Value-sharing does not compromise accountability."
+  ],
+  "redFlags": [
+    "Founders or employees are heavily diluted before major value creation.",
+    "Compensation rewards vanity metrics.",
+    "Option exercise or tax burden makes nominal equity unusable.",
+    "Acceleration or control creates perverse sale incentives.",
+    "The pool is created without modeling who bears dilution.",
+    "Equity is used to avoid fair cash compensation without transparency."
+  ],
+  "disconfirmingEvidence": [
+    "Critical hires decline because expected upside is immaterial.",
+    "Vesting or exercise terms increase preventable turnover.",
+    "Short-term targets produce behavior that harms retention or quality.",
+    "Pro forma dilution breaks founder, employee, or fund ownership objectives."
+  ],
+  "contraindications": [
+    "Do not provide legal, tax, or compensation advice through this card.",
+    "Do not treat gross equity percentage as value without terms and dilution.",
+    "Do not assume maximal founder ownership is always optimal."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Model current and pro forma economics.",
+      "Map value-creation roles to incentive horizons.",
+      "Stress-test behavior under major scenarios.",
+      "Identify legal, tax, and fairness issues for specialist review.",
+      "Conclude separately on incentive alignment and governance."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "calculationsOwnedBy": "Cap-table and transaction-term services"
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a secondary principle summary is available.",
+      "medium": "The official keynote supports the principle.",
+      "high": "Hashed keynote and reviewed chapter/term sources converge."
+    },
+    "evidenceStrength": {
+      "low": "Headline ownership percentages only.",
+      "medium": "Cap table and role plan are available.",
+      "high": "Cap table, terms, behavior, hiring, and scenario evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Terms or pro forma dilution are missing.",
+      "medium": "Economics are known but behavior or retention is weak.",
+      "high": "Economics, roles, behavior, and scenarios are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "No material equity or innovation incentive decision exists.",
+      "medium": "Incentives matter but major terms remain unknown.",
+      "high": "Ownership and incentives materially affect execution and retention."
+    },
+    "judgmentConfidence": {
+      "low": "Only nominal allocation can be described.",
+      "medium": "Alignment is plausible with unresolved scenario effects.",
+      "high": "Economics and behavior remain coherent across scenarios."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VENTURE-DEALS-TERMS",
+    "KUPOR-GOVERNANCE",
+    "WASS-FOUNDERS-DILEMMAS"
+  ],
+  "conflictingFrameworkIds": [
+    "MINIMIZE-DILUTION-ONLY",
+    "CASH-COMPENSATION-ONLY"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Integrate reviewed legal and tax term definitions.",
+      "Define deterministic cap-table scenario outputs.",
+      "Validate stage-specific retention and dilution anchors."
+    ],
+    "empiricalQualifications": [
+      "Observed ownership is endogenous to bargaining and company quality.",
+      "Nominal equity is not comparable across terms and stages.",
+      "Incentive effects vary across roles and jurisdictions."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book text or contract template is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash keynote source revision.",
+      "Reconcile with Venture Deals and governance cards."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft treats incentives as scenario-dependent economics and behavior."
+    }
+  ]
+}
+

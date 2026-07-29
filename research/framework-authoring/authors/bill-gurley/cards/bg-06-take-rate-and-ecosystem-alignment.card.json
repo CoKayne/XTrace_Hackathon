@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-06",
+  "slug": "take-rate-and-ecosystem-alignment",
+  "name": "Take Rate and Ecosystem Alignment",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether platform monetization preserves participant value, liquidity, and long-run defensibility.",
+    "productLabel": "Take Rate and Ecosystem Alignment Lens — based on Bill Gurley's public writing",
+    "notAClaimOf": ["lower take rate always being better", "historical peer rates being optimal", "short-term revenue maximizing platform value"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd writing",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Set and evaluate take rate relative to the verified value and cost the platform creates for every side. Test whether monetization increases friction, end prices, supplier bypass, multihoming, or competitive entry, and whether lower or adaptive pricing increases durable volume.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-RAKE-2013",
+      "claimIds": ["BG-CLM-017", "BG-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Lines 10-26: rake definition, participant friction, supplier response, platform durability, low-rake and adaptive examples"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-MARKETS-2012",
+      "claimIds": ["BG-CLM-014"],
+      "locator": {"kind": "web_section", "value": "Factors 2, 8, and 9: participant economics, frequency, and payment flow"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["marketplace", "platform", "app_store", "payments_network"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Gross transaction value, net platform revenue, and fees by side are defined.",
+    "Participant value and platform cost can be estimated.",
+    "Take-rate changes can be linked to behavior and liquidity."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "effective_take_rate",
+      "description": "All mandatory fees, ads, payment charges, discounts, rebates, and cross-side transfers as a share of relevant transaction value.",
+      "necessity": "required",
+      "acceptableSources": ["transaction ledger", "pricing schedule", "contracts", "billing", "rebate records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "participant_value",
+      "description": "Incremental revenue, savings, utilization, trust, convenience, workflow, and service cost for each side.",
+      "necessity": "required",
+      "acceptableSources": ["participant economics", "surveys", "transaction data", "time-and-cost analysis"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "behavior_response",
+      "description": "Elasticity, conversion, retention, bypass, multihoming, off-platform leakage, supply quality, and liquidity around pricing changes.",
+      "necessity": "required",
+      "acceptableSources": ["pricing experiments", "cohort analysis", "transaction logs", "participant interviews"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "platform_cost_and_competition",
+      "description": "Variable cost, risk-bearing, service scope, competitor rates, entry threat, and alternative monetization.",
+      "necessity": "required",
+      "acceptableSources": ["cost ledger", "risk data", "competitor evidence", "pricing model", "market research"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is the full effective take rate for each participant?",
+    "What measurable value and cost justify that rate?",
+    "How does pricing change participation, quality, liquidity, and bypass?",
+    "Does the rate create a profitable opening for a lower-friction competitor?",
+    "Could optional or market-based pricing improve alignment?"
+  ],
+  "positiveSignals": [
+    "Participant value materially exceeds transparent platform cost.",
+    "Pricing experiments preserve or improve liquidity and retention.",
+    "Suppliers and buyers have sustainable economics.",
+    "Monetization strengthens rather than exploits the core interaction."
+  ],
+  "redFlags": [
+    "Headline take rate excludes mandatory adjacent charges.",
+    "Suppliers raise prices, leave, bypass, or multihome as fees rise.",
+    "Near-term revenue grows while transaction volume or quality weakens.",
+    "The platform cannot explain what value the fee funds."
+  ],
+  "disconfirmingEvidence": [
+    "A high rate can be justified when the platform bears material fulfillment, risk, or demand-generation cost.",
+    "A low rate can be unsustainable if it does not fund trust and operations.",
+    "Different categories may rationally carry different rates.",
+    "Short-term participant resistance may accompany a verified service improvement."
+  ],
+  "contraindications": [
+    "Do not use historical peer rates as a deterministic benchmark.",
+    "Do not optimize rate without volume, participant, and cost response.",
+    "Do not ignore competition, regulation, fairness, or platform dependency."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconcile effective take rate and platform cost.",
+      "Quantify value for each participant side.",
+      "Analyze elasticity, bypass, multihoming, liquidity, and competitive response.",
+      "Compare current and alternative pricing scenarios.",
+      "Conclude aligned, potentially under-monetized, extraction risk, uneconomic, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Effective take rate, participant economics, elasticity, and scenario calculations must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Published fee table.", "medium": "Transaction and cost records.", "high": "Reconciled ledger plus experiments and participant evidence."},
+    "evidenceStrength": {"low": "Rate comparison.", "medium": "Value and behavior evidence.", "high": "Repeated pricing tests show durable ecosystem outcomes."},
+    "evidenceCoverage": {"low": "Headline rate.", "medium": "Rate, value, and behavior.", "high": "All fees, costs, sides, elasticity, competition, leakage, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Non-platform model.", "medium": "Platform with simple fees.", "high": "Take rate materially shapes liquidity and defensibility."},
+    "judgmentConfidence": {"low": "Peer-rate heuristic.", "medium": "Bounded economic assessment.", "high": "Reconciled experiments and ecosystem evidence support a clear conclusion."}
+  },
+  "overlapFrameworkIds": ["BG-05", "CSP-07", "CSP-08", "H7P-03"],
+  "conflictingFrameworkIds": ["MAXIMUM-TAKE-RATE", "LOWEST-TAKE-RATE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Implement effective-rate and elasticity service.", "Backtest participant response.", "Add regulatory and fairness review."],
+    "empiricalQualifications": ["Observed rates reflect different services and market power.", "Pricing causality can be confounded by product and competition."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public author material is neutrally paraphrased; historical platform rates are not copied as rules."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Define effective-rate and cross-side transfer taxonomy."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

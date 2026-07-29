@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "peter_thiel_public_frameworks_v0_1",
+  "name": "Peter Thiel Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten independently executable, source-grounded research lenses distilled from Peter Thiel direct public materials, clearly labeled Blake Masters course-note derivatives, Founders Fund institution doctrine, and external empirical qualifications.",
+  "cardFiles": [
+    "cards/pt-01-contrarian-truth.card.json",
+    "cards/pt-02-creative-monopoly-value-capture.card.json",
+    "cards/pt-03-beachhead-and-expansion.card.json",
+    "cards/pt-04-last-mover-durability.card.json",
+    "cards/pt-05-distribution.card.json",
+    "cards/pt-06-power-law-fund-return.card.json",
+    "cards/pt-07-founder-alignment-governance.card.json",
+    "cards/pt-08-definite-agency-timing.card.json",
+    "cards/pt-09-transformational-technology.card.json",
+    "cards/pt-10-mimetic-competition.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Capture, hash, and review the official Y Combinator lecture caption revision.",
+      "Hash and page-review authorized Stanford and empirical PDF revisions.",
+      "Complete the first- and second-batch cross-framework overlap graph.",
+      "Determine licensed-book gaps only after the complete public-source audit.",
+      "Run independent content, rights, and schema review before Task 7 seed conversion."
+    ]
+  }
+}
+

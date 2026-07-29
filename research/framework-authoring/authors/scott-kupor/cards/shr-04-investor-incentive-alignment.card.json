@@ -1,0 +1,269 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SHR-04",
+  "slug": "investor-incentive-alignment",
+  "name": "Investor Incentive and Decision-Process Alignment",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Maps who actually decides, what each capital provider optimizes, and where future financing or strategic conflicts may arise.",
+    "productLabel": "Investor Alignment Lens — based on Scott Kupor public materials",
+    "notAClaimOf": [
+      "brand reputation proving alignment",
+      "financial investors always being superior to strategic investors",
+      "an investor commitment beyond signed documents"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Scott Kupor and Frank Chen's public investor-selection episode",
+    "scope": "coauthored_work",
+    "people": [
+      "Scott Kupor",
+      "Frank Chen"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Capital providers can differ in return objective, strategic objective, time horizon, decision authority, governance rights, reserve capacity, and follow-on behavior. Before relying on an investor, identify the actual decision-makers and signed rights. Brand, partner title, or prior behavior at another fund is not sufficient.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SHR-P1-A16Z-INVESTOR-2019",
+      "claimIds": [
+        "SHR-CLM-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official episode scope: LP/GP incentives, economic and governance interests, corporate VC, and firm decision process"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SHR-P2-A16Z-VIDEO-HUB-2019",
+      "claimIds": [
+        "SHR-CLM-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Part 1 topic index"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "fundraising",
+      "initial_investment",
+      "follow_on",
+      "strategic_financing",
+      "exit"
+    ],
+    "businessModels": [
+      "venture_backed_startup"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible",
+      "strategic_investment"
+    ]
+  },
+  "requiredConditions": [
+    "At least one external capital provider may receive economic or governance rights.",
+    "Investor identity, fund vehicle, and responsible partner can be resolved.",
+    "Future financing or strategic optionality matters."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "investor_entity_map",
+      "description": "Exact legal investor entity, fund vintage, mandate, decision body, responsible partner, and conflicts.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "fund documents",
+        "investor diligence",
+        "direct confirmation"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "rights_and_obligations",
+      "description": "Signed economic, governance, information, transfer, pro-rata, and veto rights.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financing documents",
+        "side letters",
+        "board documents"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "follow_on_capacity",
+      "description": "Reserve policy, fund age, concentration limits, and stated participation expectations.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "direct investor confirmation",
+        "Fund Policy",
+        "historical behavior"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "strategic_conflict_map",
+      "description": "Customer, partner, competitor, acquisition, data, and exclusivity conflicts created by the investor.",
+      "necessity": "required",
+      "acceptableSources": [
+        "commercial agreements",
+        "strategy review",
+        "legal diligence"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who can approve, block, or delay this investment?",
+    "What does each investor optimize: financial return, strategic access, option value, or another objective?",
+    "Which promises are contractual and which are relational?",
+    "What future round participation is realistic for this vehicle?",
+    "Could the investor constrain customers, partners, acquirers, or later investors?",
+    "How will conflicts be surfaced and resolved?"
+  ],
+  "positiveSignals": [
+    "Decision authority and timeline are explicit.",
+    "Economic and strategic objectives are disclosed and compatible.",
+    "Follow-on expectations match fund capacity and are documented.",
+    "Potential commercial conflicts have workable safeguards.",
+    "Founder and investor can describe difficult-scenario incentives consistently."
+  ],
+  "redFlags": [
+    "The team relies on a brand without knowing the approving body.",
+    "A strategic investor creates exclusivity or signalling risk.",
+    "A partner promises follow-on without reserve authority.",
+    "Governance rights materially exceed the investor's stated role.",
+    "Different stakeholders describe the same commitment differently."
+  ],
+  "disconfirmingEvidence": [
+    "The actual fund is late in life or reserve-constrained.",
+    "Historical follow-on behavior contradicts stated expectations.",
+    "Strategic conflicts block customers, partners, or acquirers.",
+    "The responsible partner lacks internal sponsorship or authority.",
+    "Signed documents allocate materially different rights than the relationship narrative."
+  ],
+  "contraindications": [
+    "Do not infer alignment from firm brand or partner title.",
+    "Do not treat verbal support as committed capital.",
+    "Do not use prior portfolio outcomes as proof of future support."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Resolve the exact investor entity and decision authority.",
+      "Separate economic, governance, strategic, and relational incentives.",
+      "Map signed rights and unstated expectations.",
+      "Test downside, follow-on, acquisition, and conflict scenarios.",
+      "Return an alignment map and unresolved commitments."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Investor incentives are described only by third parties.",
+      "medium": "Official episode scope and direct confirmations are available.",
+      "high": "First-party timestamps, signed documents, and fund-specific evidence converge."
+    },
+    "evidenceStrength": {
+      "low": "Brand and verbal promises only.",
+      "medium": "Decision process and some rights are confirmed.",
+      "high": "Entity, authority, rights, reserves, conflicts, and scenarios are documented."
+    },
+    "evidenceCoverage": {
+      "low": "Decision authority or rights are missing.",
+      "medium": "Current round is covered but future scenarios are incomplete.",
+      "high": "Current, follow-on, downside, strategic, and exit incentives are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No external investor rights or dependency exist.",
+      "medium": "Alignment matters but investor details remain provisional.",
+      "high": "Investor choice materially affects financing or strategic optionality."
+    },
+    "judgmentConfidence": {
+      "low": "The conclusion relies on relationship impressions.",
+      "medium": "Most incentives are clear with unresolved future commitments.",
+      "high": "Documents and scenario responses converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VENTURE-DEALS-PLAYERS",
+    "METRICK-LP-GP",
+    "WASS-CONTROL"
+  ],
+  "conflictingFrameworkIds": [
+    "BRAND-AS-ALIGNMENT",
+    "VERBAL-COMMITMENT-AS-CAPITAL"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Pin investor and board video timestamps.",
+      "Validate disclosed capacity and decision process against observed outcomes.",
+      "Separate legal rights from relationship quality."
+    ],
+    "empiricalQualifications": [
+      "Investor incentives vary by vehicle, partner, and time.",
+      "Historical behavior may not transfer to a new fund or strategy.",
+      "Strategic conflicts can be company- and market-specific."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Official episode topics are paraphrased; no transcript mirror is used as a runtime source."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete first-party timestamp review.",
+      "Reconcile with Venture Deals and fund-governance frameworks."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}
+

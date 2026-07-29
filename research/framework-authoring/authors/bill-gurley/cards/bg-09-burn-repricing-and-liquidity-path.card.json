@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-09",
+  "slug": "burn-repricing-and-liquidity-path",
+  "name": "Burn, Repricing, and Liquidity Path",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Stress-tests how burn, capital dependence, market repricing, financing terms, and exit scarcity affect survival and stakeholder outcomes.",
+    "productLabel": "Burn, Repricing, and Liquidity Path Lens — based on Bill Gurley's public writing",
+    "notAClaimOf": ["last-round price being value", "down rounds always being wrong", "paper gains being realized returns"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd writing",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Treat last-round valuation as a financing event, not permanent value. Model whether the company can reach sustainable operations or a credible liquidity event under lower multiples, constrained capital, down rounds, recap terms, dilution, and delayed exits.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-RECAP-2016",
+      "claimIds": ["BG-CLM-025", "BG-CLM-026", "BG-CLM-027"],
+      "locator": {"kind": "web_section", "value": "Lines 11-38 and Founder/Employee/Investor sections: last-round repricing, burn, liquidity scarcity, anchoring, and recap choices"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-LATE-STAGE-2015",
+      "claimIds": ["BG-CLM-024", "BG-CLM-026"],
+      "locator": {"kind": "web_section", "value": "Lines 23-34: burn, business-model proof, preferred stacks, and risk bubble"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["series_a", "series_b", "growth", "pre_ipo"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["preferred_equity", "convertible_note", "safe", "venture_debt", "all"]
+  },
+  "requiredConditions": [
+    "The company needs future capital or liquidity to realize stakeholder value.",
+    "Current burn, capital structure, and milestone path are available.",
+    "Cycle and valuation assumptions can be stressed."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "cash_milestone_path",
+      "description": "Cash, burn, runway, revenue and margin milestones, break-even options, and contingency actions.",
+      "necessity": "required",
+      "acceptableSources": ["cash forecast", "ledger", "operating plan", "board plan", "scenario model"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "financing_scenarios",
+      "description": "Up, flat, down, bridge, debt, recap, and no-financing cases with terms and timing.",
+      "necessity": "required",
+      "acceptableSources": ["financing model", "term sheets", "market comparables", "capital plan"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "stakeholder_waterfall",
+      "description": "Payout, dilution, preference, control, and employee/common outcomes across financing and exit values.",
+      "necessity": "required",
+      "acceptableSources": ["cap table", "charter", "side letters", "option records", "waterfall model"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "liquidity_routes",
+      "description": "IPO, M&A, secondary, cash-flow sustainability, timing, readiness, and buyer or market constraints.",
+      "necessity": "required",
+      "acceptableSources": ["exit research", "public readiness assessment", "buyer map", "secondary evidence", "financial plan"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Can the company reach a financeable or sustainable state on current cash?",
+    "What happens if public and private multiples contract?",
+    "Which recap or special terms transfer value or control among stakeholders?",
+    "Are stakeholders anchored to the last round?",
+    "What credible route converts paper value into cash or durable self-funding?"
+  ],
+  "positiveSignals": [
+    "The company has a credible break-even or milestone path under adverse capital conditions.",
+    "Boards openly evaluate repricing and dilution rather than protect appearances.",
+    "Waterfalls and employee/common outcomes are transparent.",
+    "Liquidity strategy is matched to readiness and market reality."
+  ],
+  "redFlags": [
+    "Survival requires a higher-priced round on a fixed date.",
+    "Last-round valuation is treated as realized value.",
+    "Special terms preserve headline valuation while worsening economic outcomes.",
+    "Burn remains high despite reduced milestone or funding confidence."
+  ],
+  "disconfirmingEvidence": [
+    "A down round can preserve more long-term value than a punitive structured round.",
+    "High burn can be rational when funded milestones have strong evidence and optionality.",
+    "Remaining private can be rational when the company is self-funding.",
+    "Paper marks can be informative if independently updated and not mistaken for liquidity."
+  ],
+  "contraindications": [
+    "Do not equate lower valuation with company failure.",
+    "Do not recommend financing structures without legal and fiduciary review.",
+    "Do not let the language model compute scenario waterfalls."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Model cash and milestones under adverse operating cases.",
+      "Model financing and multiple-contraction scenarios.",
+      "Compute stakeholder waterfalls and control changes deterministically.",
+      "Evaluate liquidity routes and readiness.",
+      "Conclude resilient path, manageable repricing, recap risk, liquidity trap, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Runway, financing, dilution, waterfall, and exit scenario calculations must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Last-round mark.", "medium": "Internal finance and cap table.", "high": "Reconciled cash, documents, market evidence, and legal review."},
+    "evidenceStrength": {"low": "Base case only.", "medium": "Adverse financing and burn cases.", "high": "Robust scenarios and actionable contingency support the path."},
+    "evidenceCoverage": {"low": "Runway only.", "medium": "Runway, financing, and cap table.", "high": "Operating cases, terms, stakeholders, control, liquidity, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Self-funded company.", "medium": "Future capital likely.", "high": "Refinancing and liquidity determine survival or returns."},
+    "judgmentConfidence": {"low": "Paper-value narrative.", "medium": "Bounded scenario assessment.", "high": "Reconciled scenarios and documents support the conclusion."}
+  },
+  "overlapFrameworkIds": ["MA-06", "DSV-06", "VD-03", "VD-04", "VCFI-09", "BVC-10", "MMI-05"],
+  "conflictingFrameworkIds": ["LAST-ROUND-AS-VALUE", "HEADLINE-VALUATION-PRESERVATION"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Implement financing and waterfall services.", "Obtain legal review.", "Backtest capital-cycle scenarios."],
+    "empiricalQualifications": ["Capital cycles and exit windows are hard to forecast.", "Structured terms can produce nonlinear stakeholder outcomes."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public cycle-specific writing is neutrally paraphrased and kept time-bound."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Obtain legal/fiduciary review and define adverse-scenario service."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

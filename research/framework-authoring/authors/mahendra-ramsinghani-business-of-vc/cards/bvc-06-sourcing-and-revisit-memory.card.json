@@ -1,0 +1,278 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-06",
+  "slug": "sourcing-and-revisit-memory",
+  "name": "Sourcing and Revisit Memory",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Measures sourcing channels, records every evaluated company and decision reason, and turns market or company changes into evidence-gated revisit prompts.",
+    "productLabel": "Sourcing and Revisit Lens — product adaptation of Ramsinghani's public sourcing framework",
+    "notAClaimOf": [
+      "more inbound deals being better sourcing",
+      "public crawling replacing founder relationships",
+      "a revisit alert reversing the original decision"
+    ]
+  },
+  "attribution": {
+    "display": "Product adaptation of Mahendra Ramsinghani's public sourcing framework",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Treat sourcing as a system of relationships, reputation, market awareness, multiple channels, and response quality. Preserve the source, interaction, judgment, pass reason, and revisit condition for every company. When new evidence arrives, retrieve all relevant historical companies and recommend renewed research only when exposure and the original decision context are connected.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH20",
+      "claimIds": [
+        "BVC-CLM-010",
+        "BVC-CLM-011"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Chapter 20 pp. 229-252; third-edition details pending, public prior-edition summary covers trend awareness, founder engagement, networks, channels, and missed opportunities"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH21",
+      "claimIds": [
+        "BVC-CLM-004",
+        "BVC-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary: expertise, relationships, founder-friendly brand, responsiveness, and decisiveness"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Company identity and Deal ownership are user-confirmed when ambiguous.",
+    "Every interaction and decision has source, date, status, and reason.",
+    "Revisit logic includes event verification, company exposure, and original concern.",
+    "Alerts require at least medium confidence under current product policy."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "deal_memory",
+      "description": "Company, source channel, interactions, status, decision reason, concern, and revisit milestone.",
+      "necessity": "required",
+      "acceptableSources": [
+        "uploaded pitch deck",
+        "meeting note",
+        "email export",
+        "XTrace memory",
+        "user confirmation"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "source_attribution",
+      "description": "Who or what channel introduced the deal, response timing, meeting progression, and outcome.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "CRM export",
+        "calendar record",
+        "meeting note",
+        "email metadata"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "revisit_trigger",
+      "description": "Verified event or company update connected to exposure and a prior concern or milestone.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company announcement",
+        "regulatory source",
+        "credible news",
+        "market dataset",
+        "customer evidence"
+      ],
+      "missingEffect": "not_applicable"
+    }
+  ],
+  "decisionQuestions": [
+    "Which channels produce relevant, advancing, and invested opportunities?",
+    "What did the fund believe when it last evaluated this company?",
+    "Why did the company pass, pause, advance, or receive investment?",
+    "What event or milestone was supposed to change that view?",
+    "Does new evidence affect the company or only its sector?",
+    "What should the partner verify next?"
+  ],
+  "positiveSignals": [
+    "Deal identity, source, decision, and revisit condition are complete.",
+    "Source quality is measured by progression and outcomes, not volume.",
+    "New evidence directly touches an original concern.",
+    "Relevant companies are retrieved across pass, watch, evaluating, and invested statuses.",
+    "Alert includes sources, counterevidence, and next action."
+  ],
+  "redFlags": [
+    "Inbound count is the only sourcing metric.",
+    "Rejected companies disappear from memory.",
+    "Keyword overlap creates a revisit alert.",
+    "A market event is described as company progress.",
+    "The alert hides the original pass reason."
+  ],
+  "disconfirmingEvidence": [
+    "The company is not actually exposed to the event.",
+    "The original concern remains unchanged.",
+    "The company pivoted away from the relevant market.",
+    "The event benefits competitors or raises risk.",
+    "The source channel produces high volume but poor progression."
+  ],
+  "contraindications": [
+    "Do not claim a revisit is an investment recommendation.",
+    "Do not delete passed or stale deals.",
+    "Do not infer a founder relationship from public data.",
+    "Do not rank sourcing people from sparse outcomes without caveats."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Normalize company identity, source, interactions, status, and decision reason.",
+      "Store revisit milestones and unresolved concerns.",
+      "Monitor verified market and company events.",
+      "Require exposure and concern relevance before alerting.",
+      "Report source lineage, original context, current signal, counterevidence, and next action."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "eligiblePriorStatuses": [
+        "passed",
+        "watching",
+        "evaluating",
+        "invested"
+      ],
+      "alertGates": [
+        "company_identity_resolved",
+        "prior_context_available",
+        "verified_trigger",
+        "company_exposure_supported",
+        "confidence_at_least_medium"
+      ],
+      "calculationOwner": "deal_memory_and_opportunity_matching_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Deal context or event is unsourced.",
+      "medium": "Internal notes and credible external sources exist.",
+      "high": "User-confirmed deal memory and primary/corroborated event evidence agree."
+    },
+    "evidenceStrength": {
+      "low": "Only sector similarity exists.",
+      "medium": "Exposure and prior concern relevance are supported.",
+      "high": "Company-specific evidence confirms a material change."
+    },
+    "evidenceCoverage": {
+      "low": "Company name and sector only.",
+      "medium": "Interaction and decision are covered but source or milestone is partial.",
+      "high": "Identity, source, interactions, status, reason, milestone, event, exposure, and counterevidence are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Company or deal ownership is ambiguous.",
+      "medium": "Company is resolved but old context is incomplete.",
+      "high": "Company, deal, history, and trigger are resolved."
+    },
+    "judgmentConfidence": {
+      "low": "Market-summary mention only.",
+      "medium": "A Watch/revisit alert is defensible.",
+      "high": "A specific follow-up question and evidence request are well supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "EI-09",
+    "NN-08",
+    "VM-07",
+    "SHR-09"
+  ],
+  "conflictingFrameworkIds": [
+    "INBOUND-VOLUME-EQUALS-EDGE",
+    "DELETE-PASSED-DEALS",
+    "KEYWORD-EQUALS-REVISIT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapter 20 review.",
+      "Backtest revisit precision, recall, and alert fatigue.",
+      "Validate source-attribution metrics."
+    ],
+    "empiricalQualifications": [
+      "Sourcing outcomes are sparse and path-dependent.",
+      "Network attribution can be shared or ambiguous.",
+      "Public signals may not reveal current private-company performance."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public sourcing concepts are paraphrased; persistent memory and alert gates are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition sourcing taxonomy review.",
+      "Define source-attribution and progression metrics."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source product adaptation draft."
+    }
+  ]
+}

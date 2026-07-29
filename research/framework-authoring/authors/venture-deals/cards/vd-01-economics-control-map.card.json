@@ -1,0 +1,276 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-01",
+  "slug": "economics-control-map",
+  "name": "Economics, Control, Information, and Process Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Classifies each financing term by who it affects, in which state, and through economics, control, information, retention, or process.",
+    "productLabel": "Venture Deal Rights Map — based on Feld and Mendelson's public Venture Deals materials",
+    "notAClaimOf": [
+      "economics and control being mutually exclusive",
+      "term labels being sufficient to determine outcomes",
+      "a short term sheet capturing every definitive-document right"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public Venture Deals materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals",
+      "Techstars"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Start by separating terms that affect financial payoff from terms that affect decision authority, then add information, retention, and closing-process effects. For every term, record the rights holder, affected class, triggering event, threshold, duration, exceptions, and downstream calculation rather than assigning a generic favorable or unfavorable label.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-PRICE-2005",
+      "claimIds": [
+        "VD-CLM-001",
+        "VD-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Opening sections: economics as return effects and control as affirmative or veto mechanisms"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-P2-CONTENTS-2019",
+      "claimIds": [
+        "VD-CLM-001",
+        "VD-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapters 4-9: overview, economic terms, control terms, other terms, convertible debt, and capitalization table"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VD-P1-WRAP-2005",
+      "claimIds": [
+        "VD-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Complete term-sheet series index and not-legal-advice disclaimer"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_venture_backed_companies"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "united_states",
+      "other_with_counsel_mapping"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "common_equity",
+      "convertible",
+      "debt"
+    ]
+  },
+  "requiredConditions": [
+    "The exact document version and jurisdiction are known.",
+    "Each right has an owner, affected class, trigger, threshold, duration, and exception.",
+    "Signed and executed documents override summaries and templates.",
+    "Economic calculations and legal enforceability are handled by separate services and counsel."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "document_set",
+      "description": "Signed term sheet and all relevant definitive financing, charter, side-letter, employment, and equity documents.",
+      "necessity": "required",
+      "acceptableSources": [
+        "executed legal documents",
+        "signed term sheet",
+        "counsel-certified summary"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "rights_inventory",
+      "description": "Clause-level inventory of right, owner, class, trigger, threshold, duration, exception, and linked calculation.",
+      "necessity": "required",
+      "acceptableSources": [
+        "document parser with clause locator",
+        "legal review",
+        "verified rights schedule"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "jurisdiction_and_version",
+      "description": "Entity jurisdiction, governing law, document date, amendments, waivers, and current effect.",
+      "necessity": "required",
+      "acceptableSources": [
+        "charter",
+        "agreement",
+        "amendment",
+        "counsel confirmation"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who owns each right and which class or person is burdened?",
+    "What event activates the right?",
+    "Does it change payoff, ownership, vote, veto, information, retention, or process?",
+    "What threshold, sunset, waiver, or exception applies?",
+    "Which rights interact or conflict in the same state?",
+    "Which deterministic service and counsel review are required?"
+  ],
+  "positiveSignals": [
+    "Every material clause maps to a state, owner, and effect.",
+    "Executed documents and summaries reconcile.",
+    "Economic and control consequences are separately modeled.",
+    "Sunsets, waivers, thresholds, and side letters are visible.",
+    "Counsel confirms ambiguous or jurisdiction-specific clauses."
+  ],
+  "redFlags": [
+    "Terms are scored by label alone.",
+    "A template substitutes for signed documents.",
+    "Economics and control effects are collapsed into one score.",
+    "Side letters, amendments, or class-specific rights are absent.",
+    "The system offers legal enforceability conclusions."
+  ],
+  "disconfirmingEvidence": [
+    "Definitive documents differ from the term sheet.",
+    "An amendment, waiver, conversion, or sunset terminated the right.",
+    "A side letter changes one investor's rights.",
+    "Jurisdiction makes the assumed mechanism unavailable or different.",
+    "Two clauses create a conflict not represented by the simple label."
+  ],
+  "contraindications": [
+    "Do not interpret rights without exact clause locators.",
+    "Do not apply US conventions to another jurisdiction without counsel mapping.",
+    "Do not make a legal conclusion.",
+    "Do not issue Invest Candidate from the rights map."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Inventory the complete document set and versions.",
+      "Extract each right with clause locator, owner, trigger, threshold, duration, exception, and affected state.",
+      "Classify effects without forcing exclusivity.",
+      "Route numeric and governance effects to deterministic services.",
+      "Display conflicts, unknowns, and counsel questions."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a verbal summary or outdated term sheet exists.",
+      "medium": "Signed documents exist but amendments, side letters, or counsel review are incomplete.",
+      "high": "Executed documents, amendments, cap table, and counsel-confirmed inventory reconcile."
+    },
+    "evidenceStrength": {
+      "low": "Labels are known but triggers and effects are not.",
+      "medium": "Most rights and effects are mapped with limited ambiguity.",
+      "high": "Every material right is clause-linked and state-tested."
+    },
+    "evidenceCoverage": {
+      "low": "Only valuation and ownership are covered.",
+      "medium": "Economics and control are covered but process, side letters, or retention are partial.",
+      "high": "All economics, control, information, retention, process, amendments, and conflicts are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Jurisdiction or instrument does not fit the public doctrine.",
+      "medium": "US-style structure exists with custom clauses.",
+      "high": "The financing uses a well-defined US venture-document structure."
+    },
+    "judgmentConfidence": {
+      "low": "Only missing-document questions are defensible.",
+      "medium": "A rights map is usable with counsel flags.",
+      "high": "The map is complete and ready for deterministic analysis."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SHR-07",
+    "VCFI-02",
+    "VCFI-08",
+    "VCFI-09"
+  ],
+  "conflictingFrameworkIds": [
+    "TERM-LABEL-SCORING",
+    "TEMPLATE-EQUALS-EXECUTED-DEAL",
+    "AI-LEGAL-OPINION"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete fourth-edition and current NVCA mapping.",
+      "Obtain venture-counsel review.",
+      "Validate clause extraction and state routing on golden documents."
+    ],
+    "empiricalQualifications": [
+      "Term usage and drafting vary by stage, jurisdiction, cycle, and counsel.",
+      "A clause can have indirect effects beyond its primary category.",
+      "Signed documents can diverge materially from negotiation summaries."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are neutrally paraphrased; no legal advice is provided."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define clause-level rights schema and current NVCA mapping.",
+      "Obtain jurisdiction-specific legal review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

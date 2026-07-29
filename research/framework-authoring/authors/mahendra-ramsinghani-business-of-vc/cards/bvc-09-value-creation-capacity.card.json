@@ -1,0 +1,288 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-09",
+  "slug": "value-creation-capacity",
+  "name": "Value-Creation and Board-Capacity Plan",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Turns a fund's promised post-investment help into owned, capacity-checked actions while preserving governance and management boundaries.",
+    "productLabel": "Value-Creation Capacity Lens — based on Ramsinghani's public board and value-creation chapter architecture",
+    "notAClaimOf": [
+      "VC involvement always improving outcomes",
+      "the board operating the company",
+      "correlation proving investor value-add"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Mahendra Ramsinghani's public board and value-creation chapter architecture",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Specify what the fund can actually contribute after investment—recruiting, introductions, expertise, financing, governance, or exit preparation—with an owner, capacity, timing, boundary, and observable outcome. Keep board oversight and management execution distinct, and preserve legal and ethical governance duties.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH29",
+      "claimIds": [
+        "BVC-CLM-016",
+        "BVC-CLM-017"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary: recruiting and retaining management/board, mentoring, advice, and fiscal/legal/ethical governance"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH31",
+      "claimIds": [
+        "BVC-CLM-017",
+        "BVC-CLM-020"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Chapter 31 pp. 377-389; detailed value-creation categories pending full review"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH12",
+      "claimIds": [
+        "BVC-CLM-009",
+        "BVC-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary identifying board work and exits among required team skills"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "portfolio_management"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "board_seat",
+      "board_observer",
+      "minority_investment"
+    ]
+  },
+  "requiredConditions": [
+    "The company's priority bottlenecks are evidenced and founder-confirmed.",
+    "The fund's actual people, network, and time capacity are known.",
+    "Board, observer, shareholder, and informal-advisor roles are separated.",
+    "Jurisdiction-specific duties receive legal review."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "company_support_needs",
+      "description": "Prioritized bottlenecks, milestones, owner requests, and expected outcomes.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board plan",
+        "founder meeting",
+        "operating plan",
+        "diligence output"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fund_capacity",
+      "description": "Named team owner, expertise, relationships, time budget, conflicts, and current portfolio load.",
+      "necessity": "required",
+      "acceptableSources": [
+        "team workload",
+        "portfolio plan",
+        "partner confirmation",
+        "network evidence"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "governance_context",
+      "description": "Role, board composition, reserved matters, duties, information rights, and legal boundaries.",
+      "necessity": "required",
+      "acceptableSources": [
+        "governance documents",
+        "board charter",
+        "term sheet",
+        "legal counsel"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What specific company bottleneck can this fund influence?",
+    "Who owns the action and what capacity exists?",
+    "What is the founder asking for versus the investor assuming?",
+    "What observable milestone would indicate progress?",
+    "Does involvement respect management and governance boundaries?",
+    "What portfolio opportunity cost does the support require?"
+  ],
+  "positiveSignals": [
+    "Support commitments have named owners and realistic time.",
+    "Founder and investor agree on priorities and boundaries.",
+    "The fund has relevant, demonstrated capability.",
+    "Governance oversight and operating help are distinct.",
+    "Progress and unintended effects are reviewed."
+  ],
+  "redFlags": [
+    "Value-add is generic brand language.",
+    "The same partner promises intensive help to too many companies.",
+    "The board is expected to run daily operations.",
+    "Support is imposed without founder demand.",
+    "Portfolio success is retroactively credited to the investor."
+  ],
+  "disconfirmingEvidence": [
+    "The fund lacks capacity or relevant expertise.",
+    "Founder references reject the claimed support style.",
+    "Support actions conflict with management ownership.",
+    "Governance role creates legal or ethical conflicts.",
+    "Milestones do not improve despite delivered support."
+  ],
+  "contraindications": [
+    "Do not offer legal governance conclusions.",
+    "Do not promise unallocated team capacity.",
+    "Do not infer causal value-add from company success.",
+    "Do not make external introductions or messages automatically; draft only."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Identify company bottlenecks and founder-requested support.",
+      "Match needs to verified fund capabilities and capacity.",
+      "Separate board oversight from operational help.",
+      "Create owned actions, milestones, boundaries, and review dates.",
+      "Track delivery and counterevidence without causal overclaim."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredActionFields": [
+        "need",
+        "owner",
+        "capacity",
+        "action",
+        "boundary",
+        "milestone",
+        "review_date"
+      ],
+      "automaticExternalAction": false,
+      "calculationOwner": "portfolio_support_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Support needs or capacity are assumed.",
+      "medium": "Founder needs and team commitment are documented.",
+      "high": "Founder, board, team capacity, and prior capability evidence agree."
+    },
+    "evidenceStrength": {
+      "low": "Value-add is generic.",
+      "medium": "Specific actions are feasible but outcome attribution is uncertain.",
+      "high": "Owned actions and observed milestones support a bounded contribution claim."
+    },
+    "evidenceCoverage": {
+      "low": "Only promised introductions or advice are listed.",
+      "medium": "Need, owner, and action are covered but capacity or boundary is partial.",
+      "high": "Need, owner, capability, capacity, governance, action, milestone, and review are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Founder demand or investor role is unclear.",
+      "medium": "Support need is real but role boundaries require clarification.",
+      "high": "Need, role, consent, and governance context are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only possible support ideas can be listed.",
+      "medium": "A feasible support plan is defensible.",
+      "high": "The plan is owner-confirmed, capacity-checked, and measurable."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SHR-07",
+    "BVC-01",
+    "BVC-10",
+    "VD-05"
+  ],
+  "conflictingFrameworkIds": [
+    "GENERIC-VALUE-ADD",
+    "BOARD-RUNS-COMPANY",
+    "SUCCESS-EQUALS-VC-CAUSATION"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapter 31 review.",
+      "Validate capacity model and governance boundaries.",
+      "Test milestone tracking with portfolio teams."
+    ],
+    "empiricalQualifications": [
+      "Investor contribution is hard to identify causally.",
+      "Founder needs and team capacity change over time.",
+      "Board duties vary by jurisdiction and context."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Board-role doctrine is publicly supported; detailed value-creation capacity model awaits Chapter 31 review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete Chapter 31 review.",
+      "Define jurisdiction and role disclaimers."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source and product-synthesis draft."
+    }
+  ]
+}

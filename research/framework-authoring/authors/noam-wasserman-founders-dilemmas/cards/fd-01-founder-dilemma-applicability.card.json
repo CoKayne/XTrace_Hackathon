@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-01",
+  "slug": "founder-dilemma-applicability",
+  "name": "Founder-Dilemma Applicability and Path Dependence",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Determines whether early founder, team, ownership, or control choices create a material present or future underwriting risk.",
+    "productLabel": "Founder-Dilemmas Applicability Lens — based on Noam Wasserman's public work",
+    "notAClaimOf": ["founder personality scoring", "people problems explaining every failure", "one organization design fitting every startup"]
+  },
+  "attribution": {
+    "display": "Based on Noam Wasserman's public work",
+    "scope": "product_synthesis",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School", "Stanford Technology Ventures Program", "Kauffman Entrepreneurs"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Reconstruct consequential choices about when and with whom to found, roles, rewards, hires, investors, control, and succession. Test whether the team anticipated changing conditions, documented arrangements, and can adapt without destructive conflict; do not infer character from a single outcome.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-KAUFFMAN-2016",
+      "claimIds": ["FD-CLM-001", "FD-CLM-002", "FD-CLM-003"],
+      "locator": {"kind": "web_section", "value": "Learning-path overview and Entrepreneurial Failure transcript"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P2-HBS-COURSE-2011",
+      "claimIds": ["FD-CLM-001", "FD-CLM-002"],
+      "locator": {"kind": "web_section", "value": "Course overview; Building the Team; Beyond the Team"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P1-STANFORD-2012",
+      "claimIds": ["FD-CLM-003", "FD-CLM-024", "FD-CLM-025"],
+      "locator": {"kind": "video_timestamp", "value": "Entire 24:05 talk; segment timestamps require publication review"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A founder or founding team remains economically, operationally, or governably material.",
+    "The investment outcome depends on team execution, resource acquisition, or organizational scaling.",
+    "Evidence can be reviewed with appropriate consent and privacy controls."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "founding_decision_timeline",
+      "description": "Dates and context for team formation, roles, equity, hires, financing, board changes, and departures.",
+      "necessity": "required",
+      "acceptableSources": ["founder interviews", "board records", "cap table", "founder agreement", "employment records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_organization",
+      "description": "Current roles, decision rights, reporting lines, ownership, vesting, and board composition.",
+      "necessity": "required",
+      "acceptableSources": ["organization chart", "governance documents", "cap table", "role charters"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "adaptation_history",
+      "description": "Specific examples of disagreement, role change, hiring, departure, or governance adaptation.",
+      "necessity": "recommended",
+      "acceptableSources": ["independent references", "board minutes", "founder narratives", "employee interviews"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which early choices still constrain ownership, authority, relationships, or access to resources?",
+    "Did the team discuss and document the trade-offs at the time?",
+    "How has the team behaved when assumptions or roles changed?",
+    "Which future milestone is most likely to expose a latent dilemma?"
+  ],
+  "positiveSignals": [
+    "Roles, ownership, and decision rights match current contribution and stage.",
+    "The team can describe prior disagreements and evidence a workable resolution process.",
+    "Vesting, departure, succession, and deadlock mechanisms are documented.",
+    "Founders have adapted roles or recruited complementary capability before crisis."
+  ],
+  "redFlags": [
+    "Ownership, title, and authority are justified only by idea origination.",
+    "Founders avoid discussing departure, deadlock, financing, or succession.",
+    "Different founders provide materially inconsistent accounts of core agreements.",
+    "Personal relationships substitute for formal expectations and governance."
+  ],
+  "disconfirmingEvidence": [
+    "Apparently informal arrangements are supported by repeated, documented adaptive behavior.",
+    "An unusual split or governance design has explicit rationale and counterparty understanding.",
+    "A prior conflict produced durable changes rather than recurring dysfunction.",
+    "Founder control is paired with demonstrated resource access and stage-appropriate delegation."
+  ],
+  "contraindications": [
+    "Do not diagnose personality or mental state.",
+    "Do not treat missing records as proof of conflict.",
+    "Do not let this lens replace market, product, financial, legal, or valuation analysis."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Build the founding-choice timeline from independently sourced evidence.",
+      "Map each choice to present ownership, authority, incentives, and resource consequences.",
+      "Review adaptation behavior and disconfirmers.",
+      "Identify the next milestone likely to activate the risk.",
+      "Conclude applicable, partially applicable, not applicable, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "One founder narrative only.", "medium": "Multiple narratives plus partial records.", "high": "Contemporaneous agreements, board/cap-table records, and independent references converge."},
+    "evidenceStrength": {"low": "Hypothetical concern.", "medium": "A specific misalignment or adaptive example exists.", "high": "Repeated behavior and present arrangements demonstrate the effect."},
+    "evidenceCoverage": {"low": "Current titles only.", "medium": "Several choices and current terms covered.", "high": "Full timeline, roles, rewards, governance, conflict, departures, and future milestones covered."},
+    "applicabilityConfidence": {"low": "Founders no longer material.", "medium": "Some founder choices remain material.", "high": "Execution and governance materially depend on founder-team alignment."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Material issue with unresolved alternatives.", "high": "Well-supported adaptive strength or specific risk."}
+  },
+  "overlapFrameworkIds": ["SF-01", "VM-03", "SK-08"],
+  "conflictingFrameworkIds": ["FOUNDER-PERSONALITY-SCORE", "ONE-CAUSE-OF-STARTUP-FAILURE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define privacy-safe evidence protocol.", "Backtest structured flags.", "Complete licensed-book review."],
+    "empiricalQualifications": ["People-risk prevalence estimates are sample- and definition-dependent.", "Team design and outcomes are endogenous."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define privacy, consent, and independent-reference rules."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-07",
+  "slug": "positioning-chain-coherence",
+  "name": "Positioning Chain Coherence",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Checks whether alternatives, capabilities, value, best-fit customers, and category form one evidenced and falsifiable chain.",
+    "productLabel": "Positioning-Coherence Lens — product synthesis from April Dunford's public method",
+    "notAClaimOf": ["a polished canvas proving fit", "internal agreement proving customer truth", "one positioning chain covering incompatible segments"]
+  },
+  "attribution": {
+    "display": "Product synthesis from April Dunford's public positioning method",
+    "scope": "product_synthesis",
+    "people": ["April Dunford"],
+    "organizations": ["AprilDunford.com", "Positioning with April Dunford"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Join the five component outputs without averaging away contradictions: each capability must be differentiated against a real alternative, enable a verified outcome, matter disproportionately to an identifiable customer, and become easier to understand in the chosen category. Record breaks, alternative chains, and falsifiers.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-QUICKSTART",
+      "claimIds": ["OA2-CLM-001", "OA2-CLM-003", "OA2-CLM-012", "OA2-CLM-013", "OA2-CLM-016", "OA2-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Five components, dependency order, and Janna Systems example"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-VALUE-2026",
+      "claimIds": ["OA2-CLM-012", "OA2-CLM-013", "OA2-CLM-014", "OA2-CLM-015"],
+      "locator": {"kind": "video_timestamp", "value": "03:14-17:23, evidence sequence and value clarification"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-BOOKS-2026",
+      "claimIds": ["OA2-CLM-003", "OA2-CLM-025"],
+      "locator": {"kind": "web_section", "value": "Official five-component and unique-value learning outcomes"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "OA2-02 through OA2-06 have independent outputs.",
+    "Evidence provenance and hypothesis status are preserved.",
+    "Contradictions can remain unresolved."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "component_outputs",
+      "description": "Independent evidence, judgment, counterevidence, and unknowns from each five-component card.",
+      "necessity": "required",
+      "acceptableSources": ["OA2-02 through OA2-06 outputs"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "chain_links",
+      "description": "Explicit links from alternative through capability, value, best-fit characteristic, and category.",
+      "necessity": "required",
+      "acceptableSources": ["positioning hypothesis", "evidence graph", "sales-test record"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "falsifiers",
+      "description": "Observations that would break each link or support a competing positioning chain.",
+      "necessity": "required",
+      "acceptableSources": ["win/loss", "customer interview", "competitor proof", "segment analysis"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Does every claimed value trace to a differentiated capability and real alternative?",
+    "Do best-fit characteristics explain who cares and who does not?",
+    "Does category illuminate rather than redefine the value?",
+    "Which link is weakest, contradicted, or merely hypothesized?"
+  ],
+  "positiveSignals": [
+    "The full chain is supported by repeated customer and operating evidence.",
+    "Contradictory segments are separated rather than averaged.",
+    "The weakest links and falsifiers are explicit.",
+    "An alternative chain can be tested without rewriting history."
+  ],
+  "redFlags": [
+    "Category or value was chosen first and other components were backfilled.",
+    "A polished statement hides missing customer evidence.",
+    "Different segments require incompatible alternatives and value.",
+    "The chain cannot state what evidence would falsify it."
+  ],
+  "disconfirmingEvidence": [
+    "Strong individual components do not connect into one buying rationale.",
+    "Customers buy for a different value than management believes.",
+    "The best-fit segment has weak retention or economics.",
+    "A competing chain explains wins more consistently."
+  ],
+  "contraindications": [
+    "Do not collapse component confidence into one opaque score.",
+    "Do not force contradictions to resolve.",
+    "Do not equate internal consensus with external validation."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Load independent component judgments.",
+      "Construct one or more explicit evidence chains.",
+      "Mark support, contradiction, hypothesis, and missing links.",
+      "Compare alternative chains by customer evidence.",
+      "Conclude coherent, partially coherent, contradictory, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "positioning_evidence_graph",
+      "requiredOutputs": ["component_nodes", "evidence_links", "contradictions", "hypothesis_links", "falsifiers", "alternative_chains"],
+      "prohibition": "The language model must not convert the chain into an opaque positioning score."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Internal canvas only.", "medium": "Several components have customer evidence.", "high": "All component links have independent customer and operating evidence."},
+    "evidenceStrength": {"low": "Plausible story.", "medium": "Most links supported with one weak point.", "high": "Repeated buying and use behavior supports the complete chain."},
+    "evidenceCoverage": {"low": "Some components absent.", "medium": "All components present with gaps.", "high": "All links, segments, counterchains, falsifiers, and provenance covered."},
+    "applicabilityConfidence": {"low": "No defined positioning scope.", "medium": "A partial chain exists.", "high": "GTM materially depends on one or more testable positioning chains."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Partially coherent.", "high": "Well-evidenced and falsifiable chain."}
+  },
+  "overlapFrameworkIds": ["OA2-02", "OA2-03", "OA2-04", "OA2-05", "OA2-06", "NN-09"],
+  "conflictingFrameworkIds": ["POLISHED-CANVAS-EQUALS-VALIDATION", "INTERNAL-CONSENSUS-EQUALS-CUSTOMER-TRUTH"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate evidence-graph service.", "Define contradiction protocol.", "Backtest alternative chains."],
+    "empiricalQualifications": ["Coherence is necessary but not sufficient for GTM success.", "Customer behavior and competition change over time."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The evidence graph is product synthesis from public author doctrine."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review final five-step names and canvas semantics in licensed edition."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

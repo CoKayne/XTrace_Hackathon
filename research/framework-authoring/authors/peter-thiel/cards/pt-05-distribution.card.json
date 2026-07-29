@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-05",
+  "slug": "distribution-is-part-of-product",
+  "name": "Distribution Is Part of the Product",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether the company has an economically viable route from product to customers, revenue, talent, and capital.",
+    "productLabel": "Distribution Lens — based on Peter Thiel's public teaching and CS183 materials",
+    "notAClaimOf": [
+      "a universal CLV formula",
+      "proof that sales matters more than product",
+      "Peter Thiel endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Peter Thiel public distribution teaching with Blake Masters CS183 notes",
+    "scope": "product_synthesis",
+    "people": [
+      "Peter Thiel",
+      "Blake Masters"
+    ],
+    "organizations": [
+      "Stanford University"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "A product does not become a business merely by being technically strong. The company needs a repeatable distribution motion compatible with customer value, contract size, sales cycle, retention, gross margin, and cash consumption. Simplified CLV/CAC relations are starting constraints, not a complete underwriting model.",
+  "claimTypes": [
+    "direct_doctrine",
+    "affiliated_doctrine",
+    "normative_guidance",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P2-CS183-09",
+      "claimIds": [
+        "PT-CLM-012",
+        "PT-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Sections I, II, IV, and V"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-P1-STANFORD-DISTRIBUTION",
+      "claimIds": [
+        "PT-CLM-012"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Page-level locator pending authorized PDF review"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "b2b_saas",
+      "enterprise_ai",
+      "consumer_subscription",
+      "marketplace",
+      "deep_tech",
+      "transactional"
+    ],
+    "sectors": [
+      "all_commercial_businesses"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The company has a defined customer or stakeholder whose adoption is necessary.",
+    "The purchasing, adoption, or viral mechanism can be described.",
+    "Available data are normalized to the company's business model and stage."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "distribution_motion",
+      "description": "Named channel, buyer, user, decision process, and repeatable acquisition steps.",
+      "necessity": "required",
+      "acceptableSources": [
+        "sales process",
+        "funnel data",
+        "customer interviews",
+        "channel agreements"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "customer_economics",
+      "description": "Gross-margin-adjusted customer value, acquisition cost, payback, retention, and expansion using explicit definitions.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cohort data",
+        "general ledger",
+        "CRM export",
+        "billing data"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "sales_efficiency",
+      "description": "Sales cycle, conversion, pipeline quality, rep ramp, channel cost, or viral coefficient appropriate to the model.",
+      "necessity": "required",
+      "acceptableSources": [
+        "CRM",
+        "product analytics",
+        "channel reports",
+        "cohort analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "distribution_scalability",
+      "description": "Evidence showing whether acquisition economics and implementation burden hold as volume or segment expands.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "cohort trends",
+        "segment analysis",
+        "implementation records",
+        "contribution margin"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Who buys, who uses, who approves, and who can block adoption?",
+    "Which distribution motion fits the contract value and sales complexity?",
+    "Are customer value and acquisition cost calculated from compatible cohorts and definitions?",
+    "How long does cash remain tied up before gross-margin contribution recovers acquisition cost?",
+    "Does implementation, support, or custom work grow with revenue?",
+    "What channel or sales evidence proves repeatability beyond founder-led selling?",
+    "What distribution mechanism is difficult for a competitor to copy?"
+  ],
+  "positiveSignals": [
+    "The buyer, user, champion, and procurement path are explicit.",
+    "Cohort economics include gross margin, retention, payback, and service burden.",
+    "A channel repeatedly converts similar customers without founder dependence.",
+    "Sales efficiency remains stable or improves across cohorts and segments.",
+    "Distribution creates proprietary access, data, workflow, or referral effects.",
+    "The company names conditions under which the channel becomes uneconomic."
+  ],
+  "redFlags": [
+    "The plan assumes the product will sell itself.",
+    "CLV uses revenue without gross margin or realistic retention.",
+    "CAC excludes sales labor, implementation, incentives, or failed acquisition.",
+    "Founder-led sales are projected as a mature repeatable channel.",
+    "Pipeline is treated as contracted revenue.",
+    "Growth requires increasing custom work or subsidies.",
+    "A complex product relies on low-touch distribution without adoption evidence."
+  ],
+  "disconfirmingEvidence": [
+    "Newer cohorts have longer payback, lower retention, or weaker expansion.",
+    "Rep-added growth does not exceed added sales cost.",
+    "Pilot-to-paid or POC-to-production conversion is low.",
+    "Customers require implementation effort that destroys contribution margin.",
+    "The main channel changes terms, loses access, or becomes saturated.",
+    "Referrals do not persist without incentives."
+  ],
+  "contraindications": [
+    "Do not use the simplified course CLV formula as the runtime calculation.",
+    "Do not compare distribution metrics across incompatible business models without normalization.",
+    "Do not interpret missing mature metrics as automatic failure at pre-seed; instead request stage-appropriate experiments."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Map buyer, user, blocker, channel, sales motion, and adoption steps.",
+      "Use deterministic specialist calculations for unit economics.",
+      "Evaluate repeatability, scalability, and defensibility from source-backed cohorts.",
+      "Separate current evidence from future distribution plans.",
+      "Return the most decision-changing missing distribution evidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "reason": "The specialist engine owns deterministic metrics; this card interprets their evidence and fit."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only an uncited distribution summary is available.",
+      "medium": "Course notes support the doctrine but direct transcript pages are not reviewed.",
+      "high": "Authorized Peter Thiel transcript pages and derivative-note locators are both reviewed."
+    },
+    "evidenceStrength": {
+      "low": "Planned channel and founder anecdotes only.",
+      "medium": "One repeatable cohort or channel with partial economics.",
+      "high": "Multiple source-backed cohorts show repeatability, attractive economics, and stable implementation burden."
+    },
+    "evidenceCoverage": {
+      "low": "Buyer, channel, economics, or retention is missing.",
+      "medium": "All required fields exist but scalability or service burden is incomplete.",
+      "high": "Motion, economics, cohorts, scalability, and counterevidence are documented."
+    },
+    "applicabilityConfidence": {
+      "low": "No commercial adoption path is relevant yet.",
+      "medium": "A path exists but stage limits measurable repeatability.",
+      "high": "Distribution is a central, observable constraint on company outcomes."
+    },
+    "judgmentConfidence": {
+      "low": "Only channel plausibility can be assessed.",
+      "medium": "Initial repeatability exists but economics or scaling is unresolved.",
+      "high": "Channel, cohorts, economics, and scaling behavior converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "B2B-GTM-UNIT-ECONOMICS",
+    "DUN-POSITIONING",
+    "ACH-COLD-START",
+    "PT-03"
+  ],
+  "conflictingFrameworkIds": [
+    "PRODUCT-SELLS-ITSELF"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete the authorized Stanford transcript revision and page locators.",
+      "Delegate all calculations to versioned specialist formulas.",
+      "Test incremental judgment utility after unit economics are already known."
+    ],
+    "empiricalQualifications": [
+      "Distribution metrics are stage- and model-dependent.",
+      "Founder-led sales can validate demand without yet proving scale.",
+      "CLV estimates are highly sensitive to retention and margin assumptions."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No course worksheet or long passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Hash and review the Stanford PDF source revision.",
+      "Map exact ownership between this lens and B2B SaaS/Enterprise AI specialist calculations."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft with model-specific distribution and unit-economics boundaries."
+    }
+  ]
+}

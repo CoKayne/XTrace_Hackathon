@@ -1,0 +1,170 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-04",
+  "slug": "operating-cadence-and-accountability",
+  "name": "Operating Cadence and Accountability",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Evaluates whether planning, reviews, metrics, decisions, and communication form a repeated learning-and-accountability loop.",
+    "productLabel": "Operating Cadence Lens — based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["one correct meeting cadence", "OKRs being universally required", "meeting frequency proving execution quality"]
+  },
+  "attribution": {
+    "display": "Based on Claire Hughes Johnson's public Scaling People materials",
+    "scope": "person_direct",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["Stripe Press", "Stanford Technology Ventures Program"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "A useful cadence repeatedly connects goals and metrics with business review, decisions, ownership, communication, and follow-through. The exact rhythm is company-specific; its value comes from creating reliable touchpoints, learning from results, and improving the mechanism.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-STANFORD-2023",
+      "claimIds": ["SP-CLM-011", "SP-CLM-012", "SP-CLM-013"],
+      "locator": {"kind": "pdf_page", "value": "Operating to Win transcript p. 2, 00:04:06-07:31: repeatable stability points, reviews, goals, dashboards, metrics, all-hands, and no secret cadence"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-LAUNCH-2023",
+      "claimIds": ["SP-CLM-011", "SP-CLM-012"],
+      "locator": {"kind": "web_section", "value": "Q&A: systems and operating cadence across week, month, quarter, planning, and leadership meetings"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-NEWCOMER-2023",
+      "claimIds": ["SP-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Young companies section, lines 73-75: important goals and metrics recognized and reviewed publicly"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-FIRSTROUND-2023",
+      "claimIds": ["SP-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 149-157: operating practices serve outsized results and leaders should track outcomes"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has repeated work and cross-person or cross-team coordination.",
+    "Goals and outcome measures can be distinguished from activity measures.",
+    "The review covers decisions and follow-through, not calendars alone."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "goal_and_metric_hierarchy",
+      "description": "Company, division, and team goals; metric definitions; owners; targets; and connections to long-term goals.",
+      "necessity": "required",
+      "acceptableSources": ["planning records", "OKRs", "dashboards", "board materials", "metric dictionary"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "cadence_map",
+      "description": "Planning, business review, leadership, team, all-hands, and decision forums with purpose, participants, inputs, outputs, and frequency.",
+      "necessity": "required",
+      "acceptableSources": ["calendar", "meeting charters", "agendas", "minutes", "operating handbook"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "decision_followthrough",
+      "description": "Decisions, owners, deadlines, escalation paths, completed actions, and later review.",
+      "necessity": "required",
+      "acceptableSources": ["decision log", "action tracker", "project records", "postmortems"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "cadence_cost_and_change",
+      "description": "Time cost, participant burden, duplicated forums, experiments, review dates, and changes to the cadence.",
+      "necessity": "recommended",
+      "acceptableSources": ["calendar analytics", "process retrospectives", "employee interviews", "change log"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which decisions and outcomes does each recurring forum serve?",
+    "Are goals and metrics understood consistently and reviewed at a useful frequency?",
+    "Do reviews produce owners, actions, and later accountability?",
+    "Which meetings duplicate work or exist without a decision purpose?",
+    "How does the company learn that a cadence should change?"
+  ],
+  "positiveSignals": [
+    "Metrics have definitions, owners, and links to goals.",
+    "Reviews produce recorded decisions and accountable follow-through.",
+    "Cadence changes when stage or evidence changes.",
+    "Communication repeats important context across appropriate channels without creating conflicting truth."
+  ],
+  "redFlags": [
+    "Activity metrics substitute for customer, financial, quality, or delivery outcomes.",
+    "The same decision is repeatedly reopened without ownership.",
+    "Meetings have no defined input, output, or decision right.",
+    "A borrowed cadence persists despite high cost and low use."
+  ],
+  "disconfirmingEvidence": [
+    "An informal cadence is effective for a small, tightly coordinated team.",
+    "A temporary increase in meeting frequency supports a crisis, launch, or incident.",
+    "Low metric frequency is appropriate for a long-cycle business.",
+    "A missed goal prompted a documented strategy correction rather than weak accountability."
+  ],
+  "contraindications": [
+    "Do not prescribe a universal cadence.",
+    "Do not reward meeting count.",
+    "Do not let dashboards substitute for verified metric definitions or decisions.",
+    "Do not infer causality from cadence and performance correlation alone."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Map goals, metric definitions, owners, and review frequencies.",
+      "Map each forum to decisions, outputs, and follow-through.",
+      "Measure obvious burden and duplication.",
+      "Trace selected goals from planning through review to outcome or correction.",
+      "Conclude coherent, emerging, ceremonial, burdensome, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "operating_cadence_evidence_summary",
+      "requiredOutputs": ["goal_metric_owner_map", "forum_decision_map", "action_completion_history", "meeting_load_if_available"],
+      "prohibition": "The language model must not invent meeting frequency, metric values, or action completion."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Leadership description or calendar only.", "medium": "Agendas, dashboards, and selected decisions.", "high": "Versioned goals, metric lineage, decisions, actions, outcomes, and participant evidence converge."},
+    "evidenceStrength": {"low": "Cadence exists.", "medium": "Cadence repeatedly produces decisions and actions.", "high": "Traceable review-to-action-to-outcome loops operate and adapt."},
+    "evidenceCoverage": {"low": "Meeting list only.", "medium": "Goals, metrics, and some decisions.", "high": "Definitions, owners, forums, decisions, actions, costs, changes, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No repeated coordination need.", "medium": "Some recurring cross-person work.", "high": "Execution materially depends on repeated cross-team coordination."},
+    "judgmentConfidence": {"low": "Calendar-quality opinion.", "medium": "Multiple traceable loops support a bounded judgment.", "high": "Longitudinal operating and outcome evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-01", "SP-03", "VM-08"],
+  "conflictingFrameworkIds": ["MEETING-COUNT-SCORE", "ONE-UNIVERSAL-CADENCE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Review licensed book.", "Validate evidence extraction.", "Backtest cadence classifications."],
+    "empiricalQualifications": ["High-performing companies may adopt more process because of complexity.", "Cadence effectiveness depends on stage and work cycle."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define normalized meeting-load and action-follow-through measures."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

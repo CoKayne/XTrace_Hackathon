@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-07",
+  "slug": "manager-leverage-and-communication",
+  "name": "Manager Leverage and Communication",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether managers create leverage through clear ownership, unblocking, development, and communication rather than becoming permanent bottlenecks.",
+    "productLabel": "Manager Leverage Lens — based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["managers avoiding detail", "delegation meaning abdication", "one span of control fitting every team"]
+  },
+  "attribution": {
+    "display": "Based on Claire Hughes Johnson's public Scaling People materials",
+    "scope": "person_direct",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["Stanford Technology Ventures Program", "Stripe Press", "McKinsey & Company"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "As a team grows, a manager still practices core management but shifts from solving every task toward clarifying outcomes, allocating ownership, coaching or unblocking at the right level, and communicating consistently across distance and layers.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-STANFORD-MANAGING-2023",
+      "claimIds": ["SP-CLM-021"],
+      "locator": {"kind": "pdf_page", "value": "Transcript p. 1, 00:00-02:53: managing managers and leaders, unblocking, feedback, team unit, and intentional scaled communication"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-LAUNCH-2023",
+      "claimIds": ["SP-CLM-006", "SP-CLM-021"],
+      "locator": {"kind": "web_section", "value": "Q&A on management scoping work, matching people, developing individuals, goals, monitoring results, and leadership distinction"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-MCKINSEY-2023",
+      "claimIds": ["SP-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Lines 33-41: explorer rather than lecturer, observations, questions, and partnership"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-FIRSTROUND-2023",
+      "claimIds": ["SP-CLM-023"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 198-204 and surrounding discussion: leader feedback, standards, and changing behavior so the team can grow"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has managers or leaders responsible for work through others.",
+    "Manager behavior can be reviewed through decisions and work outcomes.",
+    "The analysis respects employee privacy and context."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "manager_role_and_decision_rights",
+      "description": "Manager outcomes, scope, team, decision rights, escalation path, and delegation boundaries.",
+      "necessity": "required",
+      "acceptableSources": ["role charter", "organization chart", "decision-rights map", "team charter"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "ownership_and_escalation_history",
+      "description": "Representative decisions showing who owned work, when the manager intervened, and whether intervention unblocked or displaced ownership.",
+      "necessity": "required",
+      "acceptableSources": ["decision log", "project records", "incident records", "meeting notes"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "management_and_communication_practices",
+      "description": "One-to-one, team, goal, feedback, development, and scaled communication practices with content and audience.",
+      "necessity": "recommended",
+      "acceptableSources": ["manager handbook", "meeting artifacts", "communication archive", "consent-based interviews"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "team_and_delivery_outcomes",
+      "description": "Delivery, quality, decision speed, regretted attrition, internal mobility, role clarity, and team dependency on the manager.",
+      "necessity": "recommended",
+      "acceptableSources": ["delivery metrics", "incident data", "HRIS", "survey", "succession or vacation test"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which decisions can the team make without the manager?",
+    "When does the manager coach, unblock, decide, or escalate?",
+    "Does intervention develop capability or create recurring dependence?",
+    "Can important context reach people beyond direct personal contact?",
+    "What happens to decisions and delivery when the manager is absent?"
+  ],
+  "positiveSignals": [
+    "Decision rights and escalation thresholds are understood.",
+    "Managers ask, observe, and unblock before taking over.",
+    "Teams deliver and decide during manager absence.",
+    "Communication is consistent, authentic, specific, and adapted to audience.",
+    "Manager involvement changes as reports become managers or leaders."
+  ],
+  "redFlags": [
+    "Every consequential decision waits for one leader.",
+    "Delegation transfers tasks but not authority or context.",
+    "Managers answer before diagnosing the problem.",
+    "Scaled communication becomes generic performance theater.",
+    "High team output depends on hidden manager heroics."
+  ],
+  "disconfirmingEvidence": [
+    "Centralized intervention is temporary during an incident, turnaround, or regulated decision.",
+    "A technically deep manager remains appropriately involved in a critical design decision.",
+    "Apparent dependency reflects a newly formed team with a time-bound capability plan.",
+    "A small team rationally shares most decisions."
+  ],
+  "contraindications": [
+    "Do not prescribe one span of control or meeting format.",
+    "Do not treat manager absence as the only delegation test.",
+    "Do not infer management quality from popularity.",
+    "Do not use private employee communications without authorization."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map role, decisions, ownership, escalation, and communication.",
+      "Trace representative interventions and their later effects.",
+      "Test whether capability and autonomy increase over time.",
+      "Review appropriate counterexamples for crisis, safety, or stage.",
+      "Conclude leverage-building, balanced, bottlenecked, absent, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Manager or employee impression.", "medium": "Role maps and selected decision records.", "high": "Repeated decisions, delivery outcomes, absence tests, and consent-based evidence converge."},
+    "evidenceStrength": {"low": "Management philosophy.", "medium": "Several ownership and intervention examples.", "high": "Longitudinal evidence shows growing team capability and resilient delivery."},
+    "evidenceCoverage": {"low": "Organization chart only.", "medium": "Decision rights and some practices.", "high": "Rights, interventions, communication, development, outcomes, absence, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No management-through-others role.", "medium": "A small management layer exists.", "high": "Execution materially depends on multiple managers or leaders."},
+    "judgmentConfidence": {"low": "Style impression.", "medium": "Traceable examples support a bounded judgment.", "high": "Longitudinal ownership and outcome evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-02", "SP-04", "SP-06", "FD-07"],
+  "conflictingFrameworkIds": ["FOUNDER-HEROICS-BONUS", "POPULARITY-EQUALS-MANAGEMENT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Review licensed management sections.", "Define privacy-safe ownership evidence.", "Backtest bottleneck judgments."],
+    "empiricalQualifications": ["Centralization and decentralization can each be appropriate by stage and risk.", "Team outcomes have many causes beyond management."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define evidence thresholds for founder bottleneck versus rational early-stage centralization."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-02",
+  "slug": "marginal-scalability-and-cash-conversion",
+  "name": "Marginal Scalability and Cash Conversion",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether the next unit of growth improves economic output rather than relying on average margins or accounting presentation.",
+    "productLabel": "Marginal Scalability and Cash Conversion Lens — based on Bill Gurley's public writing",
+    "notAClaimOf": ["short-term profitability always being optimal", "incremental margin being stable", "reported gross margin capturing all variable costs"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd writing",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Measure how costs, contribution, and cash change with incremental revenue. Compare marginal economics with historical averages, investigate what sits below reported gross margin, and distinguish bounded investment from structurally worsening returns.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-REVENUE-2011",
+      "claimIds": ["BG-CLM-004", "BG-CLM-005", "BG-CLM-006"],
+      "locator": {"kind": "web_section", "value": "Sections 5-8 and 2011-05-26 update: gross margin, marginal profitability, concentration, dependencies, capex, and cash conversion"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-LATE-STAGE-2015",
+      "claimIds": ["BG-CLM-005", "BG-CLM-023"],
+      "locator": {"kind": "web_section", "value": "Lines 20-28: gross/net presentation and costs below reported gross margin"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["series_a", "series_b", "growth"],
+    "businessModels": ["saas", "enterprise", "consumer", "marketplace", "transactional", "services", "hardware_enabled"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Comparable periods, cohorts, or geographies exist.",
+    "Cost classification can be normalized.",
+    "Temporary investment can be separated from recurring variable cost."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "normalized_periods",
+      "description": "Revenue and cost by comparable period, cohort, geography, product, and channel.",
+      "necessity": "required",
+      "acceptableSources": ["general ledger", "management accounts", "cohort ledger", "segment reporting"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "full_variable_cost",
+      "description": "Hosting, support, payments, fulfillment, incentives, losses, service labor, and other volume-linked cost regardless of reporting line.",
+      "necessity": "required",
+      "acceptableSources": ["cost ledger", "vendor invoices", "payroll allocation", "operations data", "unit-economics model"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "investment_bridge",
+      "description": "Time-bounded investments, expected benefits, milestones, and actual subsequent outcomes.",
+      "necessity": "required",
+      "acceptableSources": ["budget", "board plan", "project ledger", "post-investment review", "forecast"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "cash_conversion",
+      "description": "Working capital, capex, payment timing, collections, and free cash generated or consumed by incremental growth.",
+      "necessity": "required",
+      "acceptableSources": ["cash-flow statement", "bank records", "working-capital schedule", "capex records"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is incremental contribution and operating margin for the newest growth?",
+    "Which costs rise with volume but are presented below gross margin?",
+    "Does cohort or geographic expansion improve or weaken economics?",
+    "Is a current margin decline a bounded investment with an observable payoff?",
+    "How much cash and capital does the next revenue unit require?"
+  ],
+  "positiveSignals": [
+    "Marginal contribution improves as repeatable scale increases.",
+    "Full variable costs reconcile across accounting and operations.",
+    "Temporary investment has specific milestones and later payoff evidence.",
+    "Cash conversion improves or capital needs remain proportionate."
+  ],
+  "redFlags": [
+    "Average margin hides deteriorating recent cohorts.",
+    "Material support, incentives, processing, or delivery costs sit below gross margin.",
+    "Management explains every decline as investment without a sunset or result.",
+    "Revenue grows while contribution and cash losses accelerate."
+  ],
+  "disconfirmingEvidence": [
+    "New geographies or products can have rational temporary diseconomies.",
+    "A lower-margin offering can strengthen retention or distribution across the system.",
+    "High capex can be attractive when it produces verified durable cash flows.",
+    "A single quarter can be distorted by timing; multi-period normalization matters."
+  ],
+  "contraindications": [
+    "Do not optimize one quarter at the expense of valuable verified investment.",
+    "Do not compare businesses with different revenue and cost recognition without normalization.",
+    "Do not let the language model calculate accounting quantities."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Normalize revenue and costs across comparable units.",
+      "Calculate incremental contribution, operating margin, and cash conversion deterministically.",
+      "Separate recurring costs from bounded investments.",
+      "Test subsequent payoff and downside sensitivity.",
+      "Conclude improving scale, bounded investment, deteriorating scale, misclassification, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Incremental margin, contribution, cash conversion, and cohort calculations must be deterministic and reproducible."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Management-adjusted metric.", "medium": "Ledger and operational data.", "high": "Reconciled accounting, cash, cohort, and vendor evidence."},
+    "evidenceStrength": {"low": "One aggregate period.", "medium": "Several comparable periods.", "high": "Repeated cohort and cash evidence with investment payoff review."},
+    "evidenceCoverage": {"low": "Gross margin only.", "medium": "Contribution and period bridge.", "high": "Full variable cost, cohorts, cash, capex, investment, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No repeatable revenue.", "medium": "Some scale data.", "high": "Marginal economics materially drive valuation."},
+    "judgmentConfidence": {"low": "Accounting presentation.", "medium": "Bounded normalized result.", "high": "Reconciled multi-period evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["BG-01", "BG-04", "DSV-03", "DSV-04", "EI-03"],
+  "conflictingFrameworkIds": ["AVERAGE-MARGIN-AS-MARGINAL", "REPORTED-GROSS-MARGIN-ONLY"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate cost normalization.", "Backtest marginal metrics.", "Define investment-versus-variable-cost rules."],
+    "empiricalQualifications": ["Period comparisons can be distorted by mix and timing.", "Operating leverage may reverse as scale creates new complexity."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public author material is neutrally paraphrased."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Obtain accounting review and define normalization protocol."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

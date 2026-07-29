@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-06",
+  "slug": "market-temperature-posture",
+  "name": "Market Temperature and Risk Posture",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Uses observable financing terms and behavior to describe market temperature while reserving major posture changes for compelling extremes.",
+    "productLabel": "Market-Temperature Lens — based on Howard Marks's public materials",
+    "notAClaimOf": ["precise market timing", "a mechanical fear-greed score", "every warm or cold reading requiring action"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public market-temperature materials",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Describe whether capital providers are unusually permissive, balanced, or restrictive using dated terms, risk appetite, deployment pressure, and issuer behavior. Keep the fund near its normal posture unless evidence is unusually broad, extreme, and decision-relevant.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-TEMP-2023",
+      "claimIds": ["MMI-CLM-011", "MMI-CLM-012", "MMI-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Five calls, How Can You Do It, and normal-risk-posture discussion"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-DIFFER-2022",
+      "claimIds": ["MMI-CLM-013", "MMI-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Oaktree macro-forecasting and market-timing boundaries"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The fund's normal risk posture and permitted deviations are recorded.",
+    "The market segment, stage, geography, and observation window are explicit.",
+    "Temperature observations are not treated as company fundamentals."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "financing_terms_sample",
+      "description": "Dated sample of valuation, dilution, investor protections, round speed, and capital availability.",
+      "necessity": "required",
+      "acceptableSources": ["term sheets", "funding database", "law-firm market report", "VC announcements"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "behavioral_indicators",
+      "description": "Evidence of investor or founder behavior such as diligence compression, deployment pressure, down rounds, or bridge dependence.",
+      "necessity": "required",
+      "acceptableSources": ["market survey", "deal pipeline", "financing announcements", "primary interviews"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "historical_context",
+      "description": "Comparable observations across more than one financing environment.",
+      "necessity": "recommended",
+      "acceptableSources": ["time series", "fund records", "published market reports"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which concrete terms and behaviors indicate current temperature?",
+    "Is the evidence broad across the relevant segment or driven by a few visible rounds?",
+    "How far is the reading from the fund's normal environment?",
+    "Does the evidence justify a posture change or only a watch note?"
+  ],
+  "positiveSignals": [
+    "Multiple independent indicators point in the same direction.",
+    "The sample is stage, geography, and sector relevant.",
+    "Any proposed posture change is bounded and policy-authorized.",
+    "The report distinguishes observation from prediction."
+  ],
+  "redFlags": [
+    "A single headline round defines market temperature.",
+    "News sentiment is converted into a precise score.",
+    "The system oscillates posture with ordinary market noise.",
+    "Temperature is used to label a startup good or bad."
+  ],
+  "disconfirmingEvidence": [
+    "Median terms conflict with visible headline deals.",
+    "The company's stage remains well funded despite aggregate contraction.",
+    "The observation window is too short or source coverage is biased.",
+    "The fund's normal posture already anticipates the condition."
+  ],
+  "contraindications": [
+    "Do not forecast exact tops, bottoms, rates, or recessions.",
+    "Do not change posture without explicit fund policy.",
+    "Do not hide mixed evidence behind one composite number."
+  ],
+  "decisionMethod": {
+    "kind": "ordinal_anchors",
+    "instructions": [
+      "Bound the relevant market segment and observation window.",
+      "Present financing terms, capital availability, and behavior separately.",
+      "Classify unusually permissive, permissive, balanced, restrictive, or unusually restrictive.",
+      "State mixed and disconfirming indicators.",
+      "Recommend maintain posture, review posture, or policy-authorized bounded change."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Observations come from anecdotes or promotional posts.", "medium": "Several credible market sources support the reading.", "high": "Representative terms data and primary observations converge."},
+    "evidenceStrength": {"low": "One indicator only.", "medium": "Several indicators align but extremity is uncertain.", "high": "Terms, availability, and behavior are jointly extreme and persistent."},
+    "evidenceCoverage": {"low": "Headline funding only.", "medium": "Terms and availability covered; history or behavior partial.", "high": "Terms, availability, behavior, history, and segment relevance are complete."},
+    "applicabilityConfidence": {"low": "Market segment is undefined.", "medium": "Segment is clear but sample is thin.", "high": "Stage, sector, geography, horizon, and fund posture are explicit."},
+    "judgmentConfidence": {"low": "No reliable temperature conclusion.", "medium": "Directional temperature is defensible.", "high": "An unusually extreme condition is supported by broad evidence."}
+  },
+  "overlapFrameworkIds": ["MMI-05", "BVC-01", "BVC-04"],
+  "conflictingFrameworkIds": ["DAILY-MARKET-TIMING", "SINGLE-FEAR-GREED-SCORE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "portfolio_policy"],
+    "promotionRequirements": ["Define segment-specific evidence sufficiency.", "Prospectively evaluate temperature labels.", "Require policy approval for runtime posture changes."],
+    "empiricalQualifications": ["Temperature is easier to recognize at extremes and in hindsight.", "Private-market data is delayed and incomplete."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public principles are neutrally paraphrased; no market-timing promise is made."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define evidence windows and minimum sample by venture stage."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

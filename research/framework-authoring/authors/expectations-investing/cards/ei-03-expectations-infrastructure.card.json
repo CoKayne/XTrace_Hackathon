@@ -1,0 +1,313 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-03",
+  "slug": "expectations-infrastructure",
+  "name": "Expectations Infrastructure Driver Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Translates operating evidence into auditable sales, margin, tax, reinvestment, and cash-flow drivers instead of allowing narrative jumps to valuation.",
+    "productLabel": "Expectations Infrastructure Lens — based on Mauboussin and Rappaport's public Expectations Investing materials",
+    "notAClaimOf": [
+      "one universal driver tree fitting every business model",
+      "growth without reinvestment creating free cash flow",
+      "accounting reclassification creating cash"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Michael J. Mauboussin and Alfred Rappaport's public expectations-infrastructure materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport"
+    ],
+    "organizations": [
+      "Columbia Business School",
+      "Expectations Investing"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Map evidence through a business-specific causal chain: operating facts affect value factors such as volume, price, mix, scale, cost efficiency, and investment efficiency; those factors update sales, margins, taxes, reinvestment, and ultimately free cash flow. Every jump must be explicit, sourced, and scenario-specific.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-P1-CBS-ABSTRACT",
+      "claimIds": [
+        "EI-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: expectations infrastructure traces basic economic forces to sales, costs, and investments"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-ABOUT-FAQ",
+      "claimIds": [
+        "EI-CLM-004",
+        "EI-CLM-005",
+        "EI-CLM-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Value triggers and the volume, price/mix, scale, and cost-efficiency factors behind revisions"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-4",
+      "claimIds": [
+        "EI-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Incremental working-capital investment tied to additional sales"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-TUTORIAL-5",
+      "claimIds": [
+        "EI-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Incremental fixed-capital investment and reconciliation to incremental sales"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "saas",
+      "marketplace",
+      "consumer",
+      "hardware",
+      "deep_tech",
+      "biotech",
+      "fintech",
+      "services",
+      "all_with_explicit_driver_map"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "A business-model-specific driver ontology is selected and versioned.",
+    "Every event-to-driver link includes direction, lag, magnitude range, and source.",
+    "Revenue, margin, tax, working capital, and fixed capital reconcile to free cash flow.",
+    "Pre-revenue cases use milestone and capacity drivers rather than invented revenue."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "operating_driver_evidence",
+      "description": "Customer, pricing, usage, volume, mix, capacity, cost, and efficiency evidence appropriate to the business model.",
+      "necessity": "required",
+      "acceptableSources": [
+        "verified company documents",
+        "customer contracts",
+        "product analytics",
+        "source-linked public evidence",
+        "management confirmation"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "financial_reconciliation",
+      "description": "Historical or scenario revenue, operating profit, cash taxes, working capital, fixed capital, and free cash flow bridge.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financial statements",
+        "management accounts",
+        "deterministic valuation model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "causal_link",
+      "description": "For each signal, a sourced mechanism connecting the event to a company exposure and model driver.",
+      "necessity": "required",
+      "acceptableSources": [
+        "contract exposure",
+        "unit economics",
+        "supply-chain evidence",
+        "industry mechanism",
+        "regulatory text"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which value trigger changes: sales, margin, tax, reinvestment, duration, or risk?",
+    "What operating factor transmits the change?",
+    "What company-specific exposure proves the link?",
+    "What lag and capacity constraint govern realization?",
+    "What reinvestment is required to capture the opportunity?",
+    "Does the cash-flow bridge reconcile after the change?"
+  ],
+  "positiveSignals": [
+    "A signal maps to a verified company exposure and measurable driver.",
+    "Volume, price, and mix are separated.",
+    "Margin change has a scale, mix, pricing, or cost mechanism.",
+    "Working and fixed capital rise consistently with growth.",
+    "The complete driver tree reconciles to cash flow."
+  ],
+  "redFlags": [
+    "A sector headline jumps directly to valuation.",
+    "Revenue growth has no customer, volume, price, or capacity bridge.",
+    "Margins expand only because a spreadsheet assumption changes.",
+    "Growth requires no incremental capital.",
+    "An accounting reclassification is treated as cash generation."
+  ],
+  "disconfirmingEvidence": [
+    "The company has little or negative exposure to the affected market.",
+    "Capacity, regulation, supply, or sales-cycle constraints block the transmission.",
+    "Price gains are offset by mix, churn, or acquisition cost.",
+    "Reinvestment absorbs the apparent operating benefit.",
+    "The event affects competitors more favorably."
+  ],
+  "contraindications": [
+    "Do not force a SaaS driver tree onto hardware, biotech, or marketplaces.",
+    "Do not invent company-specific exposure from sector similarity.",
+    "Do not omit reinvestment from growth.",
+    "Do not let the LLM calculate the cash-flow bridge."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Select the business-model-specific driver ontology.",
+      "Extract facts and map each through factor, trigger, and valuation driver.",
+      "Record direction, magnitude range, lag, capacity, source, and counterevidence.",
+      "Send scenario driver updates to the deterministic valuation service.",
+      "Reject any unsupported causal jump and request the missing exposure evidence."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredPath": [
+        "event_or_fact",
+        "company_exposure",
+        "operating_factor",
+        "value_trigger",
+        "cash_flow_line",
+        "valuation_scenario"
+      ],
+      "guards": [
+        "business_model_ontology_versioned",
+        "direction_lag_range_explicit",
+        "reinvestment_reconciled",
+        "source_and_counterevidence_linked"
+      ],
+      "calculationOwner": "valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "The mapping depends on unsourced narrative.",
+      "medium": "Public and company evidence support the mechanism but one link is indirect.",
+      "high": "Primary operating, contract, and financial evidence support every material link."
+    },
+    "evidenceStrength": {
+      "low": "Only sector correlation exists.",
+      "medium": "Exposure and direction are supported but magnitude or lag remains broad.",
+      "high": "Exposure, mechanism, magnitude, lag, and cash-flow reconciliation are supported."
+    },
+    "evidenceCoverage": {
+      "low": "Only revenue or TAM is covered.",
+      "medium": "Sales and margin are covered but reinvestment or tax is incomplete.",
+      "high": "Sales, margin, tax, working capital, fixed capital, and FCF are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The selected driver ontology does not fit the business.",
+      "medium": "The ontology fits but a material driver is custom or uncertain.",
+      "high": "The business model and driver tree are well matched."
+    },
+    "judgmentConfidence": {
+      "low": "Only a possible exposure can be reported.",
+      "medium": "A directional scenario is supportable.",
+      "high": "A source-linked, bounded scenario can enter valuation."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-02",
+    "DSV-03",
+    "DSV-04",
+    "VCFI-06"
+  ],
+  "conflictingFrameworkIds": [
+    "HEADLINE-TO-VALUATION-JUMP",
+    "GROWTH-WITHOUT-REINVESTMENT",
+    "ONE-DRIVER-TREE-FOR-ALL"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Validate business-model driver ontologies with domain experts.",
+      "Test event-to-driver precision and reconciliation completeness.",
+      "Backtest magnitude and lag ranges."
+    ],
+    "empiricalQualifications": [
+      "Causal effects differ by company exposure and competitive response.",
+      "Operating and accounting definitions vary across business models.",
+      "Public signals often support direction more strongly than magnitude."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Official public expectations-infrastructure and tutorial materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define driver ontologies by business model.",
+      "Align financial lines with DSV valuation schemas."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-07",
+  "slug": "stage-appropriate-diligence",
+  "name": "Stage-Appropriate Diligence",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Prioritizes the few material team, market, product, business-model, legal, and integrity questions that can change a decision at the company's current stage.",
+    "productLabel": "Stage-Appropriate Diligence Lens — based on Ramsinghani's public diligence chapter summaries",
+    "notAClaimOf": [
+      "seed diligence being optional",
+      "speed excusing fraud or legal risk",
+      "all missing metrics being equally important"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Mahendra Ramsinghani's public third-edition diligence chapter summaries",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Match diligence depth to stage and materiality. Test the team, market need, product, willingness to pay, adoption, business model, competition, and critical legal or integrity risks, while avoiding low-value analysis that delays a time-sensitive early-stage decision. Convert unresolved material items into explicit gates or next evidence requests.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH21",
+      "claimIds": [
+        "BVC-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary: management, product, competition, ambiguity, decisiveness, and avoiding over-analysis at seed"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH24",
+      "claimIds": [
+        "BVC-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary: target customer, distribution, gross margin, growth, pain, payment, adoption, and market pull"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-BOOK-2021",
+      "claimIds": [
+        "BVC-CLM-012"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Chapters 22-24, pp. 259-302, covering diligence, team, market, product, and business model"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Company stage, decision deadline, check size, and material risk classes are known.",
+    "Diligence questions are prioritized by decision impact and information value.",
+    "Missing company facts are not replaced by priors without labels.",
+    "Integrity, legal, safety, and regulatory gates cannot be waived for speed."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "stage_and_decision_context",
+      "description": "Product maturity, revenue/adoption state, round, check, ownership, timing, and decision deadline.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company materials",
+        "round documents",
+        "Fund Policy",
+        "user confirmation"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "core_diligence",
+      "description": "Team, customer pain, willingness to pay, product evidence, adoption, business model, competition, and market.",
+      "necessity": "required",
+      "acceptableSources": [
+        "founder meeting",
+        "customer calls",
+        "product test",
+        "company data",
+        "independent research"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "mandatory_risk_checks",
+      "description": "Identity, integrity, legal, IP, regulatory, security, safety, and material contract checks appropriate to the deal.",
+      "necessity": "required",
+      "acceptableSources": [
+        "background check",
+        "legal diligence",
+        "regulator",
+        "security review",
+        "reference call"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What facts could most change the decision now?",
+    "Who has the pain and who will pay?",
+    "What product or customer evidence exists at this stage?",
+    "Which uncertainty can wait and which is a gate?",
+    "What is the fastest reliable way to obtain the missing evidence?",
+    "Is analysis depth proportional to check, risk, and deadline?"
+  ],
+  "positiveSignals": [
+    "Diligence focuses on decision-changing questions.",
+    "Customer pain and payment evidence are direct.",
+    "Unknowns are labeled and routed to explicit next actions.",
+    "Mandatory integrity and legal checks are complete.",
+    "The team responds accurately and promptly to evidence requests."
+  ],
+  "redFlags": [
+    "A long generic checklist substitutes for prioritization.",
+    "Seed-stage projections receive more attention than customer evidence.",
+    "Speed is used to skip integrity or regulatory checks.",
+    "The agent fills missing company data with industry defaults without disclosure.",
+    "No decision deadline or evidence owner exists."
+  ],
+  "disconfirmingEvidence": [
+    "Customers do not confirm urgency or willingness to pay.",
+    "Product evidence fails under independent testing.",
+    "Founder statements conflict with documents or references.",
+    "The market requires a distribution or regulatory path absent from the plan.",
+    "A material risk cannot be resolved before commitment."
+  ],
+  "contraindications": [
+    "Do not interpret ambiguity tolerance as evidence tolerance.",
+    "Do not waive mandatory gates.",
+    "Do not manufacture false precision from sparse early-stage data.",
+    "Do not recommend investment solely because diligence time expired."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Classify stage, deal size, deadline, and risk profile.",
+      "Rank diligence questions by decision impact and information value.",
+      "Collect stage-appropriate core evidence and mandatory risk checks.",
+      "Convert unresolved material issues into gates or conditions.",
+      "Stop low-value analysis when the decision-relevant evidence is sufficient."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "mandatoryGateClasses": [
+        "identity_and_integrity",
+        "legal_and_ip",
+        "regulatory",
+        "security_or_safety_when_material"
+      ],
+      "missingCompanyDataMayBeFact": false,
+      "calculationOwner": "diligence_orchestrator",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only founder claims exist.",
+      "medium": "Company documents and limited independent checks exist.",
+      "high": "Primary company evidence, customers, references, and required specialists converge."
+    },
+    "evidenceStrength": {
+      "low": "Most material questions remain assertions.",
+      "medium": "Core business evidence is present with a few explicit conditions.",
+      "high": "Decision-changing questions and mandatory gates are resolved."
+    },
+    "evidenceCoverage": {
+      "low": "Only team and deck are covered.",
+      "medium": "Team, market, product, and customer are covered but legal or economics is partial.",
+      "high": "Core business, mandatory risks, terms, and next-stage milestones are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Stage or decision context is unresolved.",
+      "medium": "Stage is clear but sector-specific risks need specialist review.",
+      "high": "Stage, check, deadline, and risk taxonomy are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a research plan is supportable.",
+      "medium": "Advance with explicit conditions is defensible.",
+      "high": "The deal is ready for the next deterministic decision gate."
+    }
+  },
+  "overlapFrameworkIds": [
+    "SHR-05",
+    "VM-05",
+    "SF-02",
+    "BVC-08"
+  ],
+  "conflictingFrameworkIds": [
+    "GENERIC-CHECKLIST-EQUALS-DILIGENCE",
+    "SPEED-WAIVES-MANDATORY-RISK",
+    "PRIORS-EQUALS-COMPANY-FACTS"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapters 21-24 review.",
+      "Validate stage and sector diligence templates.",
+      "Test information-value prioritization with reviewers."
+    ],
+    "empiricalQualifications": [
+      "Diligence cannot remove venture uncertainty.",
+      "Customer samples can be biased.",
+      "Fast processes may still miss low-frequency catastrophic risks."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public diligence doctrine is paraphrased; mandatory gates and prioritization interface are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define sector-specific mandatory checks.",
+      "Complete exact chapter/page review."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

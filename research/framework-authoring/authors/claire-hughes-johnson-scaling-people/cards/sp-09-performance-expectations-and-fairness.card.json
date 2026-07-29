@@ -1,0 +1,169 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SP-09",
+  "slug": "performance-expectations-and-fairness",
+  "name": "Performance Expectations and Fairness",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether expectations, continuous feedback, formal reviews, support, and calibration form a consistent and fair performance system.",
+    "productLabel": "No-Surprise Performance Lens — based on Claire Hughes Johnson's public Scaling People materials",
+    "notAClaimOf": ["automatic employee scoring", "absence of surprise proving fairness", "one review cycle fitting every company"]
+  },
+  "attribution": {
+    "display": "Product synthesis based on Claire Hughes Johnson's public performance-management discussions",
+    "scope": "product_synthesis",
+    "people": ["Claire Hughes Johnson"],
+    "organizations": ["LEADERS Magazine", "Newcomer", "McKinsey & Company"],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "A defensible performance system establishes role-relevant expectations in advance, provides timely specific feedback and support, and makes formal review a synthesis rather than a surprise. Product use additionally requires privacy, accessibility, consistency, bias review, and authorized human judgment.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SP-P1-LEADERS-2023",
+      "claimIds": ["SP-CLM-027", "SP-CLM-028"],
+      "locator": {"kind": "pdf_page", "value": "p. 2, lines 149-154: feedback and performance mechanisms and the no-surprise review test"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SP-P1-MCKINSEY-2023",
+      "claimIds": ["SP-CLM-027"],
+      "locator": {"kind": "web_section", "value": "Lines 21-25: expectations ahead of time, empathy, support, people development, and business results"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-NEWCOMER-2023",
+      "claimIds": ["SP-CLM-026", "SP-CLM-027"],
+      "locator": {"kind": "web_section", "value": "Lines 68-75: lightweight fundamentals, continuous feedback, and more structure for inexperienced managers"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SP-P1-FIRSTROUND-2023",
+      "claimIds": ["SP-CLM-024", "SP-CLM-029"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 218-223: task/behavior focus, self-assessment, owned observations, specificity, and a plan"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has employees with recurring role expectations.",
+    "Only authorized, purpose-limited, privacy-safe evidence is used.",
+    "Individual decisions remain with trained, accountable humans under applicable law."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "role_expectations",
+      "description": "Role outcomes, level expectations, goals, behaviors, quality standards, and evidence that they were communicated in advance.",
+      "necessity": "required",
+      "acceptableSources": ["role framework", "goal plan", "manager communication", "job ladder", "team charter"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "continuous_feedback_and_support",
+      "description": "Authorized records of timely specific feedback, recipient input, coaching, resources, accommodations, and follow-up.",
+      "necessity": "required",
+      "acceptableSources": ["manager records", "development plan", "authorized HR records", "consent-based interviews"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "formal_review_process",
+      "description": "Review schedule, evidence period, reviewer roles, calibration, employee response, appeal or correction, and decision ownership.",
+      "necessity": "required",
+      "acceptableSources": ["performance policy", "review form", "calibration record", "appeal process", "HR audit"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "system_consistency_and_fairness",
+      "description": "Lawful, sufficiently powered audit of rating patterns, manager severity, promotion, improvement support, accommodations, and adverse outcomes with confounder review.",
+      "necessity": "recommended",
+      "acceptableSources": ["independent fairness audit", "HRIS", "review analytics", "legal review"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Were the relevant expectations known before the review period?",
+    "Did ongoing feedback identify the same issues and offer support?",
+    "Can the employee respond, correct evidence, and appeal process errors?",
+    "Are similar roles and evidence treated consistently across managers?",
+    "What possible bias, accommodation, role change, or resource constraint explains the outcome?"
+  ],
+  "positiveSignals": [
+    "Expectations are role-specific, observable, and communicated in advance.",
+    "Formal reviews synthesize prior feedback rather than introduce new criticism.",
+    "Employees can add context and challenge factual errors.",
+    "Calibration checks evidence quality and inconsistent standards.",
+    "Support and accommodations are documented before adverse action."
+  ],
+  "redFlags": [
+    "Formal review contains material surprises.",
+    "Ratings rely on likability, style, presence, or vague culture fit.",
+    "Managers apply materially different standards without review.",
+    "Protected-trait proxies or AI-inferred traits enter the process.",
+    "The company lacks recourse, privacy controls, or accountable decision ownership."
+  ],
+  "disconfirmingEvidence": [
+    "An unexpected event concerns newly discovered fraud, safety, or integrity evidence and follows a lawful investigation.",
+    "Small group differences are too underpowered to interpret and remain unknown rather than exonerating the process.",
+    "Different role standards are documented and job-relevant.",
+    "A low rating follows repeatedly documented expectations, feedback, support, and unchanged work outcomes."
+  ],
+  "contraindications": [
+    "Do not automate ratings, promotion, discipline, termination, or employability judgments.",
+    "Do not analyze protected traits or infer them from proxies.",
+    "Do not expose individual records to investors or unauthorized users.",
+    "Do not treat no surprise as sufficient proof of fairness.",
+    "Do not deploy without legal, privacy, accessibility, and fairness review."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map expectations, communication, feedback, support, review, calibration, recourse, and authority.",
+      "Audit an authorized sample for expectation-to-feedback-to-review continuity.",
+      "Separate evidence quality, manager severity, role context, accommodation, and possible bias.",
+      "Keep individual decisions outside the model.",
+      "Conclude system coherent, emerging, inconsistent, unsafe, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Policy or leadership assertion only.", "medium": "Authorized review samples and process records.", "high": "Longitudinal records, independent audit, legal review, and employee recourse evidence converge."},
+    "evidenceStrength": {"low": "Review completion rate.", "medium": "Expectation-feedback-review continuity in several cases.", "high": "Repeated system evidence plus independent consistency and fairness review."},
+    "evidenceCoverage": {"low": "Review form only.", "medium": "Expectations, feedback, and reviews.", "high": "Communication, support, accommodations, calibration, recourse, fairness, privacy, outcomes, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No recurring employment review system.", "medium": "Informal management with emerging reviews.", "high": "Formal performance decisions materially affect workforce and execution."},
+    "judgmentConfidence": {"low": "Sentiment or one case.", "medium": "Several authorized cases support a bounded system judgment.", "high": "Longitudinal, audited, privacy-safe evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["SP-05", "SP-07", "SP-08"],
+  "conflictingFrameworkIds": ["AUTOMATED-EMPLOYEE-SCORE", "NO-SURPRISE-EQUALS-FAIRNESS", "CULTURE-FIT-PERFORMANCE-RATING"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale"],
+    "promotionRequirements": ["Review licensed performance chapters.", "Obtain legal, privacy, accessibility, and fairness review.", "Validate minimum cohorts and audit methods."],
+    "empiricalQualifications": ["Performance data are shaped by role assignment, manager behavior, resources, and historical bias.", "Small samples and missing records limit inference."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author materials are paraphrased; no performance template or rubric is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["This card cannot leave research status before licensed and employment-domain review."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

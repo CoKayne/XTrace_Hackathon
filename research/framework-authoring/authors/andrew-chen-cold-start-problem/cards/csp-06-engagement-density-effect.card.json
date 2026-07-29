@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-06",
+  "slug": "engagement-density-effect",
+  "name": "Network Engagement and Density Evidence",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether greater relevant local density creates more successful interactions and stronger retained use.",
+    "productLabel": "Engagement-Effect Lens — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["global user growth proving local utility", "engagement volume proving causality", "all participants receiving equal value"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Evaluate engagement at the atomic-network level: as relevant participants and connections become denser, do users complete more valuable interactions and retain better? Separate network-mediated improvement from product changes, promotions, seasonality, and blended global averages.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-012", "CSP-CLM-014", "CSP-CLM-015"],
+      "locator": {"kind": "pdf_page", "value": "Part IV, Chapters 22-23, PDF pp. 214-228"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-METRICS-2018",
+      "claimIds": ["CSP-CLM-012", "CSP-CLM-015", "CSP-CLM-020"],
+      "locator": {"kind": "web_section", "value": "Engagement, retention, marketplace metrics, and geographic concentration"},
+      "attributionScope": "course_notes_derivative",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "CSP-P1-STALLS",
+      "claimIds": ["CSP-CLM-012", "CSP-CLM-015"],
+      "locator": {"kind": "web_section", "value": "Activation, cohort retention, and network-density diagnosis"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "CSP-01 applicability is satisfied.",
+    "The atomic-network boundary and valuable interaction are defined.",
+    "Activity, successful interaction, and retained use can be distinguished."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "local_density",
+      "description": "Relevant active nodes and usable connections per atomic network over time.",
+      "necessity": "required",
+      "acceptableSources": ["event graph", "marketplace liquidity report", "team or geography cohort"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "interaction_success",
+      "description": "Completed, relevant, timely, or mutually accepted interactions rather than raw messages, listings, or impressions.",
+      "necessity": "required",
+      "acceptableSources": ["transaction log", "match report", "collaboration telemetry", "quality audit"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "retention_by_density",
+      "description": "Retention and frequency by local density, participant role, cohort, and maturation stage.",
+      "necessity": "required",
+      "acceptableSources": ["cohort analysis", "survival analysis", "participant-role retention"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "alternative_explanations",
+      "description": "Product releases, promotions, seasonality, sales mix, and incentives that could explain engagement changes.",
+      "necessity": "recommended",
+      "acceptableSources": ["experiment log", "release calendar", "campaign history"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which local density variable is plausibly connected to user value?",
+    "Does successful interaction improve as that density rises?",
+    "Do retention and frequency improve for both the hard and easy sides?",
+    "Do the effects persist after promotions, product changes, and cohort mix are controlled?"
+  ],
+  "positiveSignals": [
+    "Maturing atomic networks show more successful interactions and stronger cohort retention.",
+    "Time to value or failed-match rate improves with relevant density.",
+    "The hard side retains and continues contributing as demand grows.",
+    "The relationship holds across replicated networks rather than one blended aggregate."
+  ],
+  "redFlags": [
+    "Management reports total users or messages without successful-interaction quality.",
+    "Global retention improves only because mature markets dominate the mix.",
+    "One participant side grows while the hard side churns or becomes overloaded.",
+    "Engagement rises only while incentives or notifications intensify."
+  ],
+  "disconfirmingEvidence": [
+    "Retention is flat or worse in denser networks.",
+    "More participants increase congestion, spam, irrelevant supply, or search cost.",
+    "Interaction success is explained by a product release rather than density.",
+    "New atomic networks fail to reproduce the engagement relationship."
+  ],
+  "contraindications": [
+    "Do not use global DAU or message volume as a density proxy.",
+    "Do not infer causal effect from a single cross-sectional correlation.",
+    "Do not aggregate participant roles whose incentives and retention differ."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define the atomic-network denominator and successful interaction.",
+      "Segment cohorts by network maturity, density, and participant role.",
+      "Compare interaction success, frequency, and retention.",
+      "Test product, promotion, seasonality, and mix alternatives.",
+      "Conclude demonstrated, emerging, contradicted, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "network_engagement_density_analysis",
+      "requiredOutputs": ["atomic_network_density", "interaction_success_rate", "time_to_value", "retention_by_density", "role_level_retention", "alternative_explanation_tests"],
+      "prohibition": "The language model must not calculate cohorts, density, or causal effect estimates."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Management anecdotes or aggregate engagement only.", "medium": "Cohort and network-unit data are available with partial reconciliation.", "high": "Auditable event graphs, cohorts, role segmentation, and experiments converge."},
+    "evidenceStrength": {"low": "Activity grows without demonstrated user value.", "medium": "Density and retention co-move but alternatives remain.", "high": "Repeated local evidence links density to successful interaction and durable retention."},
+    "evidenceCoverage": {"low": "One aggregate metric.", "medium": "Density, success, and retention covered for some networks.", "high": "All participant roles, network stages, quality, cohorts, and alternatives covered."},
+    "applicabilityConfidence": {"low": "No local interaction dependency.", "medium": "Some engagement depends on local participation.", "high": "Core retained value is materially density-dependent."},
+    "judgmentConfidence": {"low": "Unsupported or contradicted.", "medium": "Emerging engagement effect.", "high": "Repeatable, role-balanced engagement effect."}
+  },
+  "overlapFrameworkIds": ["CSP-02", "CSP-04", "CSP-08"],
+  "conflictingFrameworkIds": ["GLOBAL-ENGAGEMENT-EQUALS-LOCAL-DENSITY", "ACTIVITY-EQUALS-VALUE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate density and cohort service.", "Define successful interactions per archetype.", "Backtest alternative-explanation controls."],
+    "empiricalQualifications": ["Density metrics are product-specific.", "Observational relationships may not identify causality."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine is neutrally paraphrased; no book text is redistributed."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Create network-archetype metric dictionaries and acceptable causal-test standards."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

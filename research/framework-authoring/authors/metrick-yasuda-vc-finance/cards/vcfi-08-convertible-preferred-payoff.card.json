@@ -1,0 +1,304 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-08",
+  "slug": "convertible-preferred-payoff",
+  "name": "Convertible Preferred Exit Payoff",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Converts legal preferred-stock terms into an auditable, state-contingent exit payoff before estimating current security value.",
+    "productLabel": "Convertible Preferred Payoff Lens — based on Metrick and Yasuda's public preferred-stock architecture",
+    "notAClaimOf": [
+      "liquidation preference guaranteeing the investment principal",
+      "fully diluted ownership determining every exit payoff",
+      "a generic preferred-stock template replacing governing documents"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Andrew Metrick and Ayako Yasuda's public preferred-stock and exit-diagram architecture",
+    "scope": "coauthored_work",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "John Wiley & Sons",
+      "University of California, Davis",
+      "VCV Tools"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Convertible preferred combines a downside preference and an upside conversion claim, often alongside voting, board, anti-dilution, redemption, participation, and qualified-IPO provisions. The legal terms should first be translated into a complete exit payoff schedule. Non-participating securities generally choose the applicable preference or as-converted outcome; participating and capped claims require additional branches. Current partial valuation comes only after the payoff schedule is verified.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P2-BOOK-2021",
+      "claimIds": [
+        "VCFI-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Publisher description and Parts II-III: convertible preferred and preferred-stock valuation"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-UCD-SYLLABUS-2019",
+      "claimIds": [
+        "VCFI-CLM-009"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 1-2: convertible preferred debt/equity-like conversion features and option valuation"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-AUTO",
+      "claimIds": [
+        "VCFI-CLM-010",
+        "VCFI-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Exit Diagram inputs and outputs: security types, investment, shares, preference, participation, QPO threshold, cap, and payoff schedules"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-E1-CONTRACTING-2000",
+      "claimIds": [
+        "VCFI-CLM-009",
+        "VCFI-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and paper sections on separate cash-flow, voting, board, liquidation, and contingent control rights"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "non_participating_convertible_preferred",
+      "participating_convertible_preferred",
+      "capped_participating_preferred",
+      "redeemable_preferred"
+    ]
+  },
+  "requiredConditions": [
+    "The governing charter, purchase agreement, and amendments are available.",
+    "Security type, original investment, shares, conversion ratio, preference, dividends, participation, cap, seniority, and triggers are explicit.",
+    "Debt and transaction costs are deducted before equity proceeds.",
+    "The output is reviewed as financial analysis rather than legal advice.",
+    "Current partial valuation is separated from the verified exit payoff schedule."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "governing_security_documents",
+      "description": "Executed charter and financing documents governing the exact security.",
+      "necessity": "required",
+      "acceptableSources": [
+        "certificate of incorporation",
+        "stock purchase agreement",
+        "investor rights agreement",
+        "side letters",
+        "amendments"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "security_terms",
+      "description": "Machine-readable preference, dividends, participation, cap, conversion, redemption, anti-dilution, QPO, seniority, and voting terms.",
+      "necessity": "required",
+      "acceptableSources": [
+        "legal-document extraction reviewed by counsel",
+        "verified term sheet"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "capital_stack",
+      "description": "Debt, transaction costs, cash, all equity classes, shares, and seniority.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cap table",
+        "debt schedule",
+        "transaction model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which document and clause governs each payoff term?",
+    "At each exit value, does the security take preference, participate, convert, redeem, or trigger another right?",
+    "What proceeds remain after debt and senior claims?",
+    "Where are conversion, cap, QPO, redemption, and anti-dilution breakpoints?",
+    "How does the offered security differ from common ownership?",
+    "Which terms require legal interpretation before calculation?"
+  ],
+  "positiveSignals": [
+    "Every machine-readable term cites a governing clause.",
+    "The payoff schedule reconciles to distributable equity value at every breakpoint.",
+    "Preference, conversion, participation, and cap branches are explicit.",
+    "Legal ambiguities are surfaced rather than silently resolved.",
+    "Common, preferred, and total company values remain separate."
+  ],
+  "redFlags": [
+    "The model uses only ownership percentage.",
+    "Liquidation preference is treated as cash guaranteed regardless of available proceeds.",
+    "Participation or caps are omitted.",
+    "A term sheet superseded by the charter drives the model.",
+    "Control rights are assigned a cash value without a defined model."
+  ],
+  "disconfirmingEvidence": [
+    "The executed charter differs from the term-sheet summary.",
+    "Senior claims absorb more proceeds than modeled.",
+    "Conversion or participation breakpoints change under corrected share counts.",
+    "Redemption, dividends, or caps materially alter payoff.",
+    "Counsel identifies an ambiguous or jurisdiction-dependent interpretation."
+  ],
+  "contraindications": [
+    "Do not substitute a template for governing documents.",
+    "Do not call liquidation preference guaranteed recovery.",
+    "Do not use fully diluted ownership as the waterfall.",
+    "Do not present the result as legal advice."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Extract terms with clause-level provenance and legal-review status.",
+      "Build the equity-proceeds bridge and seniority order.",
+      "Enumerate preference, participation, conversion, cap, and trigger branches.",
+      "Generate and reconcile the piecewise exit payoff schedule.",
+      "Pass the verified schedule to partial valuation and Fund Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "nonParticipatingBaseline": "payoff_at_exit = max(applicable_liquidation_preference_after_seniority, as_converted_payoff), subject to governing terms and available proceeds",
+      "requiredBranches": [
+        "debt_and_cost_bridge",
+        "seniority",
+        "liquidation_preference",
+        "participation",
+        "participation_cap",
+        "conversion",
+        "redemption",
+        "qualified_ipo_and_other_triggers"
+      ],
+      "reconciliationRule": "sum_of_all_claim_payoffs_equals_distributable_exit_equity_value",
+      "calculationOwner": "security_waterfall_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only pitch-deck or unsigned term summaries are available.",
+      "medium": "Executed documents are available but extraction or interpretation remains incomplete.",
+      "high": "Governing documents, cap table, clause provenance, and counsel-reviewed terms are available."
+    },
+    "evidenceStrength": {
+      "low": "A generic template drives the payoff.",
+      "medium": "Key terms are verified but one complex branch remains unresolved.",
+      "high": "All branches reconcile across breakpoint and regression tests."
+    },
+    "evidenceCoverage": {
+      "low": "Only preference and ownership are known.",
+      "medium": "Preference, conversion, and participation are covered but seniority or triggers are incomplete.",
+      "high": "All claims, terms, seniority, triggers, debt, and costs are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The security type or governing law is unclear.",
+      "medium": "The claim is identifiable with one legal ambiguity.",
+      "high": "The exact security and governing documents are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a legal-document request can be produced.",
+      "medium": "A provisional payoff schedule is usable with flagged branches.",
+      "high": "The schedule is deterministic, reconciled, and counsel-reviewed."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-02",
+    "VCFI-09",
+    "SK-06",
+    "DSV-10"
+  ],
+  "conflictingFrameworkIds": [
+    "OWNERSHIP-PERCENT-EQUALS-PAYOFF",
+    "LIQUIDATION-PREFERENCE-GUARANTEE",
+    "TERM-SHEET-SUMMARY-IS-GOVERNING"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition Chapters 8-9 and 13-18 review.",
+      "Obtain venture-counsel review by jurisdiction.",
+      "Validate waterfall against complete financing documents and known outcomes."
+    ],
+    "empiricalQualifications": [
+      "Terms vary materially across rounds, periods, jurisdictions, and negotiations.",
+      "Control and governance rights are not automatically reducible to cash value.",
+      "Option-based current valuation adds model risk beyond the contractual payoff schedule."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public preferred-stock architecture is neutrally paraphrased; legal and third-edition review remain mandatory."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete preferred-stock and complex-structure chapter review.",
+      "Create counsel-approved term taxonomy and jurisdiction boundary."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

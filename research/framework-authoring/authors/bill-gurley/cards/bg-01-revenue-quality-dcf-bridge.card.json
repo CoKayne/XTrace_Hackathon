@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-01",
+  "slug": "revenue-quality-dcf-bridge",
+  "name": "Revenue Quality / DCF Bridge",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Explains why equal reported revenue can imply unequal value by tracing durability, margin, concentration, dependency, cash conversion, and reinvestment.",
+    "productLabel": "Revenue Quality / DCF Bridge — based on Bill Gurley's public writing",
+    "notAClaimOf": ["a fixed revenue multiple", "a checklist producing intrinsic value", "historical public-company examples transferring directly to startups"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd writing",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Do not value revenue as a homogeneous quantity. Reconcile its recurrence, customer durability, gross and contribution economics, competitive protection, concentration, partner exposure, cash conversion, capital intensity, and growth quality before connecting it to a valuation model.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-REVENUE-2011",
+      "claimIds": ["BG-CLM-001", "BG-CLM-002", "BG-CLM-003"],
+      "locator": {"kind": "web_section", "value": "Lines 16-28 and sections 1-10 plus 2011-05-26 update"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-LATE-STAGE-2015",
+      "claimIds": ["BG-CLM-023"],
+      "locator": {"kind": "web_section", "value": "Lines 19-28: gross versus net, contra-revenue, and true contribution margin"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["saas", "enterprise", "consumer", "marketplace", "transactional", "services", "hardware_enabled"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Revenue definition and accounting period are known.",
+    "Business-model-specific costs and customer behavior can be separated.",
+    "The lens informs valuation inputs but does not set price."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "revenue_reconciliation",
+      "description": "Gross billings, net revenue, discounts, refunds, pass-through amounts, recognition policy, and cash collection.",
+      "necessity": "required",
+      "acceptableSources": ["general ledger", "billing", "bank records", "contracts", "revenue-recognition memo"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "durability_and_concentration",
+      "description": "Retention, recurrence, switching, customer concentration, partner dependency, and cancellation or renewal rights.",
+      "necessity": "required",
+      "acceptableSources": ["cohort ledger", "contracts", "customer records", "concentration report", "partner agreements"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "margin_and_cash",
+      "description": "Gross margin, true variable costs, contribution margin, working capital, capex, and free-cash conversion.",
+      "necessity": "required",
+      "acceptableSources": ["financial statements", "cost ledger", "cash-flow statement", "capex plan", "unit-economics model"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "advantage_and_growth",
+      "description": "Mechanism-level defensibility, organic demand, growth source, required reinvestment, and evidence that growth can become cash flow.",
+      "necessity": "required",
+      "acceptableSources": ["competitive evidence", "attribution data", "customer research", "financial model", "product metrics"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What economic activity does reported revenue actually represent?",
+    "How recurring, concentrated, and externally dependent is it?",
+    "Which costs are required to produce and retain each revenue dollar?",
+    "Does growth improve future cash generation or require equal or greater reinvestment?",
+    "Which revenue-quality assumption is already reflected in the offered valuation?"
+  ],
+  "positiveSignals": [
+    "Revenue reconciles to contracts, billing, accounting, and cash.",
+    "Retention and pricing power arise from customer value rather than concealment or coercive lock-in.",
+    "Concentration and partner dependencies are manageable.",
+    "Growth has a credible path to durable contribution and cash flow."
+  ],
+  "redFlags": [
+    "Gross transaction value or billings are compared with net-revenue multiples.",
+    "Discounts, refunds, support, processing, or delivery costs are excluded.",
+    "One customer or external platform controls economics.",
+    "High growth is produced by selling below full economic cost."
+  ],
+  "disconfirmingEvidence": [
+    "Low reported gross margin can coexist with strong cash economics in a correctly classified asset-light model.",
+    "Early concentration can be rational when contracts and expansion evidence are strong.",
+    "A low current cash conversion rate may reflect bounded high-return reinvestment.",
+    "High-quality revenue can still be overpriced."
+  ],
+  "contraindications": [
+    "Do not apply historical public multiples as current startup thresholds.",
+    "Do not reward harmful or coercive switching costs.",
+    "Do not determine value before a separate scenario and deal-terms analysis."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Reconcile revenue definition and cash.",
+      "Classify durability, concentration, dependency, margins, capital intensity, and growth source.",
+      "Compute financial quantities in deterministic services.",
+      "Map verified qualities to explicit valuation assumptions rather than a multiple.",
+      "Conclude high-quality, mixed, low-quality, misclassified, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Revenue reconciliation, margins, concentration, cash conversion, and valuation math must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Pitch-deck revenue.", "medium": "Internal ledger and contracts.", "high": "Audited or independently reconciled accounting, cash, contracts, and cohorts."},
+    "evidenceStrength": {"low": "Top-line growth only.", "medium": "Durability and margin evidence.", "high": "Revenue, cash, customer, cost, and advantage evidence converge."},
+    "evidenceCoverage": {"low": "Revenue only.", "medium": "Revenue, retention, and margin.", "high": "Recognition, cash, durability, concentration, dependency, reinvestment, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Pre-revenue.", "medium": "Some repeatable revenue.", "high": "Revenue is material to underwriting and valuation."},
+    "judgmentConfidence": {"low": "Multiple heuristic.", "medium": "Bounded quality assessment.", "high": "Reconciled evidence supports explicit valuation inputs."}
+  },
+  "overlapFrameworkIds": ["BG-02", "DSV-02", "DSV-03", "NN-05", "EI-02", "H7P-10"],
+  "conflictingFrameworkIds": ["FIXED-REVENUE-MULTIPLE", "GROSS-VOLUME-AS-REVENUE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate accounting taxonomy.", "Backtest revenue-quality inputs.", "Integrate scenario valuation and terms."],
+    "empiricalQualifications": ["Revenue characteristics vary by model and lifecycle.", "High-quality revenue does not guarantee an attractive purchase price."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public author material is neutrally paraphrased; historical multiples are not reproduced as rules."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Obtain accounting review and define model-specific revenue taxonomy."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

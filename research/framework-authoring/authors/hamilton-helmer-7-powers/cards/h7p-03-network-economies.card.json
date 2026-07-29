@@ -1,0 +1,294 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-03",
+  "slug": "network-economies",
+  "name": "Network Economies",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether participant growth creates firm-specific, monetizable value that rivals cannot simultaneously capture.",
+    "productLabel": "Network Economies Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "user count proving network effects",
+      "all marketplaces becoming winner-take-all",
+      "product-market fit from a network guaranteeing durable profitability"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public Network Economies doctrine",
+    "scope": "person_direct",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Network Economies may exist when added participants increase value for other participants and the focal company can retain a material economic advantage that rivals cannot share. The analysis must map each value flow, network boundary, critical mass, multi-homing, compatibility, congestion, locality, and monetization. A network can create customer value without creating firm-specific Power.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_qualification",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-004",
+        "H7P-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Network Effects section lines 104-123 and strategy menu lines 261-270"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "claimIds": [
+        "H7P-CLM-004"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Official audio 00:27:12-00:32:54: Network Economies and disqualifying subtleties"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "H7P-E1-NETWORK-NBER-2025",
+      "claimIds": [
+        "H7P-EQ-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: collective versus individual deactivation, content supply, social coordination, and platform heterogeneity"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "marketplace",
+      "social_network",
+      "communications",
+      "payments",
+      "developer_platform",
+      "data_network",
+      "multi_sided_platform"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "Participant roles and directional value flows are explicit.",
+    "The network effect is distinguished from simple scale, virality, distribution, or data accumulation.",
+    "Firm-specific capture and competitor exclusion are tested.",
+    "Locality, multi-homing, compatibility, congestion, and substitution are evaluated."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "network_value_function",
+      "description": "Measured change in participant value, matching, liquidity, quality, utility, or retention as relevant participants join.",
+      "necessity": "required",
+      "acceptableSources": [
+        "experiments",
+        "cohort analysis",
+        "liquidity metrics",
+        "matching data",
+        "usage telemetry"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "network_topology",
+      "description": "Same-side and cross-side flows, local versus global clusters, critical mass, density, and participant heterogeneity.",
+      "necessity": "required",
+      "acceptableSources": [
+        "network graph",
+        "geographic cohorts",
+        "participant segmentation",
+        "marketplace data"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "exclusivity_and_multihoming",
+      "description": "Participant ability and cost to use competing networks, port identity or data, and maintain simultaneous participation.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer research",
+        "behavioral data",
+        "interoperability analysis",
+        "competitive usage"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "capture_congestion_and_decay",
+      "description": "Monetization, take rate, incremental cost, congestion, adverse selection, compatibility, and technology paths that weaken the advantage.",
+      "necessity": "required",
+      "acceptableSources": [
+        "unit economics",
+        "pricing tests",
+        "quality metrics",
+        "churn data",
+        "scenario analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Whose value rises when which participant type joins?",
+    "Is the value effect local, global, same-side, or cross-side?",
+    "Can competing firms benefit from the same network or data?",
+    "How easily can participants multi-home, port, or coordinate migration?",
+    "Does additional participation eventually create congestion or lower quality?",
+    "Can the company monetize without weakening participation?"
+  ],
+  "positiveSignals": [
+    "Causal or quasi-causal data links relevant participant growth to higher user value.",
+    "Liquidity or utility improves inside a defensible network boundary.",
+    "Multi-homing, portability, or coordination costs materially disadvantage challengers.",
+    "The company captures economics without destabilizing the network.",
+    "The effect persists after controlling for brand, subsidy, distribution, and simple scale."
+  ],
+  "redFlags": [
+    "User count, downloads, GMV, or community language substitutes for a value-flow model.",
+    "Both incumbents and challengers can access the same participants.",
+    "Subsidies create temporary liquidity that vanishes when pricing normalizes.",
+    "Users routinely multi-home and route activity to the best current offer.",
+    "A global network claim is supported only by one local market."
+  ],
+  "disconfirmingEvidence": [
+    "User value does not change when network size or composition changes.",
+    "Collective migration to a substitute is easy.",
+    "Compatibility or open standards let challengers share the installed base.",
+    "Congestion, spam, adverse selection, or declining match quality offsets growth.",
+    "Monetization reduces participation enough to erase the Benefit."
+  ],
+  "contraindications": [
+    "Do not infer Network Economies from virality or distribution alone.",
+    "Do not assume winner-take-all.",
+    "Do not generalize one platform's network estimates to another.",
+    "Do not double count scale, switching, data, or brand evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Draw the directional participant value-flow graph.",
+      "Measure value response to network size and composition.",
+      "Test locality, multi-homing, portability, compatibility, and coordination.",
+      "Evaluate capture, congestion, substitutes, and decay.",
+      "Conclude on observed, candidate, path, unsupported, or inapplicable Network Economies."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only platform labels or founder network claims are available.",
+      "medium": "Internal participant cohorts and topology are available.",
+      "high": "Experiments or strong quasi-experiments and independent market evidence converge."
+    },
+    "evidenceStrength": {
+      "low": "Network size and value are merely correlated.",
+      "medium": "Value flow is measured but firm-specific capture or barrier remains uncertain.",
+      "high": "Causal value, exclusivity, capture, and persistence are supported."
+    },
+    "evidenceCoverage": {
+      "low": "Participant roles or value flow are missing.",
+      "medium": "Value flow and topology are covered but portability or monetization is incomplete.",
+      "high": "Value, topology, multi-homing, compatibility, capture, congestion, and decay are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The product's value is independent of other participants.",
+      "medium": "Some participant interactions affect value.",
+      "high": "The business model structurally depends on network-mediated value."
+    },
+    "judgmentConfidence": {
+      "low": "Only a network label is supported.",
+      "medium": "Candidate network value exists with unresolved firm-specific Barrier.",
+      "high": "Observed participant value and durable company-specific capture are supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "H7P-02",
+    "H7P-05",
+    "SF-08",
+    "COLD-START-NETWORK"
+  ],
+  "conflictingFrameworkIds": [
+    "USER-COUNT-NETWORK-EFFECT",
+    "PLATFORM-WINNER-TAKE-ALL"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed Network Economies chapter review.",
+      "Validate topology and causal metrics by business model.",
+      "Test incremental utility beyond growth, liquidity, retention, and market share."
+    ],
+    "empiricalQualifications": [
+      "Network effects can be local, heterogeneous, and compatible with multiple competitors.",
+      "Substitution behavior under individual exit can differ from collective migration.",
+      "Retrospective winners make network claims especially vulnerable to survivorship bias."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine and external research are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete first-edition Network Economies definition review.",
+      "Develop business-model-specific topology templates."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial firm-specific, topology-aware Network Economies card."
+    }
+  ]
+}

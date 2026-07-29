@@ -1,0 +1,277 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-06",
+  "slug": "branding",
+  "name": "Branding",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether accumulated seller history causes durable, attributable customer value beyond objective product differences and paid awareness.",
+    "productLabel": "Branding Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "brand awareness being Power",
+      "marketing spend proving a durable Brand",
+      "premium pricing being attributable to Brand without controls"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public Branding doctrine",
+    "scope": "person_direct",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Branding may create Power when accumulated history about a seller causes customers to assign persistently higher value to an objectively similar offering. This may work through trust, expected quality, reduced uncertainty, identity, or positive association, but must be separated from product quality, distribution, network effects, promotion, and temporary awareness.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-007"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Brand section lines 221-235: durable value attribution, awareness distinction, trust, status, and time"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "claimIds": [
+        "H7P-CLM-007"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Official audio 00:40:10-00:44:27: Branding as Power and distinction from awareness"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "consumer",
+      "luxury",
+      "regulated_services",
+      "high_uncertainty_purchase",
+      "enterprise_trust",
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The compared offerings are sufficiently similar on objective attributes.",
+    "Customer value attribution is separated from awareness and distribution.",
+    "The Benefit is measurable as willingness-to-pay, choice, retention, acquisition, or trust economics.",
+    "The history or association is slow or costly for rivals to reproduce."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "controlled_customer_attribution",
+      "description": "Choice, price, conversion, retention, or trust evidence controlling for product quality, channel, service, and promotion.",
+      "necessity": "required",
+      "acceptableSources": [
+        "blind tests",
+        "conjoint",
+        "pricing experiment",
+        "matched cohort",
+        "customer research"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "economic_benefit",
+      "description": "Attributable premium, lower acquisition cost, reduced assurance cost, higher conversion, or retention benefit.",
+      "necessity": "required",
+      "acceptableSources": [
+        "pricing data",
+        "marketing attribution",
+        "sales funnel",
+        "cohort economics",
+        "gross margin bridge"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "history_and_replication_time",
+      "description": "Duration, consistency, earned trust, cultural association, and rival time or spend required to reproduce the attribution.",
+      "necessity": "required",
+      "acceptableSources": [
+        "longitudinal survey",
+        "brand tracking",
+        "reputation history",
+        "competitive analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "brand_decay_and_scope",
+      "description": "Customer segment, geography, category extension, scandal, quality failure, generational change, and paid-spend dependence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "segment analysis",
+        "geographic survey",
+        "reputation data",
+        "scenario analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Would customers choose or pay more if objective product attributes were held constant?",
+    "Is the Benefit trust, uncertainty reduction, identity, status, or another association?",
+    "How much of current performance is explained by product quality, distribution, or paid promotion instead?",
+    "How long and at what cost could a rival build an equivalent attribution?",
+    "Where does the Brand fail to transfer across categories, segments, or geographies?",
+    "What events would rapidly destroy the accumulated association?"
+  ],
+  "positiveSignals": [
+    "Controlled evidence shows an attributable willingness-to-pay or choice advantage.",
+    "The Benefit persists when paid spend is normalized.",
+    "Trust lowers customer assurance, sales, or acquisition cost.",
+    "The association was accumulated consistently over a long period.",
+    "Rivals with comparable product and promotion fail to reproduce the economics."
+  ],
+  "redFlags": [
+    "Awareness, impressions, followers, or advertising spend are the only evidence.",
+    "Price premium is explained by superior product or channel.",
+    "Growth stops when paid acquisition slows.",
+    "Brand claims come only from management surveys.",
+    "The name does not transfer to the proposed category or geography."
+  ],
+  "disconfirmingEvidence": [
+    "Blind or controlled tests show no choice or price difference.",
+    "A generic or new entrant wins when distribution is equal.",
+    "The premium disappears after a quality incident or promotion change.",
+    "Customer association is narrow and irrelevant to the growth market.",
+    "Competitors reproduce awareness and economics quickly."
+  ],
+  "contraindications": [
+    "Do not use awareness as a proxy for Branding Power.",
+    "Do not attribute product superiority to Brand.",
+    "Do not assume consumer Brand logic transfers to every B2B category.",
+    "Do not double count distribution or Network evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define the claimed customer attribution and relevant comparison.",
+      "Review controlled choice, price, trust, acquisition, and retention evidence.",
+      "Separate objective quality, distribution, promotion, and network effects.",
+      "Assess accumulation time, rival replication, scope, and decay.",
+      "Conclude on observed, candidate, path, unsupported, or inapplicable Branding."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only awareness or management brand claims are available.",
+      "medium": "Customer research and economic attribution are partially available.",
+      "high": "Controlled experiments, longitudinal tracking, and economic data converge."
+    },
+    "evidenceStrength": {
+      "low": "No causal customer attribution is measured.",
+      "medium": "Attribution exists but durability or rival barrier is uncertain.",
+      "high": "Controlled Benefit and long-lived replication Barrier are supported."
+    },
+    "evidenceCoverage": {
+      "low": "Customer attribution or economics are missing.",
+      "medium": "Benefit is covered but scope, replication, or decay is incomplete.",
+      "high": "Attribution, economics, controls, history, replication, scope, and decay are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Customers evaluate the offering entirely on observable performance and price.",
+      "medium": "Trust or identity affects some segments.",
+      "high": "Seller history materially shapes purchase value under uncertainty or identity."
+    },
+    "judgmentConfidence": {
+      "low": "Only awareness is supported.",
+      "medium": "Candidate customer attribution exists.",
+      "high": "Observed durable attributed Benefit and replication Barrier are supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "PT-02",
+    "PT-07",
+    "SF-08"
+  ],
+  "conflictingFrameworkIds": [
+    "AWARENESS-EQUALS-BRAND-POWER",
+    "MARKETING-SPEND-MOAT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed Branding chapter review.",
+      "Develop category-specific controlled evidence standards.",
+      "Validate incremental utility beyond product quality, pricing, and distribution."
+    ],
+    "empiricalQualifications": [
+      "Brand attribution is difficult to identify separately from quality and distribution.",
+      "Brand effects can be segment-, category-, and geography-specific.",
+      "Reputation can decay nonlinearly after quality or trust failures."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public interview doctrine is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete first-edition Benefit, Barrier, and brand-mechanism review.",
+      "Define minimum controlled evidence by category."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial awareness-separated Branding card."
+    }
+  ]
+}

@@ -1,0 +1,274 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "EI-05",
+  "slug": "turbo-trigger-sensitivity",
+  "name": "Turbo Trigger and Sensitivity Audit",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Identifies the value driver with the greatest decision-relevant sensitivity, then separates model leverage from the probability and evidence of revision.",
+    "productLabel": "Turbo Trigger Lens — based on Mauboussin and Rappaport's public Expectations Investing materials",
+    "notAClaimOf": [
+      "the most sensitive variable being most likely to improve",
+      "sensitivity proving causality",
+      "a single trigger remaining dominant across all scenarios"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Michael J. Mauboussin and Alfred Rappaport's public turbo-trigger and sensitivity materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Michael J. Mauboussin",
+      "Alfred Rappaport"
+    ],
+    "organizations": [
+      "Expectations Investing"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Use deterministic sensitivity analysis to find which sales, margin, reinvestment, duration, or risk input changes value most within plausible bounds. Separately assess whether current evidence makes that revision probable, its timing, and its direction. Model sensitivity prioritizes research; it does not establish the conclusion.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "EI-P1-ABOUT-FAQ",
+      "claimIds": [
+        "EI-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Focus on the value trigger with the greatest potential impact, described as the turbo trigger"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "EI-P1-CHAPTER-SUMMARIES",
+      "claimIds": [
+        "EI-CLM-004",
+        "EI-CLM-013"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Chapter 3 sensitivity and scenario analysis; Chapter 6 key value trigger and revision analysis"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth",
+      "public"
+    ],
+    "businessModels": [
+      "all_with_bounded_scenarios"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "EI-03 provides a coherent driver map.",
+    "Each tested driver has a plausible, source-linked range.",
+    "Sensitivity magnitude and revision probability are stored as separate fields.",
+    "Interactions and nonlinear thresholds are tested where material."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "driver_ranges",
+      "description": "Source-linked plausible ranges for each material driver and scenario.",
+      "necessity": "required",
+      "acceptableSources": [
+        "historical company data",
+        "contracted metrics",
+        "reference-class distribution",
+        "source-linked scenarios"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "revision_evidence",
+      "description": "Evidence supporting direction, probability, magnitude, and timing of a particular driver revision.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer evidence",
+        "company update",
+        "market event",
+        "regulatory action",
+        "competitor evidence"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "interaction_tests",
+      "description": "Scenario or multi-variable tests for drivers that are economically linked.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic sensitivity service",
+        "scenario model"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which driver changes modeled value most within a plausible range?",
+    "Is the dominant driver stable across Bear, Base, and Bull?",
+    "What evidence makes revision of that driver more or less likely?",
+    "What is the expected lag before the evidence reaches cash flow?",
+    "Which driver interactions or thresholds invalidate one-way sensitivity?",
+    "What near-term fact would most reduce decision uncertainty?"
+  ],
+  "positiveSignals": [
+    "The top sensitivity is supported by a clear company exposure.",
+    "Independent evidence points in the same direction as the model opportunity.",
+    "The driver remains material across multiple scenarios.",
+    "A near-term observable milestone can resolve uncertainty.",
+    "Interactions and downside sensitivity are reported."
+  ],
+  "redFlags": [
+    "The widest arbitrary input range becomes the top trigger.",
+    "High valuation sensitivity is described as high probability.",
+    "Only positive sensitivity is shown.",
+    "Linked drivers are moved independently despite economic coupling.",
+    "The chosen trigger changes whenever terminal assumptions move slightly."
+  ],
+  "disconfirmingEvidence": [
+    "The company has no direct exposure to the trigger.",
+    "Historical operating data show weak transmission.",
+    "A second driver offsets the apparent benefit.",
+    "Capacity or financing prevents capture of the opportunity.",
+    "The dominant sensitivity disappears under reasonable ranges."
+  ],
+  "contraindications": [
+    "Do not rank triggers with unsourced or incomparable ranges.",
+    "Do not convert sensitivity rank into probability.",
+    "Do not hide downside or interaction tests.",
+    "Do not let the LLM perform sensitivity calculations."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Validate driver ranges and EI-03 mapping.",
+      "Run one-way and material interaction sensitivities deterministically.",
+      "Rank value sensitivity separately from evidence-supported revision likelihood.",
+      "Identify the next observable evidence with the highest uncertainty-reduction value.",
+      "Report trigger, direction, lag, counterevidence, and scenario instability."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "outputs": [
+        "value_sensitivity_by_driver",
+        "scenario_rank_stability",
+        "interaction_effects",
+        "break_even_thresholds"
+      ],
+      "guards": [
+        "all_ranges_source_linked",
+        "upside_and_downside_tested",
+        "probability_not_inferred_from_sensitivity",
+        "economic_interactions_declared"
+      ],
+      "calculationOwner": "sensitivity_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Ranges and revision claims come only from unsupported narrative.",
+      "medium": "Ranges are sourced but revision evidence is indirect.",
+      "high": "Primary operating evidence and independent external evidence support ranges and direction."
+    },
+    "evidenceStrength": {
+      "low": "Only mechanical model sensitivity is known.",
+      "medium": "Sensitivity and directional evidence align with wide timing or magnitude.",
+      "high": "Sensitivity, causal evidence, timing, and interactions are independently supported."
+    },
+    "evidenceCoverage": {
+      "low": "Only one upside driver is tested.",
+      "medium": "Major drivers and downside are tested but interactions are partial.",
+      "high": "All material drivers, ranges, interactions, lags, and counterevidence are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No coherent driver model or ranges exist.",
+      "medium": "The model fits but early-stage evidence is sparse.",
+      "high": "The operating model and tested ranges fit the company."
+    },
+    "judgmentConfidence": {
+      "low": "Only a research hypothesis is supportable.",
+      "medium": "A prioritized trigger and evidence request are defensible.",
+      "high": "A stable trigger, bounded effect, and revision likelihood are reproducible."
+    }
+  },
+  "overlapFrameworkIds": [
+    "EI-03",
+    "DSV-07",
+    "VM-03"
+  ],
+  "conflictingFrameworkIds": [
+    "SENSITIVITY-EQUALS-PROBABILITY",
+    "UPSIDE-ONLY-SENSITIVITY",
+    "ARBITRARY-RANGE-RANKING"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Validate range governance and interaction detection.",
+      "Backtest research prioritization against realized revisions.",
+      "Define evidence-value threshold with Fund Policy."
+    ],
+    "empiricalQualifications": [
+      "Sensitivity depends on the selected model and tested range.",
+      "Driver interactions can reverse one-way rankings.",
+      "High model leverage may coincide with very low revision probability."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Official public turbo-trigger and sensitivity descriptions are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Define range provenance and interaction-test standards.",
+      "Validate research-priority output against domain experts."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

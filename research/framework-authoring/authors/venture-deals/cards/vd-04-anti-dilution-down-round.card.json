@@ -1,0 +1,290 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VD-04",
+  "slug": "anti-dilution-down-round",
+  "name": "Anti-Dilution and Down-Round Adjustment",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Parses the exact down-round trigger, formula, denominator, carve-outs, waiver, and conversion consequence before calculating redistribution.",
+    "productLabel": "Anti-Dilution Lens — based on Feld and Mendelson's public term-sheet materials",
+    "notAClaimOf": [
+      "anti-dilution protecting against all ownership dilution",
+      "weighted average having one universal formula",
+      "full ratchet or market frequency determining deal quality"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Brad Feld and Jason Mendelson's public anti-dilution materials",
+    "scope": "coauthored_work",
+    "people": [
+      "Brad Feld",
+      "Jason Mendelson"
+    ],
+    "organizations": [
+      "Venture Deals"
+    ],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "When a financing may trigger anti-dilution, read the exact conversion-price adjustment mechanism. Distinguish full ratchet from weighted average, broad from narrow denominator, and included issuances from carve-outs or waivers; then calculate class-by-class ownership and exit-payoff effects together with financing alternatives.",
+  "claimTypes": [
+    "direct_doctrine",
+    "contractual_convention",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VD-P1-ANTIDILUTION-2005",
+      "claimIds": [
+        "VD-CLM-007",
+        "VD-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Full ratchet, weighted-average equation, broad/narrow CSO, carve-outs, waivers, and financing incentives"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VD-E1-COOLEY-TERMS-2024",
+      "claimIds": [
+        "VD-CLM-007",
+        "VD-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Q3 2024 sample prevalence of broad-based weighted-average protection and absence of full ratchet"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "VD-I1-NVCA-MODELS-2026",
+      "claimIds": [
+        "VD-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Current model-document alternatives and starting-point disclaimer"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_with_convertible_preferred"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "united_states",
+      "other_with_counsel_mapping"
+    ],
+    "securityTypes": [
+      "preferred_equity",
+      "convertible_preferred"
+    ]
+  },
+  "requiredConditions": [
+    "The protected class, original conversion price, and adjustment clause are available.",
+    "The new issuance price, amount, tranches, consideration, and exempt issuances are defined.",
+    "Broad/narrow denominator and all convertible securities are reconciled.",
+    "Waiver, class vote, pay-to-play, recapitalization, and financing alternatives are modeled."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "anti_dilution_clause",
+      "description": "Exact formula, protected class, conversion price, denominator, carve-outs, waiver threshold, and tranche rule.",
+      "necessity": "required",
+      "acceptableSources": [
+        "charter",
+        "stock purchase agreement",
+        "amendment",
+        "counsel summary"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "new_financing_terms",
+      "description": "New price, amount, securities, closings, noncash consideration, pool changes, and participating holders.",
+      "necessity": "required",
+      "acceptableSources": [
+        "new term sheet",
+        "financing documents",
+        "cap table"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "alternative_financing_states",
+      "description": "Down-round, waiver, pay-to-play, recapitalization, bridge, and no-financing scenarios.",
+      "necessity": "required",
+      "acceptableSources": [
+        "board materials",
+        "financing plan",
+        "Fund Policy",
+        "runway model"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What issuance triggers the protection?",
+    "Is the formula full ratchet or which weighted-average variant?",
+    "What counts in the denominator and which issuances are carved out?",
+    "Can the class waive protection, and who votes?",
+    "How does the adjustment change ownership and exit payoff for every class?",
+    "How do waiver, pay-to-play, recap, bridge, and failure-to-finance compare?"
+  ],
+  "positiveSignals": [
+    "The exact formula and denominator are extracted.",
+    "All carve-outs, waivers, tranches, and convertibles are modeled.",
+    "Ownership and waterfall effects are shown by class.",
+    "The financing is compared with realistic alternatives.",
+    "Counsel confirms the trigger and calculation."
+  ],
+  "redFlags": [
+    "The system assumes broad-based weighted average from a label.",
+    "Full ratchet is modeled without amount and price states.",
+    "Carve-outs or class waiver are omitted.",
+    "Anti-dilution is described as protection from all dilution.",
+    "The company rejects essential financing solely to preserve headline valuation."
+  ],
+  "disconfirmingEvidence": [
+    "The issuance is exempt or waived.",
+    "A tranche definition changes effective trigger timing.",
+    "Pay-to-play changes rights before anti-dilution applies.",
+    "The cap table denominator differs from the model.",
+    "No-financing or debt alternative produces worse stakeholder outcomes."
+  ],
+  "contraindications": [
+    "Do not calculate from the words anti-dilution alone.",
+    "Do not infer carve-outs or waiver.",
+    "Do not treat market frequency as the deal's rule.",
+    "Do not let the LLM calculate the adjustment."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Parse the protected security and exact adjustment clause.",
+      "Reconcile the pre-financing denominator and new issuance.",
+      "Run trigger, carve-out, waiver, and pay-to-play gates.",
+      "Calculate conversion-price, ownership, and waterfall changes by scenario.",
+      "Report financing alternatives and counsel questions to Fund Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "supportedModes": [
+        "full_ratchet",
+        "broad_based_weighted_average",
+        "narrow_based_weighted_average",
+        "custom_formula"
+      ],
+      "guards": [
+        "exact_formula_and_denominator",
+        "trigger_and_exemptions_resolved",
+        "waiver_and_class_vote_resolved",
+        "cap_table_reconciled",
+        "pay_to_play_ordering_resolved"
+      ],
+      "calculationOwner": "anti_dilution_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a term label or market benchmark is available.",
+      "medium": "Clause and financing terms exist but denominator or waiver is incomplete.",
+      "high": "Executed clause, cap table, new terms, waivers, and counsel review reconcile."
+    },
+    "evidenceStrength": {
+      "low": "No reproducible adjustment is possible.",
+      "medium": "A bounded adjustment is possible with one explicit interpretation.",
+      "high": "All conversion and payoff effects are deterministic."
+    },
+    "evidenceCoverage": {
+      "low": "Only old and new prices are known.",
+      "medium": "Formula and amount are covered but exemptions, waiver, or alternatives are partial.",
+      "high": "Formula, denominator, issuance, tranches, carve-outs, waiver, pay-to-play, and alternatives are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No convertible-preferred protection exists.",
+      "medium": "Protection exists with custom or ambiguous drafting.",
+      "high": "The trigger and formula are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only a potential trigger warning is defensible.",
+      "medium": "A bounded ownership effect can be shown.",
+      "high": "The adjustment and stakeholder trade-offs are reproducible."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VD-02",
+    "VD-08",
+    "VCFI-09",
+    "SHR-07"
+  ],
+  "conflictingFrameworkIds": [
+    "ANTIDILUTION-LABEL-EQUALS-FORMULA",
+    "ANTIDILUTION-PROTECTS-ALL-DILUTION",
+    "MARKET-FREQUENCY-EQUALS-DEAL-RULE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Venture-counsel review of current clauses.",
+      "Golden-case tests for all supported formula modes.",
+      "Validate ordering with pay-to-play and recapitalization."
+    ],
+    "empiricalQualifications": [
+      "Term prevalence shifts with market cycles.",
+      "Weighted-average definitions differ.",
+      "The financing alternative and runway can matter more than the adjustment alone."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author doctrine is neutrally paraphrased; the exact formula comes only from executed documents."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Map latest NVCA clause variants.",
+      "Define financing-scenario comparison policy."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

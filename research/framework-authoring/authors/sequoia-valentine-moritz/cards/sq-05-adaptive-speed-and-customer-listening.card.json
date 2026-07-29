@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-05",
+  "slug": "adaptive-speed-and-customer-listening",
+  "name": "Adaptive Speed and Customer Listening",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests how quickly a company detects important change, learns from customers, and updates product or operations without confusing motion with progress.",
+    "productLabel": "Adaptive Speed and Customer Listening — based on Sequoia's public institution guidance",
+    "notAClaimOf": ["speed at any cost", "pivot frequency being inherently positive", "pandemic advice transferring unchanged to every market"]
+  },
+  "attribution": {
+    "display": "Based on Team Sequoia's public enduring-company, Arc, and crisis guidance",
+    "scope": "institution_doctrine",
+    "people": [],
+    "organizations": ["Sequoia Capital"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Evaluate whether the company notices material customer, technology, regulatory, and capital changes early; uses direct evidence and scenarios; and updates high-leverage choices with appropriate speed. Speed is valuable when it shortens evidence-to-action time, not when it increases unmeasured activity or bypasses safety and governance.",
+  "claimTypes": ["affiliated_doctrine", "normative_guidance", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-I1-ENDURING",
+      "claimIds": ["SQ-CLM-014"],
+      "locator": {"kind": "web_section", "value": "Lines 20-28: team DNA, agility, resilience, frugality, and constrained focus"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-I1-ARC-CURRENT",
+      "claimIds": ["SQ-CLM-014", "SQ-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Lines 83-169: blind spots, rapid response, customer, product, GTM, business, and PMF"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SQ-I1-COVID-2021",
+      "claimIds": ["SQ-CLM-015"],
+      "locator": {"kind": "web_section", "value": "Lines 20-40: durable behavior, scenario planning, customer listening, input metrics, and people wellbeing"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A decision window and relevant external changes are defined.",
+    "Speed is measured from evidence to decision to outcome.",
+    "Safety, legal, security, quality, and governance constraints remain binding."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "external_change_log",
+      "description": "Material customer, technology, regulation, competition, and capital changes with dates and evidence.",
+      "necessity": "required",
+      "acceptableSources": ["customer records", "primary regulations", "technical benchmarks", "market data", "competitor evidence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "customer_listening",
+      "description": "Direct customer feedback, behavior changes, pain points, churn, lost deals, and segment differences.",
+      "necessity": "required",
+      "acceptableSources": ["interviews", "usage logs", "support data", "lost-deal notes", "churn records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "decision_latency_and_quality",
+      "description": "Time from signal to decision, owner, hypothesis, action, safety checks, and measured outcome.",
+      "necessity": "required",
+      "acceptableSources": ["decision log", "incident timeline", "experiment record", "roadmap history", "board materials"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "scenario_and_input_metrics",
+      "description": "Scenarios, leading input metrics, trigger points, and post-decision results.",
+      "necessity": "required",
+      "acceptableSources": ["scenario plan", "operating dashboard", "experiment analysis", "forecast history"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which external change matters most to this company's assumptions?",
+    "How quickly did reliable evidence reach a responsible decision owner?",
+    "What did customers do, not merely say?",
+    "Did the response improve a defined outcome without unacceptable risk?",
+    "Is apparent speed learning velocity or repeated unmeasured change?"
+  ],
+  "positiveSignals": [
+    "Material signals are dated, sourced, and linked to explicit assumptions.",
+    "Customer and negative-case evidence changes plans when warranted.",
+    "Experiments are bounded, measured, and converted into decisions.",
+    "The company moves quickly while preserving legal, safety, quality, and governance controls."
+  ],
+  "redFlags": [
+    "A pivot is announced without the evidence or assumption that changed.",
+    "Activity volume is treated as speed.",
+    "Vanity metrics obscure customer or business deterioration.",
+    "Urgency is used to bypass controls or exhaust the team."
+  ],
+  "disconfirmingEvidence": [
+    "Deliberate pace can be rational in regulated, safety-critical, scientific, or hardware work.",
+    "A stable strategy can reflect strong evidence rather than rigidity.",
+    "Fast experiments can produce false confidence when measurement windows are immature.",
+    "One crisis-response playbook may not apply in ordinary conditions."
+  ],
+  "contraindications": [
+    "Do not reward pivot count, shipping frequency, or work intensity without outcomes.",
+    "Do not generalize pandemic-specific advice without identifying comparable conditions.",
+    "Do not trade safety, legality, security, or human wellbeing for speed."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Identify the material change, affected assumption, and decision window.",
+      "Trace source evidence, customer behavior, decision latency, action, and outcome.",
+      "Review negative effects and controls.",
+      "Distinguish evidence-responsive speed from motion, rigidity, or unsafe haste.",
+      "Conclude adaptive, selectively adaptive, slow, erratic, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Retrospective narrative.", "medium": "Dated decisions and internal metrics.", "high": "Dated primary signals, customer evidence, decision logs, and measured outcomes."},
+    "evidenceStrength": {"low": "Claimed agility.", "medium": "Evidence-linked updates.", "high": "Repeated high-quality signal-to-outcome cycles with controls."},
+    "evidenceCoverage": {"low": "One pivot story.", "medium": "Signals, decisions, and outcomes.", "high": "Customers, external change, latency, controls, outcomes, and failed updates covered."},
+    "applicabilityConfidence": {"low": "No relevant change or decision window.", "medium": "Comparable operating change.", "high": "Material assumption change with adequate outcome window."},
+    "judgmentConfidence": {"low": "Speed impression.", "medium": "Bounded process assessment.", "high": "Longitudinal evidence supports a consistent adaptive capability."}
+  },
+  "overlapFrameworkIds": ["MA-03", "VM-07", "SP-05", "MMI-06", "NN-03"],
+  "conflictingFrameworkIds": ["PIVOT-COUNT-AS-AGILITY", "SPEED-WITHOUT-CONTROLS"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define decision-latency and outcome anchors.", "Adapt by regulatory and technical risk.", "Backtest update quality, not speed alone."],
+    "empiricalQualifications": ["Institution guidance is normative, not a validated predictor.", "Optimal decision speed depends on evidence maturity and downside risk."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Institution public guidance is neutrally paraphrased and time-bound."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Develop sector-specific safety and decision-latency adaptations."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

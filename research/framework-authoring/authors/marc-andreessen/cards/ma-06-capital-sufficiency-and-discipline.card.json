@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-06",
+  "slug": "capital-sufficiency-and-discipline",
+  "name": "Capital Sufficiency and Discipline",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether capital is sufficient for the next value-inflecting state without mistaking fundraising success or excess hiring for business progress.",
+    "productLabel": "Capital Sufficiency and Discipline Lens — based on Marc Andreessen's public startup writings",
+    "notAClaimOf": ["a universal runway target", "more capital always being safer", "fundraising proving product success"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public startup writings",
+    "scope": "person_direct",
+    "people": ["Marc Andreessen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Size financing against the company's state and next evidence-producing objective. Before PMF, capital should credibly reach a PMF test; after PMF, it should support market capture and a path to sustainable operations, while preserving contingency and avoiding premature cost expansion.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-011", "MA-CLM-012"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 45-49, Part 6: pre-PMF and post-PMF funding objectives, insurance, setbacks, and financing-window risk"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-013"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 49-52: excess capital, premature hiring, fundraising not being accomplishment, and product/customer focus"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["equity", "preferred_equity", "convertible_note", "safe", "venture_debt", "all"]
+  },
+  "requiredConditions": [
+    "The company's current PMF state and next value-inflecting milestone are defined.",
+    "Capital need is modeled from operating and milestone drivers.",
+    "Dilution, terms, and financing availability are reviewed separately."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "cash_and_burn",
+      "description": "Current cash, committed capital, net burn, gross burn, working-capital needs, debt service, and runway.",
+      "necessity": "required",
+      "acceptableSources": ["bank records", "general ledger", "cash forecast", "debt agreements", "payroll records"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "milestone_capital_map",
+      "description": "Cost, timing, dependency, evidence threshold, and decision value of milestones through PMF or post-PMF scale.",
+      "necessity": "required",
+      "acceptableSources": ["operating plan", "product roadmap", "commercial plan", "regulatory plan", "milestone budget"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "downside_and_contingency",
+      "description": "Delays, revenue miss, cost overrun, funding-window closure, and response plans.",
+      "necessity": "required",
+      "acceptableSources": ["scenario model", "sensitivity analysis", "board plan", "contingency plan", "historical variance"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "capital_terms_and_use",
+      "description": "Proposed security, dilution, control terms, hiring plan, spend allocation, and governance over deployment.",
+      "necessity": "required",
+      "acceptableSources": ["term sheet", "cap table", "use-of-proceeds plan", "hiring plan", "board materials"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact state should this capital reach?",
+    "How much capital is needed under base and adverse timing?",
+    "What happens if the financing window closes before the next round?",
+    "Does spending retire material risk or add fixed cost before evidence?",
+    "Are dilution, terms, and optionality proportionate to the milestone value?"
+  ],
+  "positiveSignals": [
+    "The financing amount is tied to explicit milestones and contingency.",
+    "Hiring and fixed cost follow evidence rather than the fundraising headline.",
+    "The plan survives a credible delay or revenue miss.",
+    "Management distinguishes capital raised from value created."
+  ],
+  "redFlags": [
+    "The raise size is copied from peer rounds or investor appetite.",
+    "The company requires a perfectly timed follow-on round to survive.",
+    "Hiring accelerates before product, customer, or operational evidence.",
+    "Use of proceeds is broad and cannot be linked to risk reduction or growth."
+  ],
+  "disconfirmingEvidence": [
+    "Capital-intensive hardware, biotech, or regulated businesses may rationally fund long lead-time infrastructure before revenue.",
+    "A larger raise can be prudent when financing windows are volatile and capital can be deployed with discipline.",
+    "A lean plan can be underfunded if one ordinary setback destroys the company.",
+    "Low burn is not positive when it reflects failure to fund the critical experiment."
+  ],
+  "contraindications": [
+    "Do not use the 2007-era essay as a universal dollar or month threshold.",
+    "Do not ignore security terms, liquidation preferences, dilution, and control.",
+    "Do not infer investment merit from runway alone."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Classify pre-PMF, emerging PMF, bounded PMF, or post-PMF state.",
+      "Map milestone costs and timing under base and adverse scenarios.",
+      "Calculate runway and financing gaps using the deterministic finance service.",
+      "Review whether spend sequencing follows evidence and preserves optionality.",
+      "Conclude insufficient, fragile, proportionate, excessive relative to evidence, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Cash, burn, runway, dilution, and scenario math must be computed outside the language-model lens."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Pitch-deck use of proceeds.", "medium": "Financial model and internal records.", "high": "Bank, ledger, contracts, historical variance, and milestone owners reconcile."},
+    "evidenceStrength": {"low": "Headline runway.", "medium": "Milestone budget and base case.", "high": "Base/adverse cases, terms, and observed spending discipline support the plan."},
+    "evidenceCoverage": {"low": "Cash only.", "medium": "Cash, burn, milestones, and terms.", "high": "Cash, working capital, scenarios, dependencies, terms, dilution, and contingency covered."},
+    "applicabilityConfidence": {"low": "No defined financing need.", "medium": "Next round or milestone defined.", "high": "Capital structure materially determines survival or value creation."},
+    "judgmentConfidence": {"low": "Round-size heuristic.", "medium": "Bounded model with open risks.", "high": "Reconciled data and robust scenarios support a clear conclusion."}
+  },
+  "overlapFrameworkIds": ["SHR-05", "BVC-03", "VCFI-10", "DSV-06", "VD-01"],
+  "conflictingFrameworkIds": ["MORE-CAPITAL-IS-ALWAYS-BETTER", "MINIMUM-BURN-IS-ALWAYS-BETTER"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define deterministic scenario interface.", "Validate stage and sector assumptions.", "Review financing terms and downside cases."],
+    "empiricalQualifications": ["Capital needs differ sharply by sector and cycle.", "Observed capital efficiency may reflect underinvestment or timing."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical public financing guidance is treated as a principle, not a current numeric rule."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define deterministic finance-service inputs and sector-specific contingencies."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

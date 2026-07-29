@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-08",
+  "slug": "ceiling-negative-effects",
+  "name": "Network Ceiling and Negative-Effect Audit",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Identifies saturation, quality degradation, congestion, spam, discovery failure, and exhausted expansion that can reverse network gains.",
+    "productLabel": "Ceiling and Negative-Effect Lens — based on Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["larger networks being permanently stronger", "growth deceleration having one cause", "moderation or discovery being secondary details"]
+  },
+  "attribution": {
+    "display": "Based on Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "As a network scales, test whether saturation, crowding, irrelevant supply, spam, poor discovery, overloaded hard-side participants, or a shrinking supply of attractive new atomic networks weakens acquisition, engagement, or economics. Treat scale as capable of creating both value and damage.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-017", "CSP-CLM-018"],
+      "locator": {"kind": "pdf_page", "value": "Part V, Chapters 26-31, PDF pp. 238-315; overcrowding discussion, PDF pp. 304-315"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-METCALFE-2021",
+      "claimIds": ["CSP-CLM-010", "CSP-CLM-017", "CSP-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Saturation, overcrowding, and limitations of simple network-size laws"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "CSP-P1-STALLS",
+      "claimIds": ["CSP-CLM-017", "CSP-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Growth ceilings, activation, retention, and saturation diagnosis"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["series_a", "series_b", "growth", "late_stage"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has one or more maturing atomic networks.",
+    "Quality and participant outcomes can be segmented by density and maturity.",
+    "Growth constraints can be separated into acquisition, engagement, and economic components."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "quality_by_density",
+      "description": "Spam, fraud, relevance, congestion, response, match quality, and participant satisfaction by network density.",
+      "necessity": "required",
+      "acceptableSources": ["quality telemetry", "trust and safety report", "search or recommendation metrics", "participant survey"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "stage_growth_decomposition",
+      "description": "Acquisition, activation, retention, frequency, monetization, and saturation by network maturity.",
+      "necessity": "required",
+      "acceptableSources": ["growth accounting", "cohort analysis", "network-stage report"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "hard_side_capacity",
+      "description": "Workload, earnings, response, quality, churn, and concentration for high-value contributors.",
+      "necessity": "required",
+      "acceptableSources": ["participant-role analytics", "capacity model", "contribution concentration"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "expansion_inventory",
+      "description": "Remaining atomic networks, segments, or geographies and their expected seeding difficulty.",
+      "necessity": "recommended",
+      "acceptableSources": ["market map", "geographic rollout plan", "segment pipeline"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which acquisition, engagement, or economic effect is approaching a ceiling?",
+    "Does additional density increase relevance or create congestion and noise?",
+    "Is the hard side becoming overloaded, concentrated, or economically dissatisfied?",
+    "How many attractive atomic networks remain, and do later cohorts mature as well as earlier ones?"
+  ],
+  "positiveSignals": [
+    "Quality controls and discovery preserve interaction success as density rises.",
+    "Later networks mature with similar or improving retention and economics.",
+    "Hard-side capacity and rewards scale without concentration or churn.",
+    "Management identifies ceilings early and tests specific countermeasures."
+  ],
+  "redFlags": [
+    "More supply reduces discovery, conversion, or contributor earnings.",
+    "Spam, fraud, low-quality content, or irrelevant listings rise faster than control capacity.",
+    "Growth depends on successively weaker geographies or segments.",
+    "Aggregate growth hides declining mature-network retention or contribution."
+  ],
+  "disconfirmingEvidence": [
+    "Network-unit retention and economics deteriorate at high density.",
+    "Successful-interaction rate falls despite rising activity.",
+    "The hard side multi-homes, churns, or withholds supply.",
+    "New networks need more subsidy and take longer to tip."
+  ],
+  "contraindications": [
+    "Do not project one historical growth rate through a network ceiling.",
+    "Do not treat moderation, ranking, and discovery costs as immaterial.",
+    "Do not attribute every slowdown to market saturation without decomposing the funnel."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Decompose growth into acquisition, engagement, and economic effects.",
+      "Compare outcomes across density and maturity bands.",
+      "Audit hard-side capacity, quality, discovery, and remaining network inventory.",
+      "Identify observed ceilings and tested mitigations.",
+      "Conclude controlled, emerging ceiling, active negative effect, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "network_ceiling_analysis",
+      "requiredOutputs": ["growth_effect_decomposition", "quality_by_density", "hard_side_capacity", "network_maturation_curve", "expansion_inventory", "mitigation_test_results"],
+      "prohibition": "The language model must not extrapolate growth, saturation, or quality metrics."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Aggregate dashboard or anecdote.", "medium": "Segmented quality and growth data with partial reconciliation.", "high": "Auditable network-unit, quality, participant, and financial data converge."},
+    "evidenceStrength": {"low": "A slowdown without cause.", "medium": "A repeated deterioration appears but mitigation is untested.", "high": "Stage-linked negative effect and intervention results are demonstrated."},
+    "evidenceCoverage": {"low": "Top-line growth only.", "medium": "Some funnel, quality, or capacity evidence.", "high": "Acquisition, engagement, economics, quality, hard side, and expansion inventory covered."},
+    "applicabilityConfidence": {"low": "Network is too early for a ceiling audit.", "medium": "Some networks are mature.", "high": "Mature scale materially determines next-stage growth."},
+    "judgmentConfidence": {"low": "Cause unknown.", "medium": "Emerging ceiling or negative effect.", "high": "Observed effect and mitigation economics are clear."}
+  },
+  "overlapFrameworkIds": ["CSP-06", "CSP-07", "CSP-09", "H7P-03"],
+  "conflictingFrameworkIds": ["MORE-USERS-ALWAYS-MORE-VALUE", "SCALE-WITHOUT-QUALITY-COST"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate network-stage decomposition.", "Define quality thresholds by archetype.", "Backtest ceiling indicators."],
+    "empiricalQualifications": ["Ceilings can be temporary or product-specific.", "Mitigation may relocate rather than remove a constraint."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define archetype-specific quality, congestion, and saturation measures."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

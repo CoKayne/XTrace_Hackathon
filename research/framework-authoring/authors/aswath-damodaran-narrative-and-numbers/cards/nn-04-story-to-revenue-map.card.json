@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-04",
+  "slug": "story-to-revenue-map",
+  "name": "Story-to-Revenue Driver Map",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Translates business-definition, market-expansion, share, adoption, and monetization claims into explicit revenue-driver hypotheses.",
+    "productLabel": "Story-to-Revenue Map — based on Aswath Damodaran's public story-to-value examples",
+    "notAClaimOf": [
+      "TAM being a revenue forecast",
+      "market growth accruing automatically to the company",
+      "founder forecasts being verified operating data"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public story-to-value examples",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Decompose the revenue side of a story into the business being served, the relevant market, market expansion, attainable share, adoption or unit volume, and monetization. Treat each as a sourced hypothesis with its own evidence and barriers, then send the mapped inputs to a separate revenue model.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-BRIDGE-2014",
+      "claimIds": [
+        "NN-CLM-007",
+        "NN-CLM-008",
+        "NN-CLM-011"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Steps 3 and 4 plus Uber competing-narrative table linking business definition, market, share, take rate, risk, and value"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-THREE-PS",
+      "claimIds": [
+        "NN-CLM-004",
+        "NN-CLM-005",
+        "NN-CLM-006",
+        "NN-CLM-008"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Market-expansion and network-effect analysis"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-SLIDES-2020",
+      "claimIds": [
+        "NN-CLM-007"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "Slide depicting company and sector inputs flowing through business story to growth and profitability inputs; exact slide number pending"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "saas",
+      "marketplace",
+      "consumer",
+      "transactional",
+      "hardware",
+      "deep_tech",
+      "services"
+    ],
+    "sectors": [
+      "all_non_financial"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "Revenue metric, payer, unit, currency, period, and geography are defined.",
+    "Current company facts and future narrative assumptions are separated.",
+    "Market expansion, share gain, and monetization are independent edges.",
+    "DSV-02 or an equivalent deterministic revenue model owns calculations."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "business_and_market_definition",
+      "description": "Defined use case, payer, market boundary, current size, and proposed expansion.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer research",
+        "industry dataset",
+        "company operating data",
+        "bottom-up market model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "adoption_and_share_mechanism",
+      "description": "Evidence for switching, acquisition, retention, network effects, capacity, and competitor response.",
+      "necessity": "required",
+      "acceptableSources": [
+        "cohort data",
+        "win-loss data",
+        "usage data",
+        "customer interviews",
+        "capacity plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "monetization_mechanism",
+      "description": "Price, take rate, transaction frequency, units, contract value, and recognition basis appropriate to the model.",
+      "necessity": "required",
+      "acceptableSources": [
+        "billing data",
+        "contracts",
+        "pricing page",
+        "unit economics",
+        "sales records"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What business and market does the current product actually serve?",
+    "Which new users, uses, or geographies expand the market, and why will they switch?",
+    "What share is implied and what produces it?",
+    "Is the claimed network effect local, global, or absent?",
+    "How are users converted into recognized revenue?",
+    "Which revenue edge is least supported?"
+  ],
+  "positiveSignals": [
+    "Market expansion has observable switching and usage evidence.",
+    "Share follows from distribution, product advantage, or density with measured effects.",
+    "Monetization is supported by actual contracts or cohorts.",
+    "Top-down story and bottom-up operations reconcile.",
+    "Competitor response and capacity are included."
+  ],
+  "redFlags": [
+    "Adjacent markets are counted because they are imaginable.",
+    "Network effects are asserted without beneficiary and scope.",
+    "Users, GMV, bookings, ARR, and recognized revenue are mixed.",
+    "Share increases without acquisition cost or competitor response.",
+    "The story changes the market boundary but not required capital or timing."
+  ],
+  "disconfirmingEvidence": [
+    "Switching behavior fails outside the initial niche.",
+    "The network effect is local and does not support global share.",
+    "Retention or monetization declines as acquisition expands.",
+    "Operational capacity cannot support the implied volume.",
+    "Incumbents match the product or subsidize competing adoption."
+  ],
+  "contraindications": [
+    "Do not calculate revenue from narrative prose alone.",
+    "Do not treat market size as company evidence.",
+    "Do not use a public-company revenue multiple before metric and stage normalization.",
+    "Do not output valuation until margin and reinvestment paths are mapped."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Extract business-definition, market, share, adoption, and monetization claims.",
+      "Attach source, evidence state, barrier, and counterevidence to each edge.",
+      "Classify each edge with NN-03.",
+      "Create Bear, Base, and Bull driver sets without averaging narratives.",
+      "Send normalized inputs to DSV-02 and the valuation service."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredEdges": [
+        "business_definition",
+        "market_boundary",
+        "adoption_or_units",
+        "attainable_share",
+        "monetization"
+      ],
+      "calculationOwner": "valuation_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only founder TAM and forecast claims are available.",
+      "medium": "Independent market data and partial company metrics are available.",
+      "high": "Verified contracts, cohorts, billing, usage, and independent market data converge."
+    },
+    "evidenceStrength": {
+      "low": "Revenue follows from TAM and aspiration.",
+      "medium": "Most driver edges are supported but expansion or monetization remains assumed.",
+      "high": "Each material edge has causal and company-specific evidence."
+    },
+    "evidenceCoverage": {
+      "low": "Only market and share are covered.",
+      "medium": "Market, adoption, and monetization are covered but capacity or competition is incomplete.",
+      "high": "Market, switching, share, network scope, retention, price, capacity, and competition are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Payer or revenue unit is undefined.",
+      "medium": "The current model is clear but expansion scope is uncertain.",
+      "high": "Current and future revenue engines are explicitly separated and measurable."
+    },
+    "judgmentConfidence": {
+      "low": "Only a broad revenue hypothesis is supportable.",
+      "medium": "A bounded driver map is usable with explicit missing evidence.",
+      "high": "Scenario driver sets are evidence-linked and calculation-ready."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-02",
+    "EI-03",
+    "PT-05",
+    "H7P-04"
+  ],
+  "conflictingFrameworkIds": [
+    "TAM-EQUALS-REVENUE",
+    "LOCAL-NETWORK-EQUALS-GLOBAL-MONOPOLY",
+    "USERS-EQUALS-RECOGNIZED-REVENUE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapters 8 and 9 review.",
+      "Validate mappings by business model.",
+      "Backtest forecast edges against realized revenue."
+    ],
+    "empiricalQualifications": [
+      "Early-stage revenue evidence is sparse and nonstationary.",
+      "Market research definitions often conflict.",
+      "Narrative mapping does not eliminate forecast error."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public story-to-driver examples are paraphrased; graph fields and gates are product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete edition-specific chapter review.",
+      "Define business-model metric normalization."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

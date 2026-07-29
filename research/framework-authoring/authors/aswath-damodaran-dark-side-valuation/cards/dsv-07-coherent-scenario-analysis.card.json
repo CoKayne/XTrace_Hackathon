@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-07",
+  "slug": "coherent-scenario-analysis",
+  "name": "Coherent Bear, Base, and Bull Scenarios",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Builds internally consistent Bear, Base, and Bull worlds around the few uncertainties that drive value.",
+    "productLabel": "Coherent Scenario Analysis Lens — based on Aswath Damodaran's public probabilistic valuation materials",
+    "notAClaimOf": [
+      "three arbitrary cases being probabilistic analysis",
+      "the Bull case combining every favorable input",
+      "assigned probabilities being objective facts"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public probabilistic valuation materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Scenario analysis should be organized around a small number of value-driving uncertainties. Each scenario describes a feasible world in which revenue, price, margin, reinvestment, competition, financing, survival, and risk move consistently. If probabilities are assigned, the scenarios must cover the intended outcome set and probabilities must be sourced or explicitly judgmental.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-PROBABILISTIC",
+      "claimIds": [
+        "DSV-CLM-011",
+        "DSV-CLM-012"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 1-12: best/worst-case limits, coherent multiple scenarios, probabilities, double counting, and decision trees"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-UNCERTAINTY",
+      "claimIds": [
+        "DSV-CLM-001",
+        "DSV-CLM-002"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 6-12: uncertainty classification, simplicity, distributions, and willingness to be wrong"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The scenario horizon, valuation date, company facts, and security are fixed across scenarios.",
+    "Two or three material uncertainty axes are selected before outcomes are written.",
+    "Variables within each scenario obey causal and accounting constraints.",
+    "Probabilities are optional; when used, their universe and source are explicit."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "driver_selection",
+      "description": "Sensitivity or causal evidence identifying the few uncertainties that materially drive value.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic sensitivity analysis",
+        "industry evidence",
+        "company diligence",
+        "competitive scenarios"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "scenario_narratives",
+      "description": "Short causal narratives linking external conditions and company actions to every material model input.",
+      "necessity": "required",
+      "acceptableSources": [
+        "scenario workshop",
+        "market evidence",
+        "operating plan",
+        "risk register"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "scenario_models",
+      "description": "Full scenario-specific revenue, margin, reinvestment, risk, survival, financing, and valuation outputs.",
+      "necessity": "required",
+      "acceptableSources": [
+        "deterministic valuation service",
+        "decision tree",
+        "simulation service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "probability_basis",
+      "description": "Source, cohort, elicitation method, and uncertainty range for any probabilities.",
+      "necessity": "recommended",
+      "acceptableSources": [
+        "matched cohort data",
+        "prediction market",
+        "expert elicitation",
+        "portfolio base rates"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which uncertainties explain most of the value distribution?",
+    "What causal world does each scenario describe?",
+    "Which favorable inputs cannot coexist because of price, growth, margin, or reinvestment tradeoffs?",
+    "Does a sequential risk require a decision tree rather than three static cases?",
+    "Do assigned probabilities cover the full intended outcome set?",
+    "Which evidence would move the company from one scenario path to another?"
+  ],
+  "positiveSignals": [
+    "Scenarios are organized around a few material, independent drivers.",
+    "Every input change is explained by a causal narrative.",
+    "Growth, pricing, margin, reinvestment, competition, and financing remain mutually consistent.",
+    "Decision nodes are separated from uncertain event nodes.",
+    "Probabilities and expected values are computed by deterministic services."
+  ],
+  "redFlags": [
+    "Bull combines maximum growth, maximum price, maximum margin, minimum investment, and minimum risk.",
+    "Bear, Base, and Bull differ only by arbitrary percentage haircuts.",
+    "Probabilities are presented without a universe or source.",
+    "A risk is reflected in scenario cash flows and then penalized again after expected value.",
+    "A most-likely scenario is mislabeled the expected value."
+  ],
+  "disconfirmingEvidence": [
+    "Scenario assumptions violate capacity, accounting, or competitive constraints.",
+    "Sensitivity shows the chosen scenario axes are immaterial.",
+    "The outcome set omits a plausible failure or discontinuity.",
+    "Probabilities do not sum to one when claimed to cover the full universe.",
+    "The scenario labels change but source assumptions do not."
+  ],
+  "contraindications": [
+    "Do not calculate probability-weighted value from non-exhaustive scenarios.",
+    "Do not imply probabilities when only plausible narratives exist.",
+    "Do not double count risk after it is reflected in expected cash flows.",
+    "Do not let the LLM perform unverified financial arithmetic."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Select the few dominant drivers using sensitivity and evidence.",
+      "Write internally coherent Bear, Base, and Bull causal narratives.",
+      "Populate complete deterministic models for each scenario.",
+      "Use a decision tree for sequential milestone risk where appropriate.",
+      "Report scenario values separately and compute expected value only when probability conditions pass."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "expectedValueIdentity": "expected_value = sum(probability_s * value_s) for exhaustive mutually exclusive scenarios",
+      "probabilityConditions": [
+        "all probabilities are sourced or labeled judgmental",
+        "probabilities sum to one",
+        "scenarios are mutually exclusive and collectively exhaustive for the stated universe"
+      ],
+      "calculationOwner": "scenario_and_valuation_services",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Scenarios are generated from unsourced narratives.",
+      "medium": "Major drivers use public and partial company evidence.",
+      "high": "Company, market, cohort, and model evidence support every material branch."
+    },
+    "evidenceStrength": {
+      "low": "Cases are arbitrary percentage changes.",
+      "medium": "Causal scenarios are plausible but probabilities or one driver remain weak.",
+      "high": "Drivers, interactions, values, and probabilities are independently supported."
+    },
+    "evidenceCoverage": {
+      "low": "Only revenue and valuation differ.",
+      "medium": "Operating and risk drivers are covered but financing or claims are incomplete.",
+      "high": "Revenue, margin, reinvestment, competition, survival, financing, claims, and actions are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No material uncertainty axes can be defined.",
+      "medium": "Drivers are clear but outcomes remain highly judgmental.",
+      "high": "Drivers, states, and sequential decisions are explicit and modelable."
+    },
+    "judgmentConfidence": {
+      "low": "Only plausible worlds can be listed.",
+      "medium": "Scenario values are defensible but expected value is not.",
+      "high": "Scenario and probability conditions support a deterministic expected value."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-01",
+    "DSV-05",
+    "DSV-06",
+    "DSV-10"
+  ],
+  "conflictingFrameworkIds": [
+    "ARBITRARY-BEAR-BASE-BULL",
+    "BEST-INPUTS-EQUAL-BULL",
+    "UNSOURCED-PROBABILITY-AS-FACT"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful probabilistic valuation chapter review.",
+      "Validate scenario-coherence rules and probability gates on expert-reviewed cases.",
+      "Measure calibration and proper scoring by stage and sector."
+    ],
+    "empiricalQualifications": [
+      "Scenario analysis exposes assumptions but does not ensure calibrated probabilities.",
+      "Correlated drivers make naive independent probability assignment misleading.",
+      "A wide value range may be the correct representation of early-stage uncertainty."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public probabilistic-valuation principles are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition probabilistic chapter review.",
+      "Define calibration tests and scenario ontology in the system layer."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

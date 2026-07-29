@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-04",
+  "slug": "differentiated-value",
+  "name": "Differentiated Customer Value",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Traces differentiated capability to a specific champion-relevant outcome and verifies that customers experience and value it.",
+    "productLabel": "Differentiated-Value Lens — based on April Dunford's 2026 public materials",
+    "notAClaimOf": ["features being value", "generic save-time or make-money claims being differentiated", "objection handling being core value"]
+  },
+  "attribution": {
+    "display": "Based on April Dunford's 2026 public materials",
+    "scope": "person_direct",
+    "people": ["April Dunford"],
+    "organizations": ["Positioning with April Dunford"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "For each differentiated capability, ask what outcome it enables for the champion and why that outcome matters compared with real alternatives. Require customer and operating proof; separate differentiated value from generic economic language, copywriting, other-stakeholder objections, and future promises.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-VALUE-2026",
+      "claimIds": ["OA2-CLM-012", "OA2-CLM-013", "OA2-CLM-014", "OA2-CLM-015"],
+      "locator": {"kind": "video_timestamp", "value": "03:14-17:23, capabilities, outcomes, repeated 'so what', champion, and objections"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-QUICKSTART",
+      "claimIds": ["OA2-CLM-003", "OA2-CLM-013", "OA2-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Capability-to-value-to-best-fit-customer dependency"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-ANNOUNCE-2026",
+      "claimIds": ["OA2-CLM-004", "OA2-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Expanded differentiated-value section in updated edition"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "OA2-02 and OA2-03 have evidenced alternatives and differentiated capabilities.",
+    "Champion and buying context are defined.",
+    "Value outcomes can be observed or tested."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "capability_outcome_chain",
+      "description": "Capability, changed workflow or decision, intermediate outcome, business outcome, beneficiary, and alternative comparison.",
+      "necessity": "required",
+      "acceptableSources": ["customer interview", "workflow analysis", "product telemetry", "case study"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "outcome_proof",
+      "description": "Measured or independently corroborated time, quality, risk, revenue, cost, conversion, or strategic outcome.",
+      "necessity": "required",
+      "acceptableSources": ["customer KPI", "experiment", "reference", "implementation baseline"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "champion_purchase_relevance",
+      "description": "Evidence the champion understands, prioritizes, and can mobilize the organization around the outcome.",
+      "necessity": "required",
+      "acceptableSources": ["sales calls", "win/loss", "champion interview", "business case"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What outcome does the differentiated capability enable?",
+    "Why is that outcome better than what real alternatives provide?",
+    "Does the champion care enough for the value to influence a purchase?",
+    "What measured result and counterexample support or challenge the chain?"
+  ],
+  "positiveSignals": [
+    "A capability-to-outcome chain is specific and customer verified.",
+    "The champion uses the outcome to justify purchase or expansion.",
+    "The outcome differs materially from alternatives.",
+    "Proof includes baselines, conditions, and unsuccessful cases."
+  ],
+  "redFlags": [
+    "Value is a feature list or generic efficiency claim.",
+    "Management jumps from capability to revenue without a workflow mechanism.",
+    "Value is defined for every stakeholder simultaneously.",
+    "Objection handling or table stakes are presented as differentiated value."
+  ],
+  "disconfirmingEvidence": [
+    "Customers like the feature but do not change behavior or budget.",
+    "Alternatives deliver the same outcome at acceptable cost.",
+    "Only the vendor, not the champion, articulates the value.",
+    "Measured outcomes disappear outside a curated case study."
+  ],
+  "contraindications": [
+    "Do not calculate ROI from unverified assumptions.",
+    "Do not collapse champion value and stakeholder objections.",
+    "Do not accept copywriting as outcome evidence."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Trace each differentiated capability to a champion-relevant outcome.",
+      "Compare that outcome with real alternatives.",
+      "Review measured proof, baselines, and counterexamples.",
+      "Separate core value, table stakes, objections, and future promises.",
+      "Conclude demonstrated, emerging, generic, contradicted, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "customer_value_evidence_analysis",
+      "requiredOutputs": ["verified_outcomes", "baseline_comparison", "segment_effects", "purchase_relevance", "roi_if_supported"],
+      "prohibition": "The language model must not calculate ROI or invent outcome baselines."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Marketing claim.", "medium": "Customer narrative and partial metrics.", "high": "Customer KPIs, telemetry, experiments, and win/loss converge."},
+    "evidenceStrength": {"low": "Generic benefit.", "medium": "Specific outcome with limited proof.", "high": "Repeated differentiated outcome changes purchase or use behavior."},
+    "evidenceCoverage": {"low": "Feature and benefit only.", "medium": "Chain, customer, and some proof.", "high": "Capability, alternative, mechanism, champion, baseline, outcome, and counterexamples covered."},
+    "applicabilityConfidence": {"low": "No differentiated capability.", "medium": "Plausible value chain.", "high": "Best-fit purchase decisions materially depend on the value."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Emerging or segment-limited value.", "high": "Well-evidenced differentiated value."}
+  },
+  "overlapFrameworkIds": ["OA2-03", "OA2-05", "NN-05", "EI-04"],
+  "conflictingFrameworkIds": ["FEATURES-EQUAL-VALUE", "GENERIC-BENEFIT-EQUALS-DIFFERENTIATION"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate outcome-evidence service.", "Define champion evidence standard.", "Backtest value chains."],
+    "empiricalQualifications": ["Customer value varies by segment and buying role.", "Observed ROI can suffer selection bias."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author's public 2026 guidance is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review licensed expanded value chapter and define minimum outcome proof."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

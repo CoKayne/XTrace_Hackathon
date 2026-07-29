@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-10",
+  "slug": "software-build-thesis-diligence-bridge",
+  "name": "Software / Build Thesis Diligence Bridge",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Converts a broad software or building thesis into falsifiable company questions while preventing ideology from becoming a score or valuation premium.",
+    "productLabel": "Software / Build Thesis Diligence Bridge — based on Marc Andreessen's public essays",
+    "notAClaimOf": ["technology being automatically beneficial", "software exposure proving defensibility", "macro conviction determining price"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public software, building, and techno-optimist essays",
+    "scope": "person_direct",
+    "people": ["Marc Andreessen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Use software transformation, supply scarcity, or technological progress as thesis generators. For any company, translate the thesis into testable adoption, customer-value, economic, capability, defensibility, externality, regulatory, and valuation claims; macro conviction alone has no formal decision weight.",
+  "claimTypes": ["direct_doctrine", "normative_guidance", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-SOFTWARE-2011",
+      "claimIds": ["MA-CLM-021", "MA-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Lines 124-170: software-transformation thesis, business qualities, customer value, competitive advantage, and valuation proof burden"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-BUILD-2020",
+      "claimIds": ["MA-CLM-023", "MA-CLM-024"],
+      "locator": {"kind": "web_section", "value": "Lines 94-127 and essay sections on supply, institutional capacity, regulation, and building"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-TECHNO-OPTIMIST-2023",
+      "claimIds": ["MA-CLM-023", "MA-CLM-024"],
+      "locator": {"kind": "web_section", "value": "Lines 95-147 and sections Technology, Markets, Intelligence, Energy, and The Enemy"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-026"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 16-18 and 29-36: company-specific risk and PMF evidence remain necessary"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["software", "saas", "marketplace", "infrastructure", "deep_tech", "hardware_enabled", "all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A specific macro software, technology, supply, or building thesis is stated and dated.",
+    "The company-specific causal link can be tested.",
+    "The thesis is evaluated independently from price, terms, and portfolio fit."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "macro_thesis",
+      "description": "The structural change, supply gap, platform shift, or institutional constraint, including date, geography, horizon, and counter-theses.",
+      "necessity": "required",
+      "acceptableSources": ["official statistics", "industry data", "regulatory sources", "technical evidence", "independent research"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "company_causal_link",
+      "description": "How the company converts the structural change into customer value, adoption, revenue, margins, or defensibility.",
+      "necessity": "required",
+      "acceptableSources": ["customer evidence", "product data", "unit economics", "contracts", "technical and competitive evidence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "harms_and_constraints",
+      "description": "Safety, security, privacy, labor, environmental, distributional, regulatory, and customer-harm evidence.",
+      "necessity": "required",
+      "acceptableSources": ["risk assessment", "regulatory sources", "incident data", "independent experts", "customer and affected-party evidence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "economics_and_price",
+      "description": "Growth, margin, reinvestment, competition, capital intensity, deal terms, valuation, and expectations implied by price.",
+      "necessity": "required",
+      "acceptableSources": ["financial statements", "valuation model", "cap table", "term sheet", "market evidence"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What precisely is changing in the world and what would falsify that thesis?",
+    "Why does this company capture rather than merely participate in the change?",
+    "What customer value and economic evidence exists today?",
+    "Which harms, externalities, constraints, or regulatory responses could reverse the thesis?",
+    "What expectations are already embedded in the proposed valuation and terms?"
+  ],
+  "positiveSignals": [
+    "The macro thesis is translated into measurable company-specific drivers.",
+    "Customers receive verified value and the company captures part of it economically.",
+    "Defensibility is mechanism-based rather than a generic software label.",
+    "Externalities and regulation are measured, governed, and reflected in scenarios."
+  ],
+  "redFlags": [
+    "The investment case consists primarily of a broad technology inevitability claim.",
+    "Software or AI exposure is treated as a moat.",
+    "Harms, regulation, security, labor, or environmental effects are dismissed as anti-innovation.",
+    "High growth is assumed to justify any price or financing terms."
+  ],
+  "disconfirmingEvidence": [
+    "Incumbents may capture software transformation through existing distribution and assets.",
+    "Technology can create consumer surplus without attractive producer economics.",
+    "A socially valuable build may be a poor venture investment at the offered price.",
+    "Regulation or safety requirements may improve trust and adoption rather than merely block building."
+  ],
+  "contraindications": [
+    "Do not use the normative essays as an empirical score.",
+    "Do not suppress dissenting evidence or externalities.",
+    "Do not attribute the lens to a16z institutional policy or claim endorsement.",
+    "Do not produce a valuation premium from macro narrative."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "State and date the macro thesis and a credible opposing thesis.",
+      "Map the company-specific causal chain from change to customer value and value capture.",
+      "Test adoption, economics, defensibility, harms, regulation, and capital intensity.",
+      "Keep valuation and deal terms in deterministic services and independent lenses.",
+      "Conclude supported company link, interesting thesis but weak capture, harmful or constrained pathway, priced-in thesis, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Ideological or promotional thesis.", "medium": "Reputable macro and company evidence.", "high": "Independent macro, customer, economic, technical, harm, and regulatory evidence converge."},
+    "evidenceStrength": {"low": "Sector narrative.", "medium": "Plausible causal link and some customer proof.", "high": "Measured adoption, value capture, defensibility, constraints, and price analysis support the link."},
+    "evidenceCoverage": {"low": "Upside thesis only.", "medium": "Macro, customer, and economics.", "high": "Macro, company link, alternatives, harms, regulation, capital, terms, valuation, and counter-thesis covered."},
+    "applicabilityConfidence": {"low": "No specific structural thesis.", "medium": "Company plausibly exposed to a change.", "high": "The structural change is central to the company's value-creation mechanism."},
+    "judgmentConfidence": {"low": "Worldview restatement.", "medium": "Bounded company hypothesis.", "high": "Convergent company and counterevidence support a limited conclusion."}
+  },
+  "overlapFrameworkIds": ["PT-09", "NN-01", "NN-06", "DSV-10", "EI-02", "H7P-10"],
+  "conflictingFrameworkIds": ["TECH-SECTOR-BONUS", "MACRO-THESIS-AS-VALUATION-PREMIUM", "EXTERNALITY-OMISSION"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale"],
+    "promotionRequirements": ["Keep normative content at zero formal weight.", "Add independent empirical and affected-party review.", "Validate company-causal-link protocol."],
+    "empiricalQualifications": ["Normative essays are not validated selection models.", "Macro technological change can benefit customers, incumbents, competitors, or society without producing startup returns."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public essays are paraphrased as thesis generators; ideological language and long quotations are not reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Add independent empirical, safety, labor, environmental, and regulatory review."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

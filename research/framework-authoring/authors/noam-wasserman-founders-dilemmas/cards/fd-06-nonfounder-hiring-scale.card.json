@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "FD-06",
+  "slug": "nonfounder-hiring-scale",
+  "name": "Nonfounder Hiring and Founder Scalability",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether founders recruit, empower, and retain the nonfounding capabilities required by the next stage.",
+    "productLabel": "Founder-to-Organization Scaling Lens — product synthesis from Noam Wasserman's public work",
+    "notAClaimOf": ["founders inevitably becoming obsolete", "professional managers always outperforming founders", "company growth requiring founder removal"]
+  },
+  "attribution": {
+    "display": "Product synthesis from Noam Wasserman's public Founder's Dilemmas materials",
+    "scope": "product_synthesis",
+    "people": ["Noam Wasserman"],
+    "organizations": ["Harvard Business School", "Princeton University Press"],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "Map the next-stage capability needs against the founding team's demonstrated skills. Assess whether founders identify gaps, recruit appropriate nonfounding executives, delegate real authority, align incentives, and update their own roles before a gap becomes a crisis.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "FD-P1-HBS-FAMILY-2012",
+      "claimIds": ["FD-CLM-014", "FD-CLM-015"],
+      "locator": {"kind": "web_section", "value": "Book-scope paragraph on hiring challenges and founder-CEO replacement"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "FD-P2-HBS-COURSE-2011",
+      "claimIds": ["FD-CLM-014", "FD-CLM-015"],
+      "locator": {"kind": "web_section", "value": "Course sequence from founding team to nonfounding CEO"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "FD-P2-GBOOKS-2012",
+      "claimIds": ["FD-CLM-014", "FD-CLM-015"],
+      "locator": {"kind": "chapter_page", "value": "Limited-preview contents: Chapters 7-8, Beyond the Founding Team; full locator pending licensed review"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The next stage requires capability or management depth beyond the current founding team.",
+    "The founders remain material to recruiting or empowering the organization.",
+    "The assessment concerns role fit and behavior, not personality."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "capability_gap_plan",
+      "description": "Next-stage capabilities, current owners, gaps, hiring sequence, and measurable outcomes.",
+      "necessity": "required",
+      "acceptableSources": ["operating plan", "organization plan", "board materials", "leadership scorecard"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "leadership_hiring_history",
+      "description": "Executive searches, accepted and declined candidates, time to hire, retention, exits, and references.",
+      "necessity": "required",
+      "acceptableSources": ["recruiting records", "board minutes", "candidate references", "exit interviews"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "delegation_behavior",
+      "description": "Actual authority, information access, budgets, goals, and founder intervention for nonfounding leaders.",
+      "necessity": "required",
+      "acceptableSources": ["role charters", "decision records", "executive references", "board observations"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which capability gaps are critical to the next 12–24 months?",
+    "Has the team recruited leaders with the right stage and domain fit?",
+    "Do nonfounding leaders receive real authority and information?",
+    "How have founders changed their own scope after each major hire?"
+  ],
+  "positiveSignals": [
+    "Capability gaps are explicit, sequenced, and tied to milestones.",
+    "Founders hire complementary leaders before rather than after failure.",
+    "Nonfounding executives can point to meaningful decisions they own.",
+    "Founder roles narrow or evolve as the leadership system develops."
+  ],
+  "redFlags": [
+    "Repeated senior hires leave because authority remains with founders.",
+    "Hiring profiles seek prestige rather than stage-specific capability.",
+    "The organization has hidden shadow reporting to a founder.",
+    "Founders describe delegation but reverse decisions without a defined process."
+  ],
+  "disconfirmingEvidence": [
+    "A lean founding team continues to fit the company's stage and complexity.",
+    "A failed executive hire reflects candidate mismatch rather than inability to delegate.",
+    "A founder develops the missing capability and is validated by outcomes and references.",
+    "Temporary founder involvement follows an explicit transition plan."
+  ],
+  "contraindications": [
+    "Do not assume a founder must be replaced because the company grows.",
+    "Do not reward large executive teams without role and output evidence.",
+    "Do not infer founder scalability from charisma, age, or prior title."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map next-stage capabilities and current coverage.",
+      "Review leadership hiring, retention, and exit history.",
+      "Compare stated delegation with actual decisions and information flows.",
+      "Test founder-development and organizational-complexity alternatives.",
+      "Conclude stage-ready, adaptive with gaps, constrained, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder hiring plan only.", "medium": "Records and some executive references.", "high": "Board records, candidates, current/former executives, and decisions converge."},
+    "evidenceStrength": {"low": "Open roles or general concern.", "medium": "Specific hiring/delegation pattern.", "high": "Repeated leadership outcomes demonstrate adaptability or constraint."},
+    "evidenceCoverage": {"low": "Org chart only.", "medium": "Gaps and hiring covered.", "high": "Capability, searches, retention, authority, exits, and founder role evolution covered."},
+    "applicabilityConfidence": {"low": "No near-term organizational scaling need.", "medium": "Some leadership gaps.", "high": "Next milestone requires substantial organizational evolution."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Material but mitigable gap.", "high": "Well-supported scaling capability or constraint."}
+  },
+  "overlapFrameworkIds": ["FD-04", "FD-08", "SP-07"],
+  "conflictingFrameworkIds": ["FOUNDERS-MUST-ALWAYS-BE-REPLACED", "PROFESSIONAL-MANAGER-ALWAYS-BETTER"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Complete licensed Chapters 7-8 review.", "Define executive-reference protocol.", "Backtest stage-readiness flags."],
+    "empiricalQualifications": ["Founder and nonfounder performance depends on selection, role, stage, and governance.", "Hiring outcomes are affected by labor-market conditions."]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public sources support the domain; complete chapter fidelity requires licensed review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Review full Chapters 7-8 and define stage-specific capability map."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

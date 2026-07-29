@@ -1,0 +1,376 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "mahendra_ramsinghani_business_of_vc_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "John Wiley & Sons",
+      "The Business of Venture Capital"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "BVC-P2-BOOK-2021",
+      "title": "The Business of Venture Capital, Third Edition",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_book_record",
+      "url": "https://onlinelibrary.wiley.com/doi/book/10.1002/9781119639695",
+      "edition": "Third edition; print ISBN 9781119639688; online ISBN 9781119639695",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_metadata_and_public_summaries_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Canonical edition, chapter, page-range, DOI, and book-scope record.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-PRODUCT-2021",
+      "title": "The Business of Venture Capital — Wiley-VCH Product Page",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_catalog_record",
+      "url": "https://www.wiley-vch.de/en/areas-interest/finance-economics-law/finance-investments-13fi/general-finance-investments-13fi0/the-business-of-venture-capital-978-1-119-63968-8",
+      "edition": "Third edition, March 2021, 544 pages",
+      "publishedAt": "2021-03",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "bibliographic_metadata_and_public_description_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports book positioning across fund formation, fundraising, portfolio construction, value creation, and exits.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH1",
+      "title": "Chapter 1 — The Business of Cash and Carry",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch1",
+      "edition": "Third edition, pp. 3-10",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports return and cash-on-cash objectives, LP types, team roles, and carried-interest context.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH10",
+      "title": "Chapter 10 — How LPs Conduct Fund Due Diligence",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch10",
+      "edition": "Third edition, pp. 95-98",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports LP emphasis on manager expertise, strategy, team stability, and consistency.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH11",
+      "title": "Chapter 11 — Defining Your Fund's Investment Strategy",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch11",
+      "edition": "Third edition, pp. 99-117",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports strategy as team expertise plus opportunity, sandbox flexibility, white spaces, fund competition, and edge dimensions.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH12",
+      "title": "Chapter 12 — Investment Team Diligence",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch12",
+      "edition": "Third edition, pp. 119-128",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports 10-year blind-pool context, team stability, alignment, skill sets, sourcing, board work, and exits.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH13-14",
+      "title": "Chapters 13-14 — Fund Size and Portfolio Construction; Performance Analysis",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_table_of_contents",
+      "url": "https://onlinelibrary.wiley.com/doi/book/10.1002/9781119639695",
+      "edition": "Third edition, Chapter 13 pp. 129-135; Chapter 14 pp. 137-153",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "chapter_metadata_only_pending_full_review",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Confirms topic and location only. Detailed capital-allocation and performance rules in this pack are explicitly marked product synthesis pending licensed review.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH20",
+      "title": "Chapter 20 — Sourcing Investment Opportunities",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_record",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch20",
+      "edition": "Third edition, pp. 229-252; chapter summary not fully accessible during research",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "chapter_metadata_and_prior_edition_summary_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Third-edition location plus public prior-edition summary support trend awareness, founder engagement, networks, channels, and missed opportunities.",
+      "immutableRevision": {
+        "status": "pending_full_third_edition_review",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH21",
+      "title": "Chapter 21 — Due Diligence Cheat Sheet",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch21",
+      "edition": "Third edition, pp. 255-257",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports network and reputation in sourcing, responsiveness, market study, decisiveness, ambiguity tolerance, and avoiding over-analysis at seed.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH24",
+      "title": "Chapter 24 — Market, Product, and Business Model Analysis",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch24",
+      "edition": "Third edition, pp. 293-302",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports customer, distribution, revenue growth, gross margin, pain, willingness to pay, adoption, and market pull.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH27",
+      "title": "Chapter 27 — Buy Low, Sell High: Equity Preferred Stock",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch27",
+      "edition": "Third edition, pp. 317-351",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports preferred rights, renegotiation, comparables, liquidation preferences, and anti-dilution context.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH29",
+      "title": "Chapter 29 — Serving on Boards",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch29",
+      "edition": "Third edition, pp. 357-365",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports management and board recruiting, mentoring/advice, and fiscal, legal, and ethical governance oversight.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH31",
+      "title": "Chapter 31 — Let Me Know How I Can Be Helpful: Value Creation",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_record",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch31",
+      "edition": "Third edition, pp. 377-389; full summary pending",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "chapter_metadata_only_pending_full_review",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Confirms chapter topic and location; measurable capacity-plan fields are product synthesis.",
+      "immutableRevision": {
+        "status": "pending_full_third_edition_review",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P2-CH33",
+      "title": "Chapter 33 — Exit Strategies",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "John Wiley & Sons",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_chapter_summary",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/9781119639695.ch33",
+      "edition": "Third edition, pp. 407-415",
+      "publishedAt": "2021-01-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_publisher_summary_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports acquisitions, IPOs, secondary markets, evolving exit path/timing/value, preconditions, and stakeholder alignment.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "BVC-P1-AUTHOR-SITE",
+      "title": "The Business of Venture Capital — Author Site",
+      "authorOrSpeaker": [
+        "Mahendra Ramsinghani"
+      ],
+      "publisher": "The Business of Venture Capital",
+      "sourceClass": "P1",
+      "sourceType": "official_author_site",
+      "url": "https://www.thebusinessofvc.com/",
+      "edition": "Author site accessed 2026-07-28; announces a forthcoming fourth edition",
+      "publishedAt": null,
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_site_metadata_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Used only to track version status; unpublished fourth-edition claims are excluded from the third-edition pack.",
+      "immutableRevision": {
+        "status": "pending_web_hash_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    }
+  ]
+}

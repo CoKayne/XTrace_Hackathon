@@ -1,0 +1,158 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MA-01",
+  "slug": "product-market-fit-evidence-gate",
+  "name": "Product-Market-Fit Evidence Gate",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether customer and market evidence supports a stage-specific PMF claim rather than a founder label or a small enthusiastic cohort.",
+    "productLabel": "Product-Market-Fit Evidence Gate — based on Marc Andreessen's public startup writings with an a16z-affiliated qualification",
+    "notAClaimOf": ["a universal PMF metric", "early-user enthusiasm proving a broad market", "PMF being permanent"]
+  },
+  "attribution": {
+    "display": "Based on Marc Andreessen's public startup writings; product-user-fit qualification attributed separately to Peter Lauten and David Ulevitch",
+    "scope": "person_direct",
+    "people": ["Marc Andreessen", "Peter Lauten", "David Ulevitch"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Evaluate PMF as the conjunction of a market worth serving and a product that demonstrably satisfies it. Evidence should be appropriate to the business model and show customer pull, while distinguishing a narrow group of committed users from a repeatable, sufficiently broad market.",
+  "claimTypes": ["direct_doctrine", "affiliated_doctrine", "empirical_qualification", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MA-P1-PMARCA-ARCHIVE",
+      "claimIds": ["MA-CLM-001", "MA-CLM-002"],
+      "locator": {"kind": "pdf_page", "value": "PDF pp. 29-36, The Pmarca Guide to Startups Part 4: definition and observable market-pull indicators"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MA-A1-PUF-PMF-2019",
+      "claimIds": ["MA-CLM-003", "MA-CLM-025"],
+      "locator": {"kind": "web_section", "value": "Lines 117-124 and sections Product-User Fit / Product-Market Fit: early power-user cohort versus broader market"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "MA-A1-PMF-SYNTHESIS-2017",
+      "claimIds": ["MA-CLM-001", "MA-CLM-025"],
+      "locator": {"kind": "web_section", "value": "Sections Why Market Matters More Than Anything and Product-Market Fit Is Not Permanent"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["consumer", "enterprise", "saas", "marketplace", "transactional", "hardware_enabled", "all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company has a defined product, target user, use case, and market hypothesis.",
+    "Evidence is segmented by customer cohort and business model.",
+    "PMF is evaluated separately from valuation, financing success, and founder reputation."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "customer_value_and_use",
+      "description": "Cohort-level usage, retention, workflow dependency, outcomes, willingness to pay, and customer testimony.",
+      "necessity": "required",
+      "acceptableSources": ["product analytics", "billing records", "customer interviews", "renewal records", "usage logs"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "market_pull",
+      "description": "Organic demand, referral, inbound pipeline, conversion, sales-cycle, backlog, or demand exceeding current delivery capacity.",
+      "necessity": "required",
+      "acceptableSources": ["CRM", "pipeline records", "attribution data", "sales records", "waitlist data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "cohort_breadth",
+      "description": "Evidence that demand extends beyond founders' networks, design partners, subsidies, or one early-adopter segment.",
+      "necessity": "required",
+      "acceptableSources": ["segmented customer list", "channel data", "cohort analysis", "geographic analysis", "customer-source records"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "negative_and_loss_evidence",
+      "description": "Churn, non-use, failed conversions, implementation failure, customer concentration, and reasons prospects decline.",
+      "necessity": "required",
+      "acceptableSources": ["churn interviews", "lost-deal records", "support data", "cancellation records", "implementation postmortems"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which observable customer behavior supports the PMF claim?",
+    "Does the evidence show repeatable market pull or only product-user fit in a narrow cohort?",
+    "Which segment, geography, price point, and use case are actually validated?",
+    "What contrary evidence would show PMF is weak or being lost?",
+    "What next cohort or transaction would materially update the claim?"
+  ],
+  "positiveSignals": [
+    "Multiple independent customer cohorts retain, pay, and expand for the same core value.",
+    "Demand is not primarily produced by discounts, founder relationships, or one channel.",
+    "Sales or adoption becomes more repeatable while customer value remains strong.",
+    "The company states a bounded PMF claim and knows which adjacent markets remain unproven."
+  ],
+  "redFlags": [
+    "PMF is asserted from fundraising, press, downloads, a waitlist, or a small design-partner cohort.",
+    "Aggregate growth hides weak retention or one dominant customer.",
+    "The PMF definition changes whenever metrics weaken.",
+    "Evidence omits churned, inactive, or non-converting users."
+  ],
+  "disconfirmingEvidence": [
+    "Low current revenue may be consistent with early PMF when usage, retention, and credible willingness-to-pay evidence are strong.",
+    "A small market may still support a valuable non-venture business.",
+    "Temporary demand constraints may reflect deliberate capacity limits rather than absent pull.",
+    "A previously strong fit may weaken after competition, regulation, pricing, or customer behavior changes."
+  ],
+  "contraindications": [
+    "Do not apply mature-SaaS thresholds to pre-revenue research, regulated pilots, or hardware validation without adaptation.",
+    "Do not convert a qualitative sense of pull into a deterministic PMF flag.",
+    "Do not infer valuation or investment merit from PMF alone."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Define the exact product, customer, use case, and market scope under review.",
+      "Separate product-user fit from repeatable market pull.",
+      "Review cohort, revenue, sales, usage, and negative evidence with business-model-specific expectations.",
+      "Classify the claim as no demonstrated fit, product-user fit, emerging PMF, bounded PMF, weakening PMF, or insufficient evidence.",
+      "Record counterevidence and the next cohort or milestone needed."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder assertion or promotional metrics.", "medium": "Internal customer and product records.", "high": "Auditable records plus independent customer and counterevidence review."},
+    "evidenceStrength": {"low": "Attention without durable use or payment.", "medium": "Repeated value and some market pull.", "high": "Multiple cohorts show durable value, payment, repeatability, and favorable negative-case review."},
+    "evidenceCoverage": {"low": "One positive metric.", "medium": "Usage, customers, and demand covered.", "high": "Segmented usage, economics, demand, breadth, churn, and lost cases covered."},
+    "applicabilityConfidence": {"low": "Undefined product or customer.", "medium": "Specific segment and use case.", "high": "Specific business model and evidence window with relevant cohort maturity."},
+    "judgmentConfidence": {"low": "Label-driven.", "medium": "Bounded evidence supports a provisional state.", "high": "Convergent evidence and counterevidence support a time-bound PMF state."}
+  },
+  "overlapFrameworkIds": ["MA-02", "SF-06", "OA2-05", "SHR-02"],
+  "conflictingFrameworkIds": ["SELF-DECLARED-PMF", "ONE-METRIC-PMF"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define stage- and model-specific anchors.", "Backtest against prospective retention and growth.", "Review calibration and false positives."],
+    "empiricalQualifications": ["PMF has no universal audited standard.", "Observed growth may reflect subsidy, novelty, channel concentration, or market cycles."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author-direct and affiliated qualifications are paraphrased and attributed separately."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define evidence anchors for each business model and stage."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

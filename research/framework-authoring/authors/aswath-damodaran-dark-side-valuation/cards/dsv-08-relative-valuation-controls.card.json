@@ -1,0 +1,300 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "DSV-08",
+  "slug": "relative-valuation-controls",
+  "name": "Relative Valuation and Comparable Controls",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Uses private and public comparables only after normalizing the multiple, time, fundamentals, lifecycle, and security rights.",
+    "productLabel": "Relative Valuation Controls Lens — based on Aswath Damodaran's public multiples and VC-pricing materials",
+    "notAClaimOf": [
+      "same-sector companies being comparable",
+      "the latest financing round revealing intrinsic value",
+      "a preferred-share price applying to all common equity"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public multiples and venture-pricing materials",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Relative valuation is a pricing exercise that requires consistent multiple definitions, awareness of the distribution, identification of cash-flow, growth, and risk drivers, and selection of truly comparable firms or explicit controls for differences. Young private companies add lifecycle, survival, liquidity, stale-transaction, small-sample, and security-right complications.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "DSV-P1-MULTIPLES",
+      "claimIds": [
+        "DSV-CLM-013"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 4-17 and 21: four basic steps, definitional consistency, fundamentals, comparable selection, and difference controls"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-YOUNG-2009",
+      "claimIds": [
+        "DSV-CLM-014"
+      ],
+      "locator": {
+        "kind": "pdf_page",
+        "value": "PDF pp. 11-12 and 56-64: young-company comparability, survival, claim rights, illiquidity, and relative valuation"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "DSV-P1-VC-PRICING-2016",
+      "claimIds": [
+        "DSV-CLM-015",
+        "DSV-CLM-016"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "VCs price businesses; four pricing methods; small samples, infrequent updating, opaque transactions, feedback loops, and lag"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "saas",
+      "marketplace",
+      "consumer",
+      "transactional",
+      "hardware",
+      "deep_tech",
+      "services"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The numerator and denominator belong to the same claim type, period, and accounting definition.",
+    "Comparable observations have transaction dates, currency, geography, stage, and source.",
+    "Differences in growth, margin, reinvestment, risk, survival, and lifecycle are controlled.",
+    "Preferred-security rights and dilution are normalized before extrapolating company equity value."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "target_metric",
+      "description": "Verified company metric with period, accounting definition, currency, and normalization.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financial statements",
+        "billing records",
+        "audited KPI schedule",
+        "management accounts"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "comparable_dataset",
+      "description": "Versioned public or private observations with date, stage, geography, business model, metric, and transaction metadata.",
+      "necessity": "required",
+      "acceptableSources": [
+        "public filings",
+        "licensed transaction database",
+        "verified funding documents",
+        "exchange data"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "fundamental_controls",
+      "description": "Comparable differences in growth, margins, reinvestment, risk, survival, and lifecycle.",
+      "necessity": "required",
+      "acceptableSources": [
+        "public filings",
+        "industry data",
+        "statistical model",
+        "valuation dataset"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "security_normalization",
+      "description": "Preferred rights, option value, liquidation preference, dilution, and enterprise-to-equity bridge.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "charter",
+        "cap table",
+        "waterfall service"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is the multiple consistently defined and measured?",
+    "What is the current distribution rather than only the median?",
+    "Which fundamentals drive this multiple?",
+    "Why are these companies or transactions economically comparable?",
+    "How stale, sparse, or selection-biased is the private sample?",
+    "What security rights prevent direct extrapolation from round price to total common equity?"
+  ],
+  "positiveSignals": [
+    "Metrics and claims are normalized before comparison.",
+    "The sample includes dates, dispersion, and transparent exclusion rules.",
+    "Fundamental differences are controlled rather than narrated away.",
+    "Public and private pricing methods produce explainable differences.",
+    "The terms service converts observed preferred prices to comparable economic claims."
+  ],
+  "redFlags": [
+    "A median sector multiple is applied without dispersion or fundamentals.",
+    "Comparables are chosen because their valuations support the desired answer.",
+    "ARR, revenue, GMV, bookings, and run-rate metrics are mixed.",
+    "An old private round is treated as current market price.",
+    "Post-money headline value is applied to common stock without a waterfall."
+  ],
+  "disconfirmingEvidence": [
+    "Comparable growth, margin, risk, or lifecycle differs materially.",
+    "Observed transactions are too stale or sparse for the current market.",
+    "Security rights explain much of the headline price.",
+    "The result reverses under reasonable comparable inclusion rules.",
+    "A fundamentals-based model cannot explain the selected multiple."
+  ],
+  "contraindications": [
+    "Do not call relative valuation intrinsic value.",
+    "Do not mix enterprise-value and equity-value multiples.",
+    "Do not extrapolate a preferred round price without security normalization.",
+    "Do not hide sample size, date, and dispersion."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define and normalize the target multiple.",
+      "Assemble a versioned comparable distribution.",
+      "Identify the fundamental drivers and control differences.",
+      "Normalize private security rights and time.",
+      "Report pricing separately from intrinsic value and send arithmetic to deterministic services."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredChecks": [
+        "claim_scope_match",
+        "metric_definition_match",
+        "period_match",
+        "currency_date_normalization",
+        "fundamental_controls",
+        "security_rights_normalization"
+      ],
+      "calculationOwner": "pricing_and_terms_services",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Valuations come from media reports without transaction or metric details.",
+      "medium": "Public filings and partial private metadata are available.",
+      "high": "Verified metrics, transaction documents, terms, dates, and public filings are available."
+    },
+    "evidenceStrength": {
+      "low": "A single headline comparable drives the result.",
+      "medium": "A distribution is available but important fundamental or term controls remain approximate.",
+      "high": "A sufficiently broad, current sample is normalized and controlled."
+    },
+    "evidenceCoverage": {
+      "low": "Only company name, sector, and headline valuation are present.",
+      "medium": "Metrics, dates, and fundamentals are covered but security terms or survival are incomplete.",
+      "high": "Definitions, distribution, fundamentals, lifecycle, survival, liquidity, terms, and timing are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "No economically comparable sample exists.",
+      "medium": "A noisy sample exists with disclosed limitations.",
+      "high": "Comparable claims and fundamentals can be normalized credibly."
+    },
+    "judgmentConfidence": {
+      "low": "Only broad pricing context can be stated.",
+      "medium": "A pricing range is defensible with material caveats.",
+      "high": "The pricing range is robust across definitions, samples, and controls."
+    }
+  },
+  "overlapFrameworkIds": [
+    "DSV-02",
+    "DSV-05",
+    "DSV-10"
+  ],
+  "conflictingFrameworkIds": [
+    "SAME-SECTOR-EQUALS-COMPARABLE",
+    "LATEST-ROUND-EQUALS-INTRINSIC-VALUE",
+    "PREFERRED-PRICE-EQUALS-COMMON-VALUE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful third-edition relative-valuation review.",
+      "Validate metric and security normalization rules.",
+      "Backtest comparable selection and pricing ranges without cherry-picking."
+    ],
+    "empiricalQualifications": [
+      "Private transaction samples are selected, sparse, stale, and often opaque.",
+      "Multiples reflect market mood as well as fundamentals.",
+      "A pricing range can lag a market regime change."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public multiples and pricing principles are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition page review.",
+      "Define data licensing and private-transaction normalization requirements."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

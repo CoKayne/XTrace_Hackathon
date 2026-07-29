@@ -1,0 +1,292 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "H7P-08",
+  "slug": "process-power",
+  "name": "Process Power",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether an accumulated, embedded activity system creates material results that rivals cannot reproduce by copying visible practices.",
+    "productLabel": "Process Power Lens — based on Hamilton Helmer's public 7 Powers materials",
+    "notAClaimOf": [
+      "operational excellence generally being Power",
+      "complexity alone creating a Barrier",
+      "a documented best practice being inimitable"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Hamilton Helmer's public Process Power doctrine",
+    "scope": "person_direct",
+    "people": [
+      "Hamilton Helmer"
+    ],
+    "organizations": [
+      "7 Powers"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Process Power may exist when a material cost or product advantage emerges from a long-accumulated, embedded, interdependent activity system whose tacit knowledge, causal opacity, social structure, or replication time prevents rivals from reproducing the result. Ordinary operational excellence, a single procedure, or complexity without causal evidence is insufficient.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_qualification",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "H7P-P1-NFX-2021",
+      "claimIds": [
+        "H7P-CLM-009"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Process Power section lines 236-256: embedded activities, tacit knowledge, materiality, opacity, time, and operational-excellence caveat"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "H7P-P1-ILTB-2020",
+      "claimIds": [
+        "H7P-CLM-009"
+      ],
+      "locator": {
+        "kind": "video_timestamp",
+        "value": "Official audio 00:44:27-00:46:40: Process Power and distinction from Scale Economies"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "H7P-E1-PROCESS-RYALL-2006",
+      "claimIds": [
+        "H7P-EQ-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: intrinsic ambiguity as necessary but insufficient and no simple complexity-ambiguity correlation"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "manufacturing",
+      "logistics",
+      "operations_intensive",
+      "complex_service",
+      "software_delivery",
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "A multi-activity system rather than one practice is identified.",
+    "The system produces a material measured cost or product Benefit.",
+    "Accumulation, tacitness, interdependence, opacity, or social complexity creates a replication Barrier.",
+    "Scale Economies and Cornered Resource explanations are separately tested."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "activity_system_map",
+      "description": "Interdependent routines, feedback loops, decision rights, supplier and employee coordination, and accumulated learning.",
+      "necessity": "required",
+      "acceptableSources": [
+        "process map",
+        "operating review",
+        "workflow observation",
+        "organizational network",
+        "quality system"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "material_outcome_delta",
+      "description": "Cost, quality, speed, yield, reliability, innovation, or customer outcome difference attributable to the activity system.",
+      "necessity": "required",
+      "acceptableSources": [
+        "benchmark",
+        "longitudinal KPI",
+        "matched comparison",
+        "quality data",
+        "customer outcome"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "accumulation_and_tacitness",
+      "description": "Time, experimentation, failure history, social embedding, causal ambiguity, and knowledge not transferable through manuals or hiring one person.",
+      "necessity": "required",
+      "acceptableSources": [
+        "learning history",
+        "employee interviews",
+        "iteration records",
+        "organizational analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "replication_attempts_and_decay",
+      "description": "Competitor copying, consultant transfer, hiring, technology automation, staff turnover, and evidence that the outcome gap persists or decays.",
+      "necessity": "required",
+      "acceptableSources": [
+        "competitor case",
+        "hiring history",
+        "benchmark trend",
+        "technology roadmap",
+        "scenario analysis"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which interacting activities create the result, and how?",
+    "Is the outcome delta material after controlling for scale and input quality?",
+    "How long did the activity system take to accumulate?",
+    "Can a rival copy it with consultants, hiring, software, or capital?",
+    "Have replication attempts failed, and why?",
+    "Does tacitness also make the company unable to sustain or transfer its own capability?"
+  ],
+  "positiveSignals": [
+    "A mapped multi-activity system predicts measured superior outcomes.",
+    "The result persists after controlling for scale, equipment, and input resources.",
+    "Knowledge is distributed, socially embedded, and reinforced over many cycles.",
+    "Well-resourced competitors copy visible practices without matching outcomes.",
+    "The company can reproduce and renew the capability internally."
+  ],
+  "redFlags": [
+    "Complexity or culture language substitutes for a causal activity map.",
+    "The claimed process is a standard industry practice.",
+    "One executive, consultant, tool, or supplier explains the result.",
+    "The Benefit disappears after controlling for scale or better inputs.",
+    "Internal tacitness prevents succession, transfer, or improvement."
+  ],
+  "disconfirmingEvidence": [
+    "Competitors match the outcome after adopting documented practices.",
+    "Employee hiring transfers the capability quickly.",
+    "Automation or modular technology removes the accumulated learning advantage.",
+    "Performance deteriorates when one person leaves.",
+    "The activity system is complex but not causally related to superior outcomes."
+  ],
+  "contraindications": [
+    "Do not label operational excellence as Process Power.",
+    "Do not use complexity as proof of causal ambiguity.",
+    "Do not confuse superior equipment or scarce talent with Process.",
+    "Do not double count fixed-cost learning as Scale Economies."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Map the interdependent activity system and hypothesized causal paths.",
+      "Measure outcome differences and control for scale and inputs.",
+      "Assess accumulation, tacitness, transferability, and internal renewal.",
+      "Review competitor replication attempts and technology-driven decay.",
+      "Conclude on observed, candidate, path, unsupported, or inapplicable Process Power."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only culture or complexity claims are available.",
+      "medium": "Activity maps and outcome data are available.",
+      "high": "Longitudinal causal evidence and observed failed replication converge."
+    },
+    "evidenceStrength": {
+      "low": "No material outcome delta is attributed.",
+      "medium": "Outcome and accumulation are supported but replication remains uncertain.",
+      "high": "Material outcome, activity causality, accumulation, and durable replication Barrier are supported."
+    },
+    "evidenceCoverage": {
+      "low": "Activity system or outcome is missing.",
+      "medium": "System and outcome are covered but controls or replication are incomplete.",
+      "high": "Activities, outcomes, controls, tacitness, time, replication, transfer, and decay are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Performance depends on standard practices or discrete inputs.",
+      "medium": "Some cumulative organizational learning exists.",
+      "high": "An interdependent accumulated activity system materially drives economics."
+    },
+    "judgmentConfidence": {
+      "low": "Only an operational-excellence label is supported.",
+      "medium": "Candidate Process Power exists with unresolved replication.",
+      "high": "Observed material activity-system Benefit and replication Barrier are supported."
+    }
+  },
+  "overlapFrameworkIds": [
+    "H7P-01",
+    "H7P-02",
+    "H7P-07",
+    "SF-08",
+    "SCALING-PEOPLE"
+  ],
+  "conflictingFrameworkIds": [
+    "COMPLEXITY-EQUALS-MOAT",
+    "BEST-PRACTICE-EQUALS-POWER",
+    "CULTURE-LABEL-SCORE"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed Process Power chapter review.",
+      "Define causal controls and replication evidence by operating model.",
+      "Validate incremental utility beyond operational KPIs and scale."
+    ],
+    "empiricalQualifications": [
+      "Causal ambiguity may be necessary in some models but is not sufficient.",
+      "Complexity need not produce ambiguity or superior outcomes.",
+      "Tacitness can impair the focal firm's own transfer, succession, and renewal."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public interview doctrine and external formal research are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete first-edition Process Power review.",
+      "Develop causal activity-system evidence templates."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial causality- and replication-aware Process Power card."
+    }
+  ]
+}

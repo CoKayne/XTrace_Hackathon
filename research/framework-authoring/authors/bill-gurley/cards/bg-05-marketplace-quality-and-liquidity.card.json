@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BG-05",
+  "slug": "marketplace-quality-and-liquidity",
+  "name": "Marketplace Quality and Liquidity",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether both sides of a marketplace receive better value and whether local liquidity improves as participation grows.",
+    "productLabel": "Marketplace Quality and Liquidity Lens — based on Bill Gurley's public writing",
+    "notAClaimOf": ["a ten-factor score predicting success", "supplier count proving liquidity", "user growth proving a network effect"]
+  },
+  "attribution": {
+    "display": "Based on Bill Gurley's public Above the Crowd marketplace writing",
+    "scope": "person_direct",
+    "people": ["Bill Gurley"],
+    "organizations": ["Above the Crowd", "Benchmark"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Evaluate a marketplace through value improvement on both sides, demand and supply pull, local liquidity, fragmentation, onboarding friction, frequency, payment flow, technology/workflow value, and whether each additional participant improves later participants' experience.",
+  "claimTypes": ["direct_doctrine", "revealed_behavior", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "BG-P1-MARKETS-2012",
+      "claimIds": ["BG-CLM-013", "BG-CLM-014", "BG-CLM-015", "BG-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Lines 10-43 and factors 1-10: both-side pull, marketplace characteristics, liquidity, payment flow, and network effects"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BG-P1-REVENUE-2011",
+      "claimIds": ["BG-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Section 2, lines 35-39: genuine network effects are rare and must improve incremental-user value"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["marketplace", "platform", "network"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "Distinct participant sides and the transaction or interaction are defined.",
+    "Liquidity is measured in the relevant local geography, category, or cohort.",
+    "Network effects are separated from scale economies and marketing."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "side_value",
+      "description": "Experience and economic improvement versus the status quo for every material participant side.",
+      "necessity": "required",
+      "acceptableSources": ["participant interviews", "transaction data", "price and time comparisons", "workflow analytics"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "liquidity",
+      "description": "Search-to-match, fill rate, time to match, failure rate, availability, repeat, and density by local market or segment.",
+      "necessity": "required",
+      "acceptableSources": ["transaction logs", "search logs", "supply availability", "cohort analysis", "geographic metrics"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "two_side_growth",
+      "description": "Organic and paid acquisition, activation, retention, onboarding cost, concentration, and fragmentation on both sides.",
+      "necessity": "required",
+      "acceptableSources": ["growth data", "CRM", "cohorts", "supplier records", "customer records"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "network_effect_test",
+      "description": "Whether added participants causally improve price, selection, wait time, match quality, trust, or another user outcome.",
+      "necessity": "required",
+      "acceptableSources": ["density experiments", "time-series analysis", "natural experiments", "participant outcomes"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What is materially better for each participant side?",
+    "Where is the marketplace liquid and where does it fail?",
+    "Does incremental supply attract demand and incremental demand attract supply?",
+    "Which side is structurally concentrated or expensive to onboard?",
+    "Does added participation improve later-user outcomes after controlling for spend and product changes?"
+  ],
+  "positiveSignals": [
+    "Both sides receive verified experience or economic value.",
+    "Liquidity improves within repeatable local units.",
+    "Growth becomes easier as density rises.",
+    "Payment or workflow integration strengthens value without trapping participants unfairly."
+  ],
+  "redFlags": [
+    "The company reports total listings or users but not successful matches.",
+    "Only supply is aggregated; demand is purchased repeatedly.",
+    "Liquidity exists only in one subsidized micro-market.",
+    "A network effect is inferred from company size."
+  ],
+  "disconfirmingEvidence": [
+    "High supplier-onboarding friction can later become a barrier if liquidity and retention are proven.",
+    "Low-frequency markets can work when transaction value and trust are high.",
+    "A concentrated side can still support a platform under strong contracts and value alignment.",
+    "A marketplace may create value without a strong network effect."
+  ],
+  "contraindications": [
+    "Do not add the ten factors into a success-probability score.",
+    "Do not aggregate local liquidity into one global metric.",
+    "Do not call scale economy or brand a network effect."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Define sides, interaction, and local liquidity unit.",
+      "Measure side value, activation, matches, failures, retention, and density.",
+      "Test whether added participation improves later-user outcomes.",
+      "Review fragmentation, onboarding, frequency, payment, and concentration.",
+      "Conclude compounding marketplace, emerging local liquidity, subsidized or one-sided, non-marketplace aggregation, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Liquidity, fill rate, density, retention, concentration, and network-effect tests must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "User/listing counts.", "medium": "Transaction and cohort data.", "high": "Reconciled local transaction data plus participant and causal evidence."},
+    "evidenceStrength": {"low": "Aggregation.", "medium": "Repeatable local liquidity.", "high": "Added participation repeatedly improves both-side outcomes."},
+    "evidenceCoverage": {"low": "One side only.", "medium": "Both sides and liquidity.", "high": "Value, liquidity, growth, fragmentation, frequency, payment, network causality, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "Single-sided software.", "medium": "Two-sided interaction.", "high": "Marketplace dynamics determine growth and defensibility."},
+    "judgmentConfidence": {"low": "Marketplace label.", "medium": "Bounded liquidity evidence.", "high": "Repeated local and causal evidence supports the conclusion."}
+  },
+  "overlapFrameworkIds": ["CSP-01", "CSP-02", "CSP-03", "CSP-06", "CSP-09", "BG-06"],
+  "conflictingFrameworkIds": ["LISTING-COUNT-AS-LIQUIDITY", "SCALE-AS-NETWORK-EFFECT"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define local-liquidity taxonomy.", "Validate network-effect causal tests.", "Backtest failed marketplaces."],
+    "empiricalQualifications": ["Marketplace dynamics are local and path-dependent.", "Execution and policy can dominate structural attractiveness."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Public author material is neutrally paraphrased; the factor list is not copied as a scorecard."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Define causal network-effect and local-liquidity review protocol."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

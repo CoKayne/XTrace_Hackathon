@@ -1,0 +1,326 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PT-09",
+  "slug": "transformational-technology",
+  "name": "Transformational Technology / Hard Problems",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether a meaningful technical advance can become a financeable, distributable, value-capturing company.",
+    "productLabel": "Transformational Technology Lens — based on Peter Thiel interviews and Founders Fund public doctrine",
+    "notAClaimOf": [
+      "Peter Thiel authorship of the Founders Fund manifesto",
+      "investment merit from technical difficulty alone",
+      "Peter Thiel endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Synthesized from Peter Thiel direct public remarks and separately labeled Founders Fund doctrine",
+    "scope": "product_synthesis",
+    "people": [
+      "Peter Thiel",
+      "Bruce Gibney"
+    ],
+    "organizations": [
+      "Founders Fund",
+      "Tsinghua University",
+      "WBUR"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "A technically difficult or civilization-scale problem may be important, but investability requires more: measurable technical improvement, a feasible development path, customer demand, distribution, financing, regulatory readiness, and value capture. Founders Fund's hard-technology doctrine is institution-level and must not be presented as Peter Thiel's personal rule.",
+  "claimTypes": [
+    "direct_doctrine",
+    "affiliated_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "PT-P1-TSINGHUA-2016",
+      "claimIds": [
+        "PT-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Innovation, globalization, and living-standard discussion"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PT-P2-BOOK-001",
+      "claimIds": [
+        "PT-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Official book description on progress beyond information technology"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PT-P2-FF-MANIFESTO",
+      "claimIds": [
+        "PT-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Founders Fund hard science and engineering thesis"
+      },
+      "attributionScope": "institution_doctrine",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "PT-P2-CS183-14",
+      "claimIds": [
+        "PT-CLM-010"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Clean-tech review and acknowledged unknowns"
+      },
+      "attributionScope": "course_notes_derivative",
+      "supportType": "counterexample"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b"
+    ],
+    "businessModels": [
+      "deep_tech",
+      "hard_tech",
+      "biotech",
+      "industrial",
+      "energy",
+      "defense",
+      "frontier_ai"
+    ],
+    "sectors": [
+      "science_and_engineering_intensive"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The core technical claim and comparison baseline are explicit.",
+    "Technical feasibility and commercial investability are evaluated separately.",
+    "Development, capital, regulatory, manufacturing, and distribution paths can be staged."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "technical_delta",
+      "description": "Measured performance, cost, speed, reliability, or capability improvement versus a relevant baseline.",
+      "necessity": "required",
+      "acceptableSources": [
+        "independent benchmark",
+        "technical test",
+        "peer-reviewed evidence",
+        "customer validation"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "technical_risk_plan",
+      "description": "Remaining risks, experiments, milestones, dependencies, and failure criteria.",
+      "necessity": "required",
+      "acceptableSources": [
+        "technical diligence",
+        "test plan",
+        "development roadmap",
+        "expert review"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "commercial_path",
+      "description": "Customer problem, willingness to adopt or pay, procurement, implementation, and distribution.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer contracts",
+        "LOIs with validation",
+        "pilot data",
+        "procurement evidence"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "capital_and_regulatory_path",
+      "description": "Capital required to each risk-reducing milestone, financing sources, regulation, manufacturing, and supply dependencies.",
+      "necessity": "required",
+      "acceptableSources": [
+        "financial plan",
+        "regulatory plan",
+        "manufacturing plan",
+        "supply agreement"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "value_capture_path",
+      "description": "IP, know-how, scale, data, switching, certification, or distribution mechanism that allows value capture.",
+      "necessity": "required",
+      "acceptableSources": [
+        "IP review",
+        "unit economics",
+        "market structure",
+        "contract evidence"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exact technical capability is new, and against which baseline?",
+    "Has an independent party reproduced or validated the result?",
+    "Which remaining experiment can kill the thesis?",
+    "How much capital and time are required before each risk-reducing milestone?",
+    "Who pays, through which procurement path, and why now?",
+    "Can the company capture value after manufacturing, regulation, support, and supplier economics?",
+    "What happens if the technology works but arrives later or costs more than planned?"
+  ],
+  "positiveSignals": [
+    "Independent evidence shows a material technical delta on the customer's actual job.",
+    "The next experiment is cheap relative to the uncertainty it resolves.",
+    "Milestone financing reduces technical and commercial risk in stages.",
+    "Customers commit resources, contracts, or deployment effort.",
+    "Manufacturing, regulation, supply, and distribution are integrated into the plan.",
+    "A durable value-capture mechanism exists beyond technical novelty."
+  ],
+  "redFlags": [
+    "Difficulty or scientific importance is treated as commercial evidence.",
+    "The benchmark is chosen to make the delta appear larger.",
+    "The plan requires simultaneous technical, regulatory, manufacturing, and demand breakthroughs.",
+    "Capital needs exceed realistic milestone financing.",
+    "LOIs are used as revenue or adoption proof without customer commitment.",
+    "The technology works but unit economics or procurement make deployment unattractive.",
+    "Founders Fund doctrine is attributed directly to Peter Thiel."
+  ],
+  "disconfirmingEvidence": [
+    "Independent tests fail to reproduce the claimed delta.",
+    "A competing architecture improves faster or cheaper.",
+    "Milestones repeatedly consume capital without reducing core uncertainty.",
+    "Customers reject integration, procurement, or switching costs.",
+    "Regulation or supply dependence prevents deployment.",
+    "The value migrates to suppliers, integrators, or customers rather than the company."
+  ],
+  "contraindications": [
+    "Do not award investment merit for social importance or difficulty alone.",
+    "Do not combine direct Thiel doctrine and Founders Fund institution doctrine without labels.",
+    "Do not apply generic SaaS benchmarks to capital-intensive hard technology.",
+    "Do not treat market defaults as company technical facts."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Separate technical, commercial, capital, regulatory, and value-capture hypotheses.",
+      "Attach a source and falsifier to each.",
+      "Stage milestones by risk reduction and financing need.",
+      "Run model-specific valuation and fund-return scenarios outside the lens.",
+      "Conclude separately on technical promise and investability."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "formalScoreAllowed": false,
+      "reason": "Technical milestones and financial scenarios can be deterministic inputs; the integrated hard-tech judgment is not validated."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Doctrine or technology evidence is unattributed.",
+      "medium": "Direct interviews and institution doctrine are separated but revisions remain unhashed.",
+      "high": "Reviewed direct sources, institution sources, and authorized technical evidence are versioned."
+    },
+    "evidenceStrength": {
+      "low": "Founder technical claim and market vision only.",
+      "medium": "Independent technical evidence or committed customer evidence, but not both.",
+      "high": "Independent technical, customer, milestone, capital, and value-capture evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Technical, commercial, capital, or capture path is missing.",
+      "medium": "All exist but regulation, manufacturing, or falsifiers are incomplete.",
+      "high": "All required hypotheses, counterevidence, and milestones are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The company is not science or engineering intensive.",
+      "medium": "Technical novelty matters but is not the main investment risk.",
+      "high": "Technical breakthrough and commercialization are central to the thesis."
+    },
+    "judgmentConfidence": {
+      "low": "Only technical importance can be described.",
+      "medium": "Technical feasibility is supported but commercialization remains unresolved.",
+      "high": "Technical, commercial, capital, regulatory, and capture evidence converge."
+    }
+  },
+  "overlapFrameworkIds": [
+    "PT-04",
+    "DAM-DARK-SIDE-VALUATION",
+    "REAL-OPTIONS",
+    "DEEP-TECH-MILESTONE-FINANCING"
+  ],
+  "conflictingFrameworkIds": [
+    "CAPITAL-LIGHT-ONLY",
+    "FAST-ITERATION-ONLY"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Create sector-specific hard-tech evidence profiles before formal use.",
+      "Validate milestone and technical-delta anchors by sector.",
+      "Separate company quality, price, and fund fit under capital-intensive scenarios.",
+      "Complete attribution review between Thiel direct and Founders Fund doctrine."
+    ],
+    "empiricalQualifications": [
+      "Technical difficulty is not a predictor of value capture.",
+      "Hard-tech public examples are selected and often omit failed commercialization.",
+      "Capital intensity and timing can dominate technical success."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Founders Fund doctrine is explicitly labeled by institution and author."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Add sector-specific evidence profiles before runtime publication.",
+      "Hash and approve public source revisions.",
+      "Cross-check with real-options and Damodaran uncertainty valuation cards."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial draft with strict personal-versus-institution attribution and commercialization gates."
+    }
+  ]
+}
+

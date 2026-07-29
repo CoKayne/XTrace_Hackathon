@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "aswath_damodaran_dark_side_valuation_public_frameworks_v0_1",
+  "name": "Aswath Damodaran / The Dark Side of Valuation Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten independently reviewable young-company valuation cards covering uncertainty, operating forecasts, reinvestment, risk, survival, scenarios, comparables, real options, and value-price separation.",
+  "cardFiles": [
+    "cards/dsv-01-valuation-under-uncertainty.card.json",
+    "cards/dsv-02-revenue-build.card.json",
+    "cards/dsv-03-margin-and-terminal-path.card.json",
+    "cards/dsv-04-reinvestment-consistency.card.json",
+    "cards/dsv-05-lifecycle-risk-placement.card.json",
+    "cards/dsv-06-survival-and-distress.card.json",
+    "cards/dsv-07-coherent-scenario-analysis.card.json",
+    "cards/dsv-08-relative-valuation-controls.card.json",
+    "cards/dsv-09-real-option-gate.card.json",
+    "cards/dsv-10-value-price-decision-separation.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Complete lawful third-edition chapter and page review.",
+      "Verify edition differences between the 2009 young-company paper and the 2018 third edition.",
+      "Review all deterministic calculation contracts with a valuation subject-matter expert.",
+      "Calibrate stage, sector, geography, and cohort priors without converting them into company facts.",
+      "Validate scenario, survival, comparable, and real-option gates on timestamped decisions without hindsight leakage.",
+      "Complete security-rights and ownership integration with the later VC finance packs.",
+      "Complete content and rights review before seed conversion."
+    ]
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "PL-07",
+  "slug": "active-capital-value-plan",
+  "name": "Active-Capital Value-Creation Plan",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Turns investor value-add from reputation into named, capacity-backed actions linked to company milestones.",
+    "productLabel": "Active-Capital Pattern — derived from Mallaby's public venture history",
+    "notAClaimOf": ["every VC intervention adding value", "board activity proving impact", "founder control being inherently inferior"]
+  },
+  "attribution": {
+    "display": "Historical pattern derived from Sebastian Mallaby's public materials, qualified by contract research",
+    "scope": "product_synthesis",
+    "people": ["Sebastian Mallaby"],
+    "organizations": ["Penguin Press", "Council on Foreign Relations"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "If investor involvement is part of the thesis, specify the milestone, action, responsible partner, resource, timing, and evidence of capacity. Evaluate governance and terms for both company value and investor value; more control is not automatically better.",
+  "claimTypes": ["historical_description", "empirical_qualification", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "PL-P2-SAMPLE-2023",
+      "claimIds": ["PL-CLM-011", "PL-CLM-014"],
+      "locator": {"kind": "pdf_page", "value": "Table of contents, chapters on activist capital and firm models"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "PL-P1-HBR-2022",
+      "claimIds": ["PL-CLM-009", "PL-CLM-013", "PL-CLM-014"],
+      "locator": {"kind": "web_section", "value": "Transcript discussion of investors working with founders, boards, networks, and team responsibility"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "PL-E1-CONTRACTS-2019",
+      "claimIds": ["PL-CLM-014", "PL-CLM-015"],
+      "locator": {"kind": "web_section", "value": "Abstract on VC value creation, bargaining power, and terms that can reduce startup value"},
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The fund claims an active role in the company.",
+    "Investor capacity and relevant capability are observable.",
+    "Company and investor objectives and conflicts remain separate."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "value_plan",
+      "description": "Milestone, action, owner, resource, date, expected evidence, and fallback.",
+      "necessity": "required",
+      "acceptableSources": ["100-day plan", "board plan", "portfolio support plan"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "capacity",
+      "description": "Partner time, portfolio load, specialist availability, and demonstrated relevant capability.",
+      "necessity": "required",
+      "acceptableSources": ["partner allocation", "portfolio roster", "prior support evidence"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "alignment",
+      "description": "Founder agreement, governance rights, incentives, and possible conflicts.",
+      "necessity": "required",
+      "acceptableSources": ["term sheet", "governance plan", "founder interview"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which company bottleneck can this investor causally improve?",
+    "Who will act, with what resource and capacity?",
+    "How will impact be observed?",
+    "Do proposed terms improve company outcomes or mainly transfer value?"
+  ],
+  "positiveSignals": [
+    "Actions match a verified company bottleneck.",
+    "A named partner has time and relevant evidence of capability.",
+    "Founder and investor agree on role and escalation.",
+    "Impact is observable without claiming sole causality."
+  ],
+  "redFlags": [
+    "Value-add is a list of generic platform services.",
+    "No responsible person or time allocation exists.",
+    "Control terms are called support without company-value analysis.",
+    "Past brand reputation substitutes for current capacity."
+  ],
+  "disconfirmingEvidence": [
+    "Portfolio load prevents promised involvement.",
+    "Founder does not want or need the proposed intervention.",
+    "Terms lower startup success probability or future financing flexibility.",
+    "A third party can provide the same resource at lower cost."
+  ],
+  "contraindications": [
+    "Do not attribute company success solely to investor activity.",
+    "Do not assume stronger control maximizes joint value.",
+    "Do not score brand without an executable plan."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Identify the company bottleneck.",
+      "Specify investor action, owner, resource, and capacity.",
+      "Test founder alignment and governance tradeoffs.",
+      "Define observable milestone evidence.",
+      "Conclude executable value plan, generic support, conflict, or no active role."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Marketing claims only.", "medium": "Named plan and some prior evidence.", "high": "Capacity records, founder agreement, and relevant prior outcomes support the plan."},
+    "evidenceStrength": {"low": "Generic services.", "medium": "Specific action exists but impact or capacity is uncertain.", "high": "Bottleneck, action, capacity, alignment, and observation are explicit."},
+    "evidenceCoverage": {"low": "Investor brand only.", "medium": "Action and owner covered; alignment or tradeoff partial.", "high": "Bottleneck, action, owner, resource, capacity, alignment, governance, and milestone complete."},
+    "applicabilityConfidence": {"low": "Passive investment or no identified bottleneck.", "medium": "Active role is expected.", "high": "Active role is material to the thesis and contract."},
+    "judgmentConfidence": {"low": "No value-add claim.", "medium": "A plausible bounded contribution.", "high": "An executable, aligned, capacity-backed value plan is supported."}
+  },
+  "overlapFrameworkIds": ["BVC-09", "SK-08", "VDCF-08"],
+  "conflictingFrameworkIds": ["BRAND-EQUALS-VALUE-ADD", "CONTROL-EQUALS-VALUE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "advance_rationale", "portfolio_policy"],
+    "promotionRequirements": ["Define capacity and action schemas.", "Track promised versus delivered support.", "Review governance effects."],
+    "empiricalQualifications": ["Selection makes value-add attribution difficult.", "Contract terms can benefit investors while reducing startup value."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Historical patterns are paraphrased; the execution plan is product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define a non-self-serving method for tracking investor contribution."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
+

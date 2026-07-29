@@ -1,0 +1,335 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "scott_kupor_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Scott Kupor"
+    ],
+    "organizations": [
+      "Andreessen Horowitz"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "SHR-P2-BOOK-2019",
+      "title": "Secrets of Sand Hill Road: Venture Capital and How to Get It",
+      "authorOrSpeaker": [
+        "Scott Kupor"
+      ],
+      "publisher": "Portfolio / Penguin Random House",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_page",
+      "url": "https://www.penguinrandomhouse.com/books/607128/secrets-of-sand-hill-road-by-scott-kupor-foreword-by-eric-ries/",
+      "edition": "First US hardcover; ISBN 9780593083581; 320 pages",
+      "publishedAt": "2019-06-04",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "publisher_metadata_and_description_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports edition, scope, and publisher-described topics; not chapter-level doctrine.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-P1-WIRED-2019",
+      "title": "How Early-Stage VCs Decide Where to Invest",
+      "authorOrSpeaker": [
+        "Scott Kupor"
+      ],
+      "publisher": "WIRED, excerpted with permission from Portfolio",
+      "sourceClass": "P1",
+      "sourceType": "authorized_book_excerpt",
+      "url": "https://www.wired.com/story/how-early-stage-vcs-decide-where-invest/",
+      "edition": "Authorized excerpt published June 4, 2019",
+      "publishedAt": "2019-06-04",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_excerpt_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary public support for people/product/market, founder-market fit, execution, and nonobvious opportunities.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_paragraph_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-P2-A16Z-VIDEO-HUB-2019",
+      "title": "Secrets of Sand Hill Road for Entrepreneurs, Video Edition",
+      "authorOrSpeaker": [
+        "Scott Kupor",
+        "Frank Chen"
+      ],
+      "publisher": "Andreessen Horowitz",
+      "sourceClass": "P2",
+      "sourceType": "official_series_hub",
+      "url": "https://a16z.com/secrets-of-sand-hill-road-for-entrepreneurs-video-edition/",
+      "edition": "Three-part video series, June 14, 2019",
+      "publishedAt": "2019-06-14",
+      "eventAt": "2019",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_topic_index_neutral_paraphrase_only",
+      "attributionScope": "institution_doctrine",
+      "attributionNotes": "Supports the public teaching scope; use episode transcripts or timestamps for detailed claims.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-P1-A16Z-INVESTOR-2019",
+      "title": "How To Understand And Choose a Venture Investor",
+      "authorOrSpeaker": [
+        "Scott Kupor",
+        "Frank Chen"
+      ],
+      "publisher": "Andreessen Horowitz",
+      "sourceClass": "P1",
+      "sourceType": "official_podcast_and_video",
+      "url": "https://a16z.com/podcast/a16z-podcast-how-to-understand-and-choose-a-venture-investor/",
+      "edition": "July 17, 2019 podcast; source video published June 14, 2019",
+      "publishedAt": "2019-07-17",
+      "eventAt": "2019",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_media_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Official page confirms incentive, LP, market-size, fund-age, corporate-VC, and decision-process topics. Detailed timestamp review remains pending.",
+      "immutableRevision": {
+        "status": "pending_first_party_timestamp_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-P1-A16Z-RAISE-2019",
+      "title": "How To Raise Money from a Venture Investor",
+      "authorOrSpeaker": [
+        "Scott Kupor",
+        "Frank Chen"
+      ],
+      "publisher": "Andreessen Horowitz",
+      "sourceClass": "P1",
+      "sourceType": "official_podcast_transcript",
+      "url": "https://a16z.com/podcast/a16z-podcast-how-to-raise-money-from-a-venture-investor/",
+      "edition": "Official transcript, July 18, 2019",
+      "publishedAt": "2019-07-18",
+      "eventAt": "2019",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_transcript_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary source for financing, valuation path, SAFEs, term-sheet economics, independent directors, and pro-rata.",
+      "immutableRevision": {
+        "status": "pending_transcript_hash_and_line_snapshot",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-P1-A16Z-BOARD-2019",
+      "title": "How to Get the Most from Your Board",
+      "authorOrSpeaker": [
+        "Scott Kupor",
+        "Frank Chen"
+      ],
+      "publisher": "Andreessen Horowitz",
+      "sourceClass": "P1",
+      "sourceType": "official_podcast_and_video",
+      "url": "https://a16z.com/podcast/a16z-podcast-how-to-get-the-most-from-your-board/",
+      "edition": "July 19, 2019 podcast; source video published June 14, 2019",
+      "publishedAt": "2019-07-19",
+      "eventAt": "2019",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_media_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Official page confirms board lifecycle, transparency, conflicts, down-round, acquisition, and IPO topics. Detailed timestamp review remains pending.",
+      "immutableRevision": {
+        "status": "pending_first_party_timestamp_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-P1-A16Z-TERM-2019",
+      "title": "The Economics of Term Sheets",
+      "authorOrSpeaker": [
+        "Scott Kupor"
+      ],
+      "publisher": "Andreessen Horowitz",
+      "sourceClass": "P1",
+      "sourceType": "official_video",
+      "url": "https://a16z.com/the-economics-of-term-sheets/",
+      "edition": "June 22, 2019",
+      "publishedAt": "2019-06-22",
+      "eventAt": "2019",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_video_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Corroborates economic-term scope. Use the official fundraising transcript for precise current locators.",
+      "immutableRevision": {
+        "status": "pending_first_party_timestamp_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-P1-A16Z-MARKS-2016",
+      "title": "When Is a “Mark” Not a Mark? When It’s a Venture Capital Mark",
+      "authorOrSpeaker": [
+        "Scott Kupor"
+      ],
+      "publisher": "Andreessen Horowitz",
+      "sourceClass": "P1",
+      "sourceType": "signed_public_article",
+      "url": "https://a16z.com/when-is-a-mark-not-a-mark-when-its-a-venture-capital-mark/",
+      "edition": "September 1, 2016",
+      "publishedAt": "2016-09-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_article_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary support for distinguishing private marks from realizations and for multiple mark methods.",
+      "immutableRevision": {
+        "status": "pending_web_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-P2-VCU-SYLLABUS-2025",
+      "title": "VC University Syllabus",
+      "authorOrSpeaker": [
+        "Venture Capital University"
+      ],
+      "publisher": "Venture Capital University / Berkeley Law / NVCA",
+      "sourceClass": "P2",
+      "sourceType": "official_course_syllabus",
+      "url": "https://venturecapitaluniversity.com/wp-content/uploads/2025/04/VC-University-Syllabus_GENERAL_2025.pdf",
+      "edition": "2025 general syllabus",
+      "publishedAt": "2025",
+      "eventAt": "2025",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_syllabus_metadata_only",
+      "attributionScope": "institution_doctrine",
+      "attributionNotes": "Confirms assigned chapters 3-5 and Scott Kupor fund-basics session; does not support chapter content.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_page_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null,
+        "reviewedPdfPages": [
+          4
+        ]
+      }
+    },
+    {
+      "sourceId": "SHR-E1-VC-DECISIONS",
+      "title": "How Do Venture Capitalists Make Decisions?",
+      "authorOrSpeaker": [
+        "Paul Gompers",
+        "Will Gornall",
+        "Steven Kaplan",
+        "Ilya Strebulaev"
+      ],
+      "publisher": "Journal of Financial Economics",
+      "sourceClass": "E1",
+      "sourceType": "peer_reviewed_survey",
+      "url": "https://www.gsb.stanford.edu/faculty-research/publications/how-do-venture-capitalists-make-decisions",
+      "edition": "Volume 135, Issue 1, pages 169-190",
+      "publishedAt": "2020-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_metadata_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Describes self-reported VC practice and stage/industry variation; it is not causal proof.",
+      "immutableRevision": {
+        "status": "pending_authorized_pdf_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-E1-POWERLAW-ANGELLIST",
+      "title": "What AngelList Data Says About Power-Law Returns in Venture Capital",
+      "authorOrSpeaker": [
+        "Abe Othman"
+      ],
+      "publisher": "AngelList",
+      "sourceClass": "E1",
+      "sourceType": "platform_empirical_analysis",
+      "url": "https://www.angellist.com/blog/what-angellist-data-says-about-power-law-returns-in-venture-capital",
+      "edition": "June 17, 2020 analysis",
+      "publishedAt": "2020-06-17",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports heavy-tail outcomes while qualifying universal concentration rules.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "SHR-E1-NVCA-MODEL-2026",
+      "title": "NVCA Model Legal Documents",
+      "authorOrSpeaker": [
+        "NVCA General Counsel Advisory Board"
+      ],
+      "publisher": "National Venture Capital Association",
+      "sourceClass": "E1",
+      "sourceType": "current_industry_model_documents",
+      "url": "https://nvca.org/model-legal-documents/",
+      "edition": "Live model-document index; component revisions through June 2026",
+      "publishedAt": "2026-06",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_models_subject_to_legal_review",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Current transaction-document starting point. The NVCA states models must be tailored and are not legal advice.",
+      "immutableRevision": {
+        "status": "live_index_requires_version_pinning",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    }
+  ],
+  "excludedSources": [
+    {
+      "sourceId": "EX-SHR-001",
+      "title": "Unauthorized full-book PDFs and EPUBs",
+      "reason": "Rights and edition integrity cannot be verified."
+    },
+    {
+      "sourceId": "EX-SHR-002",
+      "title": "Commercial or AI-generated book summaries",
+      "reason": "Useful for discovery only; they do not preserve exact attribution, qualifiers, or edition integrity."
+    },
+    {
+      "sourceId": "EX-SHR-003",
+      "title": "Third-party YouTube transcript mirrors",
+      "reason": "Useful only to locate first-party video sections; not a runtime source."
+    },
+    {
+      "sourceId": "EX-SHR-004",
+      "title": "80/20 as a deterministic portfolio rule",
+      "reason": "The public sources describe a heavy-tailed pattern, not a universal numeric gate."
+    }
+  ]
+}

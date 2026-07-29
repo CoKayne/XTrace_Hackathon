@@ -1,0 +1,272 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "NN-02",
+  "slug": "independent-business-story",
+  "name": "Independent Business Story",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Builds an analyst-owned description of the customer, problem, market, business model, advantage, scaling path, and failure path without merely repeating the founder narrative.",
+    "productLabel": "Independent Business Story Lens — based on Aswath Damodaran's public narrative-building process",
+    "notAClaimOf": [
+      "management being unreliable by default",
+      "contrarianism being inherently superior",
+      "one canonical story existing for every company"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Aswath Damodaran's public narrative-building process",
+    "scope": "product_synthesis",
+    "people": [
+      "Aswath Damodaran"
+    ],
+    "organizations": [
+      "NYU Stern School of Business"
+    ],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Give management's story a fair first hearing, then construct an independent, company-specific story that states who pays, what changes for the customer, how value is captured, why competitors cannot erase it, what must scale, and how the story can fail. Preserve important management-versus-analyst disagreements as explicit claims.",
+  "claimTypes": [
+    "direct_doctrine",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "NN-P1-BRIDGE-2014",
+      "claimIds": [
+        "NN-CLM-002",
+        "NN-CLM-003"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Five-step process, Step 1: develop an analyst narrative; Step 2: test it"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "NN-P1-THERANOS-2015",
+      "claimIds": [
+        "NN-CLM-002",
+        "NN-CLM-012"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Theranos case discussion of runaway story and missing verification"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "counterexample"
+    },
+    {
+      "sourceId": "NN-P2-BOOK-2017",
+      "claimIds": [
+        "NN-CLM-002"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Public table of contents: Chapters 2, 3, and 6 on story elements and building a narrative; exact pages pending"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "all"
+    ]
+  },
+  "requiredConditions": [
+    "The company and founder materials are available with source identity and date.",
+    "Analyst-added statements are labeled rather than attributed to the founder.",
+    "The story states a payer, value proposition, capture mechanism, scaling mechanism, and failure path.",
+    "Material disagreement is retained for independent lens execution."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "management_narrative",
+      "description": "Dated founder or management description of product, customer, market, competition, model, and plan.",
+      "necessity": "required",
+      "acceptableSources": [
+        "pitch deck",
+        "meeting note",
+        "founder interview",
+        "company document"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "external_reality_check",
+      "description": "Independent customer, competitor, market, technical, or regulatory evidence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer interview",
+        "product review",
+        "competitor material",
+        "regulator",
+        "industry dataset"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "analyst_story_version",
+      "description": "Versioned analyst narrative with claim-level sources and disagreement markers.",
+      "necessity": "required",
+      "acceptableSources": [
+        "investment memo",
+        "framework output",
+        "user-confirmed note"
+      ],
+      "missingEffect": "not_applicable"
+    }
+  ],
+  "decisionQuestions": [
+    "Who experiences the problem, who uses the product, and who pays?",
+    "What behavior or workflow must change?",
+    "How does the company capture part of the value it creates?",
+    "What market boundary follows from the actual use case?",
+    "What advantage permits scaling without economics collapsing?",
+    "Which single fact would most seriously damage this story?"
+  ],
+  "positiveSignals": [
+    "Founder and customer descriptions agree on the problem and value.",
+    "The payer and monetization mechanism are explicit.",
+    "The market boundary follows from observable customer behavior.",
+    "The scaling path names required resources and constraints.",
+    "Management-versus-analyst disagreements are concrete and testable."
+  ],
+  "redFlags": [
+    "The analyst story is copied from marketing language.",
+    "User, customer, and payer are silently treated as the same entity.",
+    "The market expands whenever the desired valuation requires it.",
+    "Competition is described only as inferior or irrelevant.",
+    "There is no condition under which the story would be rejected."
+  ],
+  "disconfirmingEvidence": [
+    "Customers describe a different problem or substitute.",
+    "Economic buyer lacks budget or authority.",
+    "Competitors can reproduce the claimed advantage quickly.",
+    "Adoption requires workflow or regulatory change not reflected in timing.",
+    "Founder actions conflict with the stated strategy."
+  ],
+  "contraindications": [
+    "Do not invent missing founder opinions.",
+    "Do not treat an elegant story as verified.",
+    "Do not suppress a credible counter-story.",
+    "Do not infer valuation until driver mapping is complete."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Extract management claims with source and date.",
+      "Build a neutral analyst story using the same evidence plus independent sources.",
+      "Separate customer value, company capture, advantage, scaling, and failure paths.",
+      "Record disagreements and falsifying tests.",
+      "Send the story to NN-03 and the driver-mapping cards."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a promotional deck or second-hand summary exists.",
+      "medium": "Founder materials and limited independent evidence are available.",
+      "high": "Founder, customer, operational, and independent evidence converge."
+    },
+    "evidenceStrength": {
+      "low": "Key story elements are assertions without observable implications.",
+      "medium": "Core customer and business claims are supported but advantage or scaling remains assumed.",
+      "high": "Core claims have direct evidence and withstand a strong counter-story."
+    },
+    "evidenceCoverage": {
+      "low": "Only product and market aspiration are covered.",
+      "medium": "Customer, payer, model, and market are covered but advantage or failure path is partial.",
+      "high": "Customer, payer, value, capture, market, competition, scaling, governance, and failure are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The company's business definition changes across sources.",
+      "medium": "A stable current story exists but future scope is uncertain.",
+      "high": "Current and proposed future businesses are explicitly separated."
+    },
+    "judgmentConfidence": {
+      "low": "Only management's story can be restated.",
+      "medium": "An independent story is defensible but contains one major untested link.",
+      "high": "Independent and competing stories are evidence-linked and falsifiable."
+    }
+  },
+  "overlapFrameworkIds": [
+    "NN-01",
+    "PT-01",
+    "PT-05",
+    "H7P-01"
+  ],
+  "conflictingFrameworkIds": [
+    "FOUNDER-STORY-EQUALS-TRUTH",
+    "CONTRARIAN-BY-DEFAULT",
+    "NO-FALSIFIER-STORY"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapters 2, 3, and 6 review.",
+      "Validate claim separation and counter-story quality with VC reviewers.",
+      "Measure inter-reviewer consistency."
+    ],
+    "empiricalQualifications": [
+      "Independent analysts can introduce their own bias.",
+      "Customer evidence may not generalize beyond a small sample.",
+      "A story may be underdetermined when the company is very early."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public narrative-building principles are paraphrased; product fields are synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete edition-specific element review.",
+      "Define duplicate and contradiction handling for multi-document stories."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

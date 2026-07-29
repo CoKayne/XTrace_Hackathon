@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "MMI-05",
+  "slug": "cycle-capital-market-transmission",
+  "name": "Cycle-to-Company Capital-Market Transmission",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Requires a market event to pass through explicit financing, demand, cost, runway, or exit channels before it changes a startup assessment.",
+    "productLabel": "Cycle Transmission Lens — based on Howard Marks's public cycle materials",
+    "notAClaimOf": ["precise cycle timing", "macro news directly proving company quality", "every rate move being a sea change"]
+  },
+  "attribution": {
+    "display": "Based on Howard Marks's public cycle materials; company transmission graph is product synthesis",
+    "scope": "product_synthesis",
+    "people": ["Howard Marks"],
+    "organizations": ["Oaktree Capital Management"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Observe changes in the capital and economic environment, distinguish ordinary fluctuation from a durable regime shift, and update only the company assumptions connected by supported causal channels. Preserve uncertainty rather than forecasting an exact cycle turn.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "MMI-P1-SEA-2022",
+      "claimIds": ["MMI-CLM-010", "MMI-CLM-021"],
+      "locator": {"kind": "web_section", "value": "Historical review and discussion of a potential change in the interest-rate and return environment"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "MMI-P1-SEA-FOLLOWUP-2023",
+      "claimIds": ["MMI-CLM-010", "MMI-CLM-021"],
+      "locator": {"kind": "web_section", "value": "Sections distinguishing a broad environment shift from ordinary cyclical fluctuations"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "MMI-P1-TEMP-2023",
+      "claimIds": ["MMI-CLM-011", "MMI-CLM-012", "MMI-CLM-016"],
+      "locator": {"kind": "web_section", "value": "Discussion of observing conditions, rare calls, and normal risk posture"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "public"],
+    "businessModels": ["all"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The market event has a date, geography, sector, and cited evidence.",
+    "Company exposure nodes are known.",
+    "Company judgment and market-environment judgment remain separate."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "market_event",
+      "description": "Dated evidence of the market, rate, credit, regulatory, demand, or capital-allocation change.",
+      "necessity": "required",
+      "acceptableSources": ["official data", "regulator", "funding database", "credible news", "VC announcement"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "company_exposure",
+      "description": "Company-specific exposure through customers, costs, financing, runway, valuation, or exits.",
+      "necessity": "required",
+      "acceptableSources": ["company plan", "customer evidence", "financial model", "cap table"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "persistence_evidence",
+      "description": "Evidence distinguishing a short-lived event from a durable environment change.",
+      "necessity": "recommended",
+      "acceptableSources": ["time series", "policy change", "multiple independent sources"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What changed, when, and with what evidence?",
+    "Through which causal channel can it affect this company?",
+    "Which model assumption changes, in which direction and scenario?",
+    "Is this ordinary noise, cyclical pressure, or evidence of a durable regime change?",
+    "What company evidence would block the proposed transmission?"
+  ],
+  "positiveSignals": [
+    "The event reaches a material company driver through a documented exposure.",
+    "Multiple sources and time periods support persistence.",
+    "The updated scenario remains internally consistent.",
+    "The system identifies both positive and negative channels."
+  ],
+  "redFlags": [
+    "Sector keyword overlap substitutes for causal exposure.",
+    "A funding headline reverses a company decision automatically.",
+    "The system forecasts exact rates, recessions, or turning points.",
+    "Market popularity is treated as customer demand."
+  ],
+  "disconfirmingEvidence": [
+    "The company is contractually insulated from the cited channel.",
+    "Customer behavior contradicts the inferred demand effect.",
+    "Funding data reflects one outlier rather than a broad shift.",
+    "The effect is already captured in the existing model."
+  ],
+  "contraindications": [
+    "Do not use macro prediction as the primary company thesis.",
+    "Do not label every recent change a regime shift.",
+    "Do not merge event evidence and company evidence into one confidence score."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Normalize and deduplicate the dated market event.",
+      "Classify event scope and persistence evidence.",
+      "Build explicit event-to-exposure-to-driver edges.",
+      "Send only supported driver deltas to deterministic scenarios.",
+      "Conclude no transmission, watch, material update, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "scenario_update",
+      "requiredInputs": ["baseline_driver", "event_delta", "scenario", "effective_date", "source_ids"],
+      "prohibition": "The language model must not invent a numerical market or company impact."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Event is based on one unsourced headline.", "medium": "Multiple credible sources establish the event.", "high": "Primary data and independent sources establish event, scope, and persistence."},
+    "evidenceStrength": {"low": "Only sector similarity exists.", "medium": "A causal channel is plausible but not company-verified.", "high": "Company exposure and driver effect are directly evidenced."},
+    "evidenceCoverage": {"low": "Event only.", "medium": "Event and exposure exist but persistence or counterchannel is partial.", "high": "Event, exposure, driver, persistence, counterevidence, and scenario are complete."},
+    "applicabilityConfidence": {"low": "Company exposure is unknown.", "medium": "Exposure is indirect.", "high": "Company-specific exposure is material and dated."},
+    "judgmentConfidence": {"low": "Trend mention only.", "medium": "A directional watch is justified.", "high": "A material scenario update is supported without relying on precise forecasting."}
+  },
+  "overlapFrameworkIds": ["NN-07", "NN-08", "BVC-06", "EI-06"],
+  "conflictingFrameworkIds": ["MACRO-HEADLINE-EQUALS-COMPANY-IMPACT", "PRECISE-CYCLE-TIMING"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate event-to-exposure graph.", "Backtest alerts prospectively.", "Complete cycle-chapter review."],
+    "empiricalQualifications": ["Cycle classification is especially vulnerable to hindsight.", "Financing-market effects can differ sharply by stage and geography."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Marks's public observations are paraphrased; the causal transmission graph is product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define persistence thresholds without pretending to identify cycles mechanically."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "bill_gurley_public_frameworks_v0_1",
+  "name": "Bill Gurley Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten cards covering revenue quality, marginal scalability, LTV/CAC, growth-spend discipline, marketplace quality, take rate, expanded TAM, late-stage private diligence, financing/liquidity risk, and governance warnings.",
+  "cardFiles": [
+    "cards/bg-01-revenue-quality-dcf-bridge.card.json",
+    "cards/bg-02-marginal-scalability-and-cash-conversion.card.json",
+    "cards/bg-03-ltv-cac-model-integrity.card.json",
+    "cards/bg-04-growth-spend-and-organic-demand.card.json",
+    "cards/bg-05-marketplace-quality-and-liquidity.card.json",
+    "cards/bg-06-take-rate-and-ecosystem-alignment.card.json",
+    "cards/bg-07-behavior-expanding-tam-scenarios.card.json",
+    "cards/bg-08-late-stage-private-financial-truth.card.json",
+    "cards/bg-09-burn-repricing-and-liquidity-path.card.json",
+    "cards/bg-10-governance-warning-aggregation.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Add external empirical and failed-case review.",
+      "Define model- and stage-specific evidence anchors.",
+      "Obtain accounting, legal, and governance review.",
+      "Backtest decision utility independently from framework fidelity.",
+      "Complete Framework Fidelity and Decision Utility review."
+    ]
+  }
+}

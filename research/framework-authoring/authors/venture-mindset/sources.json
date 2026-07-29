@@ -1,0 +1,318 @@
+{
+  "schemaVersion": "framework-source-catalog-v1",
+  "catalogId": "venture_mindset_public_sources_v0_1",
+  "subject": {
+    "people": [
+      "Ilya Strebulaev",
+      "Alex Dang"
+    ],
+    "organizations": [
+      "Stanford Graduate School of Business"
+    ]
+  },
+  "researchCutoff": "2026-07-28",
+  "sources": [
+    {
+      "sourceId": "VM-P1-KEYNOTE-2025",
+      "title": "The Venture Mindset and the Era of Disruption",
+      "authorOrSpeaker": [
+        "Ilya Strebulaev"
+      ],
+      "publisher": "Frankfurt School Center for European Transformation",
+      "sourceClass": "P1",
+      "sourceType": "official_keynote_slides",
+      "url": "https://cfet.frankfurt-school.de/wp-content/uploads/2025/03/Strebulaev-Center-European-Transformation-keynote-20250306.pdf",
+      "edition": "March 6, 2025 keynote",
+      "publishedAt": "2025-03-06",
+      "eventAt": "2025-03-06",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_slides_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary public source for the nine principles. Slides are concise and do not replace book chapters.",
+      "immutableRevision": {
+        "status": "pending_pdf_hash_and_page_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null,
+        "reviewedPdfPages": [
+          14,
+          15,
+          16,
+          17,
+          20,
+          21,
+          22,
+          23
+        ]
+      }
+    },
+    {
+      "sourceId": "VM-P2-BOOK-001",
+      "title": "The Venture Mindset: How to Make Smarter Bets and Achieve Extraordinary Growth",
+      "authorOrSpeaker": [
+        "Ilya Strebulaev",
+        "Alex Dang"
+      ],
+      "publisher": "Portfolio / Penguin Random House",
+      "sourceClass": "P2",
+      "sourceType": "official_publisher_page_and_public_author_excerpt",
+      "url": "https://penguinrandomhouselibrary.com/book/?isbn=9780593714249",
+      "edition": "2024 ebook excerpt; related hardcover ISBN 9780593714232",
+      "publishedAt": "2024-05-21",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_excerpt_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Public excerpt supports scope and boundaries. It does not provide all chapter-level qualifiers.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-P1-TIME-2024",
+      "title": "The Power of the 118-Hour Decision",
+      "authorOrSpeaker": [
+        "Ilya Strebulaev",
+        "Alex Dang"
+      ],
+      "publisher": "TIME",
+      "sourceClass": "P1",
+      "sourceType": "coauthored_public_article",
+      "url": "https://time.com/6979358/118-hour-decision-essay/",
+      "edition": "May 22, 2024",
+      "publishedAt": "2024-05-22",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_article_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "The 118-hour figure is descriptive, not a universal due-diligence requirement.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-P1-STANFORD-FAST-NO",
+      "title": "How To: Reject Pitches Like a Venture Capitalist",
+      "authorOrSpeaker": [
+        "Ilya Strebulaev",
+        "Alex Dang",
+        "Stanford Business editors"
+      ],
+      "publisher": "Stanford Graduate School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_author-quotation_article",
+      "url": "https://www.gsb.stanford.edu/insights/how-reject-pitches-venture-capitalist",
+      "edition": "May 3, 2024",
+      "publishedAt": "2024-05-03",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_article_neutral_paraphrase_only",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Supports fast rejection and explicit rejection reasons; must distinguish missing evidence from contrary evidence.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-P1-STANFORD-INTERVIEW",
+      "title": "Why the Venture Mindset Is Not Just for Tech Investors",
+      "authorOrSpeaker": [
+        "Ilya Strebulaev",
+        "Alex Dang"
+      ],
+      "publisher": "Stanford Graduate School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_interview",
+      "url": "https://www.gsb.stanford.edu/insights/why-venture-mindset-not-just-tech-investors",
+      "edition": "May 10, 2024",
+      "publishedAt": "2024-05-10",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_interview_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Primary public source for applicability boundaries: uncertainty and disruption, not all routine decisions.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-P1-STANFORD-PODCAST",
+      "title": "The Art of Saying No: How Closing the Wrong Doors Helps You Open the Right Ones",
+      "authorOrSpeaker": [
+        "Ilya Strebulaev",
+        "Matt Abrahams"
+      ],
+      "publisher": "Stanford Graduate School of Business",
+      "sourceClass": "P1",
+      "sourceType": "official_podcast_transcript",
+      "url": "https://www.gsb.stanford.edu/insights/art-saying-no-how-closing-wrong-doors-helps-you-open-right-ones",
+      "edition": "May 21, 2024",
+      "publishedAt": "2024-05-21",
+      "eventAt": "2024",
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_transcript_neutral_paraphrase_only",
+      "attributionScope": "person_direct",
+      "attributionNotes": "Supports why-not-proceed framing and attention allocation.",
+      "immutableRevision": {
+        "status": "pending_transcript_hash_and_timestamp_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-P2-HBR-2024",
+      "title": "Make Decisions with a VC Mindset",
+      "authorOrSpeaker": [
+        "Ilya Strebulaev",
+        "Alex Dang"
+      ],
+      "publisher": "Harvard Business Review",
+      "sourceClass": "P2",
+      "sourceType": "official_publication_metadata",
+      "url": "https://www.gsb.stanford.edu/faculty-research/publications/make-decisions-vc-mindset",
+      "edition": "May 2024",
+      "publishedAt": "2024-05",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "metadata_only_pending_rights_review",
+      "attributionScope": "coauthored_work",
+      "attributionNotes": "Metadata supports individual/disagreement/exceptions/agility summary. Do not ingest paywalled body without authorization.",
+      "immutableRevision": {
+        "status": "metadata_only",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-E1-VC-DECISIONS",
+      "title": "How Do Venture Capitalists Make Decisions?",
+      "authorOrSpeaker": [
+        "Paul Gompers",
+        "Will Gornall",
+        "Steven Kaplan",
+        "Ilya Strebulaev"
+      ],
+      "publisher": "Journal of Financial Economics",
+      "sourceClass": "E1",
+      "sourceType": "peer_reviewed_survey",
+      "url": "https://www.gsb.stanford.edu/faculty-research/publications/how-do-venture-capitalists-make-decisions",
+      "edition": "Volume 135, Issue 1, pages 169-190",
+      "publishedAt": "2020-01",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_metadata_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Describes self-reported VC practice; does not establish causal optimality.",
+      "immutableRevision": {
+        "status": "pending_authorized_pdf_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-E1-DEAL-SELECTION",
+      "title": "Venture Deal Selection Under Noisy Information",
+      "authorOrSpeaker": [
+        "NBER Working Paper 33483 authors"
+      ],
+      "publisher": "NBER",
+      "sourceClass": "E1",
+      "sourceType": "working_paper_empirical",
+      "url": "https://www.nber.org/papers/w33483",
+      "edition": "NBER Working Paper 33483",
+      "publishedAt": "2025",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Qualifies team-first and early-score confidence; one-firm external validity is limited.",
+      "immutableRevision": {
+        "status": "pending_authorized_pdf_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-E1-HUMAN-CAPITAL-2026",
+      "title": "Human Capital in Venture Capital: Evidence From 100,000 Venture Capitalists",
+      "authorOrSpeaker": [
+        "Blake Jackson",
+        "Ilya Strebulaev"
+      ],
+      "publisher": "NBER",
+      "sourceClass": "E1",
+      "sourceType": "working_paper_empirical",
+      "url": "https://www.nber.org/papers/w35501",
+      "edition": "NBER Working Paper 35501",
+      "publishedAt": "2026-07",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_abstract_and_authorized_paper_use",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Very recent working paper. Superstar status, access, and skill interact; do not treat credited deals as pure decision skill.",
+      "immutableRevision": {
+        "status": "pending_authorized_pdf_hash_and_section_review",
+        "hashAlgorithm": "sha256",
+        "contentHash": null
+      }
+    },
+    {
+      "sourceId": "VM-E1-POWERLAW-ANGELLIST",
+      "title": "What AngelList Data Says About Power-Law Returns in Venture Capital",
+      "authorOrSpeaker": [
+        "Abe Othman"
+      ],
+      "publisher": "AngelList",
+      "sourceClass": "E1",
+      "sourceType": "platform_empirical_analysis",
+      "url": "https://www.angellist.com/blog/what-angellist-data-says-about-power-law-returns-in-venture-capital",
+      "edition": "June 17, 2020 analysis",
+      "publishedAt": "2020-06-17",
+      "eventAt": null,
+      "accessedAt": "2026-07-28",
+      "language": "en",
+      "rightsStatus": "public_source_paraphrase_only",
+      "attributionScope": "external_empirical",
+      "attributionNotes": "Supports heavy-tail outcomes while showing portfolio-size implications depend on selection edge and access.",
+      "immutableRevision": {
+        "status": "url_and_access_date_recorded",
+        "hashAlgorithm": null,
+        "contentHash": null
+      }
+    }
+  ],
+  "excludedSources": [
+    {
+      "sourceId": "EX-VM-001",
+      "title": "Uncited nine-principle summaries",
+      "reason": "The official 2025 author keynote is available and supersedes secondary lists."
+    },
+    {
+      "sourceId": "EX-VM-002",
+      "title": "Unauthorized book copies",
+      "reason": "Rights and edition integrity cannot be verified."
+    },
+    {
+      "sourceId": "EX-VM-003",
+      "title": "118 hours as a universal diligence rule",
+      "reason": "The source presents a descriptive average, not a deterministic requirement."
+    }
+  ]
+}

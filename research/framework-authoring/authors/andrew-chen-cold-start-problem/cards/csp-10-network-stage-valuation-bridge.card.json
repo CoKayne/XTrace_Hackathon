@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "CSP-10",
+  "slug": "network-stage-valuation-bridge",
+  "name": "Network Stage-to-Valuation Bridge",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Translates evidenced network-stage operating drivers into bounded valuation inputs without assigning a narrative moat premium.",
+    "productLabel": "Network Valuation Bridge — product synthesis from Andrew Chen's public Cold Start materials",
+    "notAClaimOf": ["Andrew Chen prescribing a valuation formula", "network effects justifying any price", "a binary moat score replacing operating assumptions"]
+  },
+  "attribution": {
+    "display": "Product synthesis from Andrew Chen's public Cold Start materials",
+    "scope": "product_synthesis",
+    "people": ["Andrew Chen"],
+    "organizations": ["Andreessen Horowitz"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Use the company's evidenced Cold Start stage to condition valuation drivers. Pass only measured or explicitly scenario-bound changes in acquisition, retention, monetization, subsidy, saturation, replication, and competition to deterministic models; preserve the network story as an auditable hypothesis with disconfirmers.",
+  "claimTypes": ["direct_doctrine", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "CSP-P1-BOOK-PDF-2021",
+      "claimIds": ["CSP-CLM-004", "CSP-CLM-013", "CSP-CLM-017", "CSP-CLM-019", "CSP-CLM-021", "CSP-CLM-022"],
+      "locator": {"kind": "pdf_page", "value": "Five-stage framework, PDF pp. 50-52; Parts IV-VI, PDF pp. 198-383"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "CSP-P1-METRICS-2018",
+      "claimIds": ["CSP-CLM-015", "CSP-CLM-019", "CSP-CLM-020", "CSP-CLM-022"],
+      "locator": {"kind": "web_section", "value": "Network-effect measurement categories and limitations"},
+      "attributionScope": "course_notes_derivative",
+      "supportType": "qualification"
+    },
+    {
+      "sourceId": "CSP-P1-METCALFE-2021",
+      "claimIds": ["CSP-CLM-010", "CSP-CLM-017", "CSP-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Stage-specific dynamics, saturation, and overcrowding"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth", "late_stage"],
+    "businessModels": ["marketplace", "social", "collaboration", "communication", "gaming", "developer_platform", "payment_network", "networked_product"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["preferred_equity", "common_equity", "convertible", "safe", "all"]
+  },
+  "requiredConditions": [
+    "CSP-01 applicability is satisfied.",
+    "Network stage is supported by cards CSP-02 through CSP-09 rather than self-declared.",
+    "A deterministic valuation model and scenario assumptions are available.",
+    "Company facts, market assumptions, and framework judgments remain separately traceable."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "network_stage_evidence",
+      "description": "Atomic-network density, hard-side retention, replication, and acquisition/engagement/economic effect evidence.",
+      "necessity": "required",
+      "acceptableSources": ["validated outputs from CSP-02 through CSP-07", "auditable operating data"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "ceiling_moat_evidence",
+      "description": "Quality, saturation, multi-homing, hard-side competition, local resets, and mitigation evidence.",
+      "necessity": "required",
+      "acceptableSources": ["validated outputs from CSP-08 and CSP-09", "competitive and quality data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "valuation_baseline",
+      "description": "Independent revenue, margin, reinvestment, risk, dilution, and terminal assumptions before network adjustments.",
+      "necessity": "required",
+      "acceptableSources": ["deterministic DCF or venture model", "scenario valuation", "cap table model"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "driver_mapping",
+      "description": "Explicit mapping from each network observation to a bounded valuation driver and scenario.",
+      "necessity": "required",
+      "acceptableSources": ["assumption registry", "valuation driver bridge", "scenario table"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which Cold Start stage is actually evidenced?",
+    "Which measured network mechanism changes acquisition, retention, monetization, cost, reinvestment, or risk?",
+    "What ceiling, subsidy, multi-homing, and local-reset evidence limits that change?",
+    "What price-implied network outcome must occur to justify the financing valuation?"
+  ],
+  "positiveSignals": [
+    "Multiple atomic networks reproduce density, retention, and economics with declining subsidy.",
+    "A measured operating relationship maps to one or more valuation drivers.",
+    "Bear, base, and bull cases bound ceiling and competitor outcomes separately.",
+    "The proposed price remains supportable under a documented, non-heroic network scenario."
+  ],
+  "redFlags": [
+    "A generic network-effect premium is added to a multiple or discount rate.",
+    "Global user count substitutes for local density, retention, or economics.",
+    "Terminal assumptions presume perpetual network strengthening.",
+    "Current price requires unobserved replication, subsidy removal, or moat durability."
+  ],
+  "disconfirmingEvidence": [
+    "Network metrics fail to alter customer behavior or unit economics.",
+    "Ceilings and multi-homing offset the positive operating effect.",
+    "New networks mature more slowly or expensively.",
+    "Reverse valuation requires density, retention, or monetization beyond observed bounds."
+  ],
+  "contraindications": [
+    "Do not let this card calculate valuation.",
+    "Do not translate an advisory framework judgment into a deterministic premium.",
+    "Do not treat missing company data as observed network performance.",
+    "Do not combine acquisition, engagement, and economics into one opaque score."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Load independent outputs from CSP-02 through CSP-09.",
+      "Classify the evidenced network stage and list contradictions.",
+      "Map only supported mechanisms to bounded valuation-driver scenarios.",
+      "Run deterministic valuation and reverse-price expectations.",
+      "Report framework judgment, calculated valuation, and price comparison separately."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "network_stage_valuation_bridge",
+      "requiredOutputs": ["network_stage", "evidenced_driver_changes", "unsupported_story_claims", "bear_base_bull_assumptions", "deterministic_valuation_results", "price_implied_network_expectations"],
+      "prohibition": "The language model must not calculate valuation, invent company metrics, or add a narrative moat premium."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Narrative and management forecasts only.", "medium": "Some network and financial data are reconciled.", "high": "Auditable network-unit, financial, competitive, and valuation inputs converge."},
+    "evidenceStrength": {"low": "Network label without operating mechanism.", "medium": "One or two mechanisms are evidenced but stage or durability remains.", "high": "Replicated acquisition, engagement, economics, ceiling, and moat evidence support bounded drivers."},
+    "evidenceCoverage": {"low": "Top-line users and valuation only.", "medium": "Core effects covered with some ceiling or competition gaps.", "high": "All stage, effect, subsidy, ceiling, moat, finance, and price-implied inputs covered."},
+    "applicabilityConfidence": {"low": "No direct network-value dependency.", "medium": "A material but partial network mechanism exists.", "high": "The company's economics and defensibility materially depend on network dynamics."},
+    "judgmentConfidence": {"low": "No valuation translation.", "medium": "Scenario-only translation.", "high": "Bounded driver translation supported by repeated evidence."}
+  },
+  "overlapFrameworkIds": ["CSP-02", "CSP-03", "CSP-04", "CSP-05", "CSP-06", "CSP-07", "CSP-08", "CSP-09", "DSV-10", "EI-10", "NN-10", "H7P-10"],
+  "conflictingFrameworkIds": ["NETWORK-PREMIUM-WITHOUT-DRIVER", "NETWORK-EFFECTS-JUSTIFY-ANY-PRICE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate all upstream network cards.", "Validate deterministic driver bridge.", "Backtest reverse-price thresholds and stage classification."],
+    "empiricalQualifications": ["The valuation bridge is product synthesis, not a valuation formula attributed to Andrew Chen.", "Network operating relationships vary by archetype and market."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public doctrine is paraphrased; the valuation bridge is explicitly labeled product synthesis."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Validate network-stage to valuation-driver mappings and reverse-price bounds."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

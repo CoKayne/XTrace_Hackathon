@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SF-01",
+  "slug": "descriptive-base-rate-guardrail",
+  "name": "Descriptive Base-Rate Guardrail",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Uses Super Founders findings to challenge unsupported stereotypes without converting descriptive associations into causal scores.",
+    "productLabel": "Base-Rate Guardrail — based on Ali Tamaseb's Super Founders public materials",
+    "notAClaimOf": [
+      "a causal startup-success model",
+      "a calibrated probability of becoming a unicorn",
+      "Ali Tamaseb or DCVC endorsement"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Ali Tamaseb's public description of the Super Founders dataset and its limits",
+    "scope": "product_synthesis",
+    "people": [
+      "Ali Tamaseb"
+    ],
+    "organizations": [],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "The public research compares a specific cohort of billion-dollar startups with a selected group of venture-funded non-unicorns across many variables. Its safe investment use is to challenge unsupported exclusion rules and generate further diligence, not to infer causation, assign success probabilities, or turn isolated findings into weights.",
+  "claimTypes": [
+    "direct_doctrine",
+    "historical_description",
+    "product_inference",
+    "empirical_qualification"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "SF-P1-TECHMEME-2019",
+      "claimIds": [
+        "SF-CLM-001",
+        "SF-CLM-002"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Transcript 00:04:28-00:07:06: manual collection, pattern-matching purpose, explicit no-causation boundary, and cohort limitation"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SF-P1-INC-2021",
+      "claimIds": [
+        "SF-CLM-001"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Study-design paragraphs and Takeaways: 30,000 points, 200+ startups, 65 factors, 2005-2018 comparison group"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "SF-E1-NONSIGNIFICANCE-AEA",
+      "claimIds": [
+        "SF-EQ-005",
+        "SF-EQ-006"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract and decision-under-uncertainty discussion: report estimates and uncertainty rather than binary significance labels"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "venture_backed_startup"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all_with_us_cohort_warning"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The conclusion identifies which Super Founders observation is being used.",
+    "Only information available at the investment decision date is evaluated.",
+    "The system can separate stereotype removal from positive investment evidence.",
+    "No success probability or formal weight is inferred from the public findings."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "decision_date_evidence",
+      "description": "Dated founder, company, market, and financing evidence available before the decision.",
+      "necessity": "required",
+      "acceptableSources": [
+        "Evidence Pack",
+        "diligence records",
+        "archived company materials"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "candidate_stereotype",
+      "description": "The explicit heuristic or exclusion rule being challenged and its original evidence.",
+      "necessity": "required",
+      "acceptableSources": [
+        "investment memo",
+        "IC notes",
+        "Framework output"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "cohort_fit",
+      "description": "Stage, geography, sector, founding era, funding status, and outcome definition compared with the source cohort.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company profile",
+        "source methodology",
+        "Evidence Pack"
+      ],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "incremental_business_evidence",
+      "description": "Product, customer, market, economic, governance, and price evidence independent of the stereotype.",
+      "necessity": "required",
+      "acceptableSources": [
+        "customer evidence",
+        "operating metrics",
+        "valuation model",
+        "reference checks"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is the memo treating a common pattern as a necessary condition?",
+    "Does the cited public result describe prevalence, group difference, or causation?",
+    "How closely does this company match the study cohort and outcome definition?",
+    "Would the conclusion survive if the stereotype variable were hidden?",
+    "What business evidence is still required after the hard gate is removed?",
+    "Could the evidence contain post-decision leakage?"
+  ],
+  "positiveSignals": [
+    "An unsupported founder stereotype is removed from screening.",
+    "The revised memo requests observable business and execution evidence.",
+    "Cohort mismatch and uncertainty are displayed next to the finding.",
+    "The conclusion remains limited to anti-bias or research use."
+  ],
+  "redFlags": [
+    "A public percentage is converted into a company-level probability.",
+    "No significant difference is stated as proof of identical outcomes.",
+    "A variable is assigned formal decision weight without incremental validation.",
+    "Post-outcome information is used as if known at initial investment.",
+    "The comparison group is described as all failed startups."
+  ],
+  "disconfirmingEvidence": [
+    "A separate, better-matched dataset shows the factor has incremental predictive value.",
+    "The current sector has a mandatory capability that the broad cohort did not measure.",
+    "The company differs materially in geography, era, stage, or capital regime.",
+    "A protected or prestige trait is acting as a proxy for missing operational evidence."
+  ],
+  "contraindications": [
+    "Do not use this card to recommend investment.",
+    "Do not infer causal direction or calibrated probability.",
+    "Do not treat the selected non-unicorn comparison group as the population of startups.",
+    "Do not combine 65 findings into a hidden composite score."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Name the candidate stereotype and the exact source observation.",
+      "Classify the observation as descriptive, associational, or externally qualified.",
+      "Check cohort, decision-date, and outcome-label compatibility.",
+      "Remove only the unsupported gate; do not add an opposite preference.",
+      "Request independent business evidence and preserve external conflicts."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only unsourced summaries or startup folklore are available.",
+      "medium": "Author public summaries support a finding but not its full statistical details.",
+      "high": "Licensed chapter tables, definitions, uncertainty, and external replications are reviewed."
+    },
+    "evidenceStrength": {
+      "low": "The conclusion rests on a stereotype or one founder statement.",
+      "medium": "The stereotype is challenged and some independent company evidence exists.",
+      "high": "Decision-date company evidence and matched external evidence converge."
+    },
+    "evidenceCoverage": {
+      "low": "Cohort fit or independent business evidence is missing.",
+      "medium": "Founder and company evidence exist but price or market evidence is incomplete.",
+      "high": "Cohort, founder, business, market, price, and counterevidence are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The case is not a venture-backed startup or materially differs from the source cohort.",
+      "medium": "The observation is directionally relevant with meaningful cohort differences.",
+      "high": "The same stage, sector, geography, era, and evidence definition have been validated."
+    },
+    "judgmentConfidence": {
+      "low": "The only conclusion is that the stereotype is unproven.",
+      "medium": "The hard gate is unsupported but business diligence remains incomplete.",
+      "high": "The anti-gate conclusion holds across author, external, and company-specific evidence."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VM-05",
+    "SF-10",
+    "DEBIAS-BASE-RATE"
+  ],
+  "conflictingFrameworkIds": [
+    "FOUNDER-STEREOTYPE-SCORE",
+    "UNICORN-PROBABILITY-MODEL"
+  ],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale"
+    ],
+    "promotionRequirements": [
+      "Complete licensed methodology and statistical-table review.",
+      "Test each factor for incremental utility on matched decision-date data.",
+      "Define temporal holdouts and sector-specific validation.",
+      "Demonstrate no protected-trait or prestige leakage."
+    ],
+    "empiricalQualifications": [
+      "The comparison group conditions on having raised at least $3 million.",
+      "The published public summary does not expose all estimates, uncertainty, missingness, or multiple-testing controls.",
+      "The outcome is billion-dollar valuation, not realized return.",
+      "The author explicitly disclaims causal interpretation."
+    ]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "No book, article, or transcript passage is reproduced."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete licensed methodology and table review.",
+      "Resolve 30,000 versus 40,000 public data-point discrepancy."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source guardrail separating anti-bias use from prediction."
+    }
+  ]
+}
+

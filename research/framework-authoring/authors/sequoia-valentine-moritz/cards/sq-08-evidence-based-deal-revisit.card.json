@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-08",
+  "slug": "evidence-based-deal-revisit",
+  "name": "Evidence-Based Deal Revisit",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Reopens a passed or watched deal only when specified company, market, technology, or financing evidence has materially changed.",
+    "productLabel": "Evidence-Based Deal Revisit — derived from Michael Moritz's disclosed Zappos history and bounded as revealed behavior",
+    "notAClaimOf": ["persistence predicting success", "all passed deals deserving another look", "Zappos supplying a universal revisit rule"]
+  },
+  "attribution": {
+    "display": "Revealed-behavior lens from Michael Moritz's and Alfred Lin's public Zappos account",
+    "scope": "revealed_behavior",
+    "people": ["Michael Moritz", "Alfred Lin"],
+    "organizations": ["Sequoia Capital"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Preserve the dated reasons, assumptions, and required milestones behind a pass or watch decision. Reopen the deal when credible new evidence changes those conditions, then rerun the full analysis. A founder's persistence, category fashion, or new financing alone is not sufficient.",
+  "claimTypes": ["revealed_behavior", "historical_description", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-P1-MORITZ-ZAPPOS",
+      "claimIds": ["SQ-CLM-008", "SQ-CLM-009", "SQ-CLM-010", "SQ-CLM-027"],
+      "locator": {"kind": "web_section", "value": "Lines 38-57: repeated passes, explicit concerns, continuing contact, later growth, user value, and investment"},
+      "attributionScope": "revealed_behavior",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-I1-COVID-2021",
+      "claimIds": ["SQ-CLM-015"],
+      "locator": {"kind": "web_section", "value": "Lines 20-37: changed conditions, durable versus temporary behavior, scenarios, customers, and input metrics"},
+      "attributionScope": "institution_doctrine",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["all_startups"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "A prior decision record contains dated reasons and unresolved assumptions.",
+    "A new event can be linked to at least one prior reason or threshold.",
+    "The company is rerun through current underwriting and valuation rather than auto-upgraded."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "prior_decision_memory",
+      "description": "Dated status, pass/watch reasons, evidence, dissent, assumptions, requested milestones, and source documents.",
+      "necessity": "required",
+      "acceptableSources": ["investment memo", "meeting notes", "decision record", "XTrace memory", "partner discussion record"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "change_event",
+      "description": "Verified market, technology, regulation, customer, team, financing, or product event with date and source.",
+      "necessity": "required",
+      "acceptableSources": ["primary announcement", "regulation", "customer record", "company filing", "credible news", "technical release"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "condition_resolution",
+      "description": "Specific evidence showing whether each prior concern improved, worsened, remained, or became irrelevant.",
+      "necessity": "required",
+      "acceptableSources": ["current company data", "customer evidence", "financials", "product metrics", "market data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "current_underwriting",
+      "description": "Updated team, product, market, economics, risk, terms, ownership, valuation, and next-round requirements.",
+      "necessity": "required",
+      "acceptableSources": ["updated Evidence Pack", "financial model", "cap table", "term sheet", "diligence records"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What exactly caused the prior pass or watch decision?",
+    "Which new fact changes which prior assumption?",
+    "Is the change durable, verified, and company-specific or only sector sentiment?",
+    "Which original concerns remain unresolved or have worsened?",
+    "At current price and terms, does the updated opportunity still fit the fund?"
+  ],
+  "positiveSignals": [
+    "The prior decision has explicit, source-linked reasons and milestones.",
+    "New evidence directly resolves or materially changes a prior concern.",
+    "Company-specific progress and market change reinforce each other.",
+    "The updated analysis includes remaining risks, price, terms, and fund fit."
+  ],
+  "redFlags": [
+    "The prior decision is only labeled pass without reasons.",
+    "A funding announcement or hot sector triggers automatic promotion.",
+    "Founder persistence substitutes for changed evidence.",
+    "The system hides prior dissent or unresolved concerns."
+  ],
+  "disconfirmingEvidence": [
+    "A market tailwind may not improve the company's product, economics, or competitive position.",
+    "A new funding round can increase price without reducing risk.",
+    "A prior concern may be resolved while a more important new risk emerges.",
+    "Some passed deals remain outside strategy or ownership requirements even after progress."
+  ],
+  "contraindications": [
+    "Do not auto-recommend from semantic similarity alone.",
+    "Do not infer a universal rule from the selected Zappos case.",
+    "Do not let a revisit alert produce Invest Candidate without current deterministic policy."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Retrieve the source-linked prior decision, concerns, and milestones.",
+      "Verify and classify the new event.",
+      "Create a concern-by-concern changed, unchanged, worsened, or unknown comparison.",
+      "Rerun current lenses, valuation, ownership, terms, and fund-fit checks.",
+      "Conclude no revisit, monitor, revisit warranted, advance for diligence, or insufficient evidence."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Event dates, threshold comparisons, financial changes, ownership, dilution, valuation, and decision-policy status must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Social post or unsourced news.", "medium": "Credible report and internal update.", "high": "Primary source plus company records and independent verification."},
+    "evidenceStrength": {"low": "Sector attention.", "medium": "One prior condition changed.", "high": "Multiple key concerns are verified as resolved with current underwriting."},
+    "evidenceCoverage": {"low": "New event only.", "medium": "Prior reasons and change event.", "high": "All prior concerns, new risks, current company, market, terms, and price covered."},
+    "applicabilityConfidence": {"low": "No prior source-linked decision.", "medium": "Prior reasons and relevant event exist.", "high": "Explicit milestone or assumption is directly updated."},
+    "judgmentConfidence": {"low": "Similarity alert.", "medium": "Bounded revisit rationale.", "high": "Verified change map and full current analysis support the status."}
+  },
+  "overlapFrameworkIds": ["VM-06", "MMI-04", "NN-03", "MA-03", "EI-01"],
+  "conflictingFrameworkIds": ["SECTOR-HEAT-AUTO-UPGRADE", "FOUNDER-PERSISTENCE-AS-SIGNAL"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Validate prior-decision completeness.", "Backtest alert precision and missed revisits.", "Integrate current valuation and fund policy."],
+    "empiricalQualifications": ["The Zappos account is one selected successful revisit.", "Prospective revisit precision depends on decision-memory quality and event verification."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Disclosed behavior is paraphrased and explicitly bounded as a product inference."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Backtest revisit alerts against both successful and unsuccessful historical deals."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}

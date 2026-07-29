@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "framework-pack-authoring-v1",
+  "packId": "sequoia_valentine_moritz_public_frameworks_v0_1",
+  "name": "Sequoia / Don Valentine / Michael Moritz Public Frameworks — Research Draft",
+  "version": "0.1.0",
+  "description": "Ten attribution-scoped cards covering clarity and customer pain, problem and market size, customer pull, founder purpose, adaptation, capital discipline, unexpected opportunities, evidence-based revisits, long-horizon partnership, and bounded investor value-add.",
+  "cardFiles": [
+    "cards/sq-01-clarity-focus-and-customer-pain.card.json",
+    "cards/sq-02-problem-size-and-market-evolution.card.json",
+    "cards/sq-03-customer-pull-and-product-evidence.card.json",
+    "cards/sq-04-founder-purpose-and-product-obsession.card.json",
+    "cards/sq-05-adaptive-speed-and-customer-listening.card.json",
+    "cards/sq-06-frugality-runway-and-business-conversion.card.json",
+    "cards/sq-07-unexpected-opportunity-and-category-escape.card.json",
+    "cards/sq-08-evidence-based-deal-revisit.card.json",
+    "cards/sq-09-long-horizon-partnership-and-holding.card.json",
+    "cards/sq-10-investor-value-add-and-governance-boundary.card.json"
+  ],
+  "sourceCatalog": "sources.json",
+  "executionPolicy": {
+    "independentLensExecution": true,
+    "preserveDisagreements": true,
+    "hiddenChainOfThought": false,
+    "formalDecisionFactorRule": "Only cards with decisionUtility.status=validated_decision_factor may carry non-zero formal decision weight."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "openIssues": [
+      "Add independent empirical and failed-case review.",
+      "Validate undated Sequoia pages against archived revisions.",
+      "Define stage- and business-model-specific evidence anchors.",
+      "Backtest decision utility independently from framework fidelity.",
+      "Complete Framework Fidelity and Decision Utility review."
+    ]
+  }
+}

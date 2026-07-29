@@ -1,0 +1,267 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "BVC-03",
+  "slug": "check-ownership-capital-path",
+  "name": "Check, Ownership, and Capital Path",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Models initial check, target ownership, pro rata, dilution, follow-ons, exit ownership, and payoff as one deterministic capital path.",
+    "productLabel": "Deal Capital Path — product synthesis anchored to Ramsinghani's fund-construction and transaction chapters",
+    "notAClaimOf": [
+      "target ownership being automatically achievable",
+      "headline post-money determining investor payoff",
+      "pro rata rights guaranteeing future allocation"
+    ]
+  },
+  "attribution": {
+    "display": "Product synthesis anchored to Mahendra Ramsinghani's fund-construction and transaction chapters",
+    "scope": "product_synthesis",
+    "people": [
+      "Mahendra Ramsinghani"
+    ],
+    "organizations": [
+      "The Business of Venture Capital"
+    ],
+    "fidelityConfidence": "low"
+  },
+  "neutralParaphrase": "Treat the first check as the start of a multi-round capital path. Normalize the current security and valuation, calculate acquired ownership, model future financings and pro rata choices, apply security rights, and estimate exit proceeds. Compare total capital required and return contribution with fund policy.",
+  "claimTypes": [
+    "product_inference",
+    "contractual_convention",
+    "direct_doctrine"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "BVC-P2-CH13-14",
+      "claimIds": [
+        "BVC-CLM-005",
+        "BVC-CLM-007",
+        "BVC-CLM-020"
+      ],
+      "locator": {
+        "kind": "chapter_page",
+        "value": "Chapter 13 pp. 129-135; detailed capital-path treatment pending full review"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "BVC-P2-CH27",
+      "claimIds": [
+        "BVC-CLM-014"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Public summary: preferred stock, liquidation preference, anti-dilution, and renegotiation"
+      },
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "common_equity",
+      "preferred_equity",
+      "convertible_note",
+      "safe"
+    ]
+  },
+  "requiredConditions": [
+    "Valuation, share count, security, option pool, and investment amount are normalized.",
+    "Fund target ownership and capital budget are explicit.",
+    "Future rounds are labeled scenarios, not forecasts.",
+    "VC Finance and Venture Deals services own ownership and waterfall calculations."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "current_round",
+      "description": "Pre/post-money convention, price, amount, security, option pool, capitalization, and rights.",
+      "necessity": "required",
+      "acceptableSources": [
+        "term sheet",
+        "cap table",
+        "financing documents",
+        "company-confirmed round data"
+      ],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "fund_ownership_policy",
+      "description": "Initial and target ownership ranges, check limits, pro rata, concentration, and reserve policy.",
+      "necessity": "required",
+      "acceptableSources": [
+        "user-confirmed Fund Policy",
+        "IC policy",
+        "fund model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "future_financing_scenarios",
+      "description": "Round timing, amount, valuation, dilution, option-pool changes, pro rata, and participation choices.",
+      "necessity": "required",
+      "acceptableSources": [
+        "company financing plan",
+        "scenario model",
+        "stage/sector priors"
+      ],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What ownership does the initial check actually purchase?",
+    "What capital is needed to maintain or reach target ownership?",
+    "How do dilution and option-pool changes alter ownership?",
+    "What rights change payoff across exit values?",
+    "How much total fund capital is at risk under each path?",
+    "Can the investment make a material fund return?"
+  ],
+  "positiveSignals": [
+    "Round conventions and capitalization reconcile.",
+    "Target ownership fits check and reserve policy.",
+    "Future dilution and pro rata are explicitly scenario-modeled.",
+    "Waterfall results are shown across exit values.",
+    "Return contribution is material without heroic exit assumptions."
+  ],
+  "redFlags": [
+    "SAFE cap is treated as current valuation.",
+    "Post-money headline is used without security normalization.",
+    "Pro rata right is treated as guaranteed capital allocation.",
+    "Target ownership ignores future dilution.",
+    "Exit proceeds are calculated as headline ownership times exit value regardless of rights."
+  ],
+  "disconfirmingEvidence": [
+    "Cap table or option pool differs from stated round terms.",
+    "The fund lacks reserves to follow on.",
+    "Future rounds require larger checks than concentration permits.",
+    "Liquidation preferences materially alter common-equivalent ownership.",
+    "Reasonable exits do not contribute meaningfully to fund returns."
+  ],
+  "contraindications": [
+    "Do not give legal advice.",
+    "Do not perform free-form LLM cap-table math.",
+    "Do not assume future allocation.",
+    "Do not evaluate company quality from ownership alone."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Normalize the current round and security.",
+      "Calculate initial ownership.",
+      "Run explicit future financing and participation scenarios.",
+      "Apply dilution and waterfall rules.",
+      "Compare total capital, exit ownership, proceeds, and fund contribution with policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "currentOwnershipIdentity": "fully_diluted_shares_owned_post_round / fully_diluted_shares_post_round",
+      "futureOwnershipIdentity": "shares_owned_after_all_rounds / fully_diluted_shares_at_exit",
+      "proceedsRequireWaterfall": true,
+      "calculationOwner": "ownership_and_waterfall_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Only a pitch-deck round headline exists.",
+      "medium": "Term sheet and partial cap table exist.",
+      "high": "Executed documents, verified cap table, and fund policy reconcile."
+    },
+    "evidenceStrength": {
+      "low": "Only initial ownership is approximated.",
+      "medium": "Current round is verified and future paths are bounded scenarios.",
+      "high": "Current capitalization and scenario mechanics are complete and independently checked."
+    },
+    "evidenceCoverage": {
+      "low": "Security or option pool is missing.",
+      "medium": "Current round is covered but future dilution or waterfall is partial.",
+      "high": "Round, cap table, rights, future financing, dilution, reserve, exit, and proceeds are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "Security or jurisdiction is unsupported by the model.",
+      "medium": "A standard venture security applies with disclosed exceptions.",
+      "high": "Instrument and jurisdiction map directly to validated calculation rules."
+    },
+    "judgmentConfidence": {
+      "low": "Only a rough ownership range is supportable.",
+      "medium": "Capital need and ownership path are usable with labeled scenarios.",
+      "high": "The complete capital path and payoff are reproducible."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-03",
+    "VCFI-05",
+    "VD-02",
+    "VD-03"
+  ],
+  "conflictingFrameworkIds": [
+    "SAFE-CAP-EQUALS-VALUATION",
+    "PRO-RATA-EQUALS-ALLOCATION",
+    "HEADLINE-OWNERSHIP-EQUALS-PAYOFF"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete lawful Chapter 13 review.",
+      "Validate integration with terms and waterfall services.",
+      "Test real cap tables and nonstandard rounds."
+    ],
+    "empiricalQualifications": [
+      "Future financing terms and allocation are uncertain.",
+      "Option-pool and security structures vary.",
+      "Exit values and timing dominate realized fund contribution."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Transaction topics are publicly supported; the integrated capital-path model is product synthesis pending chapter review."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete Chapter 13 review.",
+      "Validate instrument and jurisdiction coverage."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source and product-synthesis draft."
+    }
+  ]
+}

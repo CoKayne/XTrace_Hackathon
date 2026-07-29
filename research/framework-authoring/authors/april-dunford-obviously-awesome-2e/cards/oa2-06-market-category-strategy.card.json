@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-06",
+  "slug": "market-category-strategy",
+  "name": "Market Category and Positioning Strategy",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests whether the chosen category gives best-fit customers useful context for differentiated value without imposing false assumptions or excessive education cost.",
+    "productLabel": "Market-Category Lens — based on April Dunford's 2026 public materials",
+    "notAClaimOf": ["category being the whole positioning", "a novel category always being superior", "an aspirational label changing customer perception by itself"]
+  },
+  "attribution": {
+    "display": "Based on April Dunford's 2026 public materials",
+    "scope": "person_direct",
+    "people": ["April Dunford"],
+    "organizations": ["Positioning with April Dunford"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Choose a category only after alternatives, capability, value, and best-fit customer are understood. Evaluate which category helps the target customer quickly infer what the product is, why its value matters, and which alternatives are relevant; explicitly price the confusion and education burden of an aspirational or new category.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-CATEGORY-2026",
+      "claimIds": ["OA2-CLM-017", "OA2-CLM-018"],
+      "locator": {"kind": "video_timestamp", "value": "00:00-18:00, aspirational category, category job, three strategies, and new-category risk"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-QUICKSTART",
+      "claimIds": ["OA2-CLM-003", "OA2-CLM-016", "OA2-CLM-017"],
+      "locator": {"kind": "web_section", "value": "Market category follows alternatives, capabilities, value, and best-fit customer"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-BOOKS-2026",
+      "claimIds": ["OA2-CLM-017", "OA2-CLM-018"],
+      "locator": {"kind": "web_section", "value": "Official learning outcomes: choose the best market including three styles"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "OA2-02 through OA2-05 have usable outputs.",
+    "Candidate categories can be tested with target customers.",
+    "Category assumptions and education cost can be observed."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "category_assumptions",
+      "description": "What target buyers infer about use case, buyer, features, price, implementation, alternatives, and risk from each category.",
+      "necessity": "required",
+      "acceptableSources": ["buyer interviews", "sales calls", "category research", "message tests"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "value_category_fit",
+      "description": "Whether the category makes differentiated value easier to understand for best-fit customers.",
+      "necessity": "required",
+      "acceptableSources": ["sales conversations", "customer interviews", "pitch tests", "win/loss"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "education_cost",
+      "description": "Time, content, sales effort, budget creation, and risk required to teach or create a category.",
+      "necessity": "recommended",
+      "acceptableSources": ["sales cycle data", "content plan", "budget-source analysis", "pipeline conversion"],
+      "missingEffect": "lower_confidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What assumptions does this category trigger in the target customer's mind?",
+    "Do those assumptions illuminate or obscure differentiated value?",
+    "Does the company intend to win within, subsegment, or create a category?",
+    "Can the company afford the education, budget-creation, and ecosystem burden?"
+  ],
+  "positiveSignals": [
+    "Best-fit customers understand the product and value faster in the chosen context.",
+    "Category assumptions align with real alternatives and buying behavior.",
+    "The selected strategy fits company resources and market maturity.",
+    "New-category education has a credible budget, channel, and proof plan."
+  ],
+  "redFlags": [
+    "The category is aspirational but contradicts customer shortlists.",
+    "Sales must repeatedly undo false assumptions created by the label.",
+    "Category creation is chosen for uniqueness without an education budget.",
+    "Management changes category names while alternatives and value remain unclear."
+  ],
+  "disconfirmingEvidence": [
+    "A conventional category improves conversion despite appearing less differentiated.",
+    "A subcategory narrows TAM language but makes the company dominant for best-fit buyers.",
+    "A new category succeeds because an external market shift already creates demand and language.",
+    "Category confusion persists even when the value chain is clear."
+  ],
+  "contraindications": [
+    "Do not choose category before OA2-02 through OA2-05.",
+    "Do not infer category fit from analyst taxonomy alone.",
+    "Do not treat category creation as free differentiation."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "List candidate categories and their customer assumptions.",
+      "Compare each with alternatives, value, and best-fit customers.",
+      "Test comprehension and sales behavior.",
+      "Estimate education and budget-creation burden.",
+      "Conclude aligned, workable with cost, confusing, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {
+      "service": "category_test_analysis",
+      "requiredOutputs": ["comprehension_results", "sales_cycle_by_category_test", "conversion_by_test", "education_effort", "sample_and_confounds"],
+      "prohibition": "The language model must not calculate test effects or market size."
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Internal category preference.", "medium": "Customer tests and some sales evidence.", "high": "Repeated customer, sales, win/loss, and funnel evidence converge."},
+    "evidenceStrength": {"low": "Plausible label.", "medium": "Improved comprehension with uncertain commercial effect.", "high": "Category repeatedly improves understanding and buying behavior."},
+    "evidenceCoverage": {"low": "Category name only.", "medium": "Assumptions and some tests.", "high": "Alternatives, value, buyers, assumptions, comprehension, conversion, cost, and countercategories covered."},
+    "applicabilityConfidence": {"low": "Category context is not material.", "medium": "Some buyer confusion or opportunity.", "high": "Category materially shapes customer understanding and competition."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Conditional category fit.", "high": "Well-evidenced category strategy."}
+  },
+  "overlapFrameworkIds": ["OA2-05", "OA2-07", "PT-03", "H7P-07"],
+  "conflictingFrameworkIds": ["NEW-CATEGORY-ALWAYS-BETTER", "CATEGORY-NAME-EQUALS-POSITIONING"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Review three-strategy definitions in licensed edition.", "Validate category testing.", "Backtest education-cost estimates."],
+    "empiricalQualifications": ["Category effects vary with market familiarity and distribution.", "Tests can be confounded by message quality and sales execution."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author's public 2026 category guidance is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Verify exact three positioning styles in licensed edition."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-03",
+  "slug": "differentiated-capabilities",
+  "name": "Differentiated Capabilities",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Tests which product or company capabilities are meaningfully distinct from real customer alternatives.",
+    "productLabel": "Differentiated-Capability Lens — based on April Dunford's public positioning method",
+    "notAClaimOf": ["every feature being differentiating", "technical novelty automatically creating value", "roadmap promises being current capability"]
+  },
+  "attribution": {
+    "display": "Based on April Dunford's public positioning method",
+    "scope": "person_direct",
+    "people": ["April Dunford"],
+    "organizations": ["AprilDunford.com", "Positioning with April Dunford"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Compare current, usable capabilities with the real alternatives identified from customer evidence. Retain only differences that are true, relevant to the scoped offering, and available in the buying context; separate roadmap, implementation service, brand, and table-stakes claims.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-QUICKSTART",
+      "claimIds": ["OA2-CLM-003", "OA2-CLM-012", "OA2-CLM-013"],
+      "locator": {"kind": "web_section", "value": "Five components; differentiated features/capabilities after alternatives"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-VALUE-2026",
+      "claimIds": ["OA2-CLM-012", "OA2-CLM-013", "OA2-CLM-014"],
+      "locator": {"kind": "video_timestamp", "value": "03:14-13:31, alternatives, capabilities, outcomes, and value concepts"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "OA2-P1-BOOKS-2026",
+      "claimIds": ["OA2-CLM-003", "OA2-CLM-012"],
+      "locator": {"kind": "web_section", "value": "Official book learning outcomes: five component pieces and unique value"},
+      "attributionScope": "person_direct",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "OA2-02 has produced a customer-grounded alternative set.",
+    "The capability exists now or is clearly labeled future.",
+    "Product proof can be compared at equivalent scope and conditions."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "capability_comparison",
+      "description": "Current capability compared with each major alternative, including prerequisites, limits, and parity.",
+      "necessity": "required",
+      "acceptableSources": ["product demonstration", "technical documentation", "customer workflow", "competitive proof"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "customer_usage",
+      "description": "Best-fit customers actually use or depend on the claimed capability.",
+      "necessity": "required",
+      "acceptableSources": ["product telemetry", "implementation records", "customer interviews", "support data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "claim_availability",
+      "description": "GA/beta/roadmap status, configuration, services, integration, data, and contract requirements.",
+      "necessity": "required",
+      "acceptableSources": ["release record", "SLA", "product documentation", "customer contract"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Different from which real alternative?",
+    "Is the capability available and usable in the target customer's context?",
+    "Do best-fit customers use it in a way alternatives cannot match?",
+    "Is the difference durable, temporary, or merely implementation effort?"
+  ],
+  "positiveSignals": [
+    "A current capability is demonstrably absent or weaker in relevant alternatives.",
+    "Best-fit users depend on the difference in real workflows.",
+    "Prerequisites and service requirements are transparent.",
+    "The company distinguishes table stakes, parity, and true differences."
+  ],
+  "redFlags": [
+    "Feature count substitutes for comparison.",
+    "Roadmap or demo-only capability is presented as current.",
+    "The distinction disappears after configuration, services, or pricing are normalized.",
+    "Technical novelty lacks customer use."
+  ],
+  "disconfirmingEvidence": [
+    "A named competitor matches the capability in current production.",
+    "Customers achieve the same outcome through a manual or adjacent tool.",
+    "Usage is low among purported best-fit customers.",
+    "The capability is differentiated but easy to copy and not strategically important."
+  ],
+  "contraindications": [
+    "Do not compare features without the OA2-02 alternative set.",
+    "Do not merge future roadmap with current capability.",
+    "Do not infer value from novelty."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Normalize current capability and scope.",
+      "Compare against evidenced alternatives.",
+      "Review customer usage and prerequisites.",
+      "Separate parity, difference, roadmap, and service effort.",
+      "Conclude differentiated, conditionally differentiated, parity, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Pitch or feature matrix only.", "medium": "Product proof and some customer use.", "high": "Technical proof, telemetry, customers, and alternative verification converge."},
+    "evidenceStrength": {"low": "Claimed novelty.", "medium": "Observed difference with limited use.", "high": "Repeated, decision-relevant difference in best-fit workflows."},
+    "evidenceCoverage": {"low": "One feature.", "medium": "Major alternatives and usage partly covered.", "high": "All major alternatives, availability, prerequisites, use, parity, and roadmap covered."},
+    "applicabilityConfidence": {"low": "No real alternative comparison.", "medium": "Some relevant differences.", "high": "Purchase context depends on specific capability differences."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Conditional difference.", "high": "Well-supported differentiated capability."}
+  },
+  "overlapFrameworkIds": ["OA2-02", "OA2-04", "H7P-04", "PT-02"],
+  "conflictingFrameworkIds": ["FEATURE-COUNT-EQUALS-DIFFERENTIATION", "NOVELTY-EQUALS-VALUE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define equivalent-comparison protocol.", "Validate product evidence ingestion.", "Backtest capability claims."],
+    "empiricalQualifications": ["Competitive capabilities change quickly.", "Product usage and differentiation are segment-specific."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Public author method is neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Define proof levels for capability and competitor parity."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

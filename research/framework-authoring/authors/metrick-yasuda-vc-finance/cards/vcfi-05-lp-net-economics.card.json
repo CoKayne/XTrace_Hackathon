@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "VCFI-05",
+  "slug": "lp-net-economics",
+  "name": "LP Cost, GP Carry, and Net Fund Economics",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Converts security-level gross value into stakeholder-specific GP and LP economics using verified fund terms.",
+    "productLabel": "LP Net Economics Lens — based on Metrick and Yasuda's public AUTO architecture",
+    "notAClaimOf": [
+      "gross company proceeds equaling LP return",
+      "all funds using the same fee and carry terms",
+      "deal-level return alone proving fund-level attractiveness"
+    ]
+  },
+  "attribution": {
+    "display": "Based on Andrew Metrick and Ayako Yasuda's public GP/LP valuation architecture, empirically qualified by fund-compensation research",
+    "scope": "product_synthesis",
+    "people": [
+      "Andrew Metrick",
+      "Ayako Yasuda"
+    ],
+    "organizations": [
+      "VCV Tools"
+    ],
+    "fidelityConfidence": "medium"
+  },
+  "neutralParaphrase": "The startup security produces a gross payoff, but the VC fund is an intermediary with committed capital, management fees, carry, reserves, expenses, timing, and allocation rules. The value to the GP and LP and the LP's cost are separate outputs. Only verified LPA and fund-policy terms may drive the deterministic calculation.",
+  "claimTypes": [
+    "direct_doctrine",
+    "empirical_qualification",
+    "product_inference"
+  ],
+  "sourceRefs": [
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-AUTO",
+      "claimIds": [
+        "VCFI-CLM-004",
+        "VCFI-CLM-019"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "AUTO inputs and outputs: committed capital, lifetime fees, GP percentage, LP cost, GP value, LP value"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "VCFI-P1-VCVTOOLS-FLEX",
+      "claimIds": [
+        "VCFI-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "FLEX inputs and results: GP percentage, LP value, and partial value"
+      },
+      "attributionScope": "coauthored_work",
+      "supportType": "corroborating"
+    },
+    {
+      "sourceId": "VCFI-E1-FUND-FEES-2012",
+      "claimIds": [
+        "VCFI-CLM-004"
+      ],
+      "locator": {
+        "kind": "web_section",
+        "value": "Abstract: compensation, ownership, management contracts, cash flows, net-of-fee performance, and fundraising conditions"
+      },
+      "attributionScope": "external_empirical",
+      "supportType": "qualification"
+    }
+  ],
+  "applicability": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a",
+      "series_b",
+      "growth"
+    ],
+    "businessModels": [
+      "all_startups"
+    ],
+    "sectors": [
+      "all"
+    ],
+    "geographies": [
+      "all"
+    ],
+    "securityTypes": [
+      "equity",
+      "preferred_equity",
+      "convertible"
+    ]
+  },
+  "requiredConditions": [
+    "The investment vehicle and stakeholder are identified.",
+    "LPA economics and amendments are verified rather than inferred from market convention.",
+    "Gross security cash flows are timestamped before fund allocation.",
+    "Deal-level and fund-level cash flows are kept separate.",
+    "Recycling, hurdle, catch-up, clawback, fees, expenses, and carry basis are modeled if applicable."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "security_cash_flows",
+      "description": "Scenario-specific contributions, follow-ons, distributions, and dates for the investment security.",
+      "necessity": "required",
+      "acceptableSources": [
+        "waterfall service",
+        "fund accounting records",
+        "scenario model"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "lpa_terms",
+      "description": "Committed capital, management-fee base and step-down, carry, hurdle, catch-up, clawback, recycling, expenses, and allocation rules.",
+      "necessity": "required",
+      "acceptableSources": [
+        "executed limited partnership agreement",
+        "side letters",
+        "fund accounting policy"
+      ],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "portfolio_context",
+      "description": "Fund-level calls, distributions, reserves, realized/unrealized positions, and carry state needed for allocation.",
+      "necessity": "required",
+      "acceptableSources": [
+        "fund ledger",
+        "capital account statements",
+        "approved reserve plan"
+      ],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "What gross cash flows does this security produce and when?",
+    "Which fees and expenses contribute to LP cost?",
+    "How does the LPA allocate proceeds between return of capital, LP profit, and GP carry?",
+    "Does deal-by-deal versus whole-fund carry change the result?",
+    "What reserve and concentration commitments are required?",
+    "Does the LP net result satisfy approved Fund Policy?"
+  ],
+  "positiveSignals": [
+    "Executed LPA terms drive all allocations.",
+    "Gross security, GP, and LP cash flows are shown separately.",
+    "Fees and expenses have dated bases and step-downs.",
+    "Carry, hurdle, catch-up, and clawback mechanics reconcile.",
+    "The output includes LP net MOIC, IRR, and cash-flow schedule with definitions."
+  ],
+  "redFlags": [
+    "A conventional fee/carry percentage is assumed without documents.",
+    "Gross deal MOIC is labeled LP return.",
+    "Follow-on reserves or fees are omitted from cost.",
+    "Carry is calculated without portfolio-level state.",
+    "IRR is shown without dated cash flows."
+  ],
+  "disconfirmingEvidence": [
+    "Verified LPA terms reduce LP value below the assumed result.",
+    "Required reserves make the opportunity breach portfolio policy.",
+    "Clawback or whole-fund mechanics materially change GP/LP allocation.",
+    "Longer holding periods reduce net IRR below policy.",
+    "Portfolio losses absorb distributions or delay carry."
+  ],
+  "contraindications": [
+    "Do not infer LPA economics from industry convention.",
+    "Do not calculate LP net return from a single exit proceeds number.",
+    "Do not ignore the time and sequence of calls and distributions.",
+    "Do not use this lens as a substitute for fund accounting or legal review."
+  ],
+  "decisionMethod": {
+    "kind": "deterministic_rule",
+    "instructions": [
+      "Obtain dated gross security cash flows.",
+      "Load executed LPA and fund-accounting rules.",
+      "Calculate LP cost and portfolio allocation state.",
+      "Allocate each cash flow between LP and GP in contractual order.",
+      "Compute stakeholder-specific measures and pass them to Fund Policy."
+    ],
+    "outputOrder": [
+      "evidence",
+      "applicable_rule",
+      "judgment",
+      "counterevidence",
+      "unknowns",
+      "conclusion",
+      "next_evidence_request"
+    ],
+    "deterministicRule": {
+      "requiredOutputs": [
+        "gross_security_cash_flows",
+        "lp_cost_cash_flows",
+        "gp_cash_flows",
+        "lp_net_cash_flows",
+        "lp_net_moic",
+        "lp_net_irr",
+        "reserve_requirement"
+      ],
+      "allocationOwner": "fund_economics_service",
+      "llmMayCalculate": false
+    }
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {
+      "low": "Fund economics come from pitch language or convention.",
+      "medium": "LPA summary is available but portfolio state or amendments are incomplete.",
+      "high": "Executed LPA, amendments, ledger, capital accounts, and security cash flows are verified."
+    },
+    "evidenceStrength": {
+      "low": "One gross payoff and a fee assumption drive the result.",
+      "medium": "Fund terms are verified but portfolio allocation state is estimated.",
+      "high": "Dated fund-level cash flows reproduce audited allocations."
+    },
+    "evidenceCoverage": {
+      "low": "Only carry percentage is known.",
+      "medium": "Fees and carry are covered but hurdle, clawback, or recycling is incomplete.",
+      "high": "All economic terms, cash flows, reserves, and portfolio state are covered."
+    },
+    "applicabilityConfidence": {
+      "low": "The investment vehicle or stakeholder is unclear.",
+      "medium": "The fund is identified but one material allocation term is unresolved.",
+      "high": "The exact fund, LPA, investment, and stakeholder are explicit."
+    },
+    "judgmentConfidence": {
+      "low": "Only gross security economics can be shown.",
+      "medium": "A provisional LP range can be shown with missing-term caveats.",
+      "high": "GP and LP values reconcile to verified fund records."
+    }
+  },
+  "overlapFrameworkIds": [
+    "VCFI-01",
+    "VCFI-02",
+    "SK-02",
+    "SK-08"
+  ],
+  "conflictingFrameworkIds": [
+    "GROSS-EQUALS-LP-NET",
+    "UNIVERSAL-TWO-AND-TWENTY",
+    "DEAL-ONLY-CARRY"
+  ],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": [
+      "research_question",
+      "watch_rationale",
+      "advance_rationale",
+      "portfolio_policy"
+    ],
+    "promotionRequirements": [
+      "Complete third-edition fund-economics review.",
+      "Validate allocation logic with fund counsel and fund accounting.",
+      "Reconcile test cases to audited capital accounts."
+    ],
+    "empiricalQualifications": [
+      "Compensation terms vary with fund, vintage, bargaining, and market conditions.",
+      "Deal-level approximations may not reproduce whole-fund carry.",
+      "IRR is timing-sensitive and should be shown with MOIC and cash flows."
+    ]
+  },
+  "rights": {
+    "status": "pending_review",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "The card combines public companion-tool architecture with neutral empirical qualification."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": [
+      "Complete third-edition Chapter 1-4 and partial-valuation review.",
+      "Define scope between deal underwriting and fund accounting."
+    ]
+  },
+  "changeLog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-28",
+      "summary": "Initial public-source research draft."
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "OA2-01",
+  "slug": "positioning-readiness",
+  "name": "Positioning Readiness and Scope",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Determines whether the company has enough customer evidence and alignment to perform positioning, and defines the offering, audience, champion, and participants.",
+    "productLabel": "Positioning Readiness Lens — based on April Dunford's 2026 public materials",
+    "notAClaimOf": ["pre-launch theses being validated positioning", "customer positioning serving investors", "positioning being a marketing-only exercise"]
+  },
+  "attribution": {
+    "display": "Based on April Dunford's 2026 public materials",
+    "scope": "person_direct",
+    "people": ["April Dunford"],
+    "organizations": ["Positioning with April Dunford"],
+    "fidelityConfidence": "high"
+  },
+  "neutralParaphrase": "Before evaluating positioning, determine whether the product is launched, who the intended audience and champion are, whether the scope is product, company, wedge, platform, or suite, which bad-fit customers are excluded, and whether sales, product, marketing, founders, and executives contribute customer-grounded evidence.",
+  "claimTypes": ["direct_doctrine", "product_inference"],
+  "sourceRefs": [
+    {
+      "sourceId": "OA2-P1-DECISIONS-2026",
+      "claimIds": ["OA2-CLM-004", "OA2-CLM-005", "OA2-CLM-006", "OA2-CLM-007", "OA2-CLM-008"],
+      "locator": {"kind": "video_timestamp", "value": "04:35-22:26, five-step revision, thesis, audience, scope, and champion"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-PREP-2026",
+      "claimIds": ["OA2-CLM-004", "OA2-CLM-005"],
+      "locator": {"kind": "video_timestamp", "value": "01:53-21:58, pre/core/post, cross-functional team, bad-fit exclusions, legacy assumptions, shared language"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "OA2-P1-ANNOUNCE-2026",
+      "claimIds": ["OA2-CLM-004", "OA2-CLM-005"],
+      "locator": {"kind": "web_section", "value": "What's new in the updated and expanded edition"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b", "growth"],
+    "businessModels": ["b2b_saas", "enterprise_software", "developer_tool", "b2b_marketplace", "technology_product", "technology_service"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company sells or plans to sell a defined B2B offering.",
+    "Positioning evidence can be separated from investor and employee narratives.",
+    "The analysis is limited to a specified offering and customer audience."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "launch_and_evidence_status",
+      "description": "Launch state, number and type of customers/prospects, sales history, and whether claims are hypotheses or observed.",
+      "necessity": "required",
+      "acceptableSources": ["CRM", "sales calls", "customer interviews", "product release record"],
+      "missingEffect": "not_applicable"
+    },
+    {
+      "evidenceKey": "positioning_scope",
+      "description": "Offering, company/product boundary, geography, segment, use case, platform/suite/wedge choice, and intended audience.",
+      "necessity": "required",
+      "acceptableSources": ["product catalog", "strategy memo", "sales materials", "founder interview"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "champion_and_team",
+      "description": "Champion persona, buying group, cross-functional contributors, decision owner, and known bad-fit customers.",
+      "necessity": "required",
+      "acceptableSources": ["buying committee data", "CRM contacts", "workshop charter", "win/loss"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Is this demonstrated positioning or only a pre-launch thesis?",
+    "What exact offering and audience are in scope?",
+    "Who champions the purchase and who else influences it?",
+    "Which cross-functional evidence and bad-fit customers constrain the exercise?"
+  ],
+  "positiveSignals": [
+    "Hypotheses and observed customer evidence are clearly labeled.",
+    "Offering scope and audience are narrow enough to test.",
+    "A specific champion and buying process are evidenced.",
+    "Cross-functional participants share definitions and include contrary evidence."
+  ],
+  "redFlags": [
+    "Investor language is reused as customer positioning.",
+    "The company tries to position every product for every historical customer.",
+    "A pre-launch concept is treated as validated.",
+    "Marketing owns the answer without sales, product, or customer evidence."
+  ],
+  "disconfirmingEvidence": [
+    "A pre-launch thesis is intentionally loose and paired with a test plan.",
+    "A broad scope reflects one genuinely shared buyer, alternative, and value chain.",
+    "A small evidence set is internally consistent but remains low confidence.",
+    "One function owns facilitation while evidence remains cross-functional."
+  ],
+  "contraindications": [
+    "Do not infer positioning from an investor deck alone.",
+    "Do not label a thesis as demonstrated.",
+    "Do not merge different offerings or audiences to improve apparent evidence."
+  ],
+  "decisionMethod": {
+    "kind": "qualitative_lens",
+    "instructions": [
+      "Classify launch and evidence status.",
+      "Define offering, audience, champion, and exclusions.",
+      "Map cross-functional evidence owners and vocabulary.",
+      "Test whether scope hides multiple positioning chains.",
+      "Conclude ready, thesis-only, scope-unresolved, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": null
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder or marketing assertion.", "medium": "Cross-functional evidence with some customer records.", "high": "CRM, calls, win/loss, product, and cross-functional evidence converge."},
+    "evidenceStrength": {"low": "Internal thesis.", "medium": "Observed but limited customer pattern.", "high": "Repeated best-fit buying behavior supports scope and champion."},
+    "evidenceCoverage": {"low": "Offering name only.", "medium": "Scope, audience, and some team evidence.", "high": "Launch, scope, audience, champion, buying group, team, exclusions, and counterevidence covered."},
+    "applicabilityConfidence": {"low": "No defined B2B offering.", "medium": "Offering exists but scope or evidence is immature.", "high": "A defined offering and customer process make positioning material."},
+    "judgmentConfidence": {"low": "Insufficient.", "medium": "Thesis or bounded readiness.", "high": "Well-evidenced readiness and scope."}
+  },
+  "overlapFrameworkIds": ["OA2-08", "PT-06", "SF-05"],
+  "conflictingFrameworkIds": ["INVESTOR-PITCH-EQUALS-CUSTOMER-POSITIONING", "PRELAUNCH-CLAIM-EQUALS-EVIDENCE"],
+  "decisionUtility": {
+    "status": "candidate",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Review licensed second edition.", "Define evidence-status schema.", "Backtest readiness classifications."],
+    "empiricalQualifications": ["Author methodology is practice-derived.", "Readiness does not establish product-market fit."]
+  },
+  "rights": {
+    "status": "public_source_paraphrase",
+    "displayMode": "neutral_paraphrase_only",
+    "containsLongQuote": false,
+    "notes": "Author's public 2026 materials are neutrally paraphrased."
+  },
+  "review": {
+    "contentStatus": "draft",
+    "publicationStatus": "unpublished",
+    "reviewer": null,
+    "reviewedAt": null,
+    "openIssues": ["Verify exact final pre-work checklist in licensed edition."]
+  },
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source second-edition research draft."}]
+}

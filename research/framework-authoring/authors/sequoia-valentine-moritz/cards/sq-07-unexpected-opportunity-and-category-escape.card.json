@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "framework-card-authoring-v1",
+  "frameworkId": "SQ-07",
+  "slug": "unexpected-opportunity-and-category-escape",
+  "name": "Unexpected Opportunity and Category Escape",
+  "version": "0.1.0",
+  "positioning": {
+    "oneLineSummary": "Prevents convenient sector labels from prematurely excluding businesses whose product changes use cases, behavior, or market boundaries.",
+    "productLabel": "Unexpected Opportunity Lens — based on Michael Moritz's public Stanford interview",
+    "notAClaimOf": ["novelty being inherently investable", "anti-consensus being sufficient evidence", "Airbnb or DJI analogies predicting another company's outcome"]
+  },
+  "attribution": {
+    "display": "Based on Michael Moritz's direct public remarks summarized by Stanford Graduate School of Business",
+    "scope": "person_direct",
+    "people": ["Michael Moritz"],
+    "organizations": ["Stanford Graduate School of Business", "Sequoia Capital"],
+    "fidelityConfidence": "medium_high"
+  },
+  "neutralParaphrase": "Do not force an unfamiliar business into the nearest existing category and then reject it on inherited category assumptions. Gather facts, identify the customer behavior and use cases the product could create, and build multiple market scenarios. Novelty opens a diligence path; it does not earn a positive score.",
+  "claimTypes": ["direct_doctrine", "historical_description", "product_inference", "empirical_qualification"],
+  "sourceRefs": [
+    {
+      "sourceId": "SQ-P1-MORITZ-GSB-2019",
+      "claimIds": ["SQ-CLM-020", "SQ-CLM-021"],
+      "locator": {"kind": "web_section", "value": "Sections You Don't Need to Be an Expert to Recognize Potential and The Best Investments Are Hard to Pigeonhole"},
+      "attributionScope": "person_direct",
+      "supportType": "primary"
+    },
+    {
+      "sourceId": "SQ-P1-MORITZ-STVP-2016",
+      "claimIds": ["SQ-CLM-020", "SQ-CLM-028", "SQ-CLM-031"],
+      "locator": {"kind": "web_section", "value": "Transcript lines 32-35, 155-164, and 224-232: imagining possibilities, investment quality over profile, and costly failed investments"},
+      "attributionScope": "person_direct",
+      "supportType": "corroborating"
+    }
+  ],
+  "applicability": {
+    "stages": ["pre_seed", "seed", "series_a", "series_b"],
+    "businessModels": ["all_startups", "new_category", "consumer", "enterprise", "marketplace", "hardware_enabled"],
+    "sectors": ["all"],
+    "geographies": ["all"],
+    "securityTypes": ["all"]
+  },
+  "requiredConditions": [
+    "The company is poorly represented by existing category definitions or could create materially new behavior.",
+    "The alternative thesis can be stated in falsifiable terms.",
+    "Novelty is evaluated separately from customer evidence, economics, defensibility, and price."
+  ],
+  "requiredEvidence": [
+    {
+      "evidenceKey": "category_mismatch",
+      "description": "Specific ways existing category assumptions fail to describe the product, customer, workflow, price, frequency, or use case.",
+      "necessity": "required",
+      "acceptableSources": ["product observation", "customer interviews", "workflow comparison", "category research", "usage data"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "new_behavior_or_use_case",
+      "description": "Observed or testable customer behavior, frequency, convenience, price, access, or application expansion created by the product.",
+      "necessity": "required",
+      "acceptableSources": ["usage cohorts", "customer interviews", "transaction logs", "experiments", "technical validation"],
+      "missingEffect": "insufficient_evidence"
+    },
+    {
+      "evidenceKey": "alternative_market_scenarios",
+      "description": "Conventional-category and expanded-category scenarios with assumptions, adoption, timing, competition, and failure conditions.",
+      "necessity": "required",
+      "acceptableSources": ["scenario model", "market research", "competitive map", "adoption evidence", "pricing tests"],
+      "missingEffect": "lower_confidence"
+    },
+    {
+      "evidenceKey": "ordinary_underwriting",
+      "description": "Product quality, demand, retention, unit economics, defensibility, team, governance, capital needs, and price.",
+      "necessity": "required",
+      "acceptableSources": ["Evidence Pack", "financial model", "customer records", "technical diligence", "governance documents"],
+      "missingEffect": "insufficient_evidence"
+    }
+  ],
+  "decisionQuestions": [
+    "Which inherited category assumption would cause a premature rejection?",
+    "What new customer behavior or use case is already observable?",
+    "What must be true for the market to escape the conventional category boundary?",
+    "Which ordinary underwriting evidence remains weak despite novelty?",
+    "What fact would return the company to the conventional, smaller interpretation?"
+  ],
+  "positiveSignals": [
+    "Existing category definitions fail in specific, evidence-backed ways.",
+    "Customers exhibit new behavior, frequency, access, or applications.",
+    "The alternative market thesis has explicit assumptions and failure tests.",
+    "Ordinary product, economic, governance, and valuation diligence remains intact."
+  ],
+  "redFlags": [
+    "The company calls itself category-defining without observable behavior change.",
+    "Analogies to famous outliers substitute for evidence.",
+    "Every failed conventional metric is dismissed as applying to the old category.",
+    "Novelty is used to avoid unit economics, regulation, or valuation."
+  ],
+  "disconfirmingEvidence": [
+    "Many products are correctly described by existing categories.",
+    "A novel interface may not change demand, willingness to pay, or economics.",
+    "New behavior can be temporary, subsidized, or confined to enthusiasts.",
+    "A company can create a category and still produce a poor investor return at the offered price."
+  ],
+  "contraindications": [
+    "Do not award points for being hard to classify.",
+    "Do not use named-company analogy as evidence.",
+    "Do not bypass ordinary underwriting or deterministic valuation."
+  ],
+  "decisionMethod": {
+    "kind": "hybrid",
+    "instructions": [
+      "Write the conventional category interpretation and its assumptions.",
+      "Document the specific category mismatch and observed new behavior.",
+      "Build conventional, expanded, and failure scenarios deterministically.",
+      "Run ordinary customer, product, economics, governance, and price lenses unchanged.",
+      "Conclude category-bound, plausible escape, demonstrated escape, narrative-only, or insufficient."
+    ],
+    "outputOrder": ["evidence", "applicable_rule", "judgment", "counterevidence", "unknowns", "conclusion", "next_evidence_request"],
+    "deterministicRule": {"serviceBoundary": "Market scenarios, penetration, frequency, price, unit economics, and valuation must be computed outside the language model."}
+  },
+  "confidenceAnchors": {
+    "sourceReliability": {"low": "Founder category claim.", "medium": "Internal behavior and market evidence.", "high": "Independent customer evidence and reproducible scenarios."},
+    "evidenceStrength": {"low": "Novel terminology.", "medium": "Observed behavior change in a bounded cohort.", "high": "Multiple cohorts show durable new behavior with viable economics."},
+    "evidenceCoverage": {"low": "Category narrative only.", "medium": "Behavior and market scenarios.", "high": "Behavior, adoption, economics, competition, regulation, failure cases, and price covered."},
+    "applicabilityConfidence": {"low": "Ordinary category business.", "medium": "Material category mismatch.", "high": "New behavior or use cases are already observable."},
+    "judgmentConfidence": {"low": "Analogy-driven.", "medium": "Bounded alternative thesis.", "high": "Independent evidence differentiates expanded and conventional scenarios."}
+  },
+  "overlapFrameworkIds": ["BG-07", "PT-01", "PT-02", "MA-02", "NN-04"],
+  "conflictingFrameworkIds": ["SECTOR-BUCKET-AUTO-REJECT", "NOVELTY-AS-INVESTABILITY"],
+  "decisionUtility": {
+    "status": "advisory",
+    "formalDecisionWeight": 0,
+    "allowedUses": ["research_question", "watch_rationale", "advance_rationale"],
+    "promotionRequirements": ["Define category-mismatch review.", "Backtest expanded-market false positives.", "Require ordinary underwriting completion."],
+    "empiricalQualifications": ["The public examples are selected outliers.", "Category creation is rare and difficult to identify prospectively."]
+  },
+  "rights": {"status": "public_source_paraphrase", "displayMode": "neutral_paraphrase_only", "containsLongQuote": false, "notes": "Direct public remarks are neutrally paraphrased without named-company imitation."},
+  "review": {"contentStatus": "draft", "publicationStatus": "unpublished", "reviewer": null, "reviewedAt": null, "openIssues": ["Add failed category-creation cases and calibration review."]},
+  "changeLog": [{"version": "0.1.0", "date": "2026-07-28", "summary": "Initial public-source research draft."}]
+}
