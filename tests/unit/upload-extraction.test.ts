@@ -1,76 +1,140 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createMemoryUploadedDocumentsRepository } from "../../db/repositories/uploaded-documents";
-import { DealMemoryBundleSchema } from "../../lib/contracts/domain";
 import {
-  resolveUploadContentType,
+  createMemoryUploadedDocumentsRepository,
+  type ExtractionPreview,
+} from "../../db/repositories/uploaded-documents";
+import {
+  resolveRuntimeUploadContentType,
   safeFilename,
-  UnsupportedUploadError,
-  uploadedDealId,
   uploadedObjectKey,
 } from "../../lib/uploads/service";
 import {
-  buildUploadedDealBundle,
-  extractDealProfile,
   extractDocumentText,
+  extractUploadPreview,
 } from "../../worker/extract-upload";
 
 const RECORD = {
   id: "upload_abc",
   workspaceId: "workspace_demo",
-  filename: "acme-deck.pdf",
-  contentType: "application/pdf",
+  filename: "acme.txt",
+  contentType: "text/plain",
   byteSize: 1_024,
   checksum: "abc123",
-  objectKey: "private/uploads/abc123/acme-deck.pdf",
+  objectKey: "private/workspaces/workspace_demo/uploads/upload_abc/acme.txt",
   status: "extracting" as const,
   failureReason: null,
-  companyName: null,
-  headline: null,
-  extractedFacts: [],
-  memoryTexts: [],
-  memoryIds: [],
-  xtraceJobId: null,
-  dealId: null,
+  extractionPreview: null,
   createdAt: "2026-07-25T12:00:00.000Z",
   updatedAt: "2026-07-25T12:00:00.000Z",
 };
 
-test("upload content types come from the filename, not the browser's guess", () => {
-  assert.equal(
-    resolveUploadContentType({ filename: "deck.pdf", reportedType: "application/octet-stream" }),
-    "application/pdf",
-  );
-  assert.equal(
-    resolveUploadContentType({ filename: "memo.DOCX" }),
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  );
-  assert.throws(
-    () => resolveUploadContentType({ filename: "malware.exe" }),
-    UnsupportedUploadError,
-  );
-});
+for (const [filename, expected] of [
+  ["notes.txt", "text/plain"],
+  ["notes.md", "text/markdown"],
+  ["slide.jpg", "image/jpeg"],
+  ["slide.png", "image/png"],
+  ["slide.gif", "image/gif"],
+  ["slide.webp", "image/webp"],
+] as const) {
+  test(`accepts ${filename}`, () => {
+    assert.equal(resolveRuntimeUploadContentType({ filename }), expected);
+  });
+}
 
-test("upload filenames and object keys cannot escape their prefix", () => {
+for (const filename of ["deck.pdf", "memo.docx", "call.m4a"]) {
+  test(`rejects ${filename}`, () => {
+    assert.throws(() => resolveRuntimeUploadContentType({ filename }));
+  });
+}
+
+test("upload filenames and object keys cannot escape their workspace upload prefix", () => {
   assert.equal(safeFilename("../../etc/passwd"), "passwd");
-  assert.equal(safeFilename("a b/c:d.pdf"), "c_d.pdf");
-  assert.match(
-    uploadedObjectKey({ checksum: "abc", filename: "../evil.pdf" }),
-    /^private\/uploads\/abc\/evil\.pdf$/,
+  assert.equal(safeFilename("a b/c:d.png"), "c_d.png");
+  assert.equal(
+    uploadedObjectKey({
+      workspaceId: "workspace_demo",
+      uploadId: "upload_abc",
+      filename: "../evil.png",
+    }),
+    "private/workspaces/workspace_demo/uploads/upload_abc/evil.png",
   );
 });
 
-test("plain-text extraction rejects documents with no readable text", async () => {
+test("text extraction preserves the complete deterministically decoded document", async () => {
+  const documentText = `Acme builds realtime logistics software.\n${"x".repeat(40_001)}`;
   const text = await extractDocumentText({
-    bytes: new TextEncoder().encode(
-      "Acme builds realtime logistics software for mid-market carriers.",
-    ),
+    bytes: new TextEncoder().encode(documentText),
     contentType: "text/plain",
     filename: "acme.txt",
   });
-  assert.match(text, /realtime logistics/);
 
+  assert.equal(text, documentText);
+});
+
+test("image extraction sends the source bytes as an Anthropic image block", async () => {
+  let messageContent: unknown;
+  const text = await extractDocumentText({
+    bytes: new Uint8Array([137, 80, 78, 71]),
+    contentType: "image/png",
+    filename: "slide.png",
+    client: {
+      async complete(input) {
+        messageContent = input.messages[0]?.content;
+        return "Acme serves 240 carriers.";
+      },
+    },
+  });
+
+  assert.equal(text, "Acme serves 240 carriers.");
+  assert.deepEqual(messageContent, [
+    {
+      type: "image",
+      source: {
+        type: "base64",
+        media_type: "image/png",
+        data: "iVBORw==",
+      },
+    },
+    { type: "text", text: "Transcribe every visible word in this image verbatim." },
+  ]);
+});
+
+test("preview facts retain locators and complete extraction metadata", async () => {
+  const documentText = "Acme serves 240 carriers. Revenue grew to $4.2M in 2025.";
+  const preview = await extractUploadPreview({
+    record: RECORD,
+    bytes: new TextEncoder().encode(documentText),
+    client: {
+      async complete() {
+        return JSON.stringify({
+          companyName: "Acme",
+          headline: "Acme serves 240 carriers.",
+          facts: [{ text: "Customer base", excerpt: "Acme serves 240 carriers." }],
+        });
+      },
+    },
+    extractedAt: "2026-07-25T12:00:00.000Z",
+  });
+
+  assert.deepEqual(preview.facts, [{
+    text: "Customer base",
+    excerpt: "Acme serves 240 carriers.",
+    locator: { kind: "text_range", start: 0, end: 25 },
+  }]);
+  assert.deepEqual(preview.extractionMetadata, {
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-25T12:00:00.000Z",
+    contentHash: await sha256("Acme serves 240 carriers. Revenue grew to $4.2M in 2025."),
+    inputBytes: documentText.length,
+    extractedCharacters: documentText.length,
+    truncated: false,
+  });
+});
+
+test("an empty text document fails honestly", async () => {
   await assert.rejects(
     extractDocumentText({
       bytes: new TextEncoder().encode("  \n "),
@@ -81,54 +145,7 @@ test("plain-text extraction rejects documents with no readable text", async () =
   );
 });
 
-test("extraction keeps only facts whose excerpt is verbatim in the document", async () => {
-  const documentText = "Acme serves 240 carriers. Revenue grew to $4.2M in 2025.";
-  const profile = await extractDealProfile({
-    client: {
-      async complete() {
-        return JSON.stringify({
-          companyName: "Acme",
-          headline: "Acme serves 240 carriers.",
-          facts: [
-            { text: "Customer base", excerpt: "Acme serves 240 carriers." },
-            { text: "Revenue", excerpt: "Revenue grew to $4.2M in 2025." },
-            { text: "Fabricated", excerpt: "Acme raised a $30M Series B." },
-          ],
-        });
-      },
-    },
-    documentText,
-    filename: "acme.txt",
-  });
-
-  assert.equal(profile.companyName, "Acme");
-  assert.deepEqual(profile.facts.map((fact) => fact.text), ["Customer base", "Revenue"]);
-});
-
-test("an uploaded bundle carries source lineage and no synthetic decision record", () => {
-  const bundle = buildUploadedDealBundle({
-    record: RECORD,
-    dealId: uploadedDealId(RECORD.checksum),
-    companyName: "Acme",
-    headline: "Acme serves 240 carriers.",
-    facts: [{ text: "Customer base", excerpt: "Acme serves 240 carriers." }],
-  });
-
-  const parsed = DealMemoryBundleSchema.parse(bundle);
-  assert.equal(parsed.status, "screening");
-  assert.deepEqual(parsed.interactions, []);
-  assert.ok(parsed.facts.every((fact) =>
-    fact.sources.every((source) =>
-      source.provenance === "source_document" && source.documentId === RECORD.id
-    )
-  ));
-  assert.ok(
-    !parsed.dealId.startsWith("deal_1906"),
-    "uploaded deals must not collide with preloaded deal ids",
-  );
-});
-
-test("claiming an upload is exclusive until its lease expires", async () => {
+test("claiming an upload is exclusive until its lease expires and saves a preview", async () => {
   let clock = Date.parse("2026-07-25T12:00:00.000Z");
   const repository = createMemoryUploadedDocumentsRepository({
     now: () => new Date(clock),
@@ -136,11 +153,11 @@ test("claiming an upload is exclusive until its lease expires", async () => {
   await repository.create({
     id: "upload_1",
     workspaceId: "workspace_demo",
-    filename: "a.pdf",
-    contentType: "application/pdf",
+    filename: "a.txt",
+    contentType: "text/plain",
     byteSize: 10,
     checksum: "sum1",
-    objectKey: "private/uploads/sum1/a.pdf",
+    objectKey: "private/workspaces/workspace_demo/uploads/upload_1/a.txt",
   });
 
   assert.equal((await repository.claimNext("worker-a"))?.id, "upload_1");
@@ -153,55 +170,35 @@ test("claiming an upload is exclusive until its lease expires", async () => {
     "an expired lease must be reclaimable after a worker crash",
   );
 
-  await repository.complete({
-    id: "upload_1",
-    companyName: "Acme",
-    headline: "Acme serves carriers.",
-    extractedFacts: [],
-    memoryTexts: ["remembered"],
-    memoryIds: ["mem_1"],
-    xtraceJobId: "job_1",
-    dealId: "deal_upload_sum1",
-  });
+  const preview = previewFixture();
+  await repository.savePreview({ id: "upload_1", preview });
   const [record] = await repository.list("workspace_demo");
-  assert.equal(record.status, "ready");
-  assert.deepEqual(record.memoryIds, ["mem_1"]);
+  assert.equal(record?.status, "awaiting_confirmation");
+  assert.deepEqual(record?.extractionPreview, preview);
   assert.equal(await repository.claimNext("worker-c"), null);
 });
 
-test("an image-only PDF falls back to reading the rendered pages", async () => {
-  // A one-page PDF whose only content stream draws nothing: no text layer.
-  const emptyPdf = new TextEncoder().encode(
-    "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
-    + "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
-    + "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\n"
-    + "trailer<</Root 1 0 R>>",
-  );
-  const prompts: string[] = [];
-  const text = await extractDocumentText({
-    bytes: emptyPdf,
-    contentType: "application/pdf",
-    filename: "deck.pdf",
-    client: {
-      async complete(input) {
-        prompts.push(JSON.stringify(input.messages));
-        return "Acme Logistics. Series A deck. We serve 240 carriers across the Midwest.";
-      },
+function previewFixture(): ExtractionPreview {
+  return {
+    candidateCompanyName: "Acme",
+    candidateHeadline: "Acme serves carriers.",
+    facts: [],
+    extractionMetadata: {
+      extractorId: "plain_text_v1",
+      extractorVersion: "1",
+      extractedAt: "2026-07-25T12:00:00.000Z",
+      contentHash: "abc",
+      inputBytes: 10,
+      extractedCharacters: 10,
+      truncated: false,
     },
-  });
+  };
+}
 
-  assert.match(text, /240 carriers/);
-  assert.match(prompts[0], /"type":"document"/, "the PDF itself must be sent to the model");
-  assert.match(prompts[0], /"media_type":"application\/pdf"/);
-});
-
-test("a document with neither text nor a vision fallback fails honestly", async () => {
-  await assert.rejects(
-    extractDocumentText({
-      bytes: new TextEncoder().encode(" "),
-      contentType: "text/plain",
-      filename: "blank.txt",
-    }),
-    /No readable text/,
-  );
-});
+async function sha256(value: string): Promise<string> {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}

@@ -1,8 +1,31 @@
-export type UploadedDocumentStatus = "queued" | "extracting" | "ready" | "failed";
+export type UploadedDocumentStatus =
+  | "queued"
+  | "extracting"
+  | "awaiting_confirmation"
+  | "confirmed"
+  | "ingesting_memory"
+  | "ready"
+  | "failed";
 
-export interface UploadedDocumentFact {
-  text: string;
-  excerpt: string;
+export interface ExtractionPreview {
+  candidateCompanyName: string | null;
+  candidateHeadline: string | null;
+  facts: Array<{
+    text: string;
+    excerpt: string | null;
+    locator:
+      | { kind: "text_range"; start: number; end: number }
+      | { kind: "image"; imageIndex: 0 };
+  }>;
+  extractionMetadata: {
+    extractorId: "plain_text_v1" | "claude_vision_v1";
+    extractorVersion: "1";
+    extractedAt: string;
+    contentHash: string;
+    inputBytes: number;
+    extractedCharacters: number;
+    truncated: false;
+  };
 }
 
 export interface UploadedDocumentRecord {
@@ -15,13 +38,7 @@ export interface UploadedDocumentRecord {
   objectKey: string;
   status: UploadedDocumentStatus;
   failureReason: string | null;
-  companyName: string | null;
-  headline: string | null;
-  extractedFacts: UploadedDocumentFact[];
-  memoryTexts: string[];
-  memoryIds: string[];
-  xtraceJobId: string | null;
-  dealId: string | null;
+  extractionPreview: ExtractionPreview | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,29 +53,13 @@ export interface CreateUploadedDocumentInput {
   objectKey: string;
 }
 
-export interface CompleteUploadedDocumentInput {
-  id: string;
-  companyName: string;
-  headline: string;
-  extractedFacts: UploadedDocumentFact[];
-  memoryTexts: string[];
-  memoryIds: string[];
-  xtraceJobId: string | null;
-  dealId: string;
-}
-
 export interface UploadedDocumentsRepository {
   create(input: CreateUploadedDocumentInput): Promise<UploadedDocumentRecord>;
   list(workspaceId: string): Promise<UploadedDocumentRecord[]>;
   get(id: string): Promise<UploadedDocumentRecord | null>;
-  findByChecksum(
-    workspaceId: string,
-    checksum: string,
-  ): Promise<UploadedDocumentRecord | null>;
-  // Atomically claims one queued upload for extraction. Returns null when
-  // nothing is pending, so the worker can fall through to its scan poll.
+  findByChecksum(workspaceId: string, checksum: string): Promise<UploadedDocumentRecord | null>;
   claimNext(workerId: string): Promise<UploadedDocumentRecord | null>;
-  complete(input: CompleteUploadedDocumentInput): Promise<void>;
+  savePreview(input: { id: string; preview: ExtractionPreview }): Promise<void>;
   fail(id: string, reason: string): Promise<void>;
   deleteAll(workspaceId: string): Promise<void>;
 }
@@ -77,13 +78,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
         ...input,
         status: "queued" as const,
         failureReason: null,
-        companyName: null,
-        headline: null,
-        extractedFacts: [],
-        memoryTexts: [],
-        memoryIds: [],
-        xtraceJobId: null,
-        dealId: null,
+        extractionPreview: null,
         createdAt: timestamp,
         updatedAt: timestamp,
         leaseExpiresAt: null,
@@ -123,19 +118,13 @@ export function createMemoryUploadedDocumentsRepository(options: {
       void workerId;
       return strip(row);
     },
-    async complete(input) {
+    async savePreview(input) {
       const row = rows.get(input.id);
       if (!row) return;
       Object.assign(row, {
-        status: "ready" as const,
+        status: "awaiting_confirmation" as const,
         failureReason: null,
-        companyName: input.companyName,
-        headline: input.headline,
-        extractedFacts: input.extractedFacts,
-        memoryTexts: input.memoryTexts,
-        memoryIds: input.memoryIds,
-        xtraceJobId: input.xtraceJobId,
-        dealId: input.dealId,
+        extractionPreview: input.preview,
         leaseExpiresAt: null,
         updatedAt: now().toISOString(),
       });
@@ -203,15 +192,9 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       objectKey: String(row.object_key),
       status: row.status as UploadedDocumentStatus,
       failureReason: row.failure_reason ? String(row.failure_reason) : null,
-      companyName: row.company_name ? String(row.company_name) : null,
-      headline: row.headline ? String(row.headline) : null,
-      extractedFacts: Array.isArray(row.extracted_facts)
-        ? (row.extracted_facts as UploadedDocumentFact[])
-        : [],
-      memoryTexts: Array.isArray(row.memory_texts) ? row.memory_texts.map(String) : [],
-      memoryIds: Array.isArray(row.memory_ids) ? row.memory_ids.map(String) : [],
-      xtraceJobId: row.xtrace_job_id ? String(row.xtrace_job_id) : null,
-      dealId: row.deal_id ? String(row.deal_id) : null,
+      extractionPreview: row.extraction_preview
+        ? row.extraction_preview as ExtractionPreview
+        : null,
       createdAt: String(row.created_at),
       updatedAt: String(row.updated_at),
     };
@@ -254,8 +237,6 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       return rows[0] ? toRecord(rows[0]) : null;
     },
     async claimNext(workerId) {
-      // Reclaim expired extraction leases as well, so a worker restart never
-      // strands an upload in "extracting".
       const stale = new Date(now().getTime() - LEASE_MS).toISOString();
       const candidates = await request(
         "/uploaded_documents?or=(status.eq.queued,"
@@ -281,20 +262,14 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       ) as Record<string, unknown>[];
       return claimed[0] ? toRecord(claimed[0]) : null;
     },
-    async complete(input) {
+    async savePreview(input) {
       await request(`/uploaded_documents?id=eq.${encodeURIComponent(input.id)}`, {
         method: "PATCH",
         headers: { Prefer: "return=minimal" },
         body: JSON.stringify({
-          status: "ready",
+          status: "awaiting_confirmation",
           failure_reason: null,
-          company_name: input.companyName,
-          headline: input.headline,
-          extracted_facts: input.extractedFacts,
-          memory_texts: input.memoryTexts,
-          memory_ids: input.memoryIds,
-          xtrace_job_id: input.xtraceJobId,
-          deal_id: input.dealId,
+          extraction_preview: input.preview,
           lease_expires_at: null,
           updated_at: now().toISOString(),
         }),

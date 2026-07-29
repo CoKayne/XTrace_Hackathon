@@ -1,9 +1,7 @@
 begin;
 
--- User-uploaded documents live outside the fixed MVP corpus: the manifest is
--- locked to exactly 14 files, and the 14-day scan keeps analyzing only the 19
--- preloaded Deals. An upload is stored here, extracted by the background
--- worker, and ingested into XTrace as its own Deal memory bundle.
+-- User uploads are staged outside the fixed corpus and do not become Deals or
+-- XTrace memory until an explicit confirmation flow assigns them later.
 
 create table if not exists public.uploaded_documents (
   id text primary key,
@@ -14,16 +12,13 @@ create table if not exists public.uploaded_documents (
   checksum text not null,
   object_key text not null,
   status text not null default 'queued' check (
-    status in ('queued', 'extracting', 'ready', 'failed')
+    status in (
+      'queued', 'extracting', 'awaiting_confirmation', 'confirmed',
+      'ingesting_memory', 'ready', 'failed'
+    )
   ),
   failure_reason text,
-  company_name text,
-  headline text,
-  extracted_facts jsonb not null default '[]'::jsonb,
-  memory_texts jsonb not null default '[]'::jsonb,
-  memory_ids jsonb not null default '[]'::jsonb,
-  xtrace_job_id text,
-  deal_id text,
+  extraction_preview jsonb,
   lease_expires_at timestamptz,
   worker_id text,
   created_at timestamptz not null default now(),

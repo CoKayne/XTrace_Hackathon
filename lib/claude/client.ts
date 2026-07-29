@@ -1,10 +1,12 @@
-// Pitch decks are usually image-only PDFs with no text layer, so a message may
-// carry the document itself and let the model read the rendered pages.
 export type ClaudeContentBlock =
   | { type: "text"; text: string }
   | {
-      type: "document";
-      source: { type: "base64"; media_type: "application/pdf"; data: string };
+      type: "image";
+      source: {
+        type: "base64";
+        media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+        data: string;
+      };
     };
 
 export interface ClaudeMessage {

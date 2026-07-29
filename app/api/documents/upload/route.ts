@@ -4,7 +4,7 @@ import { rateLimitRequest } from "../../../../lib/api/safety";
 import { createDefaultPrivateObjectStorage } from "../../../../lib/storage/service";
 import {
   MAX_UPLOAD_BYTES,
-  resolveUploadContentType,
+  resolveRuntimeUploadContentType,
   safeFilename,
   sha256Hex,
   uploadedDocumentId,
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       );
     }
     const filename = safeFilename(file.name);
-    const contentType = resolveUploadContentType({
+    const contentType = resolveRuntimeUploadContentType({
       filename,
       reportedType: file.type,
     });
@@ -54,14 +54,19 @@ export async function POST(request: Request) {
     const existing = await repository.findByChecksum(WORKSPACE_ID, checksum);
     if (existing) return jsonOk(existing);
 
-    const objectKey = uploadedObjectKey({ checksum, filename });
+    const id = uploadedDocumentId(checksum);
+    const objectKey = uploadedObjectKey({
+      workspaceId: WORKSPACE_ID,
+      uploadId: id,
+      filename,
+    });
     await createDefaultPrivateObjectStorage().ensurePrivateObject({
       key: objectKey,
       bytes,
       contentType,
     });
     const record = await repository.create({
-      id: uploadedDocumentId(checksum),
+      id,
       workspaceId: WORKSPACE_ID,
       filename,
       contentType,
