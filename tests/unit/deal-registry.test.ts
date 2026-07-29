@@ -4,8 +4,10 @@ import test from "node:test";
 import {
   createMemoryDealRegistry,
   createSupabaseDealRegistry,
+  eligibleDealSnapshotFingerprint,
   sourceRevisionFingerprint,
   type ConfirmSourceAssignmentInput,
+  type RegisteredDeal,
 } from "../../db/repositories/deal-registry";
 import {
   createMemorySourceRegistry,
@@ -130,6 +132,78 @@ test("the registry captures one canonical eligible Deal snapshot token", async (
   assert.deepEqual(snapshot.dealIds, ["deal_one"]);
   assert.equal(snapshot.count, 1);
   assert.match(snapshot.fingerprint, /^sha256:[0-9a-f]{64}$/);
+});
+
+test("current Deal status overlays stored memory and invalidates the eligible snapshot", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  const input = await assignment(sources, {
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    sourceId: "source_one",
+    status: "screening",
+  });
+  await registry.confirmSourceAssignment(input);
+  const before = await registry.getAnalysisEligibleSnapshot("workspace_one");
+
+  await registry.confirmSourceAssignment({
+    ...input,
+    requestId: "request:deal_one:invested",
+    status: "invested",
+    memoryBundle: undefined,
+  });
+  const deal = await registry.findForWorkspace({
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+  });
+  const [currentBundle] = await registry.listAnalysisEligibleBundles(
+    "workspace_one",
+  );
+  const after = await registry.getAnalysisEligibleSnapshot("workspace_one");
+
+  assert.deepEqual(
+    {
+      dealStatus: deal?.status,
+      bundleStatus: currentBundle.status,
+      beforeFingerprint: before.fingerprint,
+      afterFingerprint: after.fingerprint,
+      fingerprintChanged: before.fingerprint !== after.fingerprint,
+    },
+    {
+      dealStatus: "invested",
+      bundleStatus: "invested",
+      beforeFingerprint:
+        "sha256:c1f6acc223c51045fa1fc4eeab89f235d964cfb069cbaa95b60bba189384c1ee",
+      afterFingerprint:
+        "sha256:9c0439820138d64ebd017797de60545d93764dc0b9f5625714dae8b6939a907e",
+      fingerprintChanged: true,
+    },
+  );
+});
+
+test("eligible snapshot v2 matches the live PostgreSQL three-Deal vector", () => {
+  const revisionFingerprints = [
+    "sha256:2764a94f88e772e7887311a8d4eeb121a5bf3a65f5af597897320cf90262094b",
+    "sha256:db9db68e550e099f02d262f7ed6bf789146278834f986131f3df55044d9a4721",
+    "sha256:873709984032de9cef0c7cbb6ca63326d375dde9c72201c5e194ad1a921815ce",
+  ];
+  const deals: RegisteredDeal[] = revisionFingerprints.map(
+    (fingerprint, index) => ({
+      id: `snapshot_deal_${index + 1}`,
+      workspaceId: "workspace_snapshot",
+      companyId: `snapshot_company_${index + 1}`,
+      companyName: `Company ${index + 1}`,
+      status: "screening",
+      analysisEligibleAt: "2026-07-28T13:45:00.000Z",
+      activeSourceRevisionFingerprint: fingerprint,
+      activeSourceRevisionIds: [`snapshot_revision_${index + 1}`],
+    }),
+  );
+
+  assert.equal(
+    eligibleDealSnapshotFingerprint(deals),
+    "sha256:4d138886426eb83652d4e19dbb999869952b235025a84043bfc0b91897913ea2",
+  );
 });
 
 test("confirmation is retry-idempotent and does not change upload or XTrace state", async () => {
@@ -636,6 +710,47 @@ test("Supabase captures the eligible snapshot in one RPC", async () => {
   assert.deepEqual(requests, [
     "https://example.supabase.co/rest/v1/rpc/get_analysis_eligible_snapshot",
   ]);
+});
+
+test("Supabase bundles emit the current status from the authoritative Deal row", async () => {
+  const repository = createSupabaseDealRegistry({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      if (url.includes("/deals?")) {
+        return Response.json([{
+          id: "deal_one",
+          workspace_id: "workspace_one",
+          company_id: "company_one",
+          company_name: "Company one",
+          status: "invested",
+          analysis_eligible_at: "2026-07-28T11:00:00.000Z",
+          active_source_revision_fingerprint:
+            sourceRevisionFingerprint(["revision_one"]),
+        }]);
+      }
+      if (url.includes("/deal_source_assignments?")) {
+        return Response.json([{
+          deal_id: "deal_one",
+          source_id: "source_one",
+          source_revision_id: "revision_one",
+        }]);
+      }
+      return Response.json([]);
+    },
+  });
+
+  assert.deepEqual(
+    await repository.listAnalysisEligibleBundles("workspace_one"),
+    [{
+      dealId: "deal_one",
+      companyName: "Company one",
+      status: "invested",
+      facts: [],
+      interactions: [],
+    }],
+  );
 });
 
 test("Supabase eligible reads reject a stale active-revision fingerprint", async () => {

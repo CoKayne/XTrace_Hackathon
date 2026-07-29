@@ -279,7 +279,7 @@ declare
   eligible_count integer;
   captured_count integer := 0;
   deal_ids text[] := array[]::text[];
-  frames text[] := array['eligible-deals-v1'];
+  frames text[] := array['eligible-deals-v2'];
   captured record;
 begin
   if coalesce(target_workspace_id, '') = '' then
@@ -302,6 +302,7 @@ begin
   for captured in
     select
       deal.id,
+      deal.status,
       public.source_revision_set_fingerprint(
         array_agg(
           assignment.source_revision_id
@@ -315,12 +316,13 @@ begin
       and assignment.superseded_at is null
     where deal.workspace_id = target_workspace_id
       and deal.analysis_eligible_at is not null
-    group by deal.id
+    group by deal.id, deal.status
     order by deal.id collate "C"
   loop
     captured_count := captured_count + 1;
     deal_ids := array_append(deal_ids, captured.id);
     frames := array_append(frames, captured.id);
+    frames := array_append(frames, captured.status);
     frames := array_append(frames, captured.revision_fingerprint);
   end loop;
 

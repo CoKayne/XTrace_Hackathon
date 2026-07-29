@@ -944,7 +944,7 @@ test(
               'evidenceCoverage', '{}'::jsonb,
               'eligibleSnapshotCount', 3,
               'eligibleSnapshotFingerprint',
-                'sha256:21240da2c08c5e52e20552375eb862d83a68e36289cddec4e7d34413e2643eeb'
+                'sha256:4d138886426eb83652d4e19dbb999869952b235025a84043bfc0b91897913ea2'
             ),
             analyses.payload
           );
@@ -981,7 +981,7 @@ test(
               'companyCount', 3,
               'eligibleSnapshotCount', 3,
               'eligibleSnapshotFingerprint',
-                'sha256:21240da2c08c5e52e20552375eb862d83a68e36289cddec4e7d34413e2643eeb'
+                'sha256:4d138886426eb83652d4e19dbb999869952b235025a84043bfc0b91897913ea2'
             ),
             jsonb_build_array(
               jsonb_build_object('dealId', 'snapshot_deal_1'),
@@ -995,6 +995,107 @@ test(
         update public.scan_runs
         set status = 'failed'
         where id = '00000000-0000-4000-8000-000000000303';
+        insert into public.scan_runs (
+          id, workspace_id, mode, status
+        ) values (
+          '00000000-0000-4000-8000-000000000304',
+          'workspace_snapshot', 'structured', 'running'
+        );
+      `);
+      const statusSnapshotBefore = JSON.parse(executeSql(database, `
+        select public.get_analysis_eligible_snapshot(
+          'workspace_snapshot'
+        )::text;
+      `)) as { fingerprint: string };
+      executeSql(database, `
+        select public.confirm_source_assignment(jsonb_build_object(
+          'requestId', 'snapshot_request_1_invested',
+          'workspaceId', 'workspace_snapshot',
+          'dealId', 'snapshot_deal_1',
+          'companyId', 'snapshot_company_1',
+          'companyName', 'Company 1',
+          'status', 'invested',
+          'sourceRevisionId', 'snapshot_revision_1',
+          'assignedByUserId', 'snapshot_user',
+          'reason', 'Status-only snapshot change.',
+          'confirmedAt', '2026-07-28T14:15:00.000Z'
+        ));
+      `);
+      assert.throws(() =>
+        executeSql(database, `
+          with analyses as (
+            select jsonb_agg(jsonb_build_object(
+              'id', 'snapshot_status_analysis_' || n,
+              'reportId', 'report_status_stale',
+              'runId', '00000000-0000-4000-8000-000000000304',
+              'dealId', 'snapshot_deal_' || n,
+              'companyName', 'Company ' || n,
+              'dealStatus', 'screening',
+              'outcome', 'no_material_change',
+              'confidence', 'low',
+              'score', 0,
+              'investmentMemory', '{}'::jsonb,
+              'marketEvidence', '{}'::jsonb,
+              'implications', '{}'::jsonb,
+              'recommendedNextMove', 'Continue monitoring.',
+              'companyBrief', '{}'::jsonb,
+              'sourceRefs', '[]'::jsonb,
+              'createdAt', '2026-07-28T14:20:00.000Z'
+            )) as payload
+            from generate_series(1, 3) as n
+          )
+          select count(*)
+          from analyses, public.save_intelligence_report(
+            jsonb_build_object(
+              'id', 'report_status_stale',
+              'workspaceId', 'workspace_snapshot',
+              'runId', '00000000-0000-4000-8000-000000000304',
+              'createdAt', '2026-07-28T14:20:00.000Z',
+              'marketSummary', 'Stale status snapshot.',
+              'opportunities', '[]'::jsonb,
+              'analysisStatus', 'completed',
+              'companyCount', 3,
+              'beliefRevisedCount', 0,
+              'monitorCount', 0,
+              'noMaterialChangeCount', 3,
+              'analysisUnavailableCount', 0,
+              'evidenceCoverage', '{}'::jsonb,
+              'eligibleSnapshotCount', 3,
+              'eligibleSnapshotFingerprint',
+                '${statusSnapshotBefore.fingerprint}'
+            ),
+            analyses.payload
+          );
+        `)
+      );
+      const statusSnapshotAfter = JSON.parse(executeSql(database, `
+        select public.get_analysis_eligible_snapshot(
+          'workspace_snapshot'
+        )::text;
+      `)) as { fingerprint: string };
+      assert.deepEqual(
+        {
+          before: statusSnapshotBefore.fingerprint,
+          after: statusSnapshotAfter.fingerprint,
+          status: executeSql(database, `
+            select status
+            from public.deals
+            where workspace_id = 'workspace_snapshot'
+              and id = 'snapshot_deal_1';
+          `),
+        },
+        {
+          before:
+            "sha256:4d138886426eb83652d4e19dbb999869952b235025a84043bfc0b91897913ea2",
+          after:
+            "sha256:82c6aac884116a6772417a844430b401161e945c30be96889ef16e99733ad5c9",
+          status: "invested",
+        },
+      );
+      executeSql(database, `
+        update public.scan_runs
+        set status = 'failed'
+        where id = '00000000-0000-4000-8000-000000000304';
       `);
       executeSql(database, `
         insert into public.scan_runs (
@@ -1040,7 +1141,7 @@ test(
               'companyCount', 3,
               'eligibleSnapshotCount', 3,
               'eligibleSnapshotFingerprint',
-                'sha256:21240da2c08c5e52e20552375eb862d83a68e36289cddec4e7d34413e2643eeb'
+                'sha256:82c6aac884116a6772417a844430b401161e945c30be96889ef16e99733ad5c9'
             ),
             jsonb_build_array(
               jsonb_build_object('dealId', 'snapshot_deal_1'),

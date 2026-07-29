@@ -174,11 +174,12 @@ export function eligibleDealSnapshotFingerprint(
   const frames = deals
     .map((deal) => [
       deal.id,
+      deal.status,
       deal.activeSourceRevisionFingerprint ?? "",
     ] as const)
     .sort((left, right) => compareUtf8(left[0], right[0]))
     .flatMap((pair) => pair);
-  return sha256(lengthFrame(["eligible-deals-v1", ...frames]));
+  return sha256(lengthFrame(["eligible-deals-v2", ...frames]));
 }
 
 function compareUtf8(left: string, right: string): number {
@@ -301,13 +302,17 @@ export function createMemoryDealRegistry(options: {
               }
             }
           }
-          return structuredClone(stored ?? DealMemoryBundleSchema.parse({
-            dealId: deal.id,
-            companyName: deal.companyName,
-            status: deal.status,
-            facts: [],
-            interactions: [],
-          }));
+          return structuredClone(
+            stored
+              ? { ...stored, status: deal.status }
+              : DealMemoryBundleSchema.parse({
+                dealId: deal.id,
+                companyName: deal.companyName,
+                status: deal.status,
+                facts: [],
+                interactions: [],
+              }),
+          );
         });
     },
 

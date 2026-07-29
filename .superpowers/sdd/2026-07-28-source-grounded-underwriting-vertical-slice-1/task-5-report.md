@@ -305,3 +305,69 @@ as appropriate.
 
 The round-2 fix commit is reported in the handoff because a commit cannot
 contain its own SHA.
+
+## Review round 3
+
+Task 5 was reopened for one Important consistency finding: confirming the
+same active source revision with a changed Deal status updated the registered
+Deal, but memory Bundle reads retained the old stored status and the eligible
+snapshot fingerprint did not change.
+
+### RED reproduction
+
+- The memory regression observed `findForWorkspace.status = invested`,
+  `listAnalysisEligibleBundles.status = screening`, and identical before/after
+  snapshot hashes.
+- The live PostgreSQL regression changed one Deal from `screening` to
+  `invested` without changing its active source revision, then successfully
+  saved a full report using the pre-change snapshot token. The test failed
+  with `Missing expected exception`.
+- The shared SQL/TypeScript parity vector was mutation-checked against the v1
+  implementation and produced the old
+  `sha256:21240da2c08c5e52e20552375eb862d83a68e36289cddec4e7d34413e2643eeb`
+  value instead of the required v2 value.
+
+### Status-aware snapshot fix
+
+- The canonical domain marker is now `eligible-deals-v2`.
+- Each Deal contributes UTF-8 length-framed
+  `(Deal ID, current canonical status, active source-revision fingerprint)`
+  values, with the existing bytewise Deal ordering preserved in TypeScript
+  and PostgreSQL.
+- Memory Bundle reads always overlay the current registered Deal status on any
+  stored Bundle. A same-revision `screening` to `invested` update now changes
+  the one-Deal snapshot from
+  `sha256:c1f6acc223c51045fa1fc4eeab89f235d964cfb069cbaa95b60bba189384c1ee`
+  to
+  `sha256:9c0439820138d64ebd017797de60545d93764dc0b9f5625714dae8b6939a907e`.
+- Live PostgreSQL changes the three-Deal snapshot from
+  `sha256:4d138886426eb83652d4e19dbb999869952b235025a84043bfc0b91897913ea2`
+  to
+  `sha256:82c6aac884116a6772417a844430b401161e945c30be96889ef16e99733ad5c9`
+  on that status-only update, and rejects a report using the former token.
+- The TypeScript function is pinned to the same three-Deal literal vector as
+  the live SQL fixture.
+- Supabase already constructed Bundles from the current `/deals` row. An
+  explicit characterization regression now proves an authoritative
+  `invested` row emits an `invested` Bundle.
+
+### Mutable-field audit
+
+Status is the only mutable Deal field presently consumed by company analysis
+outside source revisions. Company ID and company name are immutable identity
+fields enforced by confirmation. `analysisEligibleAt` controls registry
+eligibility but is not emitted as a Bundle or company-analysis input.
+Active source revisions remain covered by the existing revision-set
+fingerprint. No additional fields were added to the v2 snapshot.
+
+### Review-round-3 verification
+
+- Full regression: **494 discovered; 493 passed, 0 failed, 1 skipped**. The
+  skip is the existing opt-in external XTrace live test.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with no warnings or errors.
+- `npm run test:migrations`: **7 passed, 0 failed, 0 skipped**.
+- `git diff --check`: passed.
+
+The round-3 fix commit is reported in the handoff because a commit cannot
+contain its own SHA.
