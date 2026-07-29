@@ -129,6 +129,13 @@ export interface MemoryUnderwritingArtifactsRepository
     finalization: CandidateFinalization;
   }): CandidateArtifactBundle;
   commitPrepared(bundle: CandidateArtifactBundle): void;
+  aliasCandidate(input: {
+    workspaceId: string;
+    candidateRunId: string;
+    sourceCandidateRunId: string;
+    dealId: string;
+    candidateAnalysisFingerprint: string;
+  }): void;
   inspect(): {
     bundles: CandidateArtifactBundle[];
     rowCounts: ArtifactRowCounts;
@@ -139,6 +146,7 @@ export function createMemoryUnderwritingArtifactsRepository():
   MemoryUnderwritingArtifactsRepository {
   const bundles = new Map<string, CandidateArtifactBundle>();
   const reusable = new Map<string, ReusableCandidateArtifacts>();
+  const aliases = new Map<string, string>();
 
   return {
     async findReusable(input) {
@@ -154,9 +162,17 @@ export function createMemoryUnderwritingArtifactsRepository():
     },
 
     async getByCandidateRunId(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const candidateRunId = requiredText(
+        input.candidateRunId,
+        "A candidate run",
+      );
+      const candidateKey = identity(workspaceId, candidateRunId);
+      const artifactCandidateRunId = aliases.get(candidateKey)
+        ?? candidateRunId;
       const value = bundles.get(identity(
-        requiredText(input.workspaceId, "A workspace"),
-        requiredText(input.candidateRunId, "A candidate run"),
+        workspaceId,
+        artifactCandidateRunId,
       ));
       return value ? structuredClone(value) : null;
     },
@@ -187,6 +203,37 @@ export function createMemoryUnderwritingArtifactsRepository():
         dealId: saved.dealId,
         candidateAnalysisFingerprint: saved.candidateAnalysisFingerprint,
       });
+    },
+
+    aliasCandidate(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const candidateRunId = requiredText(
+        input.candidateRunId,
+        "A candidate run",
+      );
+      const sourceCandidateRunId = requiredText(
+        input.sourceCandidateRunId,
+        "A source candidate run",
+      );
+      const candidateKey = identity(workspaceId, candidateRunId);
+      if (bundles.has(candidateKey) || aliases.has(candidateKey)) {
+        throw new Error("Candidate artifacts are immutable once finalized.");
+      }
+      const source = bundles.get(identity(workspaceId, sourceCandidateRunId));
+      if (
+        !source
+        || source.dealId !== requiredText(input.dealId, "A Deal")
+        || source.candidateAnalysisFingerprint
+          !== requiredText(
+            input.candidateAnalysisFingerprint,
+            "A candidate analysis fingerprint",
+          )
+      ) {
+        throw new Error(
+          "Reusable candidate artifacts do not match the immutable rerun.",
+        );
+      }
+      aliases.set(candidateKey, sourceCandidateRunId);
     },
 
     inspect() {
@@ -274,6 +321,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
         workspace_id: `eq.${workspaceId}`,
         candidate_analysis_fingerprint: `eq.${fingerprint}`,
         status: "eq.completed",
+        artifact_source_candidate_run_id: "is.null",
         select:
           "id,workspace_id,deal_id,candidate_analysis_fingerprint",
         limit: "1",
@@ -305,7 +353,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
         id: `eq.${candidateRunId}`,
         status: "eq.completed",
         select:
-          "id,batch_id,workspace_id,deal_id,candidate_analysis_fingerprint",
+          "id,batch_id,workspace_id,deal_id,candidate_analysis_fingerprint,artifact_source_candidate_run_id",
         limit: "1",
       });
       const candidates = await request(
@@ -313,6 +361,10 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
       ) as Array<Record<string, unknown>>;
       const candidate = candidates[0];
       if (!candidate) return null;
+      const artifactCandidateRunId =
+        typeof candidate.artifact_source_candidate_run_id === "string"
+          ? candidate.artifact_source_candidate_run_id
+          : candidateRunId;
       const batchQuery = new URLSearchParams({
         workspace_id: `eq.${workspaceId}`,
         id: `eq.${String(candidate.batch_id)}`,
@@ -342,61 +394,76 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
         edgeRows,
         versionRows,
       ] = await Promise.all([
-        rows("evidence_packs", workspaceId, candidateRunId, "&limit=1"),
+        rows(
+          "evidence_packs",
+          workspaceId,
+          artifactCandidateRunId,
+          "&limit=1",
+        ),
         rows(
           "candidate_context_snapshots",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&limit=1",
         ),
-        rows("scenario_models", workspaceId, candidateRunId, "&limit=1"),
+        rows(
+          "scenario_models",
+          workspaceId,
+          artifactCandidateRunId,
+          "&limit=1",
+        ),
         rows(
           "underwriting_calculations",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&order=artifact_id.asc",
         ),
         rows(
           "framework_judgment_artifacts",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&order=artifact_id.asc",
         ),
         rows(
           "framework_disagreement_artifacts",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&order=artifact_id.asc",
         ),
         rows(
           "valuation_evaluations",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&limit=1",
         ),
-        rows("final_syntheses", workspaceId, candidateRunId, "&limit=1"),
+        rows(
+          "final_syntheses",
+          workspaceId,
+          artifactCandidateRunId,
+          "&limit=1",
+        ),
         rows(
           "underwriting_narratives",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&limit=1",
         ),
         rows(
           "action_drafts",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&order=artifact_id.asc",
         ),
         rows(
           "underwriting_claim_edges",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&order=claim_item_id.asc,dependency_type.asc,dependency_item_id.asc",
         ),
         rows(
           "candidate_version_snapshots",
           workspaceId,
-          candidateRunId,
+          artifactCandidateRunId,
           "&limit=1",
         ),
       ]);
@@ -430,7 +497,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
       );
       const prepared = validateFinalization(
         {
-          id: candidateRunId,
+          id: artifactCandidateRunId,
           workspaceId,
           dealId: String(candidate.deal_id),
           fundPolicySnapshotId: String(
@@ -440,7 +507,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
         {
           workerId: "persisted",
           leaseToken: "persisted",
-          candidateRunId,
+          candidateRunId: artifactCandidateRunId,
           candidateAnalysisFingerprint: String(
             candidate.candidate_analysis_fingerprint,
           ),

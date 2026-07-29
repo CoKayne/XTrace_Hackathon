@@ -16,12 +16,10 @@ import {
   type SourceRevision,
 } from "../../contracts/evidence";
 import type {
+  FundPolicySnapshot,
   ResolvedUnderwritingContext,
   XTraceLineageSnapshot,
 } from "../../contracts/underwriting";
-import {
-  BALANCED_POLICY_VALUES,
-} from "../../../seed/underwriting/balanced-policy-v1";
 import {
   buildEvidenceConflicts,
   DEFAULT_MATERIALITY_RULES,
@@ -34,8 +32,14 @@ import type {
 } from "../router";
 
 const EVIDENCE_PACK_VERSION = 1;
-const BUILDER_VERSION = "evidence_pack_builder_v1";
-const SYNTHETIC_BENCHMARK_STALE_AFTER = "2027-01-25";
+const BUILDER_VERSION = "evidence_pack_builder_v2";
+
+export interface SelectedBenchmarkInput {
+  packId: string;
+  value: string;
+  currency: string;
+  staleAfter: string;
+}
 
 export interface EvidencePackBuilder {
   build(input: {
@@ -45,6 +49,8 @@ export interface EvidencePackBuilder {
     sourceRevisionIds: string[];
     xtraceLineage: XTraceLineageSnapshot;
     context: ResolvedUnderwritingContext;
+    fundPolicy: FundPolicySnapshot;
+    benchmark: SelectedBenchmarkInput | null;
   }): Promise<EvidencePack>;
 }
 
@@ -102,9 +108,12 @@ export function createEvidencePackBuilder(options: {
         materialityRules,
       ).sort((left, right) => compareUtf8(left.id, right.id));
       const assumptions = buildAssumptions({
+        workspaceId: input.workspaceId,
         context: input.context,
         facts,
         conflicts,
+        fundPolicy: input.fundPolicy,
+        benchmark: input.benchmark,
       }).sort((left, right) => compareUtf8(left.id, right.id));
       const inputFingerprint = createEvidencePackInputFingerprint({
         workspaceId: input.workspaceId,
@@ -113,6 +122,8 @@ export function createEvidencePackBuilder(options: {
         sourceRevisionSnapshots,
         xtraceLineage: input.xtraceLineage,
         context: input.context,
+        fundPolicy: input.fundPolicy,
+        benchmark: input.benchmark,
         profile,
         materialityRules,
         facts,
@@ -172,6 +183,8 @@ export function createEvidencePackInputFingerprint(input: {
   sourceRevisionSnapshots: SourceRevision[];
   xtraceLineage: XTraceLineageSnapshot;
   context: ResolvedUnderwritingContext;
+  fundPolicy: FundPolicySnapshot;
+  benchmark: SelectedBenchmarkInput | null;
   profile: CriticalEvidenceProfile;
   materialityRules: MaterialityRule[];
   facts: Fact[];
@@ -194,6 +207,8 @@ export function createEvidencePackInputFingerprint(input: {
       fixtureIds: uniqueSorted(input.xtraceLineage.fixtureIds),
     },
     context: input.context,
+    fundPolicy: input.fundPolicy,
+    benchmark: input.benchmark,
     profile: input.profile,
     materialityRules: sortById(input.materialityRules),
     facts: sortById(input.facts),
@@ -289,9 +304,12 @@ function validateEvidenceOwnership(input: {
 }
 
 function buildAssumptions(input: {
+  workspaceId: string;
   context: ResolvedUnderwritingContext;
   facts: Fact[];
   conflicts: EvidencePack["conflicts"];
+  fundPolicy: FundPolicySnapshot;
+  benchmark: SelectedBenchmarkInput | null;
 }): Assumption[] {
   const assumptions: Assumption[] = [];
   if (
@@ -300,9 +318,17 @@ function buildAssumptions(input: {
       input.context.benchmarkCompatibility,
     )
   ) {
-    const benchmarkValue = input.context.stage === "seed"
-      ? "24000000"
-      : "80000000";
+    const benchmark = input.benchmark;
+    if (
+      !benchmark
+      || benchmark.packId !== input.context.benchmarkPackId
+      || benchmark.currency !== "USD"
+      || !isIsoDate(benchmark.staleAfter)
+    ) {
+      throw new Error(
+        "The selected benchmark must exactly match the resolved context.",
+      );
+    }
     assumptions.push(
       {
         id: `assumption:${input.context.id}:compatible_benchmark_value`,
@@ -310,8 +336,8 @@ function buildAssumptions(input: {
         provenanceOrigin: "benchmark",
         scenario: "all",
         field: "compatible_benchmark_value",
-        value: benchmarkValue,
-        unit: "USD",
+        value: requiredText(benchmark.value, "A benchmark value"),
+        unit: benchmark.currency,
         rationale:
           "Published Slice-1 benchmark value selected by the resolved context.",
         inputRefIds: [input.context.benchmarkPackId],
@@ -325,7 +351,7 @@ function buildAssumptions(input: {
         provenanceOrigin: "benchmark",
         scenario: "all",
         field: "compatible_benchmark_stale_after",
-        value: SYNTHETIC_BENCHMARK_STALE_AFTER,
+        value: benchmark.staleAfter,
         unit: "date",
         rationale:
           "Expiry date published with the immutable Slice-1 benchmark pack.",
@@ -336,19 +362,22 @@ function buildAssumptions(input: {
     );
   }
 
-  const multipliers = BALANCED_POLICY_VALUES.scenarioPriceMultipliers;
+  if (input.fundPolicy.workspaceId !== input.workspaceId) {
+    throw new Error("The pinned Fund Policy is outside this workspace.");
+  }
+  const multipliers = policyScenarioMultipliers(input.fundPolicy);
   for (const scenario of ["bear", "base", "bull"] as const) {
     assumptions.push({
       id: `assumption:${input.context.id}:scenario_price_multiplier:${scenario}`,
       analysisType: "assumption",
-      provenanceOrigin: "recommended_policy",
+      provenanceOrigin: input.fundPolicy.source,
       scenario,
       field: "scenario_price_multiplier",
       value: multipliers[scenario],
       unit: "decimal",
       rationale:
-        "Balanced recommended policy multiplier for the valuation scenario.",
-      inputRefIds: [BALANCED_POLICY_VALUES.id],
+        "Scenario multiplier from the pinned immutable Fund Policy snapshot.",
+      inputRefIds: [input.fundPolicy.id],
       sensitivity: "high",
       requiresConfirmation: false,
     });
@@ -391,6 +420,40 @@ function buildAssumptions(input: {
     }
   }
   return assumptions;
+}
+
+function policyScenarioMultipliers(
+  policy: FundPolicySnapshot,
+): Record<"bear" | "base" | "bull", string> {
+  const value = policy.values.scenarioPriceMultipliers;
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(
+      "The pinned Fund Policy is missing scenario price multipliers.",
+    );
+  }
+  return Object.fromEntries(
+    (["bear", "base", "bull"] as const).map((scenario) => {
+      const multiplier = (value as Record<string, unknown>)[scenario];
+      if (typeof multiplier !== "string" || !multiplier.trim()) {
+        throw new Error(
+          `The pinned Fund Policy is missing the ${scenario} multiplier.`,
+        );
+      }
+      return [scenario, multiplier];
+    }),
+  ) as Record<"bear" | "base" | "bull", string>;
+}
+
+function requiredText(value: string, label: string): string {
+  if (!value || value.trim() !== value) {
+    throw new Error(`${label} is required without surrounding whitespace.`);
+  }
+  return value;
+}
+
+function isIsoDate(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+    && !Number.isNaN(Date.parse(`${value}T00:00:00.000Z`));
 }
 
 function assertContextDate(

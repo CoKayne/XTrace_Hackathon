@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createMemoryEvidencePacksRepository } from "../../db/repositories/evidence-packs";
+import * as evidencePackRepositories from "../../db/repositories/evidence-packs";
 import { createMemorySourceRegistry } from "../../db/repositories/source-registry";
-import type { ResolvedUnderwritingContext } from "../../lib/contracts/underwriting";
+import type {
+  FundPolicySnapshot,
+  ResolvedUnderwritingContext,
+} from "../../lib/contracts/underwriting";
 import { createEvidencePackBuilder } from "../../lib/underwriting/evidence/builder";
 import {
   createContextRouter,
@@ -53,6 +57,30 @@ const profile: CriticalEvidenceProfile = {
       acceptedFreshness: ["current"],
     },
   ],
+};
+
+const referenceInputs = {
+  fundPolicy: {
+    id: "fund_policy:workspace_1:v1",
+    workspaceId: "workspace_1",
+    version: 1,
+    source: "recommended_policy",
+    values: {
+      scenarioPriceMultipliers: {
+        bear: "0.75",
+        base: "1",
+        bull: "1.25",
+      },
+    },
+    createdByUserId: null,
+    createdAt: "2026-07-29T09:00:00.000Z",
+  } satisfies FundPolicySnapshot,
+  benchmark: {
+    packId: context.benchmarkPackId!,
+    value: "24000000",
+    currency: "USD",
+    staleAfter: "2027-01-25",
+  },
 };
 
 async function setup() {
@@ -196,6 +224,7 @@ test("builds one immutable pack without resolving a material ARR conflict in fav
       capturedAt: "2026-07-29T10:09:00.000Z",
     },
     context,
+    ...referenceInputs,
   });
   const second = await builder.build({
     workspaceId: "workspace_1",
@@ -210,6 +239,7 @@ test("builds one immutable pack without resolving a material ARR conflict in fav
       capturedAt: "2026-07-29T10:09:00.000Z",
     },
     context,
+    ...referenceInputs,
   });
 
   assert.equal(first.id, second.id);
@@ -248,6 +278,7 @@ test("emits valuation-compatible benchmark, policy multiplier, and currency-bear
       capturedAt: "2026-07-29T10:09:00.000Z",
     },
     context,
+    ...referenceInputs,
   });
 
   const benchmarkValue = pack.assumptions.find(
@@ -279,5 +310,98 @@ test("emits valuation-compatible benchmark, policy multiplier, and currency-bear
   assert.deepEqual(
     arrPaths.map(({ scenario, unit }) => [scenario, unit]).sort(),
     [["base", "USD"], ["bear", "USD"], ["bull", "USD"]],
+  );
+});
+
+test("uses the pinned custom Fund Policy and selected benchmark values without Balanced defaults", async () => {
+  const { repository, builder } = await setup();
+  await repository.removeSourceEvidence({
+    workspaceId: "workspace_1",
+    evidenceId: "fact_arr_verified",
+  });
+
+  const pack = await builder.build({
+    workspaceId: "workspace_1",
+    dealId: "deal_1",
+    asOfDate: "2026-07-29",
+    sourceRevisionIds: ["revision_1"],
+    xtraceLineage: {
+      memoryIds: [],
+      sourceRevisionIds: [],
+      sourceIds: [],
+      fixtureIds: [],
+      capturedAt: "2026-07-29T10:09:00.000Z",
+    },
+    context,
+    fundPolicy: {
+      id: "fund_policy:workspace_1:custom-v2",
+      workspaceId: "workspace_1",
+      version: 2,
+      source: "user_custom",
+      values: {
+        scenarioPriceMultipliers: {
+          bear: "0.4",
+          base: "0.9",
+          bull: "1.7",
+        },
+      },
+      createdByUserId: "user_1",
+      createdAt: "2026-07-29T09:00:00.000Z",
+    },
+    benchmark: {
+      packId: context.benchmarkPackId!,
+      value: "31500000",
+      currency: "USD",
+      staleAfter: "2026-10-31",
+    },
+  });
+
+  assert.deepEqual(
+    Object.fromEntries(pack.assumptions
+      .filter(({ field }) => field === "scenario_price_multiplier")
+      .map(({ scenario, value, provenanceOrigin, inputRefIds }) => [
+        scenario,
+        {
+        value,
+        provenanceOrigin,
+        inputRefIds,
+        },
+      ])),
+    {
+      bear: {
+        value: "0.4",
+        provenanceOrigin: "user_custom",
+        inputRefIds: ["fund_policy:workspace_1:custom-v2"],
+      },
+      base: {
+        value: "0.9",
+        provenanceOrigin: "user_custom",
+        inputRefIds: ["fund_policy:workspace_1:custom-v2"],
+      },
+      bull: {
+        value: "1.7",
+        provenanceOrigin: "user_custom",
+        inputRefIds: ["fund_policy:workspace_1:custom-v2"],
+      },
+    },
+  );
+  assert.equal(
+    pack.assumptions.find(
+      ({ field }) => field === "compatible_benchmark_value",
+    )?.value,
+    "31500000",
+  );
+  assert.equal(
+    pack.assumptions.find(
+      ({ field }) => field === "compatible_benchmark_stale_after",
+    )?.value,
+    "2026-10-31",
+  );
+});
+
+test("provides a production Evidence Pack repository for exact source-evidence reads", () => {
+  assert.equal(
+    "createSupabaseEvidencePacksRepository" in evidencePackRepositories,
+    true,
   );
 });

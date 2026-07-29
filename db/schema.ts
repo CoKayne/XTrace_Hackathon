@@ -238,6 +238,56 @@ export const sourceRevisions = pgTable("source_revisions", {
   check("source_revisions_extractor_version_check", sql`btrim(${table.extractorVersion}) <> ''`),
 ]);
 
+export const sourceEvidenceItems = pgTable("source_evidence_items", {
+  workspaceId: text("workspace_id").notNull(),
+  evidenceId: text("evidence_id").notNull(),
+  dealId: text("deal_id").notNull(),
+  sourceRevisionId: text("source_revision_id").notNull(),
+  payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.workspaceId, table.evidenceId] }),
+  foreignKey({
+    columns: [table.workspaceId, table.dealId],
+    foreignColumns: [deals.workspaceId, deals.id],
+    name: "source_evidence_items_workspace_deal_fkey",
+  }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.workspaceId, table.sourceRevisionId],
+    foreignColumns: [sourceRevisions.workspaceId, sourceRevisions.id],
+    name: "source_evidence_items_workspace_revision_fkey",
+  }),
+  index("source_evidence_items_grounding_idx").on(
+    table.workspaceId,
+    table.dealId,
+    table.sourceRevisionId,
+    table.evidenceId,
+  ),
+]);
+
+export const evidencePackBuilds = pgTable("evidence_pack_builds", {
+  workspaceId: text("workspace_id").notNull(),
+  inputFingerprint: text("input_fingerprint").notNull(),
+  packId: text("pack_id").notNull(),
+  packPayload: jsonb("pack_payload").$type<EvidencePack>().notNull(),
+  sourceRevisionSnapshots: jsonb("source_revision_snapshots")
+    .$type<Array<Record<string, unknown>>>()
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.workspaceId, table.inputFingerprint] }),
+  unique("evidence_pack_builds_workspace_pack_unique").on(
+    table.workspaceId,
+    table.packId,
+  ),
+  check(
+    "evidence_pack_builds_fingerprint_check",
+    sql`${table.inputFingerprint} ~ '^sha256:[0-9a-f]{64}$'`,
+  ),
+]);
+
 export const sourceRevisionAnnotations = pgTable(
   "source_revision_annotations",
   {
@@ -652,6 +702,31 @@ export const criticalEvidenceProfiles = pgTable(
   },
 );
 
+export const criticalEvidenceProfileFields = pgTable(
+  "critical_evidence_profile_fields",
+  {
+    criticalEvidenceProfileId: text("critical_evidence_profile_id")
+      .notNull()
+      .references(() => criticalEvidenceProfiles.id),
+    fieldId: text("field_id").notNull(),
+    critical: boolean("critical").notNull(),
+    minimumModelInput: boolean("minimum_model_input").notNull(),
+    acceptedAssertionStatuses: jsonb("accepted_assertion_statuses")
+      .$type<string[]>()
+      .notNull(),
+    acceptedFreshness: jsonb("accepted_freshness")
+      .$type<string[]>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.criticalEvidenceProfileId, table.fieldId],
+    }),
+  ],
+);
+
 export const valuationMethodPolicies = pgTable(
   "valuation_method_policies",
   {
@@ -911,6 +986,7 @@ export const candidateRuns = pgTable("candidate_runs", {
   candidateAnalysisFingerprint: text("candidate_analysis_fingerprint")
     .notNull(),
   rerunOfId: text("rerun_of_id"),
+  artifactSourceCandidateRunId: text("artifact_source_candidate_run_id"),
   workerId: text("worker_id"),
   leaseToken: text("lease_token"),
   leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
@@ -940,6 +1016,11 @@ export const candidateRuns = pgTable("candidate_runs", {
     foreignColumns: [table.workspaceId, table.id],
     name: "candidate_runs_workspace_rerun_fkey",
   }),
+  foreignKey({
+    columns: [table.workspaceId, table.artifactSourceCandidateRunId],
+    foreignColumns: [table.workspaceId, table.id],
+    name: "candidate_runs_workspace_artifact_source_fkey",
+  }),
   check(
     "candidate_runs_status_check",
     sql`${table.status} in ('queued', 'running', 'partial', 'completed', 'unavailable', 'failed')`,
@@ -948,9 +1029,15 @@ export const candidateRuns = pgTable("candidate_runs", {
     "candidate_runs_lease_shape_check",
     sql`(${table.workerId} is null and ${table.leaseToken} is null and ${table.leaseExpiresAt} is null) or (${table.status} = 'running' and btrim(coalesce(${table.workerId}, '')) <> '' and btrim(coalesce(${table.leaseToken}, '')) <> '' and ${table.leaseExpiresAt} is not null)`,
   ),
+  check(
+    "candidate_runs_artifact_alias_shape_check",
+    sql`${table.artifactSourceCandidateRunId} is null or (${table.status} = 'completed' and ${table.rerunOfId} = ${table.artifactSourceCandidateRunId})`,
+  ),
   uniqueIndex("candidate_runs_completed_fingerprint_unique")
     .on(table.workspaceId, table.candidateAnalysisFingerprint)
-    .where(sql`${table.status} = 'completed'`),
+    .where(
+      sql`${table.status} = 'completed' and ${table.artifactSourceCandidateRunId} is null`,
+    ),
   index("candidate_runs_claim_queue_idx").on(
     table.status,
     table.createdAt,

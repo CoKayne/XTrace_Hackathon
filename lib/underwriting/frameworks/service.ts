@@ -153,6 +153,7 @@ export interface FrameworkLensService {
     pack: EvidencePack;
     context: ResolvedUnderwritingContext;
     calculations: Calculation[];
+    signal?: AbortSignal;
   }): Promise<{
     judgments: FrameworkJudgment[];
     disagreements: FrameworkDisagreement[];
@@ -222,6 +223,7 @@ export function createFrameworkLensService(options: {
 
   return {
     async runAll(rawInput) {
+      throwIfAborted(rawInput.signal);
       const candidate = CandidateRunSchema.parse(rawInput.candidate);
       const pack = EvidencePackSchema.parse(rawInput.pack);
       const context = ResolvedUnderwritingContextSchema.parse(
@@ -252,6 +254,7 @@ export function createFrameworkLensService(options: {
         cards,
         concurrency,
         async (card): Promise<FrameworkJudgment> => {
+          throwIfAborted(rawInput.signal);
           const scopedCalculations = isValuationFrameworkCard(card)
             ? calculations
             : [];
@@ -374,6 +377,7 @@ export function createFrameworkLensService(options: {
                     calculations: scopedCalculations,
                     card,
                     fingerprint,
+                    signal: rawInput.signal,
                   });
                   judgment = result.judgment;
                   attempts = result.attempts;
@@ -420,6 +424,7 @@ export function createFrameworkLensService(options: {
                   calculations: scopedCalculations,
                   card,
                   fingerprint,
+                  signal: rawInput.signal,
                 });
                 judgment = result.judgment;
                 attempts = result.attempts;
@@ -678,6 +683,13 @@ function validateCacheReplay(input: {
     );
   }
   return record;
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (!signal?.aborted) return;
+  throw signal.reason instanceof Error
+    ? signal.reason
+    : new Error("Framework lens execution was aborted.");
 }
 
 function createFrameworkLensFingerprint(input: {

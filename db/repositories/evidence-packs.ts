@@ -6,6 +6,10 @@ import {
   type Fact,
   type SourceRevision,
 } from "../../lib/contracts/evidence";
+import {
+  IntegrationTransportError,
+  isRetryableTransportStatus,
+} from "../../lib/api/errors";
 
 export interface SourceEvidenceInput {
   id: string;
@@ -183,6 +187,139 @@ export function createMemoryEvidencePacksRepository():
   };
 }
 
+export function createSupabaseEvidencePacksRepository(options: {
+  url: string;
+  serviceRoleKey: string;
+  fetchImpl?: typeof fetch;
+}): EvidencePacksRepository {
+  const base = `${options.url.replace(/\/$/, "")}/rest/v1`;
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const headers = {
+    apikey: options.serviceRoleKey,
+    authorization: `Bearer ${options.serviceRoleKey}`,
+    "content-type": "application/json",
+  };
+
+  async function request(
+    path: string,
+    init: RequestInit = {},
+  ): Promise<unknown> {
+    let response: Response;
+    try {
+      response = await fetchImpl(`${base}${path}`, {
+        ...init,
+        headers: { ...headers, ...(init.headers ?? {}) },
+        cache: "no-store",
+      });
+    } catch {
+      throw new IntegrationTransportError({ retryable: true });
+    }
+    if (!response.ok) {
+      throw new IntegrationTransportError({
+        retryable: isRetryableTransportStatus(response.status),
+      });
+    }
+    if (response.status === 204) return null;
+    const body = await response.text();
+    return body.trim() ? JSON.parse(body) : null;
+  }
+
+  function savedPack(row: Record<string, unknown>): SavedEvidencePack {
+    return validateSavedEvidencePack({
+      pack: row.pack_payload as EvidencePack,
+      inputFingerprint: String(row.input_fingerprint),
+      sourceRevisionSnapshots:
+        row.source_revision_snapshots as SourceRevision[],
+    });
+  }
+
+  return {
+    async putSourceEvidence(inputs) {
+      const validated = inputs.map(validateSourceEvidenceInput);
+      await request("/rpc/save_source_evidence_items", {
+        method: "POST",
+        body: JSON.stringify({ p_items: validated }),
+      });
+    },
+
+    async listSourceEvidence(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const dealId = requiredText(input.dealId, "A Deal");
+      const sourceRevisionIds = [
+        ...new Set(
+          input.sourceRevisionIds.map((revisionId) =>
+            requiredText(revisionId, "A source revision")
+          ),
+        ),
+      ];
+      if (sourceRevisionIds.length === 0) return [];
+      const query = new URLSearchParams({
+        workspace_id: `eq.${workspaceId}`,
+        deal_id: `eq.${dealId}`,
+        source_revision_id:
+          `in.(${sourceRevisionIds.map(encodePostgrestValue).join(",")})`,
+        select: "payload",
+        order: "evidence_id.asc",
+      });
+      const rows = await request(`/source_evidence_items?${query}`) as Array<
+        Record<string, unknown>
+      >;
+      return rows.map((row) =>
+        validateSourceEvidenceInput(row.payload as SourceEvidenceInput)
+      );
+    },
+
+    async findByInputFingerprint(input) {
+      const query = new URLSearchParams({
+        workspace_id:
+          `eq.${requiredText(input.workspaceId, "A workspace")}`,
+        input_fingerprint: `eq.${requiredFingerprint(input.inputFingerprint)}`,
+        select: "input_fingerprint,pack_payload,source_revision_snapshots",
+        limit: "1",
+      });
+      const rows = await request(`/evidence_pack_builds?${query}`) as Array<
+        Record<string, unknown>
+      >;
+      return rows[0] ? savedPack(rows[0]) : null;
+    },
+
+    async findByPackId(input) {
+      const query = new URLSearchParams({
+        workspace_id:
+          `eq.${requiredText(input.workspaceId, "A workspace")}`,
+        pack_id: `eq.${requiredText(input.packId, "An Evidence Pack")}`,
+        select: "input_fingerprint,pack_payload,source_revision_snapshots",
+        limit: "1",
+      });
+      const rows = await request(`/evidence_pack_builds?${query}`) as Array<
+        Record<string, unknown>
+      >;
+      return rows[0] ? savedPack(rows[0]) : null;
+    },
+
+    async saveExact(input) {
+      const validated = validateSavedEvidencePack(input);
+      const value = await request("/rpc/save_evidence_pack_build", {
+        method: "POST",
+        body: JSON.stringify({ p_payload: validated }),
+      }) as Record<string, unknown>;
+      return savedPack(value);
+    },
+  };
+}
+
+let singleton: EvidencePacksRepository | undefined;
+
+export function getEvidencePacksRepository(): EvidencePacksRepository {
+  if (singleton) return singleton;
+  const url = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  singleton = url && serviceRoleKey
+    ? createSupabaseEvidencePacksRepository({ url, serviceRoleKey })
+    : createMemoryEvidencePacksRepository();
+  return singleton;
+}
+
 function validateSourceEvidenceInput(
   input: SourceEvidenceInput,
 ): SourceEvidenceInput {
@@ -248,6 +385,10 @@ function identity(workspaceId: string, id: string): string {
 
 function compareUtf8(left: string, right: string): number {
   return Buffer.compare(Buffer.from(left, "utf8"), Buffer.from(right, "utf8"));
+}
+
+function encodePostgrestValue(value: string): string {
+  return `"${value.replaceAll("\\", "\\\\").replaceAll("\"", "\\\"")}"`;
 }
 
 function canonicalJson(value: unknown): string {

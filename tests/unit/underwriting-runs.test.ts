@@ -189,6 +189,75 @@ test("claim returns a lease capability and checkpoints reject a foreign token", 
   assert.deepEqual(repository.inspect().checkpoints, [checkpoint]);
 });
 
+test("target-scoped claim never leases an older candidate or a candidate from another workspace", async () => {
+  const repository = createMemoryUnderwritingRunsRepository(
+    deterministicOptions(),
+  );
+  const createCandidate = async (
+    workspaceId: string,
+    dealId: string,
+    fingerprintCharacter: string,
+  ) => {
+    const batch = await repository.createOrReuseBatch({
+      workspaceId,
+      scanRunId: `scan_${workspaceId}`,
+      batchInputFingerprint:
+        `sha256:${fingerprintCharacter.repeat(64)}`,
+      fundPolicySnapshotId: `fund_policy_${workspaceId}`,
+      forceRefresh: false,
+      refreshNonce: null,
+      rerunOfId: null,
+    });
+    await repository.saveSelections({
+      batchId: batch.id,
+      selections: [{
+        dealId,
+        status: "selected",
+        rank: 1,
+        reason: "Target-safe claim fixture",
+      }],
+    });
+    const [candidate] = await repository.createSelectedCandidates({
+      batchId: batch.id,
+      dealIds: [dealId],
+    });
+    assert.ok(candidate);
+    return candidate;
+  };
+  const older = await createCandidate("workspace_a", "deal_a", "a");
+  const target = await createCandidate("workspace_b", "deal_b", "b");
+
+  const mismatched = await repository.claimCandidate({
+    workspaceId: "workspace_a",
+    candidateRunId: target.id,
+    workerId: "worker_1",
+    leaseSeconds: 60,
+  });
+  assert.equal(mismatched, null);
+  assert.deepEqual(
+    repository.inspect().candidates.map(({ id, status }) => ({ id, status })),
+    [
+      { id: older.id, status: "queued" },
+      { id: target.id, status: "queued" },
+    ],
+  );
+
+  const claimed = await repository.claimCandidate({
+    workspaceId: "workspace_b",
+    candidateRunId: target.id,
+    workerId: "worker_1",
+    leaseSeconds: 60,
+  });
+  assert.equal(claimed?.candidate.id, target.id);
+  assert.deepEqual(
+    repository.inspect().candidates.map(({ id, status }) => ({ id, status })),
+    [
+      { id: older.id, status: "queued" },
+      { id: target.id, status: "running" },
+    ],
+  );
+});
+
 test("Supabase adapters use controlled RPC writes and workspace-scoped artifact reuse reads", async () => {
   const requests: Array<{ url: string; init: RequestInit }> = [];
   const fetchImpl: typeof fetch = async (url, init = {}) => {
@@ -258,7 +327,81 @@ test("Supabase adapters use controlled RPC writes and workspace-scoped artifact 
   assert.equal(reuseUrl.searchParams.get("workspace_id"), "eq.workspace_1");
   assert.equal(reuseUrl.searchParams.get("status"), "eq.completed");
   assert.equal(
+    reuseUrl.searchParams.get("artifact_source_candidate_run_id"),
+    "is.null",
+  );
+  assert.equal(
     reuseUrl.searchParams.get("candidate_analysis_fingerprint"),
     `eq.sha256:${"8".repeat(64)}`,
   );
+});
+
+test("Supabase candidate writes use the exact target claim and alias-aware finalization RPCs", async () => {
+  const requests: Array<{ url: string; body: unknown }> = [];
+  const candidate = {
+    id: "candidate_target",
+    batchId: "batch_target",
+    workspaceId: "workspace_target",
+    dealId: "deal_target",
+    status: "running",
+    candidateAnalysisFingerprint: "pending:candidate_target",
+    rerunOfId: null,
+    createdAt: "2026-07-29T12:00:00.000Z",
+    finalizedAt: null,
+  };
+  const runs = createSupabaseUnderwritingRunsRepository({
+    url: "https://supabase.example",
+    serviceRoleKey: "secret",
+    fetchImpl: async (url, init = {}) => {
+      const body = JSON.parse(String(init.body));
+      requests.push({ url: String(url), body });
+      if (String(url).endsWith("/rpc/claim_underwriting_candidate")) {
+        return Response.json({
+          candidate,
+          leaseToken: "lease_target",
+          leaseExpiresAt: "2026-07-29T12:01:00.000Z",
+        });
+      }
+      if (
+        String(url).endsWith(
+          "/rpc/finalize_or_reuse_candidate_underwriting",
+        )
+      ) {
+        return Response.json({
+          ...candidate,
+          status: "completed",
+          candidateAnalysisFingerprint: `sha256:${"9".repeat(64)}`,
+          finalizedAt: "2026-07-29T12:00:30.000Z",
+        });
+      }
+      throw new Error(`Unexpected URL ${url}`);
+    },
+  });
+
+  const claimed = await runs.claimCandidate({
+    workspaceId: "workspace_target",
+    candidateRunId: "candidate_target",
+    workerId: "worker_target",
+    leaseSeconds: 60,
+  });
+  assert.equal(claimed?.candidate.id, "candidate_target");
+  const completed = await runs.finalizeCandidate({ marker: true } as never);
+  assert.equal(completed.status, "completed");
+  assert.deepEqual(requests, [
+    {
+      url:
+        "https://supabase.example/rest/v1/rpc/claim_underwriting_candidate",
+      body: {
+        p_workspace_id: "workspace_target",
+        p_candidate_run_id: "candidate_target",
+        p_worker_id: "worker_target",
+        p_lease_seconds: 60,
+      },
+    },
+    {
+      url:
+        "https://supabase.example/rest/v1/rpc/finalize_or_reuse_candidate_underwriting",
+      body: { p_payload: { marker: true } },
+    },
+  ]);
 });

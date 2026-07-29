@@ -4,6 +4,8 @@ import { getDataClient } from "../db/client";
 import { getIntelligenceRepository } from "../db/repositories/intelligence";
 import { getReasonerJudgmentsRepository } from "../db/repositories/reasoner-judgments";
 import { getDealRegistry } from "../db/repositories/deal-registry";
+import { getEvidencePacksRepository } from "../db/repositories/evidence-packs";
+import { getSourceRegistry } from "../db/repositories/source-registry";
 import {
   createMemoryUnderwritingRunsRepository,
   createSupabaseUnderwritingRunsRepository,
@@ -25,9 +27,17 @@ import {
   createFrameworkLensService,
 } from "../lib/underwriting/frameworks/service";
 import {
-  createSyntheticCandidateExecutor,
+  createSourceGroundedCandidateExecutor,
   createUnderwritingOrchestrator,
 } from "../lib/underwriting/orchestrator";
+import {
+  createEvidencePackCandidateGrounding,
+} from "../lib/underwriting/candidate-grounding";
+import {
+  createEvidencePackBuilder,
+} from "../lib/underwriting/evidence/builder";
+import { createContextRouter } from "../lib/underwriting/router";
+import { SLICE_ONE_CONTEXTS } from "../seed/underwriting/slice-one-contexts-v1";
 import { createProductInputGate } from "../lib/corpus/import-readiness";
 import { readMarketProviderConfiguration } from "../lib/market/config";
 import { createDefaultMarketProviders } from "../lib/market/providers";
@@ -90,12 +100,46 @@ export async function runNextQueuedScan(): Promise<boolean> {
     const claude = createClaudeClient();
     const underwritingRuns = createDefaultUnderwritingRunsRepository();
     const references = getUnderwritingReferencesRepository();
+    const lineage = getXTraceLineageRepository();
+    const evidenceRepository = getEvidencePacksRepository();
+    const sourceRegistry = getSourceRegistry();
+    const router = createContextRouter();
+    const criticalEvidenceProfiles = (
+      await Promise.all(
+        SLICE_ONE_CONTEXTS.map((context) =>
+          references.getCriticalEvidenceProfile(
+            context.criticalEvidenceProfileId,
+          )
+        ),
+      )
+    ).filter((profile) => profile !== null);
+    const grounding = createEvidencePackCandidateGrounding({
+      repository: evidenceRepository,
+      sourceRegistry,
+      builder: createEvidencePackBuilder({
+        repository: evidenceRepository,
+        sourceRegistry,
+        router,
+        criticalEvidenceProfiles,
+      }),
+      xtraceLineage: lineage,
+      resolveBenchmark: (context) => context.benchmarkPackId
+        ? references.getSelectedBenchmark({
+            packId: context.benchmarkPackId,
+            stage: context.stage,
+            asOfDate: context.asOfDate,
+          })
+        : Promise.resolve(null),
+    });
     const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
     const underwriting = createUnderwritingOrchestrator({
       runs: underwritingRuns,
       activeFundPolicy: (workspaceId) =>
         references.activeFundPolicy(workspaceId),
-      candidateExecutor: createSyntheticCandidateExecutor({
+      candidateExecutionFingerprint:
+        `source-grounded-v2:${model}:framework-lens-v1:framework-judgment-v1`,
+      candidateExecutor: createSourceGroundedCandidateExecutor({
+        grounding,
         frameworkLenses: createFrameworkLensService({
           client: claude,
           execution: {
@@ -118,7 +162,6 @@ export async function runNextQueuedScan(): Promise<boolean> {
         },
       }),
     });
-    const lineage = getXTraceLineageRepository();
     const xtraceService = isXTraceConfigured()
       ? createXTraceService(getXTraceClient(), {
           workspaceId: claimed.workspaceId,

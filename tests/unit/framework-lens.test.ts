@@ -225,6 +225,31 @@ test("runs published synthetic lenses independently and scopes saved calculation
   );
 });
 
+test("propagates caller cancellation before starting any framework provider work", async () => {
+  let modelCalls = 0;
+  const controller = new AbortController();
+  controller.abort(new Error("candidate stage expired"));
+  const service = createFrameworkLensService({
+    cards: [SYNTHETIC_FRAMEWORK_PACK.cards[0]!],
+    execution,
+    client: {
+      async complete() {
+        modelCalls += 1;
+        return "{}";
+      },
+    },
+  });
+
+  await assert.rejects(
+    service.runAll({
+      ...input(),
+      signal: controller.signal,
+    }),
+    /candidate stage expired|aborted/i,
+  );
+  assert.equal(modelCalls, 0);
+});
+
 test("repairs malformed or ungrounded output exactly once and then persists unavailable", async () => {
   const card = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
   let repairedCalls = 0;

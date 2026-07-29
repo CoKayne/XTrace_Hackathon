@@ -65,6 +65,12 @@ export interface UnderwritingRunsRepository {
     workerId: string;
     leaseSeconds: number;
   }): Promise<ClaimedCandidateRun | null>;
+  claimCandidate(input: {
+    workspaceId: string;
+    candidateRunId: string;
+    workerId: string;
+    leaseSeconds: number;
+  }): Promise<ClaimedCandidateRun | null>;
   saveCheckpoint(input: CandidateCheckpointWrite): Promise<void>;
   markCandidateUnavailable(input: {
     candidateRunId: string;
@@ -370,6 +376,62 @@ export function createMemoryUnderwritingRunsRepository(
       };
     },
 
+    async claimCandidate(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const candidateRunId = requiredText(
+        input.candidateRunId,
+        "A candidate run",
+      );
+      const workerId = requiredText(input.workerId, "A worker");
+      if (
+        !Number.isInteger(input.leaseSeconds)
+        || input.leaseSeconds <= 0
+      ) {
+        throw new Error("Lease seconds must be a positive integer.");
+      }
+      const timestamp = now().getTime();
+      const candidate = candidates.get(candidateRunId);
+      if (
+        !candidate
+        || candidate.workspaceId !== workspaceId
+        || (
+          candidate.status !== "queued"
+          && !(
+            candidate.status === "running"
+            && (
+              !leases.get(candidate.id)
+              || Date.parse(leases.get(candidate.id)!.expiresAt) <= timestamp
+            )
+          )
+        )
+      ) {
+        return null;
+      }
+      const leaseToken = requiredText(
+        leaseTokenGenerator(),
+        "A generated lease token",
+      );
+      const leaseExpiresAt = new Date(
+        timestamp + input.leaseSeconds * 1_000,
+      ).toISOString();
+      const running = CandidateRunSchema.parse({
+        ...candidate,
+        status: "running",
+      });
+      candidates.set(candidate.id, running);
+      leases.set(candidate.id, {
+        workerId,
+        token: leaseToken,
+        expiresAt: leaseExpiresAt,
+      });
+      recomputeBatch(candidate.batchId);
+      return {
+        candidate: structuredClone(running),
+        leaseToken,
+        leaseExpiresAt,
+      };
+    },
+
     async saveCheckpoint(input) {
       const candidate = candidateById(input.candidateRunId);
       if (candidate.status !== "running") {
@@ -448,6 +510,41 @@ export function createMemoryUnderwritingRunsRepository(
         || lease.token !== requiredText(input.leaseToken, "A lease token")
       ) {
         throw new Error("The candidate finalization lease does not match.");
+      }
+      const candidateAnalysisFingerprint = requiredText(
+        input.candidateAnalysisFingerprint,
+        "A candidate analysis fingerprint",
+      );
+      const reusable = await artifacts.findReusable({
+        workspaceId: candidate.workspaceId,
+        candidateAnalysisFingerprint,
+      });
+      if (reusable) {
+        if (
+          candidate.rerunOfId !== reusable.candidateRunId
+          || reusable.dealId !== candidate.dealId
+        ) {
+          throw new Error(
+            "Only a linked immutable rerun can reuse finalized candidate artifacts.",
+          );
+        }
+        const completed = CandidateRunSchema.parse({
+          ...candidate,
+          status: "completed",
+          candidateAnalysisFingerprint,
+          finalizedAt: now().toISOString(),
+        });
+        artifacts.aliasCandidate({
+          workspaceId: candidate.workspaceId,
+          candidateRunId: candidate.id,
+          sourceCandidateRunId: reusable.candidateRunId,
+          dealId: candidate.dealId,
+          candidateAnalysisFingerprint,
+        });
+        candidates.set(candidate.id, completed);
+        leases.delete(candidate.id);
+        recomputeBatch(candidate.batchId);
+        return structuredClone(completed);
       }
       const prepared = artifacts.prepareFinalization({
         candidate: {
@@ -604,6 +701,40 @@ export function createSupabaseUnderwritingRunsRepository(options: {
       };
     },
 
+    async claimCandidate(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const candidateRunId = requiredText(
+        input.candidateRunId,
+        "A candidate run",
+      );
+      const workerId = requiredText(input.workerId, "A worker");
+      if (
+        !Number.isInteger(input.leaseSeconds)
+        || input.leaseSeconds <= 0
+      ) {
+        throw new Error("Lease seconds must be a positive integer.");
+      }
+      const value = await request(
+        "/rpc/claim_underwriting_candidate",
+        {
+          p_workspace_id: workspaceId,
+          p_candidate_run_id: candidateRunId,
+          p_worker_id: workerId,
+          p_lease_seconds: input.leaseSeconds,
+        },
+      );
+      if (value === null) return null;
+      const row = value as Record<string, unknown>;
+      return {
+        candidate: parseCandidate(row.candidate),
+        leaseToken: requiredText(String(row.leaseToken), "A lease token"),
+        leaseExpiresAt: requiredText(
+          String(row.leaseExpiresAt),
+          "A lease expiry",
+        ),
+      };
+    },
+
     async saveCheckpoint(input) {
       const checkpoint = CandidateCheckpointSchema.parse({
         candidateRunId: input.candidateRunId,
@@ -657,7 +788,7 @@ export function createSupabaseUnderwritingRunsRepository(options: {
 
     async finalizeCandidate(input) {
       return parseCandidate(await request(
-        "/rpc/finalize_candidate_underwriting",
+        "/rpc/finalize_or_reuse_candidate_underwriting",
         { p_payload: input },
       ));
     },

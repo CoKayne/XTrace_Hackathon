@@ -24,6 +24,7 @@ export interface ClaudeClient {
     system: string;
     messages: ClaudeMessage[];
     maxTokens?: number;
+    signal?: AbortSignal;
   }): Promise<string>;
 }
 
@@ -49,9 +50,16 @@ export function createClaudeClient(options: {
       }
       let response: Response | undefined;
       for (let attempt = 0; attempt < 2; attempt += 1) {
+        throwIfAborted(input.signal);
         if (attempt > 0) {
-          await new Promise((resolve) => setTimeout(resolve, backoffMs));
+          await abortableDelay(backoffMs, input.signal);
         }
+        const requestSignal = input.signal
+          ? AbortSignal.any([
+              input.signal,
+              AbortSignal.timeout(90_000),
+            ])
+          : AbortSignal.timeout(90_000);
         try {
           response = await fetchImpl("https://api.anthropic.com/v1/messages", {
             method: "POST",
@@ -66,9 +74,12 @@ export function createClaudeClient(options: {
               system: input.system,
               messages: input.messages,
             }),
-            signal: AbortSignal.timeout(90_000),
+            signal: requestSignal,
           });
         } catch {
+          if (input.signal?.aborted) {
+            throw abortError(input.signal);
+          }
           response = undefined;
           continue;
         }
@@ -95,4 +106,38 @@ export function createClaudeClient(options: {
       return text;
     },
   };
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw abortError(signal);
+}
+
+function abortError(signal: AbortSignal): Error {
+  return signal.reason instanceof Error
+    ? signal.reason
+    : new Error("Anthropic completion was aborted.");
+}
+
+async function abortableDelay(
+  delayMs: number,
+  signal?: AbortSignal,
+): Promise<void> {
+  throwIfAborted(signal);
+  if (!signal) {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    return;
+  }
+  await new Promise<void>((resolve, reject) => {
+    const complete = () => {
+      signal.removeEventListener("abort", abort);
+      resolve();
+    };
+    const timeout = setTimeout(complete, delayMs);
+    const abort = () => {
+      clearTimeout(timeout);
+      reject(abortError(signal));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    timeout.unref?.();
+  });
 }

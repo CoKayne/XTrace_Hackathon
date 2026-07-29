@@ -11,8 +11,12 @@ import {
 } from "../../db/repositories/intelligence";
 import {
   createMemoryDealRegistry,
+  sourceRevisionFingerprint,
   type RegisteredDeal,
 } from "../../db/repositories/deal-registry";
+import {
+  createMemoryEvidencePacksRepository,
+} from "../../db/repositories/evidence-packs";
 import {
   createMemorySourceRegistry,
 } from "../../db/repositories/source-registry";
@@ -30,9 +34,19 @@ import {
   type FundPolicySnapshot,
 } from "../../lib/contracts/underwriting";
 import {
+  createSourceGroundedCandidateExecutor,
   createUnderwritingOrchestrator,
-  createSyntheticCandidateExecutor,
 } from "../../lib/underwriting/orchestrator";
+import {
+  createEvidencePackCandidateGrounding,
+} from "../../lib/underwriting/candidate-grounding";
+import {
+  createEvidencePackBuilder,
+} from "../../lib/underwriting/evidence/builder";
+import {
+  createContextRouter,
+  type CriticalEvidenceProfile,
+} from "../../lib/underwriting/router";
 import { BALANCED_POLICY_VALUES } from "../../seed/underwriting/balanced-policy-v1";
 import { processClaimedRun } from "../../worker/process-run";
 
@@ -145,6 +159,7 @@ function analysis(
 }
 
 function deal(id: string): RegisteredDeal {
+  const activeSourceRevisionIds = [`revision_${id}`];
   return {
     id,
     workspaceId: "workspace_1",
@@ -153,9 +168,153 @@ function deal(id: string): RegisteredDeal {
     status: "passed",
     analysisEligibleAt: "2026-07-01T00:00:00.000Z",
     activeSourceRevisionFingerprint:
-      `sha256:${id.padEnd(64, "0").slice(0, 64)}`,
-    activeSourceRevisionIds: [`revision_${id}`],
+      sourceRevisionFingerprint(activeSourceRevisionIds),
+    activeSourceRevisionIds,
   };
+}
+
+async function candidateGroundingFor(
+  dealId: string,
+  options: { includeContext: boolean },
+) {
+  const sourceRegistry = createMemorySourceRegistry();
+  const repository = createMemoryEvidencePacksRepository();
+  const registeredDeal = deal(dealId);
+  await sourceRegistry.createInitialRevision({
+    id: registeredDeal.activeSourceRevisionIds[0]!,
+    workspaceId: registeredDeal.workspaceId,
+    sourceId: `source_revision_${dealId}`,
+    contentHash: `sha256:${"d".repeat(64)}`,
+    objectKey: `private/${dealId}.md`,
+    objectVersion: `object:${dealId}:v1`,
+    contentType: "text/markdown",
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T10:00:00.000Z",
+    createdAt: "2026-07-29T10:00:01.000Z",
+  });
+  const common = {
+    workspaceId: registeredDeal.workspaceId,
+    dealId,
+    sourceRevisionId: registeredDeal.activeSourceRevisionIds[0]!,
+    provenanceOrigin: "uploaded_document" as const,
+    unit: null,
+    currency: null,
+    periodStart: null,
+    periodEnd: null,
+    publishedAt: null,
+    eventAt: null,
+    retrievedAt: "2026-07-29T10:01:00.000Z",
+    sourceRole: "management" as const,
+    assertionStatus: "reported" as const,
+    verificationMethod: null,
+    freshness: "current" as const,
+    acceptedForGate: true,
+  };
+  if (options.includeContext) {
+    await repository.putSourceEvidence([
+      {
+        ...common,
+        id: `fact_${dealId}_company`,
+        field: "Company identity",
+        value: registeredDeal.companyId,
+        locator: {
+          kind: "text_range",
+          start: 0,
+          end: 10,
+          excerpt: registeredDeal.companyName,
+        },
+      },
+      ...[
+        ["stage", "seed"],
+        ["business model", "b2b_saas"],
+        ["geography", "us"],
+        ["security type", "preferred"],
+        ["valuation basis", "pre-money"],
+      ].map(([field, value], index) => ({
+        ...common,
+        id: `fact_${dealId}_context_${index}`,
+        field: field!,
+        value: value!,
+        locator: {
+          kind: "text_range" as const,
+          start: 11 + index * 10,
+          end: 20 + index * 10,
+          excerpt: `${field}: ${value}`,
+        },
+      })),
+      {
+        ...common,
+        id: `fact_${dealId}_valuation`,
+        field: "Pre-money valuation",
+        value: "18000000",
+        unit: "currency",
+        currency: "USD",
+        locator: {
+          kind: "text_range",
+          start: 70,
+          end: 80,
+          excerpt: "Pre-money $18m",
+        },
+      },
+    ]);
+  }
+  const criticalEvidenceProfile: CriticalEvidenceProfile = {
+    id: "critical_evidence_seed_b2b_saas_v1",
+    version: "1",
+    publicationStatus: "published",
+    fields: [
+      {
+        fieldId: "company_identity",
+        critical: true,
+        minimumModelInput: true,
+        acceptedAssertionStatuses: ["reported", "verified"],
+        acceptedFreshness: ["current"],
+      },
+      {
+        fieldId: "reported_valuation",
+        critical: true,
+        minimumModelInput: true,
+        acceptedAssertionStatuses: ["reported", "verified"],
+        acceptedFreshness: ["current"],
+      },
+      {
+        fieldId: "reported_valuation_basis",
+        critical: true,
+        minimumModelInput: true,
+        acceptedAssertionStatuses: ["reported", "verified"],
+        acceptedFreshness: ["current"],
+      },
+      {
+        fieldId: "arr",
+        critical: true,
+        minimumModelInput: false,
+        acceptedAssertionStatuses: ["reported", "verified"],
+        acceptedFreshness: ["current"],
+      },
+    ],
+  };
+  const router = createContextRouter();
+  return createEvidencePackCandidateGrounding({
+    repository,
+    sourceRegistry,
+    builder: createEvidencePackBuilder({
+      repository,
+      sourceRegistry,
+      router,
+      criticalEvidenceProfiles: [criticalEvidenceProfile],
+      now: () => NOW,
+    }),
+    resolveBenchmark: async (context) => context.benchmarkPackId
+      ? {
+          packId: context.benchmarkPackId,
+          value: "24000000",
+          currency: "USD",
+          staleAfter: "2027-01-25",
+        }
+      : null,
+    now: () => NOW,
+  });
 }
 
 function report(analyses: CompanyAnalysis[]): IntelligenceReportRecord {
@@ -500,6 +659,76 @@ test("changes the batch fingerprint when exact XTrace source lineage changes", a
   assert.notEqual(changed.id, first.id);
 });
 
+test("changes the batch fingerprint when the immutable analysis as-of timestamp changes", async () => {
+  let sequence = 0;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    autoProcessCandidates: false,
+  });
+  const firstAnalysis = analysis("deal_a", 0.99);
+  const revisedAnalysis = structuredClone(firstAnalysis);
+  revisedAnalysis.createdAt = "2026-07-30T12:00:00.000Z";
+
+  const first = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report([firstAnalysis]),
+    analyses: [firstAnalysis],
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+  const revisedReport = report([revisedAnalysis]);
+  revisedReport.createdAt = "2026-07-30T12:00:00.000Z";
+  const changed = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: revisedReport,
+    analyses: [revisedAnalysis],
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.notEqual(changed.id, first.id);
+});
+
+test("changes the batch fingerprint when candidate source metadata changes under the same source ID", async () => {
+  let sequence = 0;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    autoProcessCandidates: false,
+  });
+  const firstAnalysis = analysis("deal_a", 0.99);
+  const revisedAnalysis = structuredClone(firstAnalysis);
+  revisedAnalysis.sources[0]!.excerpt = "A corrected immutable excerpt.";
+  revisedAnalysis.companyBrief.sourceLineage[0]!.excerpt =
+    "A corrected immutable excerpt.";
+
+  const first = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report([firstAnalysis]),
+    analyses: [firstAnalysis],
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+  const changed = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report([revisedAnalysis]),
+    analyses: [revisedAnalysis],
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.notEqual(changed.id, first.id);
+});
+
 test("force refresh creates a linked batch and linked CandidateRun", async () => {
   let sequence = 0;
   const runs = createMemoryUnderwritingRunsRepository({
@@ -536,6 +765,176 @@ test("force refresh creates a linked batch and linked CandidateRun", async () =>
   assert.equal(
     candidates.find(({ batchId }) => batchId === refreshed.id)?.rerunOfId,
     candidates.find(({ batchId }) => batchId === first.id)?.id,
+  );
+});
+
+test("processing a named candidate cannot lease an older queued candidate", async () => {
+  let sequence = 0;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const olderOrchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    autoProcessCandidates: false,
+  });
+  const targetOrchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    autoProcessCandidates: false,
+    candidateExecutor: async ({ candidate, workerId, leaseToken }) =>
+      finalization({
+        candidateRunId: candidate.id,
+        dealId: candidate.dealId,
+        workerId,
+        leaseToken,
+      }),
+  });
+  const olderAnalysis = analysis("deal_older", 0.99);
+  const targetAnalysis = analysis("deal_target", 0.98);
+  await olderOrchestrator.createBatchAndSelections({
+    scanRun,
+    report: report([olderAnalysis]),
+    analyses: [olderAnalysis],
+    eligibleDeals: [deal(olderAnalysis.dealId)],
+    forceRefresh: false,
+  });
+  const targetBatch = await targetOrchestrator.createBatchAndSelections({
+    scanRun,
+    report: report([targetAnalysis]),
+    analyses: [targetAnalysis],
+    eligibleDeals: [deal(targetAnalysis.dealId)],
+    forceRefresh: false,
+  });
+  const targetCandidate = runs.inspect().candidates.find(
+    ({ batchId }) => batchId === targetBatch.id,
+  );
+  assert.ok(targetCandidate);
+
+  const completed = await targetOrchestrator.processCandidate(
+    targetCandidate.id,
+  );
+
+  assert.equal(completed.id, targetCandidate.id);
+  assert.deepEqual(
+    runs.inspect().candidates.map(({ dealId, status }) => [dealId, status]),
+    [
+      ["deal_older", "queued"],
+      ["deal_target", "completed"],
+    ],
+  );
+});
+
+test("byte-identical force refresh completes as an immutable artifact alias", async () => {
+  let sequence = 0;
+  const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+    artifacts,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    refreshNonce: () => `refresh_${++sequence}`,
+    candidateExecutor: async ({ candidate, workerId, leaseToken }) =>
+      finalization({
+        candidateRunId: candidate.id,
+        dealId: candidate.dealId,
+        workerId,
+        leaseToken,
+      }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+  const input = {
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+  };
+
+  const original = await orchestrator.createBatchAndSelections({
+    ...input,
+    forceRefresh: false,
+  });
+  const refreshed = await orchestrator.createBatchAndSelections({
+    ...input,
+    forceRefresh: true,
+  });
+
+  const candidates = runs.inspect().candidates;
+  const originalCandidate = candidates.find(
+    ({ batchId }) => batchId === original.id,
+  );
+  const refreshedCandidate = candidates.find(
+    ({ batchId }) => batchId === refreshed.id,
+  );
+  assert.ok(originalCandidate);
+  assert.ok(refreshedCandidate);
+  assert.equal(refreshedCandidate.rerunOfId, originalCandidate.id);
+  assert.equal(refreshedCandidate.status, "completed");
+  assert.equal(
+    refreshedCandidate.candidateAnalysisFingerprint,
+    originalCandidate.candidateAnalysisFingerprint,
+  );
+  assert.equal(artifacts.inspect().bundles.length, 1);
+  assert.deepEqual(
+    await artifacts.getByCandidateRunId({
+      workspaceId: "workspace_1",
+      candidateRunId: refreshedCandidate.id,
+    }),
+    await artifacts.getByCandidateRunId({
+      workspaceId: "workspace_1",
+      candidateRunId: originalCandidate.id,
+    }),
+  );
+  assert.equal(refreshed.status, "completed");
+});
+
+test("a persistence failure during finalization terminates the candidate and batch", async () => {
+  let sequence = 0;
+  const storage = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const runs = {
+    ...storage,
+    async finalizeCandidate() {
+      throw new Error("private database diagnostic");
+    },
+  };
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    candidateExecutor: async ({ candidate, workerId, leaseToken }) =>
+      finalization({
+        candidateRunId: candidate.id,
+        dealId: candidate.dealId,
+        workerId,
+        leaseToken,
+      }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  const batch = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(storage.inspect().candidates[0]?.status, "failed");
+  assert.equal(batch.status, "failed");
+  assert.deepEqual(
+    Object.values(storage.inspect().failureReasons),
+    ["Candidate underwriting could not be atomically finalized."],
   );
 });
 
@@ -595,6 +994,63 @@ test("a candidate failure preserves a completed predecessor and leaves the batch
   );
 });
 
+test("identity-only evidence requires context confirmation without invoking a framework lens", async () => {
+  let sequence = 0;
+  let lensExecutions = 0;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: false,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      frameworkLenses: {
+        async runAll() {
+          lensExecutions += 1;
+          return { judgments: [], disagreements: [] };
+        },
+      },
+      now: () => NOW,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  const batch = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(lensExecutions, 0);
+  assert.equal(runs.inspect().candidates[0]?.status, "unavailable");
+  assert.deepEqual(
+    Object.values(runs.inspect().unavailableReasons),
+    [[
+      "CONTEXT_CONFIRMATION_REQUIRED_BUSINESS_MODEL",
+      "CONTEXT_CONFIRMATION_REQUIRED_GEOGRAPHY",
+      "CONTEXT_CONFIRMATION_REQUIRED_SECURITY_TYPE",
+      "CONTEXT_CONFIRMATION_REQUIRED_STAGE",
+    ]],
+  );
+  assert.equal(batch.status, "failed");
+});
+
 test("runs the source-grounded candidate chain once and persists communication channels as drafts", async () => {
   let sequence = 0;
   let lensExecutions = 0;
@@ -605,10 +1061,14 @@ test("runs the source-grounded candidate chain once and persists communication c
     leaseTokenGenerator: () => `lease_${++sequence}`,
     artifacts,
   });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+  });
   const orchestrator = createUnderwritingOrchestrator({
     runs,
     activeFundPolicy: async () => policy,
-    candidateExecutor: createSyntheticCandidateExecutor({
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
       frameworkLenses: {
         async runAll() {
           lensExecutions += 1;
@@ -643,6 +1103,18 @@ test("runs the source-grounded candidate chain once and persists communication c
   assert.equal(replay.status, "completed");
   assert.equal(lensExecutions, 1);
   assert.equal(runs.inspect().candidates[0]?.status, "completed");
+  assert.deepEqual(
+    runs.inspect().checkpoints.map(({ stage, status }) => [stage, status]),
+    [
+      ["context_router", "completed"],
+      ["evidence_pack", "completed"],
+      ["valuation", "completed"],
+      ["framework_lenses", "completed"],
+      ["decision", "completed"],
+      ["narrative_drafts", "completed"],
+      ["finalization", "completed"],
+    ],
+  );
   const saved = artifacts.inspect();
   assert.equal(saved.bundles.length, 1);
   assert.deepEqual(
@@ -655,6 +1127,78 @@ test("runs the source-grounded candidate chain once and persists communication c
     ),
     true,
   );
+});
+
+test("exhausted framework cost budget is a visible truncation without background lens work", async () => {
+  let sequence = 0;
+  let lensExecutions = 0;
+  const warnings: string[] = [];
+  const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+    artifacts,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    candidateCostUnits: 1,
+    onWarning: (warning) => warnings.push(warning),
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      frameworkLenses: {
+        async runAll() {
+          lensExecutions += 1;
+          return { judgments: [], disagreements: [] };
+        },
+      },
+      now: () => NOW,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  const batch = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(batch.status, "failed");
+  assert.equal(lensExecutions, 0);
+  assert.equal(runs.inspect().candidates[0]?.status, "unavailable");
+  assert.deepEqual(
+    Object.values(runs.inspect().unavailableReasons),
+    [["CANDIDATE_BUDGET_EXHAUSTED_FRAMEWORK_LENSES"]],
+  );
+  assert.deepEqual(
+    runs.inspect().checkpoints.map(({ stage, status }) => [stage, status]),
+    [
+      ["context_router", "completed"],
+      ["evidence_pack", "completed"],
+      ["valuation", "completed"],
+      ["framework_lenses", "failed"],
+    ],
+  );
+  assert.match(
+    runs.inspect().checkpoints.at(-1)?.publicReason ?? "",
+    /truncation warning.*budget was exhausted/i,
+  );
+  assert.ok(warnings.some((warning) => /truncation warning/i.test(warning)));
+  assert.equal(artifacts.inspect().bundles.length, 0);
 });
 
 test("processes a confirmed uploaded Deal from the authoritative registry before underwriting", async () => {

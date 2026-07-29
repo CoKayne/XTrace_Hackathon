@@ -1,4 +1,5 @@
 import type { ClaudeClient } from "../../claude/client";
+import { IntegrationTransportError } from "../../api/errors";
 import { parseClaudeJson } from "../../claude/service";
 import type {
   Calculation,
@@ -54,6 +55,7 @@ export async function runClaudeFrameworkLens(input: {
   calculations: Calculation[];
   card: FrameworkCard;
   fingerprint: string;
+  signal?: AbortSignal;
 }): Promise<ClaudeFrameworkLensResult> {
   const valuation = isValuationFrameworkCard(input.card);
   const advisory = isExperimentalAdvisoryFrameworkCard(input.card);
@@ -80,6 +82,7 @@ export async function runClaudeFrameworkLens(input: {
   let previousError = "";
   const maximumAttempts = advisory ? 1 : 2;
   for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
+    throwIfAborted(input.signal);
     const content = attempt === 1
       ? prompt
       : JSON.stringify({
@@ -94,6 +97,7 @@ export async function runClaudeFrameworkLens(input: {
         system: advisory ? ADVISORY_SYSTEM_PROMPT : CORE_SYSTEM_PROMPT,
         messages: [{ role: "user", content }],
         maxTokens: 4_000,
+        signal: input.signal,
       });
       const output = ClaudeFrameworkLensOutputSchema.parse(
         parseClaudeJson(previousResponse),
@@ -111,6 +115,8 @@ export async function runClaudeFrameworkLens(input: {
         repaired: attempt === 2,
       };
     } catch (error) {
+      throwIfAborted(input.signal);
+      if (error instanceof IntegrationTransportError) throw error;
       previousError = error instanceof Error ? error.message : String(error);
     }
   }
@@ -130,4 +136,11 @@ export async function runClaudeFrameworkLens(input: {
     attempts: maximumAttempts,
     repaired: !advisory,
   };
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (!signal?.aborted) return;
+  throw signal.reason instanceof Error
+    ? signal.reason
+    : new Error("Framework lens execution was aborted.");
 }

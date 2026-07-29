@@ -22,6 +22,10 @@ import {
   type SliceOneGeography,
   type SliceOneStage,
 } from "../../seed/underwriting/slice-one-contexts-v1";
+import type { CriticalEvidenceProfile } from "../../lib/underwriting/router";
+import type {
+  SelectedBenchmarkInput,
+} from "../../lib/underwriting/evidence/builder";
 
 export interface ContextKey {
   stage: SliceOneStage;
@@ -79,6 +83,14 @@ export interface UnderwritingReferencesRepository {
   getFrameworkPack(
     id: string,
   ): Promise<SyntheticFrameworkPackFixture | null>;
+  getCriticalEvidenceProfile(
+    id: string,
+  ): Promise<CriticalEvidenceProfile | null>;
+  getSelectedBenchmark(input: {
+    packId: string;
+    stage: SliceOneStage;
+    asOfDate: string;
+  }): Promise<SelectedBenchmarkInput | null>;
 }
 
 export interface MemoryUnderwritingReferencesRepository
@@ -90,6 +102,27 @@ export interface MemoryUnderwritingReferencesRepository
 
 const UNSUPPORTED_CONTEXT_REASON =
   "Vertical Slice 1 supports only Seed or Series A B2B SaaS or Enterprise AI preferred-equity contexts.";
+const SYNTHETIC_BENCHMARK_PACK_ID =
+  "benchmark_pack_synthetic_us_software_v1";
+const SYNTHETIC_BENCHMARK_STALE_AFTER = "2027-01-25";
+
+const SLICE_ONE_CRITICAL_EVIDENCE_PROFILES: CriticalEvidenceProfile[] =
+  SLICE_ONE_CONTEXTS.map((context) => ({
+    id: context.criticalEvidenceProfileId,
+    version: "1",
+    publicationStatus: "published",
+    fields: [
+      criticalField("company_identity", true, true),
+      criticalField("reported_valuation", true, true),
+      criticalField("reported_valuation_basis", true, true),
+      criticalField("arr", true, false),
+      criticalField("revenue", true, false),
+      criticalField("customer_evidence", true, false),
+      criticalField("cash", true, false),
+      criticalField("burn", true, false),
+      criticalField("runway", true, false),
+    ],
+  }));
 
 export function createMemoryUnderwritingReferencesRepository(options: {
   now?: () => Date;
@@ -273,6 +306,31 @@ export function createMemoryUnderwritingReferencesRepository(options: {
       return id === SYNTHETIC_FRAMEWORK_PACK.id
         ? structuredClone(SYNTHETIC_FRAMEWORK_PACK)
         : null;
+    },
+
+    async getCriticalEvidenceProfile(id) {
+      const profile = SLICE_ONE_CRITICAL_EVIDENCE_PROFILES.find(
+        (candidate) =>
+          candidate.id === requiredText(id, "A Critical Evidence Profile"),
+      );
+      return profile ? structuredClone(profile) : null;
+    },
+
+    async getSelectedBenchmark(input) {
+      if (
+        requiredText(input.packId, "A Benchmark Pack")
+          !== SYNTHETIC_BENCHMARK_PACK_ID
+        || !["seed", "series_a"].includes(input.stage)
+        || !isIsoDate(input.asOfDate)
+      ) {
+        return null;
+      }
+      return {
+        packId: input.packId,
+        value: input.stage === "seed" ? "24000000" : "80000000",
+        currency: "USD",
+        staleAfter: SYNTHETIC_BENCHMARK_STALE_AFTER,
+      };
     },
 
     inspect() {
@@ -540,6 +598,74 @@ export function createSupabaseUnderwritingReferencesRepository(options: {
         }),
       };
     },
+
+    async getCriticalEvidenceProfile(id) {
+      id = requiredText(id, "A Critical Evidence Profile");
+      const rows = await request(
+        `/critical_evidence_profiles?id=eq.${encodeURIComponent(id)}`
+          + "&publication_status=eq.published&limit=1",
+      ) as Array<Record<string, unknown>>;
+      const row = rows[0];
+      if (!row) return null;
+      const fieldRows = await request(
+        `/critical_evidence_profile_fields?critical_evidence_profile_id=eq.${
+          encodeURIComponent(id)
+        }&order=field_id.asc`,
+      ) as Array<Record<string, unknown>>;
+      const fields = fieldRows.map((field) =>
+        parseCriticalEvidenceField({
+          fieldId: field.field_id,
+          critical: field.critical,
+          minimumModelInput: field.minimum_model_input,
+          acceptedAssertionStatuses: field.accepted_assertion_statuses,
+          acceptedFreshness: field.accepted_freshness,
+        })
+      );
+      if (fields.length === 0) return null;
+      if (fields.some((field) => field === null)) return null;
+      return {
+        id: String(row.id),
+        version: String(row.version),
+        publicationStatus: "published",
+        fields: fields as CriticalEvidenceProfile["fields"],
+      };
+    },
+
+    async getSelectedBenchmark(input) {
+      const packId = requiredText(input.packId, "A Benchmark Pack");
+      if (!isIsoDate(input.asOfDate)) return null;
+      const packs = await request(
+        `/benchmark_packs?id=eq.${encodeURIComponent(packId)}`
+          + "&publication_status=eq.published&limit=1",
+      ) as Array<Record<string, unknown>>;
+      const pack = packs[0];
+      if (!pack) return null;
+      const entries = await request(
+        `/benchmark_entries?benchmark_pack_id=eq.${
+          encodeURIComponent(packId)
+        }&stage=eq.${encodeURIComponent(input.stage)}`
+          + "&metric=eq.reported_valuation&order=effective_at.desc&limit=1",
+      ) as Array<Record<string, unknown>>;
+      const entry = entries[0];
+      if (
+        !entry
+        || typeof entry.value !== "string"
+        || entry.currency !== "USD"
+        || !isIsoDate(String(pack.retrieval_date))
+        || !Number.isInteger(Number(pack.stale_after_days))
+      ) {
+        return null;
+      }
+      return {
+        packId,
+        value: entry.value,
+        currency: "USD",
+        staleAfter: addUtcDays(
+          String(pack.retrieval_date),
+          Number(pack.stale_after_days),
+        ),
+      };
+    },
   };
 }
 
@@ -586,6 +712,51 @@ function parseSnapshot(value: unknown): FundPolicySnapshot {
 function isIsoDate(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value)
     && !Number.isNaN(Date.parse(`${value}T00:00:00.000Z`));
+}
+
+function criticalField(
+  fieldId: string,
+  critical: boolean,
+  minimumModelInput: boolean,
+): CriticalEvidenceProfile["fields"][number] {
+  return {
+    fieldId,
+    critical,
+    minimumModelInput,
+    acceptedAssertionStatuses: ["reported", "corroborated", "verified"],
+    acceptedFreshness: ["current"],
+  };
+}
+
+function parseCriticalEvidenceField(
+  value: unknown,
+): CriticalEvidenceProfile["fields"][number] | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const row = value as Record<string, unknown>;
+  if (
+    typeof row.fieldId !== "string"
+    || typeof row.critical !== "boolean"
+    || typeof row.minimumModelInput !== "boolean"
+    || !Array.isArray(row.acceptedAssertionStatuses)
+    || !Array.isArray(row.acceptedFreshness)
+  ) {
+    return null;
+  }
+  return {
+    fieldId: row.fieldId,
+    critical: row.critical,
+    minimumModelInput: row.minimumModelInput,
+    acceptedAssertionStatuses:
+      row.acceptedAssertionStatuses as CriticalEvidenceProfile["fields"][number]["acceptedAssertionStatuses"],
+    acceptedFreshness:
+      row.acceptedFreshness as CriticalEvidenceProfile["fields"][number]["acceptedFreshness"],
+  };
+}
+
+function addUtcDays(date: string, days: number): string {
+  const value = new Date(`${date}T00:00:00.000Z`);
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
 }
 
 function policyDiff(

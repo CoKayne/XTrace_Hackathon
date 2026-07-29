@@ -113,3 +113,36 @@ test("Claude client rejects a response stopped by its max token limit", async ()
     /max token limit/,
   );
 });
+
+test("Claude client forwards caller cancellation and never retries an aborted request", async () => {
+  const controller = new AbortController();
+  let calls = 0;
+  const providerSignals: AbortSignal[] = [];
+  const client = createClaudeClient({
+    apiKey: "test-key",
+    backoffMs: 1,
+    fetchImpl: async (_url, init) => {
+      calls += 1;
+      const providerSignal = init?.signal as AbortSignal;
+      providerSignals.push(providerSignal);
+      return await new Promise<Response>((_resolve, reject) => {
+        providerSignal.addEventListener(
+          "abort",
+          () => reject(providerSignal.reason),
+          { once: true },
+        );
+      });
+    },
+  });
+
+  const completion = client.complete({
+    system: "Return JSON.",
+    messages: [{ role: "user", content: "Test" }],
+    signal: controller.signal,
+  });
+  controller.abort(new Error("candidate stage expired"));
+
+  await assert.rejects(completion, /candidate stage expired/i);
+  assert.equal(providerSignals[0]?.aborted, true);
+  assert.equal(calls, 1);
+});

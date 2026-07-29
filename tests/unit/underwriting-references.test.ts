@@ -126,6 +126,99 @@ test("four Slice-1 profiles resolve US and Global requests without borrowing a b
   });
 });
 
+test("resolves the exact published Critical Evidence and stage benchmark payloads", async () => {
+  const repository = createMemoryUnderwritingReferencesRepository();
+  const resolved = await repository.resolveContext({
+    stage: "series_a",
+    businessModel: "b2b_saas",
+    geography: "us",
+    securityType: "preferred",
+    asOfDate: "2026-07-29",
+  });
+  assert.equal(resolved.kind, "resolved");
+  if (resolved.kind !== "resolved") assert.fail("Context must resolve");
+
+  const profile = await repository.getCriticalEvidenceProfile(
+    resolved.value.criticalEvidenceProfileId,
+  );
+  const benchmark = await repository.getSelectedBenchmark({
+    packId: resolved.value.benchmarkPackId!,
+    stage: resolved.value.stage,
+    asOfDate: resolved.value.asOfDate,
+  });
+
+  assert.equal(profile?.publicationStatus, "published");
+  assert.equal(
+    profile?.fields.find(({ fieldId }) => fieldId === "company_identity")
+      ?.minimumModelInput,
+    true,
+  );
+  assert.deepEqual(benchmark, {
+    packId: "benchmark_pack_synthetic_us_software_v1",
+    value: "80000000",
+    currency: "USD",
+    staleAfter: "2027-01-25",
+  });
+});
+
+test("Supabase reads immutable structured Critical Evidence fields from the profile child table", async () => {
+  const requestedUrls: string[] = [];
+  const repository = createSupabaseUnderwritingReferencesRepository({
+    url: "https://database.example.test",
+    serviceRoleKey: "secret",
+    fetchImpl: async (request) => {
+      const url = String(request);
+      requestedUrls.push(url);
+      if (url.includes("/critical_evidence_profiles?")) {
+        return Response.json([{
+          id: "critical_evidence_seed_b2b_saas_v1",
+          version: "1",
+          publication_status: "published",
+          required_fields: ["legacy_coarse_label"],
+        }]);
+      }
+      if (url.includes("/critical_evidence_profile_fields?")) {
+        return Response.json([{
+          field_id: "company_identity",
+          critical: true,
+          minimum_model_input: true,
+          accepted_assertion_statuses: [
+            "reported",
+            "corroborated",
+            "verified",
+          ],
+          accepted_freshness: ["current"],
+        }]);
+      }
+      throw new Error(`Unexpected URL ${url}`);
+    },
+  });
+
+  const profile = await repository.getCriticalEvidenceProfile(
+    "critical_evidence_seed_b2b_saas_v1",
+  );
+
+  assert.deepEqual(profile, {
+    id: "critical_evidence_seed_b2b_saas_v1",
+    version: "1",
+    publicationStatus: "published",
+    fields: [{
+      fieldId: "company_identity",
+      critical: true,
+      minimumModelInput: true,
+      acceptedAssertionStatuses: [
+        "reported",
+        "corroborated",
+        "verified",
+      ],
+      acceptedFreshness: ["current"],
+    }],
+  });
+  assert.ok(requestedUrls.some((url) =>
+    url.includes("/critical_evidence_profile_fields?")
+  ));
+});
+
 test("the executable pack contains only published product-owned synthetic fixtures", async () => {
   const repository = createMemoryUnderwritingReferencesRepository();
   const pack = await repository.getFrameworkPack(SYNTHETIC_FRAMEWORK_PACK_ID);

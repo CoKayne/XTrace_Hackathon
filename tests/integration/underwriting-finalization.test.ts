@@ -24,6 +24,12 @@ import { createValuationEngine } from "../../lib/underwriting/valuation/service"
 const migrationPath = fileURLToPath(
   new URL("../../drizzle/0011_underwriting_runs.sql", import.meta.url),
 );
+const groundingMigrationPath = fileURLToPath(
+  new URL(
+    "../../drizzle/0012_source_grounded_underwriting.sql",
+    import.meta.url,
+  ),
+);
 const migrations = [
   "0000_vsee_postgres.sql",
   "0001_remove_report_delivery.sql",
@@ -37,6 +43,7 @@ const migrations = [
   "0009_source_revision_deal_registry.sql",
   "0010_underwriting_references.sql",
   "0011_underwriting_runs.sql",
+  "0012_source_grounded_underwriting.sql",
 ].map((filename) =>
   fileURLToPath(new URL(`../../drizzle/${filename}`, import.meta.url))
 );
@@ -743,6 +750,249 @@ test("0011 declares an atomic finalization RPC without calling legacy report per
   assert.match(migration, /underwriting_claim_edges/i);
   assert.doesNotMatch(migration, /save_intelligence_report/i);
 });
+
+test("0012 declares target claims, immutable rerun aliases, and grounded evidence persistence", () => {
+  const migration = readFileSync(groundingMigrationPath, "utf8");
+  assert.match(
+    migration,
+    /create or replace function public\.claim_underwriting_candidate\(/i,
+  );
+  assert.match(migration, /artifact_source_candidate_run_id/i);
+  assert.match(
+    migration,
+    /create or replace function public\.finalize_or_reuse_candidate_underwriting\(/i,
+  );
+  assert.match(migration, /create table if not exists public\.source_evidence_items/i);
+  assert.match(migration, /create table if not exists public\.evidence_pack_builds/i);
+  assert.match(migration, /create or replace function public\.save_source_evidence_items/i);
+  assert.match(migration, /create or replace function public\.save_evidence_pack_build/i);
+});
+
+test(
+  "0012 target claim leaves older work untouched and atomically aliases a linked identical rerun",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      setupSqlUnderwritingWorkspace(database);
+      executeSql(database, `
+        insert into public.underwriting_batches (
+          id, workspace_id, scan_run_id, status,
+          batch_input_fingerprint, fund_policy_snapshot_id,
+          force_refresh, refresh_nonce, rerun_of_id
+        ) values
+        (
+          'batch_original',
+          'workspace_1',
+          '00000000-0000-4000-8000-000000000801',
+          'running',
+          'sha256:${"7".repeat(64)}',
+          'fund_policy:workspace_1:v1',
+          false,
+          null,
+          null
+        ),
+        (
+          'batch_refresh',
+          'workspace_1',
+          '00000000-0000-4000-8000-000000000801',
+          'running',
+          'sha256:${"7".repeat(64)}',
+          'fund_policy:workspace_1:v1',
+          true,
+          'refresh_1',
+          'batch_original'
+        );
+        insert into public.candidate_runs (
+          id, batch_id, workspace_id, deal_id, status,
+          candidate_analysis_fingerprint, rerun_of_id
+        ) values
+        (
+          'candidate_older',
+          'batch_original',
+          'workspace_1',
+          'deal_1',
+          'queued',
+          'pending:candidate_older',
+          null
+        ),
+        (
+          'candidate_refresh',
+          'batch_refresh',
+          'workspace_1',
+          'deal_1',
+          'queued',
+          'pending:candidate_refresh',
+          'candidate_older'
+        );
+      `);
+      const originalClaim = JSON.parse(executeSql(database, `
+        set role service_role;
+        select public.claim_underwriting_candidate(
+          'workspace_1', 'candidate_older', 'worker_original', 60
+        );
+      `)) as { leaseToken: string };
+      const originalPayload = finalization({
+        candidateRunId: "candidate_older",
+        dealId: "deal_1",
+        workerId: "worker_original",
+        leaseToken: originalClaim.leaseToken,
+        fundPolicyId: "fund_policy:workspace_1:v1",
+      });
+      executeSql(database, `
+        set role service_role;
+        select public.finalize_or_reuse_candidate_underwriting(
+          ${sqlJson(originalPayload)}
+        );
+      `);
+
+      const refreshClaim = JSON.parse(executeSql(database, `
+        set role service_role;
+        select public.claim_underwriting_candidate(
+          'workspace_1', 'candidate_refresh', 'worker_refresh', 60
+        );
+      `)) as { leaseToken: string };
+      const refreshPayload = finalization({
+        candidateRunId: "candidate_refresh",
+        dealId: "deal_1",
+        workerId: "worker_refresh",
+        leaseToken: refreshClaim.leaseToken,
+        fundPolicyId: "fund_policy:workspace_1:v1",
+      });
+      executeSql(database, `
+        set role service_role;
+        select public.finalize_or_reuse_candidate_underwriting(
+          ${sqlJson(refreshPayload)}
+        );
+      `);
+
+      assert.equal(
+        executeSql(database, `
+          select status || '|' || artifact_source_candidate_run_id
+            || '|' || candidate_analysis_fingerprint
+          from public.candidate_runs
+          where id = 'candidate_refresh';
+        `),
+        `completed|candidate_older|sha256:${"a".repeat(64)}`,
+      );
+      assert.equal(
+        executeSql(database, `
+          select
+            (select count(*) from public.evidence_packs)
+            || '|' ||
+            (select count(*) from public.candidate_version_snapshots);
+        `),
+        "1|1",
+      );
+      assert.equal(
+        executeSql(database, `
+          set role service_role;
+          select public.claim_underwriting_candidate(
+            'workspace_foreign', 'candidate_refresh', 'worker_foreign', 60
+          ) is null;
+        `),
+        "t",
+      );
+    });
+  },
+);
+
+test(
+  "0012 persists exact source evidence and Evidence Pack build snapshots idempotently",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      setupSqlUnderwritingWorkspace(database);
+      executeSql(database, `
+        insert into public.source_revisions (
+          id, workspace_id, source_id, revision, content_hash,
+          object_key, object_version, content_type,
+          extractor_id, extractor_version, extracted_at
+        ) values (
+          'revision_grounded',
+          'workspace_1',
+          'source_grounded',
+          1,
+          'sha256:${"e".repeat(64)}',
+          'private/source-grounded.md',
+          'object:v1',
+          'text/markdown',
+          'plain_text_v1',
+          '1',
+          '2026-07-29T10:00:00.000Z'
+        );
+      `);
+      const sourceEvidence = {
+        id: "fact_grounded",
+        workspaceId: "workspace_1",
+        dealId: "deal_1",
+        sourceRevisionId: "revision_grounded",
+        field: "stage",
+        value: "seed",
+      };
+      executeSql(database, `
+        set role service_role;
+        select public.save_source_evidence_items(
+          ${sqlJson([sourceEvidence])}
+        );
+        select public.save_source_evidence_items(
+          ${sqlJson([sourceEvidence])}
+        );
+      `);
+      assert.throws(() =>
+        executeSql(database, `
+          set role service_role;
+          select public.save_source_evidence_items(
+            ${sqlJson([{ ...sourceEvidence, value: "series_a" }])}
+          );
+        `)
+      );
+
+      const pack = {
+        id: "pack_grounded",
+        workspaceId: "workspace_1",
+        dealId: "deal_1",
+      };
+      const snapshot = {
+        id: "revision_grounded",
+        workspaceId: "workspace_1",
+      };
+      const build = {
+        pack,
+        inputFingerprint: `sha256:${"f".repeat(64)}`,
+        sourceRevisionSnapshots: [snapshot],
+      };
+      executeSql(database, `
+        set role service_role;
+        select public.save_evidence_pack_build(${sqlJson(build)});
+        select public.save_evidence_pack_build(${sqlJson(build)});
+      `);
+
+      assert.equal(
+        executeSql(database, `
+          select
+            (select count(*) from public.source_evidence_items)
+            || '|' ||
+            (select count(*) from public.evidence_pack_builds)
+            || '|' ||
+            (select count(*) from public.critical_evidence_profile_fields
+              where critical_evidence_profile_id =
+                'critical_evidence_seed_b2b_saas_v1');
+        `),
+        "1|1|9",
+      );
+    });
+  },
+);
 
 test(
   "0011 rolls back every artifact row when finalization fails after inserts begin",

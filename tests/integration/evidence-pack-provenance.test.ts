@@ -39,6 +39,30 @@ const profile: CriticalEvidenceProfile = {
   }],
 };
 
+const referenceInputs = {
+  fundPolicy: {
+    id: "fund_policy:workspace_1:v1",
+    workspaceId: "workspace_1",
+    version: 1,
+    source: "recommended_policy" as const,
+    values: {
+      scenarioPriceMultipliers: {
+        bear: "0.75",
+        base: "1",
+        bull: "1.25",
+      },
+    },
+    createdByUserId: null,
+    createdAt: "2026-07-29T08:00:00.000Z",
+  },
+  benchmark: {
+    packId: context.benchmarkPackId!,
+    value: "24000000",
+    currency: "USD",
+    staleAfter: "2027-01-25",
+  },
+};
+
 async function fixture() {
   const sourceRegistry = createMemorySourceRegistry();
   const repository = createMemoryEvidencePacksRepository();
@@ -110,6 +134,7 @@ test("persists the exact pack fingerprint and immutable source revision snapshot
       capturedAt: "2026-07-29T09:01:30.000Z",
     },
     context,
+    ...referenceInputs,
   });
 
   const saved = await repository.findByPackId({
@@ -159,6 +184,7 @@ test("rejects XTrace recalled-only text that cannot resolve to local source line
         capturedAt: "2026-07-29T09:01:30.000Z",
       },
       context,
+      ...referenceInputs,
     }),
     /XTrace.*local source revision lineage/i,
   );
@@ -181,6 +207,7 @@ test("rejects XTrace lineage that names a source outside the exact revision snap
         capturedAt: "2026-07-29T09:01:30.000Z",
       },
       context,
+      ...referenceInputs,
     }),
     /XTrace.*source lineage/i,
   );
