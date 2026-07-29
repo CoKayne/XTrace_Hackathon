@@ -93,8 +93,16 @@ export function roundDecimalStringForDisplay(
   if (!Number.isInteger(decimalPlaces) || decimalPlaces < 0) {
     throw new RangeError("Display decimal places must be a non-negative integer");
   }
-  return parseDecimalString(value).toFixed(
+  const rounded = parseDecimalString(value).toDecimalPlaces(
     decimalPlaces,
     AuthoritativeDecimal.ROUND_HALF_EVEN,
-  ) as DecimalString;
+  );
+  if (rounded.isZero()) {
+    return (
+      decimalPlaces === 0
+        ? "0"
+        : `0.${"0".repeat(decimalPlaces)}`
+    ) as DecimalString;
+  }
+  return rounded.toFixed(decimalPlaces) as DecimalString;
 }

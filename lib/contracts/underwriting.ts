@@ -106,7 +106,21 @@ export const FrameworkDisagreementSchema = z.strictObject({
   ]),
   explanation: z.string().min(1),
   evidenceItemIds: z.array(IdSchema),
-});
+}).refine(
+  (disagreement) =>
+    disagreement.leftJudgmentId !== disagreement.rightJudgmentId,
+  "A framework disagreement requires two distinct judgments",
+);
+
+function hasExactScenarioSet(
+  scenarios: ReadonlyArray<{ name: z.infer<typeof ScenarioNameSchema> }>,
+): boolean {
+  return scenarios.length === ScenarioNameSchema.options.length
+    && ScenarioNameSchema.options.every(
+      (name) => scenarios.filter((scenario) => scenario.name === name).length
+        === 1,
+    );
+}
 
 export const ValuationScenarioSchema = z.strictObject({
   name: ScenarioNameSchema,
@@ -127,7 +141,10 @@ export const ValuationEvaluationSchema = z.strictObject({
   pricingPremium: z.string().min(1).nullable(),
   calculationIds: z.array(IdSchema),
   blockerCodes: z.array(z.string().min(1)),
-});
+}).refine(
+  (valuation) => hasExactScenarioSet(valuation.scenarios),
+  "ValuationEvaluation requires exactly Bear, Base, and Bull",
+);
 
 export const ScenarioInputFieldSchema = z.enum([
   "revenue_path",
@@ -203,13 +220,7 @@ export const ScenarioModelSchema = z.strictObject({
   scenarios: z.array(ScenarioModelEntrySchema),
   probabilityWeighted: z.boolean(),
 }).superRefine((model, context) => {
-  const scenarioNames = model.scenarios.map((scenario) => scenario.name);
-  if (
-    model.scenarios.length !== ScenarioNameSchema.options.length
-    || ScenarioNameSchema.options.some(
-      (name) => scenarioNames.filter((item) => item === name).length !== 1,
-    )
-  ) {
+  if (!hasExactScenarioSet(model.scenarios)) {
     context.addIssue({
       code: "custom",
       message: "ScenarioModel requires exactly Bear, Base, and Bull",

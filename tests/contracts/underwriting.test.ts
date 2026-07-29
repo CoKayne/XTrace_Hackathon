@@ -210,6 +210,10 @@ test("round-trips explicit framework disagreement topics", () => {
     FrameworkDisagreementSchema.parse(disagreement),
     disagreement,
   );
+  assert.throws(() => FrameworkDisagreementSchema.parse({
+    ...disagreement,
+    rightJudgmentId: "judgment_1",
+  }));
 });
 
 test("accepts source-backed, assumption-backed, and unavailable scenario inputs", () => {
@@ -318,6 +322,47 @@ test("round-trips valuation results without inventing unavailable numbers", () =
     blockerCodes: ["BULL_INPUT_UNAVAILABLE"],
   };
   assert.deepEqual(ValuationEvaluationSchema.parse(valuation), valuation);
+
+  const reordered = {
+    ...valuation,
+    scenarios: [
+      valuation.scenarios[2],
+      valuation.scenarios[0],
+      valuation.scenarios[1],
+    ],
+  };
+  assert.deepEqual(ValuationEvaluationSchema.parse(reordered), reordered);
+});
+
+test("requires valuation results to contain Bear, Base, and Bull exactly once", () => {
+  const scenarios = [
+    { name: "bear", valuation: "18000000", calculationIds: ["calc_bear"] },
+    { name: "base", valuation: "24000000", calculationIds: ["calc_base"] },
+    { name: "bull", valuation: null, calculationIds: [] },
+  ];
+  const valuation = {
+    id: "valuation_1",
+    status: "partial",
+    scenarios,
+    currentAsk: null,
+    maximumAcceptablePreMoney: null,
+    initialOwnership: null,
+    postDilutionOwnership: null,
+    grossMoic: null,
+    grossIrr: null,
+    pricingPremium: null,
+    calculationIds: [],
+    blockerCodes: [],
+  };
+
+  assert.throws(() => ValuationEvaluationSchema.parse({
+    ...valuation,
+    scenarios: scenarios.slice(1),
+  }));
+  assert.throws(() => ValuationEvaluationSchema.parse({
+    ...valuation,
+    scenarios: [scenarios[1], scenarios[1], scenarios[2]],
+  }));
 });
 
 test("prevents final synthesis claim edges from bypassing saved analysis items", () => {

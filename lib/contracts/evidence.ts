@@ -11,6 +11,10 @@ const DecimalTextSchema = z.string().regex(
   "Expected a finite decimal string",
 );
 
+function hasDuplicates(values: readonly string[]): boolean {
+  return new Set(values).size !== values.length;
+}
+
 export type DecimalString = string & {
   readonly __decimalString: unique symbol;
 };
@@ -225,7 +229,10 @@ export const EvidenceConflictSchema = z.strictObject({
   resolutionReason: z.string().min(1).nullable(),
 }).superRefine((conflict, context) => {
   if (
-    (
+    conflict.leftFactId === conflict.rightFactId
+    || (conflict.status === "open" && !conflict.material)
+    || (conflict.status === "immaterial" && conflict.material)
+    || (
       conflict.status === "resolved"
       && (
         conflict.resolutionFactId === null
@@ -280,12 +287,26 @@ export const EvidencePackSchema = z.strictObject({
   createdAt: IsoDateTimeSchema,
 }).superRefine((pack, context) => {
   const sourceRevisionIds = new Set(pack.sourceRevisionIds);
-  const factIds = new Set(pack.facts.map((fact) => fact.id));
-  const assumptionIds = new Set(
-    pack.assumptions.map((assumption) => assumption.id),
-  );
-  const evidenceItemIds = new Set([...factIds, ...assumptionIds]);
-  const conflictIds = new Set(pack.conflicts.map((conflict) => conflict.id));
+  const factIdList = pack.facts.map((fact) => fact.id);
+  const assumptionIdList = pack.assumptions.map((assumption) => assumption.id);
+  const conflictIdList = pack.conflicts.map((conflict) => conflict.id);
+  const blockingConflictIds = pack.coverage.blockingConflictIds;
+  const factIds = new Set(factIdList);
+
+  if (
+    hasDuplicates(pack.sourceRevisionIds)
+    || hasDuplicates(factIdList)
+    || hasDuplicates(assumptionIdList)
+    || hasDuplicates([...factIdList, ...assumptionIdList])
+    || hasDuplicates(conflictIdList)
+    || hasDuplicates(blockingConflictIds)
+  ) {
+    context.addIssue({
+      code: "custom",
+      message:
+        "Source revisions, evidence items, conflicts, and blocking references must be unique",
+    });
+  }
 
   if (
     pack.facts.some(
@@ -295,17 +316,6 @@ export const EvidencePackSchema = z.strictObject({
     context.addIssue({
       code: "custom",
       message: "Every Fact must reference a SourceRevision in the pack",
-    });
-  }
-
-  if (
-    pack.assumptions.some((assumption) =>
-      assumption.inputRefIds.some((id) => !evidenceItemIds.has(id))
-    )
-  ) {
-    context.addIssue({
-      code: "custom",
-      message: "Assumption inputs must reference evidence items in the pack",
     });
   }
 
@@ -326,11 +336,17 @@ export const EvidencePackSchema = z.strictObject({
   }
 
   if (
-    pack.coverage.blockingConflictIds.some((id) => !conflictIds.has(id))
+    blockingConflictIds.some((id) => {
+      const matches = pack.conflicts.filter((conflict) => conflict.id === id);
+      return matches.length !== 1
+        || matches[0].status !== "open"
+        || !matches[0].material;
+    })
   ) {
     context.addIssue({
       code: "custom",
-      message: "Blocking conflict IDs must reference conflicts in the pack",
+      message:
+        "Blocking conflict IDs must each resolve to one material open conflict",
     });
   }
 });

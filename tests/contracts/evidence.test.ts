@@ -334,12 +334,32 @@ test("round-trips an EvidencePack whose references resolve", () => {
   assert.deepEqual(EvidencePackSchema.parse(fixture), fixture);
 });
 
+test("preserves external benchmark and policy references inside EvidencePacks", () => {
+  const benchmarkAssumption = assumptionFixture({
+    id: "assumption_benchmark_growth",
+    provenanceOrigin: "benchmark",
+    inputRefIds: ["benchmark_pack_1"],
+  });
+  const policyAssumption = assumptionFixture({
+    id: "assumption_policy_growth",
+    inputRefIds: ["fund_policy_snapshot_1"],
+  });
+
+  assert.deepEqual(
+    AssumptionSchema.parse(benchmarkAssumption),
+    benchmarkAssumption,
+  );
+  assert.deepEqual(AssumptionSchema.parse(policyAssumption), policyAssumption);
+
+  const pack = evidencePackFixture({
+    assumptions: [benchmarkAssumption, policyAssumption],
+  });
+  assert.deepEqual(EvidencePackSchema.parse(pack), pack);
+});
+
 test("rejects EvidencePack references outside its immutable contents", () => {
   const cases = [
     evidencePackFixture({ sourceRevisionIds: [] }),
-    evidencePackFixture({
-      assumptions: [assumptionFixture({ inputRefIds: ["unknown_item"] })],
-    }),
     evidencePackFixture({
       conflicts: [conflictFixture({ rightFactId: "unknown_fact" })],
     }),
@@ -353,6 +373,90 @@ test("rejects EvidencePack references outside its immutable contents", () => {
         underwritingStatus: "unavailable",
         reasonCodes: ["MATERIAL_CONFLICT"],
       },
+    }),
+  ];
+
+  for (const fixture of cases) {
+    assert.throws(() => EvidencePackSchema.parse(fixture));
+  }
+});
+
+test("requires unique source revisions, evidence item IDs, and conflict IDs", () => {
+  const cases = [
+    evidencePackFixture({
+      sourceRevisionIds: ["revision_1", "revision_1"],
+    }),
+    evidencePackFixture({
+      facts: [
+        factFixture(),
+        factFixture(),
+        factFixture({
+          id: "fact_arr_alt",
+          provenanceOrigin: "public_source",
+          sourceRole: "independent_third_party",
+        }),
+      ],
+    }),
+    evidencePackFixture({
+      assumptions: [assumptionFixture(), assumptionFixture()],
+    }),
+    evidencePackFixture({
+      assumptions: [assumptionFixture({ id: "fact_arr" })],
+    }),
+    evidencePackFixture({
+      conflicts: [conflictFixture(), conflictFixture()],
+    }),
+  ];
+
+  for (const fixture of cases) {
+    assert.throws(() => EvidencePackSchema.parse(fixture));
+  }
+});
+
+test("requires a conflict to compare distinct Facts with consistent materiality", () => {
+  assert.throws(() => EvidenceConflictSchema.parse(conflictFixture({
+    rightFactId: "fact_arr",
+  })));
+  assert.throws(() => EvidenceConflictSchema.parse(conflictFixture({
+    material: false,
+  })));
+  assert.throws(() => EvidenceConflictSchema.parse(conflictFixture({
+    material: true,
+    status: "immaterial",
+    resolutionReason: "Below the threshold.",
+  })));
+  assert.doesNotThrow(() => EvidenceConflictSchema.parse(conflictFixture({
+    material: false,
+    status: "immaterial",
+    resolutionReason: "Below the threshold.",
+  })));
+});
+
+test("requires every blocking conflict ID exactly once and only while material and open", () => {
+  assert.doesNotThrow(() => EvidencePackSchema.parse(evidencePackFixture()));
+
+  const cases = [
+    evidencePackFixture({
+      coverage: {
+        ...(
+          evidencePackFixture().coverage as Record<string, unknown>
+        ),
+        blockingConflictIds: ["conflict_arr", "conflict_arr"],
+      },
+    }),
+    evidencePackFixture({
+      conflicts: [conflictFixture({
+        status: "resolved",
+        resolutionFactId: "fact_arr",
+        resolutionReason: "Board report is authoritative.",
+      })],
+    }),
+    evidencePackFixture({
+      conflicts: [conflictFixture({
+        material: false,
+        status: "immaterial",
+        resolutionReason: "Below the threshold.",
+      })],
     }),
   ];
 

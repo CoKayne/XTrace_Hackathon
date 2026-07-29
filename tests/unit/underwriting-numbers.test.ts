@@ -89,6 +89,23 @@ test("keeps half-even display rounding separate from authoritative values", () =
   assert.equal(roundDecimalStringForDisplay("2.345", 2), "2.34");
   assert.equal(roundDecimalStringForDisplay("2.355", 2), "2.36");
   assert.equal(roundDecimalStringForDisplay("-2.345", 2), "-2.34");
+  assert.equal(roundDecimalStringForDisplay("-2.355", 2), "-2.36");
   assert.throws(() => roundDecimalStringForDisplay("1.2", -1));
   assert.throws(() => roundDecimalStringForDisplay("1.2", 1.5));
+});
+
+test("canonicalizes display negative zero while preserving requested scale", () => {
+  const cases = [
+    ["-0.005", 2, "0.00"],
+    ["-0.0049", 2, "0.00"],
+    ["-0", 0, "0"],
+    ["-0", 3, "0.000"],
+    ["-0.0000001", 2, "0.00"],
+    ["-0.0000001", 6, "0.000000"],
+    ["-0.0000001", 7, "-0.0000001"],
+  ] as const;
+
+  for (const [value, scale, expected] of cases) {
+    assert.equal(roundDecimalStringForDisplay(value, scale), expected);
+  }
 });
