@@ -1377,35 +1377,55 @@ test(
       true,
       "PostgreSQL with temporary-database privileges is required.",
     );
-    withTemporaryDatabase((database) => {
-      executeSql(database, `
+    const originalBypassRls = executeSql("postgres", `
+      select coalesce((
+        select rolbypassrls::text
+        from pg_roles
+        where rolname = 'service_role'
+      ), 'missing');
+    `);
+    try {
+      executeSql("postgres", `
         do $$
         begin
-          create role service_role nologin noinherit bypassrls;
+          create role service_role nologin noinherit nobypassrls;
         exception when duplicate_object then null;
         end;
         $$;
+        alter role service_role nobypassrls;
       `);
-      const migrations = [
-        "0000_vsee_postgres.sql",
-        "0001_remove_report_delivery.sql",
-        "0002_durable_decision_lineage.sql",
-        "0003_sanitize_report_next_steps.sql",
-        "0004_company_analyses.sql",
-        "0005_sample_decision_label.sql",
-        "0006_reasoner_judgments.sql",
-        "0007_uploaded_documents.sql",
-        "0008_workspace_composite_identity.sql",
-        "0009_source_revision_deal_registry.sql",
-      ];
-      for (const migration of migrations) {
-        applySql(
-          database,
-          fileURLToPath(new URL(`../../drizzle/${migration}`, import.meta.url)),
+      withTemporaryDatabase((database) => {
+        executeSql(database, "alter role service_role bypassrls;");
+        const migrations = [
+          "0000_vsee_postgres.sql",
+          "0001_remove_report_delivery.sql",
+          "0002_durable_decision_lineage.sql",
+          "0003_sanitize_report_next_steps.sql",
+          "0004_company_analyses.sql",
+          "0005_sample_decision_label.sql",
+          "0006_reasoner_judgments.sql",
+          "0007_uploaded_documents.sql",
+          "0008_workspace_composite_identity.sql",
+          "0009_source_revision_deal_registry.sql",
+        ];
+        for (const migration of migrations) {
+          applySql(
+            database,
+            fileURLToPath(
+              new URL(`../../drizzle/${migration}`, import.meta.url),
+            ),
+          );
+        }
+        assert.equal(
+          executeSql(database, `
+            select rolbypassrls::text
+            from pg_roles
+            where rolname = 'service_role';
+          `),
+          "true",
         );
-      }
 
-      executeSql(database, `
+        executeSql(database, `
         insert into public.workspaces (id, name)
         values ('workspace_privilege_boundary', 'Privilege boundary');
         select id
@@ -1422,10 +1442,20 @@ test(
           'extractedAt', '2026-07-28T10:00:00.000Z',
           'createdAt', '2026-07-28T10:00:01.000Z'
         ));
-      `);
-      assert.doesNotThrow(() =>
-        executeSql(database, `
+        `);
+        assert.doesNotThrow(() =>
+          executeSql(database, `
           set role service_role;
+          select 1 / case
+            when current_user = 'service_role'
+              and (
+                select rolbypassrls
+                from pg_roles
+                where rolname = current_user
+              )
+            then 1
+            else 0
+          end;
           select public.confirm_source_assignment(jsonb_build_object(
             'requestId', 'request_privilege_boundary',
             'workspaceId', 'workspace_privilege_boundary',
@@ -1440,9 +1470,115 @@ test(
           ));
           reset role;
         `)
-      );
+        );
+        executeSql(database, `
+          insert into public.source_documents (
+            id, filename, title, role, company_name, deal_id,
+            checksum, byte_size, object_key
+          ) values (
+            'source_privilege_boundary',
+            'privilege-boundary.pdf',
+            'Privilege boundary',
+            'deal_document',
+            'Privilege Boundary Company',
+            'deal_privilege_boundary',
+            'source_checksum_privilege_boundary',
+            1,
+            'private/source-privilege-boundary.pdf'
+          );
+          insert into public.workspace_documents (workspace_id, document_id)
+          values (
+            'workspace_privilege_boundary',
+            'source_privilege_boundary'
+          );
+          insert into public.source_evidence (
+            id, workspace_id, document_id, source_revision_id, deal_id,
+            company_name, provenance, page, fact, excerpt
+          ) values (
+            'evidence_privilege_boundary',
+            'workspace_privilege_boundary',
+            'source_privilege_boundary',
+            'revision_privilege_boundary',
+            'deal_privilege_boundary',
+            'Privilege Boundary Company',
+            'source_document',
+            1,
+            'A durable descendant fact.',
+            'A durable descendant excerpt.'
+          );
+          insert into public.deal_interactions (
+            id, workspace_id, document_id, source_revision_id, deal_id,
+            company_name, occurred_at, provenance, label, status,
+            decision_reason, concerns, revisit_conditions, meeting_summary
+          ) values (
+            'interaction_privilege_boundary',
+            'workspace_privilege_boundary',
+            'source_privilege_boundary',
+            'revision_privilege_boundary',
+            'deal_privilege_boundary',
+            'Privilege Boundary Company',
+            '2026-07-28T10:10:00.000Z',
+            'demo_fixture',
+            'Sample decision record',
+            'screening',
+            'A durable descendant decision.',
+            '[]'::jsonb,
+            '[]'::jsonb,
+            'A durable descendant interaction.'
+          );
+          insert into public.scan_runs (
+            id, workspace_id, mode, status
+          ) values (
+            '00000000-0000-4000-8000-000000000401',
+            'workspace_privilege_boundary',
+            'structured',
+            'completed'
+          );
+          insert into public.intelligence_reports (
+            id, workspace_id, run_id, market_summary, opportunities,
+            company_count, eligible_snapshot_count,
+            eligible_snapshot_fingerprint
+          )
+          select
+            'report_privilege_boundary',
+            'workspace_privilege_boundary',
+            '00000000-0000-4000-8000-000000000401',
+            'Privilege boundary report.',
+            '[]'::jsonb,
+            (snapshot.value ->> 'count')::integer,
+            (snapshot.value ->> 'count')::integer,
+            snapshot.value ->> 'fingerprint'
+          from (
+            select public.get_analysis_eligible_snapshot(
+              'workspace_privilege_boundary'
+            ) as value
+          ) as snapshot;
+          insert into public.company_analyses (
+            id, workspace_id, report_id, run_id, deal_id, company_name,
+            deal_status, outcome, confidence, score, investment_memory,
+            market_evidence, implications, recommended_next_move,
+            company_brief, source_refs
+          ) values (
+            'analysis_privilege_boundary',
+            'workspace_privilege_boundary',
+            'report_privilege_boundary',
+            '00000000-0000-4000-8000-000000000401',
+            'deal_privilege_boundary',
+            'Privilege Boundary Company',
+            'screening',
+            'monitor',
+            'medium',
+            0.5,
+            '{}'::jsonb,
+            '{}'::jsonb,
+            '{}'::jsonb,
+            'Preserve this descendant.',
+            '{}'::jsonb,
+            '[]'::jsonb
+          );
+        `);
 
-      const privilegeMatrix = executeSql(database, `
+        const privilegeMatrix = executeSql(database, `
         select table_name || '|'
           || has_table_privilege(
             'service_role', 'public.' || table_name, 'SELECT'
@@ -1455,8 +1591,8 @@ test(
           )::text
         from (values ('companies'), ('deals')) as registry_tables(table_name)
         order by table_name;
-      `);
-      const exploitResults = [
+        `);
+        const exploitResults = [
         {
           label: "delete-companies",
           statement: `
@@ -1481,44 +1617,55 @@ test(
           label: "truncate-deals",
           statement: "truncate public.deals cascade",
         },
-      ].map(({ label, statement }) => {
-        try {
-          executeSql(database, `
+        ].map(({ label, statement }) => {
+          try {
+            executeSql(database, `
             begin;
             set role service_role;
+            select 1 / case
+              when current_user = 'service_role'
+                and (
+                  select rolbypassrls
+                  from pg_roles
+                  where rolname = current_user
+                )
+              then 1
+              else 0
+            end;
             ${statement};
             rollback;
           `);
-          return `${label}|allowed`;
-        } catch (error) {
-          const stderr = error && typeof error === "object" && "stderr" in error
-            ? String((error as { stderr?: unknown }).stderr ?? "")
-            : String(error);
-          return `${label}|${
-            /permission denied for table (companies|deals)/i.test(stderr)
-              ? "permission-denied"
-              : "other-error"
-          }`;
-        }
-      });
+            return `${label}|allowed`;
+          } catch (error) {
+            const stderr = error && typeof error === "object"
+                && "stderr" in error
+              ? String((error as { stderr?: unknown }).stderr ?? "")
+              : String(error);
+            return `${label}|${
+              /permission denied for table (companies|deals)/i.test(stderr)
+                ? "permission-denied"
+                : "other-error"
+            }`;
+          }
+        });
 
-      assert.deepEqual(
-        { privilegeMatrix, exploitResults },
-        {
-          privilegeMatrix: [
-            "companies|true|false|false",
-            "deals|true|false|false",
-          ].join("\n"),
-          exploitResults: [
-            "delete-companies|permission-denied",
-            "delete-deals|permission-denied",
-            "truncate-companies|permission-denied",
-            "truncate-deals|permission-denied",
-          ],
-        },
-      );
-      assert.equal(
-        executeSql(database, `
+        assert.deepEqual(
+          { privilegeMatrix, exploitResults },
+          {
+            privilegeMatrix: [
+              "companies|true|false|false",
+              "deals|true|false|false",
+            ].join("\n"),
+            exploitResults: [
+              "delete-companies|permission-denied",
+              "delete-deals|permission-denied",
+              "truncate-companies|permission-denied",
+              "truncate-deals|permission-denied",
+            ],
+          },
+        );
+        assert.equal(
+          executeSql(database, `
           select
             (select count(*) from public.companies
               where workspace_id = 'workspace_privilege_boundary')
@@ -1527,11 +1674,42 @@ test(
               where workspace_id = 'workspace_privilege_boundary')
             || '|'
             || (select count(*) from public.deal_source_assignments
+              where workspace_id = 'workspace_privilege_boundary')
+            || '|'
+            || (select count(*) from public.source_evidence
+              where workspace_id = 'workspace_privilege_boundary')
+            || '|'
+            || (select count(*) from public.deal_interactions
+              where workspace_id = 'workspace_privilege_boundary')
+            || '|'
+            || (select count(*) from public.company_analyses
               where workspace_id = 'workspace_privilege_boundary');
         `),
-        "1|1|1",
-      );
-    });
+          "1|1|1|1|1|1",
+        );
+      });
+    } finally {
+      if (originalBypassRls === "missing") {
+        executeSql("postgres", "drop role if exists service_role;");
+      } else {
+        executeSql(
+          "postgres",
+          `alter role service_role ${
+            originalBypassRls === "true" ? "bypassrls" : "nobypassrls"
+          };`,
+        );
+      }
+    }
+    assert.equal(
+      executeSql("postgres", `
+        select coalesce((
+          select rolbypassrls::text
+          from pg_roles
+          where rolname = 'service_role'
+        ), 'missing');
+      `),
+      originalBypassRls,
+    );
   },
 );
 
