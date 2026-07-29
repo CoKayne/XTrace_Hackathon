@@ -10,6 +10,7 @@
 
 ## Global Constraints
 
+- **Side Quest coordination override (2026-07-28):** 主線不得研究、蒸餾、撰寫或 seed 任何真實具名 VC／投資人框架內容。獨立 Side Quest 負責該內容，完成後以 branch／commit 交接。Task 7／11 在交接前只能實作 framework schema、registry、匯入驗證、執行／分歧／報告基礎設施，以及明確標示為 synthetic 的測試 fixtures；本計畫後文列出的真實框架名稱與公開來源暫停執行，直到使用者明確提供 Side Quest 成果。
 - 第一版分析只由使用者按下 `Run Analysis` 手動啟動；資料契約可容納 `scheduled`，但不得建立另一套排程分析邏輯。
 - 市場掃描固定使用最近 14 天的全球公開資料。
 - 所有 `analysis_eligible` Deal 都必須得到既有 `CompanyAnalysis`；目前 seed 恰為 19 筆，但任何 production invariant、API validation、資料庫 constraint 或 UI copy 都不得把 cardinality 寫死為 19。
