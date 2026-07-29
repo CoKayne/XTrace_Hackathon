@@ -6,6 +6,14 @@ import { pathToFileURL } from "node:url";
 import { DEMO_DEAL_EVIDENCE } from "../lib/corpus/evidence";
 import { DEMO_FIXTURES } from "../lib/corpus/fixtures";
 import {
+  getDealRegistry,
+  type DealRegistry,
+} from "../db/repositories/deal-registry";
+import {
+  getSourceRegistry,
+  type SourceRegistry,
+} from "../db/repositories/source-registry";
+import {
   listDocumentDeals,
   listPreloadedDocuments,
 } from "../lib/corpus/manifest";
@@ -17,6 +25,7 @@ import {
   type DemoDataStore,
   type PrivateObjectStorage,
 } from "../lib/storage/service";
+import { backfillPreloadedSourceRegistry } from "./backfill-source-registry";
 
 const DEMO_WORKSPACE = {
   id: "workspace_demo",
@@ -32,6 +41,8 @@ export interface DemoSeedDependencies {
   dataStore: DemoDataStore;
   objectStorage: PrivateObjectStorage;
   corpusDirectory: string;
+  sourceRegistry?: SourceRegistry;
+  dealRegistry?: DealRegistry;
 }
 
 export interface DemoSeedResult {
@@ -117,6 +128,15 @@ export async function runDemoSeed(
     }));
   }
 
+  if (dependencies.sourceRegistry && dependencies.dealRegistry) {
+    await backfillPreloadedSourceRegistry({
+      workspaceId: DEMO_WORKSPACE.id,
+      assignedByUserId: DEMO_USER.id,
+      sourceRegistry: dependencies.sourceRegistry,
+      dealRegistry: dependencies.dealRegistry,
+    });
+  }
+
   return { reset: Boolean(options.reset), created };
 }
 
@@ -130,6 +150,8 @@ async function main(): Promise<void> {
   const result = await runDemoSeed({
     dataStore: createDefaultDemoDataStore(),
     objectStorage: createDefaultPrivateObjectStorage(),
+    sourceRegistry: getSourceRegistry(),
+    dealRegistry: getDealRegistry(),
     corpusDirectory: path.join(process.cwd(), "seed", "corpus"),
   }, { reset: args.has("--reset") });
   console.log(JSON.stringify(result));

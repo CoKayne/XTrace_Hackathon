@@ -94,15 +94,16 @@ then [`drizzle/0004_company_analyses.sql`](drizzle/0004_company_analyses.sql),
 then [`drizzle/0005_sample_decision_label.sql`](drizzle/0005_sample_decision_label.sql),
 then [`drizzle/0006_reasoner_judgments.sql`](drizzle/0006_reasoner_judgments.sql),
 then [`drizzle/0007_uploaded_documents.sql`](drizzle/0007_uploaded_documents.sql),
+then [`drizzle/0008_workspace_composite_identity.sql`](drizzle/0008_workspace_composite_identity.sql),
 and finally
-[`drizzle/0008_workspace_composite_identity.sql`](drizzle/0008_workspace_composite_identity.sql)
+[`drizzle/0009_source_revision_deal_registry.sql`](drizzle/0009_source_revision_deal_registry.sql)
 to the Supabase PostgreSQL database before seeding the fixed corpus. Operators
 upgrading a database that already has earlier migrations applied may apply the
 missing migrations in order. Company intelligence reports require `0004`;
 uploaded-source staging requires `0007`; and all product deployments require
-`0008` before using workspace-scoped conflict targets. Without `0008`, tenant
-external IDs are still globally keyed and the server's composite upserts will
-fail.
+`0008` before using workspace-scoped conflict targets. Source revision and
+analysis eligibility require `0009`. Without `0008`, tenant external IDs are
+still globally keyed and the server's composite upserts will fail.
 
 ```bash
 npm install
@@ -111,7 +112,7 @@ npm run db:seed
 
 CI and release verification must run `npm run test:migrations`; unlike the
 portable full suite, that command fails when a disposable PostgreSQL database
-cannot be created, so the live `0000`–`0008` upgrade and catalog assertions
+cannot be created, so the live `0000`–`0009` upgrade and catalog assertions
 cannot be silently skipped.
 
 Start the Web App and worker as separate processes:
@@ -170,7 +171,7 @@ worker heartbeat.
 
 ### Worker runbook
 
-1. For a new database, apply migrations `0000` through `0008` in order; for an
+1. For a new database, apply migrations `0000` through `0009` in order; for an
    existing database, apply the migrations it is missing in order. Then seed
    the corpus before starting the Worker.
 2. Start the Worker and wait for the container health status to become

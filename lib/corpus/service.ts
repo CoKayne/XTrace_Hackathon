@@ -88,6 +88,8 @@ export function previewImport(documentIds: string[]): ImportPreviewItem[] {
 }
 
 export function buildPreloadedDealMemoryBundles(): DealMemoryBundle[] {
+  // Seed/backfill fixture builder only. Production analysis reads eligible
+  // bundles through DealRegistry so confirmed uploads and seed Deals converge.
   return listPreloadedDocuments()
     .filter((document) => document.role === "deal_document")
     .flatMap((document) =>

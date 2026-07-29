@@ -1,0 +1,420 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  createMemoryDealRegistry,
+  createSupabaseDealRegistry,
+  sourceRevisionFingerprint,
+  type ConfirmSourceAssignmentInput,
+} from "../../db/repositories/deal-registry";
+import {
+  createMemorySourceRegistry,
+  type CreateSourceRevisionInput,
+  type SourceRegistry,
+} from "../../db/repositories/source-registry";
+import type {
+  DealMemoryBundle,
+  DealStatus,
+} from "../../lib/contracts/domain";
+import { backfillPreloadedSourceRegistry } from "../../scripts/backfill-source-registry";
+
+function revisionInput(
+  workspaceId: string,
+  sourceId: string,
+  id: string,
+  contentHash: string,
+): CreateSourceRevisionInput {
+  return {
+    id,
+    workspaceId,
+    sourceId,
+    contentHash,
+    objectKey: `private/${workspaceId}/${sourceId}`,
+    objectVersion: contentHash,
+    contentType: "application/pdf",
+    extractorId: "pdf-text",
+    extractorVersion: "1.0.0",
+    extractedAt: "2026-07-28T10:00:00.000Z",
+    createdAt: "2026-07-28T10:00:01.000Z",
+  };
+}
+
+function bundle(
+  dealId: string,
+  companyName: string,
+  status: DealStatus = "screening",
+): DealMemoryBundle {
+  return {
+    dealId,
+    companyName,
+    status,
+    facts: [],
+    interactions: [],
+  };
+}
+
+async function assignment(
+  sourceRegistry: SourceRegistry,
+  overrides: Partial<ConfirmSourceAssignmentInput> & {
+    workspaceId: string;
+    dealId: string;
+    sourceId: string;
+  },
+): Promise<ConfirmSourceAssignmentInput> {
+  const sourceRevision = await sourceRegistry.createInitialRevision(
+    revisionInput(
+      overrides.workspaceId,
+      overrides.sourceId,
+      `${overrides.workspaceId}:${overrides.sourceId}:revision:1`,
+      `hash_${overrides.sourceId}`,
+    ),
+  );
+  const companyName = overrides.companyName ?? `Company ${overrides.dealId}`;
+  return {
+    requestId: overrides.requestId ?? `request:${overrides.dealId}`,
+    workspaceId: overrides.workspaceId,
+    dealId: overrides.dealId,
+    companyId: overrides.companyId ?? `company:${overrides.dealId}`,
+    companyName,
+    status: overrides.status ?? "screening",
+    sourceRevisionId: sourceRevision.id,
+    assignedByUserId: overrides.assignedByUserId ?? "user_one",
+    reason: overrides.reason ?? "Confirmed source ownership.",
+    confirmedAt: overrides.confirmedAt ?? "2026-07-28T11:00:00.000Z",
+    memoryBundle: overrides.memoryBundle ??
+      bundle(overrides.dealId, companyName, overrides.status),
+  };
+}
+
+test("seed and confirmed upload share one analysis-eligible query", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  await registry.confirmSourceAssignment(await assignment(sources, {
+    workspaceId: "workspace_demo",
+    dealId: "deal_seed_7bridges",
+    sourceId: "doc_7bridges",
+  }));
+  await registry.confirmSourceAssignment(await assignment(sources, {
+    workspaceId: "workspace_demo",
+    dealId: "deal_uploaded",
+    sourceId: "upload_one",
+  }));
+
+  const ids = (await registry.listAnalysisEligibleBundles("workspace_demo"))
+    .map((item) => item.dealId)
+    .sort();
+  assert.deepEqual(ids, ["deal_seed_7bridges", "deal_uploaded"]);
+});
+
+test("confirmation is retry-idempotent and does not change upload or XTrace state", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  const input = await assignment(sources, {
+    workspaceId: "workspace_one",
+    dealId: "deal_uploaded",
+    sourceId: "upload_one",
+  });
+
+  const first = await registry.confirmSourceAssignment(input);
+  const retry = await registry.confirmSourceAssignment(input);
+
+  assert.equal(first.newlyEligible, true);
+  assert.equal(retry.newlyEligible, false);
+  assert.deepEqual(retry.deal, first.deal);
+  assert.equal(registry.inspect().assignments.length, 1);
+  assert.deepEqual(registry.inspect().externalEffects, []);
+});
+
+test("active assignment supersession updates the fingerprint deterministically", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  const initialInput = await assignment(sources, {
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    sourceId: "source_one",
+  });
+  const first = await registry.confirmSourceAssignment(initialInput);
+  const secondRevision = await sources.appendRevision({
+    ...revisionInput(
+      "workspace_one",
+      "source_one",
+      "revision_two",
+      "hash_two",
+    ),
+    supersedesRevisionId: first.sourceRevision.id,
+  });
+
+  const confirmed = await registry.confirmSourceAssignment({
+    ...initialInput,
+    requestId: "request:deal_one:revision:2",
+    sourceRevisionId: secondRevision.id,
+    confirmedAt: "2026-07-28T12:00:00.000Z",
+  });
+
+  assert.deepEqual(confirmed.deal.activeSourceRevisionIds, [secondRevision.id]);
+  assert.equal(
+    confirmed.deal.activeSourceRevisionFingerprint,
+    sourceRevisionFingerprint([secondRevision.id]),
+  );
+  assert.equal(
+    registry.inspect().assignments.filter((item) => item.supersededAt === null)
+      .length,
+    1,
+  );
+});
+
+test("workspace identity is mandatory and colliding Deal ids remain isolated", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  for (const workspaceId of ["workspace:a", "workspace"]) {
+    await registry.confirmSourceAssignment(await assignment(sources, {
+      workspaceId,
+      dealId: workspaceId === "workspace:a" ? "external" : "a:external",
+      sourceId: `source_${workspaceId}`,
+    }));
+  }
+
+  assert.ok(
+    await registry.findForWorkspace({
+      workspaceId: "workspace:a",
+      dealId: "external",
+    }),
+  );
+  assert.ok(
+    await registry.findForWorkspace({
+      workspaceId: "workspace",
+      dealId: "a:external",
+    }),
+  );
+  assert.equal(
+    await registry.findForWorkspace({
+      workspaceId: "workspace_other",
+      dealId: "external",
+    }),
+    null,
+  );
+  await assert.rejects(
+    registry.listAnalysisEligibleBundles("  "),
+    /workspace.*required/i,
+  );
+});
+
+test("confirmation rejects cross-workspace revisions and conflicting retry identities", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  const input = await assignment(sources, {
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    sourceId: "source_one",
+    requestId: "request_shared",
+  });
+  await registry.confirmSourceAssignment(input);
+
+  await assert.rejects(
+    registry.confirmSourceAssignment({
+      ...input,
+      workspaceId: "workspace_two",
+      dealId: "deal_two",
+      companyId: "company_two",
+      companyName: "Company two",
+      memoryBundle: undefined,
+    }),
+    /revision|workspace/i,
+  );
+  const otherRevision = await sources.createInitialRevision(
+    revisionInput(
+      "workspace_one",
+      "source_two",
+      "revision_other",
+      "hash_other",
+    ),
+  );
+  await assert.rejects(
+    registry.confirmSourceAssignment({
+      ...input,
+      dealId: "deal_two",
+      companyId: "company_two",
+      companyName: "Company two",
+      sourceRevisionId: otherRevision.id,
+      memoryBundle: undefined,
+    }),
+    /request|different/i,
+  );
+});
+
+test("preloaded registry backfill is idempotent and keeps nineteen as fixture data only", async () => {
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+
+  const first = await backfillPreloadedSourceRegistry({
+    workspaceId: "workspace_demo",
+    assignedByUserId: "user_demo",
+    sourceRegistry: sources,
+    dealRegistry: deals,
+  });
+  const second = await backfillPreloadedSourceRegistry({
+    workspaceId: "workspace_demo",
+    assignedByUserId: "user_demo",
+    sourceRegistry: sources,
+    dealRegistry: deals,
+  });
+
+  assert.equal(first.sourceRevisionCount, 14);
+  assert.equal(first.eligibleDealCount, 19);
+  assert.equal(second.sourceRevisionCount, 14);
+  assert.equal(second.eligibleDealCount, 19);
+  assert.equal(
+    (await deals.listAnalysisEligibleBundles("workspace_demo")).length,
+    19,
+  );
+  assert.equal(sources.inspect().revisions.length, 14);
+  assert.equal(deals.inspect().assignments.length, 19);
+});
+
+test("backfill reuses a migration-created immutable revision without rewriting timestamps", async () => {
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  await sources.createInitialRevision({
+    ...revisionInput(
+      "workspace_demo",
+      "doc_7bridges",
+      "source_revision_doc_7bridges_1",
+      "698a582d94484808c419aab4602a72aa36612fdafebba56a690be3bea848d47a",
+    ),
+    objectKey:
+      "private/demo-corpus/698a582d94484808c419aab4602a72aa36612fdafebba56a690be3bea848d47a/7bridges-Pitch-Deck.pdf",
+    objectVersion:
+      "698a582d94484808c419aab4602a72aa36612fdafebba56a690be3bea848d47a",
+    extractorId: "legacy-migration",
+    extractedAt: "2026-07-01T00:00:00.000Z",
+    createdAt: "2026-07-01T00:00:00.000Z",
+  });
+
+  const result = await backfillPreloadedSourceRegistry({
+    workspaceId: "workspace_demo",
+    assignedByUserId: "user_demo",
+    sourceRegistry: sources,
+    dealRegistry: deals,
+  });
+
+  assert.equal(result.sourceRevisionCount, 14);
+  assert.equal(
+    (
+      await sources.getRevision({
+        workspaceId: "workspace_demo",
+        revisionId: "source_revision_doc_7bridges_1",
+      })
+    )?.extractorId,
+    "legacy-migration",
+  );
+});
+
+test("Supabase confirmation and reads capture mandatory workspace scope", async () => {
+  const requests: Array<{ url: string; init: RequestInit }> = [];
+  const repository = createSupabaseDealRegistry({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input, init = {}) => {
+      requests.push({ url: String(input), init });
+      if (String(input).includes("/rpc/confirm_source_assignment")) {
+        return Response.json({
+          deal: {
+            id: "deal_one",
+            workspaceId: "workspace_one",
+            companyId: "company_one",
+            companyName: "Company one",
+            status: "screening",
+            analysisEligibleAt: "2026-07-28T11:00:00.000Z",
+            activeSourceRevisionFingerprint:
+              sourceRevisionFingerprint(["revision_one"]),
+            activeSourceRevisionIds: ["revision_one"],
+          },
+          sourceRevision: {
+            id: "revision_one",
+            workspaceId: "workspace_one",
+            sourceId: "source_one",
+            revision: 1,
+            contentHash: "hash_one",
+            objectKey: "private/workspace_one/source_one",
+            objectVersion: "hash_one",
+            contentType: "application/pdf",
+            extractorId: "pdf-text",
+            extractorVersion: "1.0.0",
+            extractedAt: "2026-07-28T10:00:00.000Z",
+            supersedesRevisionId: null,
+            createdAt: "2026-07-28T10:00:01.000Z",
+          },
+          newlyEligible: true,
+        });
+      }
+      return Response.json([]);
+    },
+  });
+
+  await repository.confirmSourceAssignment({
+    requestId: "request_one",
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    companyId: "company_one",
+    companyName: "Company one",
+    status: "screening",
+    sourceRevisionId: "revision_one",
+    assignedByUserId: "user_one",
+    reason: "Confirmed ownership.",
+    confirmedAt: "2026-07-28T11:00:00.000Z",
+  });
+  await repository.findForWorkspace({
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+  });
+
+  assert.equal(
+    requests[0].url,
+    "https://example.supabase.co/rest/v1/rpc/confirm_source_assignment",
+  );
+  assert.equal(
+    JSON.parse(String(requests[0].init.body)).p_assignment.workspaceId,
+    "workspace_one",
+  );
+  assert.doesNotMatch(
+    requests.map((request) => request.url).join("\n"),
+    /xtrace|uploaded_documents/i,
+  );
+  const findUrl = new URL(requests[1].url);
+  assert.equal(findUrl.searchParams.get("workspace_id"), "eq.workspace_one");
+  assert.equal(findUrl.searchParams.get("id"), "eq.deal_one");
+});
+
+test("Supabase eligible reads reject a stale active-revision fingerprint", async () => {
+  const repository = createSupabaseDealRegistry({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      if (url.includes("/deals?")) {
+        return Response.json([{
+          id: "deal_one",
+          workspace_id: "workspace_one",
+          company_id: "company_one",
+          company_name: "Company one",
+          status: "screening",
+          analysis_eligible_at: "2026-07-28T11:00:00.000Z",
+          active_source_revision_fingerprint: "stale",
+        }]);
+      }
+      if (url.includes("/deal_source_assignments?")) {
+        return Response.json([{
+          deal_id: "deal_one",
+          source_id: "source_one",
+          source_revision_id: "revision_one",
+        }]);
+      }
+      return Response.json([]);
+    },
+  });
+
+  await assert.rejects(
+    repository.listAnalysisEligibleBundles("workspace_one"),
+    /fingerprint|active source/i,
+  );
+});

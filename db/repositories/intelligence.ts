@@ -32,6 +32,10 @@ interface IntelligenceReportIdentity {
 
 export interface IntelligenceReportWrite extends IntelligenceReportIdentity {
   opportunities: OpportunityReportItem[];
+  // Internal write-time snapshot. It validates that every Deal selected by the
+  // authoritative registry received an analysis, but is not added to legacy
+  // report response shapes.
+  eligibleDealCount?: number;
   analysisStatus?: ReportAnalysisStatus;
   evidenceCoverage?: EvidenceCoverage;
   counts?: CompanyAnalysisCounts;
@@ -194,9 +198,23 @@ function parseCompanyAnalyses(
   report: IntelligenceReportWrite,
 ): CompanyAnalysis[] {
   if (report.companyAnalyses !== undefined) {
-    if (report.companyAnalyses.length !== 19) {
+    if (
+      report.eligibleDealCount !== undefined
+      && (
+        !Number.isInteger(report.eligibleDealCount)
+        || report.eligibleDealCount < 0
+      )
+    ) {
       throw new Error(
-        "New intelligence reports must contain exactly 19 company analyses.",
+        "The eligible Deal snapshot count must be a nonnegative integer.",
+      );
+    }
+    if (
+      report.eligibleDealCount !== undefined
+      && report.companyAnalyses.length !== report.eligibleDealCount
+    ) {
+      throw new Error(
+        `The eligible Deal snapshot contains ${report.eligibleDealCount} Deals, but the report contains ${report.companyAnalyses.length} analyses.`,
       );
     }
     return report.companyAnalyses.map((analysis) =>
@@ -213,6 +231,8 @@ function parseCompanyAnalyses(
 
 function safeReport(report: IntelligenceReportWrite): IntelligenceReportRecord {
   const cloned = structuredClone(report);
+  const legacyShape = { ...cloned };
+  delete legacyShape.eligibleDealCount;
   const workspaceId = requiredWorkspaceId(cloned.workspaceId);
   const opportunities = sanitizeReportOpportunities(cloned.opportunities);
   const companyAnalyses = parseCompanyAnalyses({
@@ -223,7 +243,7 @@ function safeReport(report: IntelligenceReportWrite): IntelligenceReportRecord {
     ? countsFromAnalyses(companyAnalyses)
     : cloned.counts ?? countsFromAnalyses([]);
   return {
-    ...cloned,
+    ...legacyShape,
     workspaceId,
     opportunities,
     analysisStatus: ReportAnalysisStatusSchema.parse(

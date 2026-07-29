@@ -317,6 +317,7 @@ export async function processClaimedRun(
       },
       counts,
       priorityDealId,
+      eligibleDealCount: dependencies.bundles.length,
       companyAnalyses,
     };
     const storedReport = await dependencies.intelligence.saveReport(report);

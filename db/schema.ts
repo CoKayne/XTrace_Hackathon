@@ -2,6 +2,7 @@ import {
   bigint,
   doublePrecision,
   foreignKey,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -9,8 +10,10 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 import type {
   CompanyBrief,
@@ -129,6 +132,13 @@ export const deals = pgTable("deals", {
   ),
   companyId: text("company_id").notNull(),
   companyName: text("company_name").notNull(),
+  status: text("status").notNull().default("screening"),
+  analysisEligibleAt: timestamp("analysis_eligible_at", {
+    withTimezone: true,
+  }),
+  activeSourceRevisionFingerprint: text(
+    "active_source_revision_fingerprint",
+  ),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   primaryKey({ columns: [table.workspaceId, table.id] }),
@@ -137,6 +147,129 @@ export const deals = pgTable("deals", {
     foreignColumns: [companies.workspaceId, companies.id],
     name: "deals_workspace_company_fkey",
   }).onDelete("cascade"),
+]);
+
+export const sourceRevisions = pgTable("source_revisions", {
+  id: text("id").notNull(),
+  workspaceId: text("workspace_id").notNull().references(
+    () => workspaces.id,
+    { onDelete: "cascade" },
+  ),
+  sourceId: text("source_id").notNull(),
+  revision: integer("revision").notNull(),
+  contentHash: text("content_hash").notNull(),
+  objectKey: text("object_key").notNull(),
+  objectVersion: text("object_version").notNull(),
+  contentType: text("content_type").notNull(),
+  extractorId: text("extractor_id").notNull(),
+  extractorVersion: text("extractor_version").notNull(),
+  extractedAt: timestamp("extracted_at", { withTimezone: true }).notNull(),
+  supersedesRevisionId: text("supersedes_revision_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.workspaceId, table.id] }),
+  unique("source_revisions_workspace_source_revision_unique").on(
+    table.workspaceId,
+    table.sourceId,
+    table.revision,
+  ),
+  unique("source_revisions_workspace_source_id_unique").on(
+    table.workspaceId,
+    table.sourceId,
+    table.id,
+  ),
+  foreignKey({
+    columns: [
+      table.workspaceId,
+      table.sourceId,
+      table.supersedesRevisionId,
+    ],
+    foreignColumns: [
+      table.workspaceId,
+      table.sourceId,
+      table.id,
+    ],
+    name: "source_revisions_exact_supersedes_fkey",
+  }),
+  index("source_revisions_workspace_source_created").on(
+    table.workspaceId,
+    table.sourceId,
+    table.revision,
+  ),
+]);
+
+export const sourceRevisionAnnotations = pgTable(
+  "source_revision_annotations",
+  {
+    id: uuid("id").defaultRandom().notNull(),
+    workspaceId: text("workspace_id").notNull().references(
+      () => workspaces.id,
+      { onDelete: "cascade" },
+    ),
+    revisionId: text("revision_id").notNull(),
+    kind: text("kind").notNull(),
+    reason: text("reason").notNull(),
+    supersededByRunId: uuid("superseded_by_run_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workspaceId, table.id] }),
+    foreignKey({
+      columns: [table.workspaceId, table.revisionId],
+      foreignColumns: [sourceRevisions.workspaceId, sourceRevisions.id],
+      name: "source_revision_annotations_workspace_revision_fkey",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.workspaceId, table.supersededByRunId],
+      foreignColumns: [scanRuns.workspaceId, scanRuns.id],
+      name: "source_revision_annotations_workspace_run_fkey",
+    }),
+  ],
+);
+
+export const dealSourceAssignments = pgTable("deal_source_assignments", {
+  id: text("id").notNull(),
+  requestId: text("request_id").notNull(),
+  workspaceId: text("workspace_id").notNull().references(
+    () => workspaces.id,
+    { onDelete: "cascade" },
+  ),
+  dealId: text("deal_id").notNull(),
+  sourceId: text("source_id").notNull(),
+  sourceRevisionId: text("source_revision_id").notNull(),
+  assignedByUserId: text("assigned_by_user_id").notNull(),
+  reason: text("reason").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+  supersededAt: timestamp("superseded_at", { withTimezone: true }),
+}, (table) => [
+  primaryKey({ columns: [table.workspaceId, table.id] }),
+  unique("deal_source_assignments_workspace_request_unique").on(
+    table.workspaceId,
+    table.requestId,
+  ),
+  foreignKey({
+    columns: [table.workspaceId, table.dealId],
+    foreignColumns: [deals.workspaceId, deals.id],
+    name: "deal_source_assignments_workspace_deal_fkey",
+  }).onDelete("cascade"),
+  foreignKey({
+    columns: [
+      table.workspaceId,
+      table.sourceId,
+      table.sourceRevisionId,
+    ],
+    foreignColumns: [
+      sourceRevisions.workspaceId,
+      sourceRevisions.sourceId,
+      sourceRevisions.id,
+    ],
+    name: "deal_source_assignments_exact_revision_fkey",
+  }),
+  uniqueIndex("deal_source_assignments_one_active_source")
+    .on(table.workspaceId, table.dealId, table.sourceId)
+    .where(sql`${table.supersededAt} is null`),
 ]);
 
 export const sourceEvidence = pgTable("source_evidence", {

@@ -7,6 +7,8 @@ import {
   createMemoryDemoDataStore,
   createMemoryPrivateObjectStorage,
 } from "../../lib/storage/service";
+import { createMemorySourceRegistry } from "../../db/repositories/source-registry";
+import { createMemoryDealRegistry } from "../../db/repositories/deal-registry";
 import { DEMO_DEAL_EVIDENCE } from "../../lib/corpus/evidence";
 import { DEMO_FIXTURES } from "../../lib/corpus/fixtures";
 import { runDemoSeed } from "../../scripts/seed-demo";
@@ -16,9 +18,13 @@ const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 test("running the demo seed twice creates zero duplicate runtime records or private objects", async () => {
   const dataStore = createMemoryDemoDataStore();
   const objectStorage = createMemoryPrivateObjectStorage();
+  const sourceRegistry = createMemorySourceRegistry();
+  const dealRegistry = createMemoryDealRegistry({ sourceRegistry });
   const dependencies = {
     dataStore,
     objectStorage,
+    sourceRegistry,
+    dealRegistry,
     corpusDirectory: path.join(workspaceRoot, "seed", "corpus"),
   };
 
@@ -65,4 +71,10 @@ test("running the demo seed twice creates zero duplicate runtime records or priv
     (fixture) => fixture.label === "Sample decision record",
   ));
   assert.equal(objectStorage.inspect().length, 14);
+  assert.equal(sourceRegistry.inspect().revisions.length, 14);
+  assert.equal(dealRegistry.inspect().assignments.length, 19);
+  assert.equal(
+    (await dealRegistry.listAnalysisEligibleBundles("workspace_demo")).length,
+    19,
+  );
 });

@@ -3,6 +3,7 @@ import { hostname } from "node:os";
 import { getDataClient } from "../db/client";
 import { getIntelligenceRepository } from "../db/repositories/intelligence";
 import { getReasonerJudgmentsRepository } from "../db/repositories/reasoner-judgments";
+import { getDealRegistry } from "../db/repositories/deal-registry";
 import { createRunsRepository } from "../db/repositories/runs";
 import { getUploadedDocumentsRepository } from "../db/repositories/uploaded-documents";
 import { createDefaultPrivateObjectStorage } from "../lib/storage/service";
@@ -12,7 +13,6 @@ import {
 } from "./extract-upload";
 import { getXTraceLineageRepository } from "../db/repositories/xtrace-lineage";
 import { createClaudeClient } from "../lib/claude/client";
-import { buildPreloadedDealMemoryBundles } from "../lib/corpus/service";
 import { createClaudeMatchingReasoner } from "../lib/matching/claude-reasoner";
 import { createProductInputGate } from "../lib/corpus/import-readiness";
 import { readMarketProviderConfiguration } from "../lib/market/config";
@@ -72,6 +72,9 @@ export async function runNextQueuedScan(): Promise<boolean> {
       marketConfiguration.runtime,
     );
     const intelligence = getIntelligenceRepository();
+    const bundles = await getDealRegistry().listAnalysisEligibleBundles(
+      claimed.workspaceId,
+    );
     const lineage = getXTraceLineageRepository();
     const xtraceService = isXTraceConfigured()
       ? createXTraceService(getXTraceClient(), {
@@ -95,7 +98,7 @@ export async function runNextQueuedScan(): Promise<boolean> {
     await processClaimedRun(claimed, {
       runs,
       intelligence,
-      bundles: buildPreloadedDealMemoryBundles(),
+      bundles,
       importGate: createProductInputGate(createDefaultDemoDataStore()),
       market: createMarketService({ providers }),
       reasoner: createClaudeMatchingReasoner(createClaudeClient(), {

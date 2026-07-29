@@ -197,7 +197,7 @@ test(
   },
 );
 
-test("operator instructions require every migration through 0008", () => {
+test("operator instructions require every migration through 0009", () => {
   const readme = readFileSync(
     fileURLToPath(new URL("../../README.md", import.meta.url)),
     "utf8",
@@ -216,14 +216,14 @@ test("operator instructions require every migration through 0008", () => {
     },
   ];
   let previous = -1;
-  for (let index = 0; index <= 8; index += 1) {
+  for (let index = 0; index <= 9; index += 1) {
     const marker = `drizzle/${String(index).padStart(4, "0")}_`;
     const position = readme.indexOf(marker);
     assert.ok(position > previous, `${marker} must appear in migration order`);
     previous = position;
   }
   const staleMigrationRange =
-    /\bmigrations?\b[^\n.]{0,160}(?:through|to|套到|到|`?0000`?\s*(?:-|–|—|→))\s*`?000[0-7]`?/iu;
+    /\bmigrations?\b[^\n.]{0,160}(?:through|to|套到|到|`?0000`?\s*(?:-|–|—|→))\s*`?000[0-8]`?/iu;
   assert.match(
     "migrations 必須依序套用 0000 到 0006",
     staleMigrationRange,

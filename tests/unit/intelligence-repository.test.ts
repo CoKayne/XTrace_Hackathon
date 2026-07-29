@@ -416,6 +416,48 @@ test("stores one report with exactly nineteen ordered company analyses", async (
   );
 });
 
+test("report validation accepts an eligible snapshot count other than nineteen", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  const analyses = Array.from({ length: 3 }, (_, index) =>
+    companyAnalysis(index + 1)
+  );
+
+  const stored = await repository.saveReport({
+    ...completeReport(analyses),
+    eligibleDealCount: 3,
+    counts: {
+      companyCount: 3,
+      beliefRevised: 0,
+      monitor: 0,
+      noMaterialChange: 3,
+      analysisUnavailable: 0,
+    },
+    evidenceCoverage: {
+      acceptedPublicEvents: 0,
+      excludedPublicItems: 0,
+      truncatedPublicEvents: 0,
+      recalledDealCount: 3,
+      unavailableDealCount: 0,
+    },
+  });
+
+  assert.equal(stored.companyAnalyses.length, 3);
+  assert.equal(stored.counts.companyCount, 3);
+  assert.equal("eligibleDealCount" in stored, false);
+});
+
+test("report validation rejects an analysis set that misses its captured eligible snapshot", async () => {
+  const repository = createMemoryIntelligenceRepository();
+
+  await assert.rejects(
+    repository.saveReport({
+      ...completeReport([companyAnalysis(1), companyAnalysis(2)]),
+      eligibleDealCount: 3,
+    }),
+    /eligible.*snapshot|3.*analyses/i,
+  );
+});
+
 test("lists a Deal's analyses newest first", async () => {
   const repository = createMemoryIntelligenceRepository();
   const older = completeReport();
