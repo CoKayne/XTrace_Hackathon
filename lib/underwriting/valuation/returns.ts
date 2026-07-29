@@ -7,7 +7,9 @@ import {
   roundDecimalStringForDisplay,
 } from "../numbers";
 import {
+  calculationId,
   completedCalculation,
+  type CalculationOptions,
   type FormulaEvaluation,
   type FormulaValueRef,
 } from "./contracts";
@@ -49,15 +51,24 @@ export function evaluateGrossReturns(input: {
   proceeds: FormulaValueRef | null;
   holdingYears: FormulaValueRef | null;
   lineageInputRefs?: FormulaValueRef[];
-}, options: {
-  now?: () => Date;
-} = {}): FormulaEvaluation<ReturnType<typeof computeGrossReturns>> {
+}, options: CalculationOptions = {}): FormulaEvaluation<
+  ReturnType<typeof computeGrossReturns>
+> {
   if (
     input.invested === null
     || input.proceeds === null
     || input.holdingYears === null
   ) {
     return unavailable("insufficient_input", "gross_return_input_missing");
+  }
+  if (input.invested.currency === null || input.proceeds.currency === null) {
+    return unavailable("insufficient_input", "return_currency_missing");
+  }
+  if (
+    input.invested.currency !== "USD"
+    || input.proceeds.currency !== input.invested.currency
+  ) {
+    return unavailable("unsupported_terms", "currency_unsupported");
   }
   try {
     const value = computeGrossReturns({
@@ -78,21 +89,32 @@ export function evaluateGrossReturns(input: {
           output: value.moic,
           unit: "multiple",
           computedAt,
+          calculationScope: options.calculationScope,
         }),
         completedCalculation({
           formulaId: "annualized_gross_irr_v1",
           outputField: "gross_irr",
-          inputRefs: [
-            input.invested,
-            ...proceedsLineage,
-            input.holdingYears,
-          ],
+          inputRefs: [input.holdingYears],
           output: value.irr,
           unit: "decimal",
           period: input.holdingYears.value,
           computedAt,
+          calculationScope: options.calculationScope,
         }),
       ],
+      claimEdges: [{
+        claimItemId: calculationId(
+          options.calculationScope ?? "standalone",
+          "annualized_gross_irr_v1",
+          "gross_irr",
+        ),
+        dependencyItemId: calculationId(
+          options.calculationScope ?? "standalone",
+          "gross_deal_moic_v1",
+          "gross_moic",
+        ),
+        dependencyType: "calculation",
+      }],
       blockerCodes: [],
     };
   } catch {
@@ -108,6 +130,7 @@ function unavailable(
     status,
     value: null,
     calculations: [],
+    claimEdges: [],
     blockerCodes: [blockerCode],
   };
 }

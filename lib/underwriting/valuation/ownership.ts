@@ -7,7 +7,9 @@ import {
   subtractDecimalStrings,
 } from "../numbers";
 import {
+  calculationId,
   completedCalculation,
+  type CalculationOptions,
   type FormulaEvaluation,
   type FormulaValueRef,
 } from "./contracts";
@@ -55,9 +57,7 @@ export function evaluateOwnership(input: {
   investment: FormulaValueRef | null;
   preMoney: FormulaValueRef | null;
   futureDilutionRate: FormulaValueRef | null;
-}, options: {
-  now?: () => Date;
-} = {}): FormulaEvaluation<{
+}, options: CalculationOptions = {}): FormulaEvaluation<{
   postMoney: string;
   initialOwnership: string;
   postDilutionOwnership: string;
@@ -68,6 +68,18 @@ export function evaluateOwnership(input: {
     || input.futureDilutionRate === null
   ) {
     return unavailable("insufficient_input", "ownership_input_missing");
+  }
+  if (
+    input.investment.currency === null
+    || input.preMoney.currency === null
+  ) {
+    return unavailable("insufficient_input", "ownership_currency_missing");
+  }
+  if (
+    input.investment.currency !== "USD"
+    || input.preMoney.currency !== input.investment.currency
+  ) {
+    return unavailable("unsupported_terms", "currency_unsupported");
   }
   try {
     const ownership = computeOwnership({
@@ -89,8 +101,9 @@ export function evaluateOwnership(input: {
           inputRefs: [input.investment, input.preMoney],
           output: ownership.postMoney,
           unit: "currency",
-          currency: "USD",
+          currency: input.investment.currency,
           computedAt,
+          calculationScope: options.calculationScope,
         }),
         completedCalculation({
           formulaId: "simple_pre_post_ownership_v1",
@@ -99,20 +112,31 @@ export function evaluateOwnership(input: {
           output: ownership.initialOwnership,
           unit: "decimal",
           computedAt,
+          calculationScope: options.calculationScope,
         }),
         completedCalculation({
           formulaId: "future_dilution_v1",
           outputField: "post_dilution_ownership",
-          inputRefs: [
-            input.investment,
-            input.preMoney,
-            input.futureDilutionRate,
-          ],
+          inputRefs: [input.futureDilutionRate],
           output: postDilutionOwnership,
           unit: "decimal",
           computedAt,
+          calculationScope: options.calculationScope,
         }),
       ],
+      claimEdges: [{
+        claimItemId: calculationId(
+          options.calculationScope ?? "standalone",
+          "future_dilution_v1",
+          "post_dilution_ownership",
+        ),
+        dependencyItemId: calculationId(
+          options.calculationScope ?? "standalone",
+          "simple_pre_post_ownership_v1",
+          "initial_ownership",
+        ),
+        dependencyType: "calculation",
+      }],
       blockerCodes: [],
     };
   } catch {
@@ -132,6 +156,7 @@ function unavailable(
     status,
     value: null,
     calculations: [],
+    claimEdges: [],
     blockerCodes: [blockerCode],
   };
 }

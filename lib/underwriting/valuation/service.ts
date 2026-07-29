@@ -1,5 +1,7 @@
 import type {
   Assumption,
+  Calculation,
+  ClaimEdge,
   EvidencePack,
   Fact,
 } from "../../contracts/evidence";
@@ -9,30 +11,38 @@ import type {
   ValuationEvaluation,
 } from "../../contracts/underwriting";
 import { multiplyDecimalStrings } from "../numbers";
-import type { ValuationEngine, FormulaValueRef } from "./contracts";
+import type {
+  CalculationOptions,
+  FormulaValueRef,
+  ValuationArtifactSet,
+  ValuationEngine,
+} from "./contracts";
 import { evaluateMarketComps } from "./market-comps";
 import { evaluateOwnership } from "./ownership";
 import { evaluateGrossReturns } from "./returns";
 import { buildScenarioModel, validateProbabilityWeights } from "./scenarios";
 import { evaluateVentureMethod } from "./venture-method";
 
-export function createValuationEngine(options: {
-  now?: () => Date;
-} = {}): ValuationEngine {
+export function createValuationEngine(
+  options: CalculationOptions = {},
+): ValuationEngine {
+  const evaluateDetailed = (input: Parameters<ValuationEngine["evaluate"]>[0]) =>
+    evaluateValuationArtifacts(input, options);
   return {
     evaluate(input) {
-      return evaluateValuation(input, options);
+      return evaluateDetailed(input).evaluation;
     },
+    evaluateDetailed,
   };
 }
 
-function evaluateValuation(input: {
+export function evaluateValuationArtifacts(input: {
   pack: EvidencePack;
   context: ResolvedUnderwritingContext;
   fundPolicy: FundPolicySnapshot;
-}, options: {
-  now?: () => Date;
-}): ValuationEvaluation {
+}, options: CalculationOptions = {}): ValuationArtifactSet {
+  const calculationScope = `valuation:${input.pack.id}`;
+  const formulaOptions = { ...options, calculationScope };
   const currentAskFact = acceptedFact(
     input.pack,
     "reported_valuation",
@@ -46,30 +56,46 @@ function evaluateValuation(input: {
     "compatible_benchmark_value",
     "all",
   );
-  const multipliers = policyRecord(
-    input.fundPolicy,
-    "scenarioPriceMultipliers",
+  const benchmarkStaleAfter = assumption(
+    input.pack,
+    "compatible_benchmark_stale_after",
+    "all",
+  );
+  const benchmarkStale = benchmarkStaleAfter
+    ? benchmarkIsStale(
+      input.pack.asOfDate,
+      benchmarkStaleAfter.value,
+    )
+    : null;
+  const multiplierBear = recommendedPolicyAssumption(
+    input.pack,
+    "scenario_price_multiplier",
+    "bear",
+  );
+  const multiplierBase = recommendedPolicyAssumption(
+    input.pack,
+    "scenario_price_multiplier",
+    "base",
+  );
+  const multiplierBull = recommendedPolicyAssumption(
+    input.pack,
+    "scenario_price_multiplier",
+    "bull",
   );
   const market = evaluateMarketComps({
     benchmarkValue: benchmark ? assumptionRef(benchmark) : null,
+    benchmarkFreshness: benchmarkStaleAfter
+      ? assumptionRef(benchmarkStaleAfter)
+      : null,
     currentReportedValuation: currentAskFact ? factRef(currentAskFact) : null,
     compatibility: input.context.benchmarkCompatibility,
-    stale: false,
+    stale: benchmarkStale,
     multipliers: {
-      bear: policyRef(
-        "scenarioPriceMultipliers.bear",
-        stringValue(multipliers, "bear"),
-      ),
-      base: policyRef(
-        "scenarioPriceMultipliers.base",
-        stringValue(multipliers, "base"),
-      ),
-      bull: policyRef(
-        "scenarioPriceMultipliers.bull",
-        stringValue(multipliers, "bull"),
-      ),
+      bear: multiplierBear ? assumptionRef(multiplierBear) : null,
+      base: multiplierBase ? assumptionRef(multiplierBase) : null,
+      bull: multiplierBull ? assumptionRef(multiplierBull) : null,
     },
-  }, options);
+  }, formulaOptions);
 
   const scenarioModel = buildScenarioModel({
     pack: input.pack,
@@ -88,6 +114,7 @@ function evaluateValuation(input: {
     input.fundPolicy,
     input.context.stage,
   );
+  const baseCurrency = policyString(input.fundPolicy, "baseCurrency");
   const venture = evaluateVentureMethod({
     terms: input.context.securityType === "preferred"
       ? "simple_pre_money_preferred"
@@ -95,25 +122,30 @@ function evaluateValuation(input: {
     investment: policyRef(
       "initialCheckMax",
       policyString(input.fundPolicy, "initialCheckMax"),
+      { unit: "currency", currency: baseCurrency },
     ),
     targetGrossMoic: policyRef(
       `returnTargets.${input.context.stage}.grossMoic`,
       stringValue(returnTarget, "grossMoic"),
+      { unit: "multiple" },
     ),
     exitArr: baseExitArr,
     exitArrMultiple: baseExitMultiple,
     futureDilutionRate: policyRef(
       "acceptableFutureDilution",
       policyString(input.fundPolicy, "acceptableFutureDilution"),
+      { unit: "decimal" },
     ),
-  }, options);
+  }, formulaOptions);
 
   let initialOwnership: string | null = null;
   let postDilutionOwnership: string | null = null;
   let grossMoic: string | null = null;
   let grossIrr: string | null = null;
-  let ownershipCalculations: Array<{ id: string }> = [];
-  let returnCalculations: Array<{ id: string }> = [];
+  let ownershipCalculations: Calculation[] = [];
+  let ownershipClaimEdges: ClaimEdge[] = [];
+  let returnCalculations: Calculation[] = [];
+  let returnClaimEdges: ClaimEdge[] = [];
   const blockerCodes = [
     ...market.blockerCodes,
     ...venture.blockerCodes,
@@ -130,15 +162,20 @@ function evaluateValuation(input: {
     && valuationBasis === "pre_money"
   ) {
     const ownership = evaluateOwnership({
-      investment: policyRef("initialCheckMax", investment),
+      investment: policyRef("initialCheckMax", investment, {
+        unit: "currency",
+        currency: baseCurrency,
+      }),
       preMoney: factRef(currentAskFact),
       futureDilutionRate: policyRef(
         "acceptableFutureDilution",
         dilution,
+        { unit: "decimal" },
       ),
-    }, options);
+    }, formulaOptions);
     blockerCodes.push(...ownership.blockerCodes);
     ownershipCalculations = ownership.calculations;
+    ownershipClaimEdges = ownership.claimEdges;
     initialOwnership = ownership.value?.initialOwnership ?? null;
     postDilutionOwnership =
       ownership.value?.postDilutionOwnership ?? null;
@@ -151,25 +188,36 @@ function evaluateValuation(input: {
           postDilutionOwnership,
         );
         const returns = evaluateGrossReturns({
-          invested: policyRef("initialCheckMax", investment),
+          invested: policyRef("initialCheckMax", investment, {
+            unit: "currency",
+            currency: baseCurrency,
+          }),
           proceeds: {
-            itemId: "calculation:venture_return_method_v1:exitEquityValue",
+            itemId:
+              `${calculationScope}:derived_exit_proceeds`,
             value: proceeds,
             type: "assumption",
+            unit: "currency",
+            currency: baseCurrency,
+            period: null,
           },
           holdingYears: policyRef(
             `returnTargets.${input.context.stage}.horizonYears`,
             holdingYears,
+            { unit: "years", period: holdingYears },
           ),
           lineageInputRefs: [
             baseExitArr!,
             baseExitMultiple!,
             factRef(currentAskFact),
-            policyRef("acceptableFutureDilution", dilution)!,
+            policyRef("acceptableFutureDilution", dilution, {
+              unit: "decimal",
+            })!,
           ],
-        }, options);
+        }, formulaOptions);
         blockerCodes.push(...returns.blockerCodes);
         returnCalculations = returns.calculations;
+        returnClaimEdges = returns.claimEdges;
         grossMoic = returns.value?.moic ?? null;
         grossIrr = returns.value?.irr ?? null;
       }
@@ -188,12 +236,19 @@ function evaluateValuation(input: {
   ) {
     blockerCodes.push("probability_weights_invalid");
   }
-  const calculationIds = [
+  const calculations = [
     ...market.calculations,
     ...venture.calculations,
     ...ownershipCalculations,
     ...returnCalculations,
-  ].map(({ id }) => id);
+  ];
+  const calculationClaimEdges = [
+    ...market.claimEdges,
+    ...venture.claimEdges,
+    ...ownershipClaimEdges,
+    ...returnClaimEdges,
+  ];
+  const calculationIds = calculations.map(({ id }) => id);
   const completedSections = [
     market.status === "completed",
     venture.status === "completed",
@@ -201,7 +256,7 @@ function evaluateValuation(input: {
     grossMoic !== null,
   ].filter(Boolean).length;
 
-  return {
+  const evaluation: ValuationEvaluation = {
     id: `valuation:${input.pack.id}`,
     status: completedSections === 0
       ? "unavailable"
@@ -211,9 +266,9 @@ function evaluateValuation(input: {
     scenarios: (["bear", "base", "bull"] as const).map((name) => ({
       name,
       valuation: market.scenarios[name],
-      calculationIds: market.calculations
-        .filter(({ outputField }) => outputField === `${name}_valuation`)
-        .map(({ id }) => id),
+      calculationIds: market.scenarioCalculationIds[name]
+        ? [market.scenarioCalculationIds[name]]
+        : [],
     })),
     currentAsk: currentAskFact?.value ?? null,
     maximumAcceptablePreMoney:
@@ -225,6 +280,12 @@ function evaluateValuation(input: {
     pricingPremium: market.pricingPremium,
     calculationIds,
     blockerCodes: [...new Set(blockerCodes)],
+  };
+  return {
+    evaluation,
+    scenarioModel,
+    calculations,
+    calculationClaimEdges,
   };
 }
 
@@ -248,27 +309,65 @@ function assumption(
   ) ?? null;
 }
 
+function recommendedPolicyAssumption(
+  pack: EvidencePack,
+  field: string,
+  scenario: "bear" | "base" | "bull",
+): Assumption | null {
+  return pack.assumptions.find(
+    (candidate) =>
+      candidate.field === field
+      && candidate.scenario === scenario
+      && candidate.provenanceOrigin === "recommended_policy",
+  ) ?? null;
+}
+
 function factRef(fact: Fact): FormulaValueRef {
-  return { itemId: fact.id, value: fact.value, type: "fact" };
+  return {
+    itemId: fact.id,
+    value: fact.value,
+    type: "fact",
+    unit: fact.unit,
+    currency: fact.currency,
+    period: evidencePeriod(fact.periodStart, fact.periodEnd),
+  };
 }
 
 function assumptionRef(value: Assumption): FormulaValueRef {
+  const currency = /^[A-Z]{3}$/.test(value.unit ?? "")
+    ? value.unit
+    : null;
   return {
     itemId: value.id,
     value: value.value,
     type: value.provenanceOrigin === "benchmark"
       ? "benchmark"
       : "assumption",
+    unit: currency ? "currency" : value.unit,
+    currency,
+    period: null,
   };
 }
 
 function policyRef(
   itemId: string,
   value: string | null,
+  metadata: {
+    unit?: string | null;
+    currency?: string | null;
+    period?: string | null;
+  } = {},
 ): FormulaValueRef | null {
   return value === null
     ? null
-    : { itemId: `policy:${itemId}`, value, type: "policy" };
+    : {
+      itemId: `policy:${itemId}`,
+      value,
+      type: "policy",
+      unit: metadata.unit ?? null,
+      currency: metadata.currency ?? null,
+      period: metadata.period ?? null,
+    };
 }
 
 function scenarioRef(
@@ -281,6 +380,9 @@ function scenarioRef(
     itemId: input.evidenceItemId ?? input.assumptionItemId!,
     value: input.value,
     type: input.evidenceItemId ? "fact" : "assumption",
+    unit: /^[A-Z]{3}$/.test(input.unit ?? "") ? "currency" : input.unit,
+    currency: /^[A-Z]{3}$/.test(input.unit ?? "") ? input.unit : null,
+    period: null,
   };
 }
 
@@ -319,4 +421,25 @@ function stringValue(
 ): string | null {
   const value = record?.[key];
   return typeof value === "string" ? value : null;
+}
+
+function benchmarkIsStale(
+  asOfDate: string,
+  staleAfter: string,
+): boolean | null {
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(asOfDate)
+    || !/^\d{4}-\d{2}-\d{2}$/.test(staleAfter)
+  ) {
+    return null;
+  }
+  return asOfDate > staleAfter;
+}
+
+function evidencePeriod(
+  periodStart: string | null,
+  periodEnd: string | null,
+): string | null {
+  if (periodStart && periodEnd) return `${periodStart}/${periodEnd}`;
+  return periodStart ?? periodEnd;
 }

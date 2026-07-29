@@ -52,16 +52,25 @@ test("records separate gross MOIC and annualized gross IRR calculations", () => 
       itemId: "policy_check",
       value: "2000000",
       type: "policy",
+      unit: "currency",
+      currency: "USD",
+      period: null,
     },
     proceeds: {
       itemId: "calculation_exit_proceeds",
       value: "10000000",
       type: "assumption",
+      unit: "currency",
+      currency: "USD",
+      period: null,
     },
     holdingYears: {
       itemId: "policy_horizon",
       value: "5",
       type: "policy",
+      unit: "years",
+      currency: null,
+      period: null,
     },
   }, { now: () => new Date("2026-07-29T12:00:00.000Z") });
 

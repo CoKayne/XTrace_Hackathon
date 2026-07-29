@@ -37,16 +37,25 @@ test("records ownership and dilution calculations with typed inputs", () => {
       itemId: "policy_check",
       value: "2000000",
       type: "policy",
+      unit: "currency",
+      currency: "USD",
+      period: null,
     },
     preMoney: {
       itemId: "fact_pre_money",
       value: "18000000",
       type: "fact",
+      unit: "currency",
+      currency: "USD",
+      period: null,
     },
     futureDilutionRate: {
       itemId: "policy_dilution",
       value: "0.35",
       type: "policy",
+      unit: "decimal",
+      currency: null,
+      period: null,
     },
   }, { now: () => new Date("2026-07-29T12:00:00.000Z") });
 
@@ -65,4 +74,48 @@ test("records ownership and dilution calculations with typed inputs", () => {
       inputRefs.every(({ itemId, value }) => itemId && value)
       && computedAt === "2026-07-29T12:00:00.000Z",
   ));
+});
+
+test("refuses missing and non-USD ownership currencies", () => {
+  const input = {
+    investment: {
+      itemId: "policy_check",
+      value: "2000000",
+      type: "policy" as const,
+      unit: "currency",
+      currency: "USD",
+      period: null,
+    },
+    futureDilutionRate: {
+      itemId: "policy_dilution",
+      value: "0.35",
+      type: "policy" as const,
+      unit: "decimal",
+      currency: null,
+      period: null,
+    },
+  };
+
+  assert.equal(evaluateOwnership({
+    ...input,
+    preMoney: {
+      itemId: "fact_pre_money",
+      value: "18000000",
+      type: "fact",
+      unit: "currency",
+      currency: null,
+      period: null,
+    },
+  }).status, "insufficient_input");
+  assert.equal(evaluateOwnership({
+    ...input,
+    preMoney: {
+      itemId: "fact_pre_money",
+      value: "18000000",
+      type: "fact",
+      unit: "currency",
+      currency: "EUR",
+      period: null,
+    },
+  }).status, "unsupported_terms");
 });

@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { EvidencePack } from "../../../lib/contracts/evidence";
+import {
+  CalculationSchema,
+  ClaimEdgeSchema,
+  type EvidencePack,
+} from "../../../lib/contracts/evidence";
 import type {
   FundPolicySnapshot,
   ResolvedUnderwritingContext,
 } from "../../../lib/contracts/underwriting";
+import { ScenarioModelSchema } from "../../../lib/contracts/underwriting";
 import {
   buildScenarioModel,
   validateProbabilityWeights,
@@ -110,6 +115,28 @@ test("refuses probability weighting unless weights total exactly one", () => {
     status: "completed",
     total: "1",
   });
+
+  for (const weights of [
+    ["-1", "1", "1"],
+    ["1.1", "-0.1", "0"],
+  ] as const) {
+    assert.equal(
+      validateProbabilityWeights(weightedScenario(weights)).status,
+      "invalid_domain",
+    );
+  }
+  assert.deepEqual(validateProbabilityWeights(
+    weightedScenario(["0", "0", "1"]),
+  ), {
+    status: "completed",
+    total: "1",
+  });
+  assert.deepEqual(validateProbabilityWeights(
+    weightedScenario(["-0", "0", "1"]),
+  ), {
+    status: "completed",
+    total: "1",
+  });
 });
 
 test("evaluates pricing while refusing ownership when valuation basis is unknown", () => {
@@ -174,6 +201,140 @@ test("wires all six formula versions for a supported pre-money preferred round",
       result.calculationIds.some((id) => id.includes(formulaId)),
       `${formulaId} calculation must be included`,
     );
+  }
+});
+
+test("returns one persistable ScenarioModel and strict Calculation artifact set", () => {
+  const detailed = createValuationEngine({
+    now: () => new Date("2026-07-29T12:00:00.000Z"),
+  }).evaluateDetailed({
+    pack: evidencePack(),
+    context: context(),
+    fundPolicy: policy(),
+  });
+
+  assert.doesNotThrow(() => ScenarioModelSchema.parse(detailed.scenarioModel));
+  for (const calculation of detailed.calculations) {
+    assert.doesNotThrow(() => CalculationSchema.parse(calculation));
+  }
+  assert.equal(
+    new Set(detailed.calculations.map(({ id }) => id)).size,
+    detailed.calculations.length,
+  );
+  for (const calculationId of detailed.evaluation.calculationIds) {
+    assert.equal(
+      detailed.calculations.filter(({ id }) => id === calculationId).length,
+      1,
+      `${calculationId} must resolve exactly once`,
+    );
+  }
+  for (const edge of detailed.calculationClaimEdges) {
+    assert.doesNotThrow(() => ClaimEdgeSchema.parse(edge));
+    for (const calculationId of [edge.claimItemId, edge.dependencyItemId]) {
+      assert.equal(
+        detailed.calculations.filter(({ id }) => id === calculationId).length,
+        1,
+        `${calculationId} lineage endpoint must resolve exactly once`,
+      );
+    }
+  }
+});
+
+test("derives benchmark staleness from its immutable EvidencePack expiry", () => {
+  const pack = evidencePack();
+  pack.assumptions = pack.assumptions.map((item) =>
+    item.field === "compatible_benchmark_stale_after"
+      ? { ...item, value: "2026-07-28" }
+      : item
+  );
+  const result = createValuationEngine().evaluate({
+    pack,
+    context: context(),
+    fundPolicy: policy(),
+  });
+
+  assert.deepEqual(
+    result.scenarios.map(({ valuation }) => valuation),
+    [null, null, null],
+  );
+  assert.equal(result.pricingPremium, null);
+  assert.ok(result.blockerCodes.includes("benchmark_stale"));
+});
+
+test("fails closed for EUR, missing, and mixed valuation currencies", () => {
+  for (const currency of ["EUR", null] as const) {
+    const pack = evidencePack();
+    pack.facts = pack.facts.map((fact) =>
+      fact.field === "reported_valuation"
+        ? { ...fact, currency }
+        : fact
+    );
+    const result = createValuationEngine().evaluate({
+      pack,
+      context: context(),
+      fundPolicy: policy(),
+    });
+    assert.deepEqual(
+      result.scenarios.map(({ valuation }) => valuation),
+      [null, null, null],
+    );
+    assert.equal(result.pricingPremium, null);
+    assert.equal(result.initialOwnership, null);
+    assert.ok(result.blockerCodes.some((code) => code.includes("currency")));
+  }
+
+  const mixed = evidencePack();
+  mixed.assumptions = mixed.assumptions.map((item) =>
+    item.field === "compatible_benchmark_value"
+      ? { ...item, unit: "EUR" }
+      : item
+  );
+  const result = createValuationEngine().evaluate({
+    pack: mixed,
+    context: context(),
+    fundPolicy: policy(),
+  });
+  assert.deepEqual(
+    result.scenarios.map(({ valuation }) => valuation),
+    [null, null, null],
+  );
+  assert.equal(result.pricingPremium, null);
+  assert.ok(result.blockerCodes.includes("currency_unsupported"));
+});
+
+test("uses persisted recommended-policy Assumptions for scenario multipliers", () => {
+  const detailed = createValuationEngine().evaluateDetailed({
+    pack: evidencePack(),
+    context: context(),
+    fundPolicy: policy(),
+  });
+
+  for (const [scenario, assumptionId] of [
+    ["bear", "multiplier_bear"],
+    ["base", "multiplier_base"],
+    ["bull", "multiplier_bull"],
+  ] as const) {
+    const calculationId = detailed.evaluation.scenarios.find(
+      ({ name }) => name === scenario,
+    )?.calculationIds[0];
+    const calculation = detailed.calculations.find(
+      ({ id }) => id === calculationId,
+    );
+    assert.deepEqual(
+      calculation?.inputRefs.find(({ itemId }) => itemId === assumptionId),
+      { itemId: assumptionId, value: calculation?.inputRefs.find(
+        ({ itemId }) => itemId === assumptionId,
+      )?.value, type: "assumption" },
+    );
+    assert.ok(!calculation?.inputRefs.some(
+      ({ itemId, type }) =>
+        itemId.startsWith("policy:scenarioPriceMultipliers")
+        || type === "fact" && itemId === assumptionId,
+    ));
+    assert.ok(calculation?.inputRefs.some(
+      ({ itemId, type }) =>
+        itemId === "benchmark_stale_after" && type === "benchmark",
+    ));
   }
 });
 
@@ -274,6 +435,30 @@ function evidencePack(
         "compatible_benchmark_value",
         "20000000",
       ),
+      assumption(
+        "benchmark_stale_after",
+        "all",
+        "compatible_benchmark_stale_after",
+        "2026-12-31",
+      ),
+      assumption(
+        "multiplier_bear",
+        "bear",
+        "scenario_price_multiplier",
+        "0.75",
+      ),
+      assumption(
+        "multiplier_base",
+        "base",
+        "scenario_price_multiplier",
+        "1",
+      ),
+      assumption(
+        "multiplier_bull",
+        "bull",
+        "scenario_price_multiplier",
+        "1.25",
+      ),
       assumption("exit_arr_base", "base", "arr_path", "20000000"),
       assumption("exit_multiple_base", "base", "exit_multiple", "5"),
     ],
@@ -301,13 +486,19 @@ function assumption(
   return {
     id,
     analysisType: "assumption",
-    provenanceOrigin: field === "compatible_benchmark_value"
+    provenanceOrigin: field.startsWith("compatible_benchmark_")
       ? "benchmark"
       : "recommended_policy",
     scenario,
     field,
     value,
-    unit: field === "probability" ? "decimal" : null,
+    unit: field === "compatible_benchmark_value" || field === "arr_path"
+      ? "USD"
+      : field === "compatible_benchmark_stale_after"
+        ? "date"
+        : field === "probability" || field === "scenario_price_multiplier"
+          ? "decimal"
+          : null,
     rationale: `Explicit ${field} input`,
     inputRefIds: [],
     sensitivity: "medium",
@@ -340,6 +531,7 @@ function policy(): FundPolicySnapshot {
     version: 1,
     source: "recommended_policy",
     values: {
+      baseCurrency: "USD",
       initialCheckMax: "2000000",
       acceptableFutureDilution: "0.5",
       scenarioPriceMultipliers: {
@@ -359,4 +551,24 @@ function policy(): FundPolicySnapshot {
     createdByUserId: null,
     createdAt: "2026-07-29T09:00:00.000Z",
   };
+}
+
+function weightedScenario(
+  weights: readonly [string, string, string],
+) {
+  return buildScenarioModel({
+    pack: evidencePack({
+      assumptions: [
+        ...evidencePack().assumptions.filter(
+          (item) => item.field !== "probability",
+        ),
+        assumption("prob_bear", "bear", "probability", weights[0]),
+        assumption("prob_base", "base", "probability", weights[1]),
+        assumption("prob_bull", "bull", "probability", weights[2]),
+      ],
+    }),
+    candidateRunId: `weighted_${weights.join("_")}`,
+    formulaPolicyVersion: "1",
+    probabilityWeighted: true,
+  });
 }

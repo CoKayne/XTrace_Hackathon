@@ -7,12 +7,18 @@ const ref = (
   itemId: string,
   value: string,
   type: "fact" | "assumption" | "policy" | "benchmark",
-) => ({ itemId, value, type });
+  currency: string | null = null,
+) => ({ itemId, value, type, unit: null, currency, period: null });
 
 test("computes ordered Bear, Base, and Bull market comps and pricing premium", () => {
   const result = evaluateMarketComps({
-    benchmarkValue: ref("benchmark_seed", "20000000", "benchmark"),
-    currentReportedValuation: ref("fact_current_ask", "25000000", "fact"),
+    benchmarkValue: ref("benchmark_seed", "20000000", "benchmark", "USD"),
+    currentReportedValuation: ref(
+      "fact_current_ask",
+      "25000000",
+      "fact",
+      "USD",
+    ),
     compatibility: "exact",
     stale: false,
     multipliers: {
@@ -45,8 +51,13 @@ test("computes ordered Bear, Base, and Bull market comps and pricing premium", (
 
 test("fails closed for stale and mismatched benchmarks", () => {
   const base = {
-    benchmarkValue: ref("benchmark_seed", "20000000", "benchmark"),
-    currentReportedValuation: ref("fact_current_ask", "25000000", "fact"),
+    benchmarkValue: ref("benchmark_seed", "20000000", "benchmark", "USD"),
+    currentReportedValuation: ref(
+      "fact_current_ask",
+      "25000000",
+      "fact",
+      "USD",
+    ),
     multipliers: {
       bear: ref("policy_bear", "0.75", "policy"),
       base: ref("policy_base", "1", "policy"),
@@ -74,7 +85,12 @@ test("fails closed for stale and mismatched benchmarks", () => {
 test("unknown benchmark never becomes zero", () => {
   const result = evaluateMarketComps({
     benchmarkValue: null,
-    currentReportedValuation: ref("fact_current_ask", "25000000", "fact"),
+    currentReportedValuation: ref(
+      "fact_current_ask",
+      "25000000",
+      "fact",
+      "USD",
+    ),
     compatibility: "exact",
     stale: false,
     multipliers: {
@@ -87,4 +103,46 @@ test("unknown benchmark never becomes zero", () => {
   assert.equal(result.status, "insufficient_input");
   assert.deepEqual(result.scenarios, { bear: null, base: null, bull: null });
   assert.equal(result.pricingPremium, null);
+});
+
+test("fails closed when pricing currencies are missing or incompatible", () => {
+  const multipliers = {
+    bear: ref("multiplier_bear", "0.75", "assumption"),
+    base: ref("multiplier_base", "1", "assumption"),
+    bull: ref("multiplier_bull", "1.25", "assumption"),
+  };
+
+  const missing = evaluateMarketComps({
+    benchmarkValue: ref("benchmark_seed", "20000000", "benchmark"),
+    currentReportedValuation: ref(
+      "fact_current_ask",
+      "25000000",
+      "fact",
+      "USD",
+    ),
+    compatibility: "exact",
+    stale: false,
+    multipliers,
+  });
+  assert.equal(missing.status, "insufficient_input");
+  assert.ok(missing.blockerCodes.includes("benchmark_currency_missing"));
+
+  const mixed = evaluateMarketComps({
+    benchmarkValue: ref("benchmark_seed", "20000000", "benchmark", "EUR"),
+    currentReportedValuation: ref(
+      "fact_current_ask",
+      "25000000",
+      "fact",
+      "USD",
+    ),
+    compatibility: "exact",
+    stale: false,
+    multipliers,
+  });
+  assert.equal(mixed.status, "unsupported_terms");
+  assert.deepEqual(mixed.scenarios, {
+    bear: null,
+    base: null,
+    bull: null,
+  });
 });

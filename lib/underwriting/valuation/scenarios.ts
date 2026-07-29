@@ -7,6 +7,8 @@ import type {
 import {
   addDecimalStrings,
   normalizeDecimalString,
+  requireNonNegativeDecimalString,
+  subtractDecimalStrings,
 } from "../numbers";
 import type { FormulaStatus } from "./contracts";
 
@@ -65,7 +67,14 @@ export function validateProbabilityWeights(model: ScenarioModel): {
     return { status: "insufficient_input", total: null };
   }
   try {
-    const presentValues = values as string[];
+    const presentValues = (values as string[]).map(
+      requireNonNegativeDecimalString,
+    );
+    if (presentValues.some(
+      (value) => subtractDecimalStrings("1", value).startsWith("-"),
+    )) {
+      return { status: "invalid_domain", total: null };
+    }
     const total = presentValues.reduce(
       (sum, value) => addDecimalStrings(sum, value),
       normalizeDecimalString("0"),

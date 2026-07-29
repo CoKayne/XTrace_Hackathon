@@ -7,6 +7,8 @@ import {
 } from "../numbers";
 import {
   completedCalculation,
+  calculationId,
+  type CalculationOptions,
   type CalculationResult,
   type FormulaStatus,
   type FormulaValueRef,
@@ -27,6 +29,13 @@ export interface MarketCompsEvaluation {
   };
   pricingPremium: string | null;
   calculations: CalculationResult[];
+  scenarioCalculationIds: {
+    bear: string | null;
+    base: string | null;
+    bull: string | null;
+  };
+  pricingPremiumCalculationId: string | null;
+  claimEdges: [];
   blockerCodes: string[];
 }
 
@@ -38,17 +47,22 @@ const emptyScenarios = {
 
 export function evaluateMarketComps(input: {
   benchmarkValue: FormulaValueRef | null;
+  benchmarkFreshness?: FormulaValueRef | null;
   currentReportedValuation: FormulaValueRef | null;
   compatibility: BenchmarkCompatibility;
-  stale: boolean;
+  stale: boolean | null;
   multipliers: {
     bear: FormulaValueRef | null;
     base: FormulaValueRef | null;
     bull: FormulaValueRef | null;
   };
-}, options: {
-  now?: () => Date;
-} = {}): MarketCompsEvaluation {
+}, options: CalculationOptions = {}): MarketCompsEvaluation {
+  if (input.stale === null) {
+    return unavailable(
+      "insufficient_input",
+      "benchmark_freshness_missing",
+    );
+  }
   if (input.stale) {
     return unavailable("stale_benchmark", "benchmark_stale");
   }
@@ -65,6 +79,28 @@ export function evaluateMarketComps(input: {
     || input.multipliers.bull === null
   ) {
     return unavailable("insufficient_input", "benchmark_input_missing");
+  }
+  if (input.benchmarkValue.currency === null) {
+    return unavailable("insufficient_input", "benchmark_currency_missing");
+  }
+  if (
+    input.currentReportedValuation !== null
+    && input.currentReportedValuation.currency === null
+  ) {
+    return unavailable(
+      "insufficient_input",
+      "current_valuation_currency_missing",
+    );
+  }
+  if (
+    input.benchmarkValue.currency !== "USD"
+    || (
+      input.currentReportedValuation !== null
+      && input.currentReportedValuation.currency
+        !== input.benchmarkValue.currency
+    )
+  ) {
+    return unavailable("unsupported_terms", "currency_unsupported");
   }
 
   try {
@@ -93,6 +129,26 @@ export function evaluateMarketComps(input: {
     }
 
     const computedAt = (options.now ?? (() => new Date()))().toISOString();
+    const benchmarkInputs = input.benchmarkFreshness
+      ? [input.benchmarkValue, input.benchmarkFreshness]
+      : [input.benchmarkValue];
+    const scenarioCalculationIds = {
+      bear: calculationId(
+        options.calculationScope ?? "standalone",
+        "market_comps_v1",
+        "bear_valuation",
+      ),
+      base: calculationId(
+        options.calculationScope ?? "standalone",
+        "market_comps_v1",
+        "base_valuation",
+      ),
+      bull: calculationId(
+        options.calculationScope ?? "standalone",
+        "market_comps_v1",
+        "bull_valuation",
+      ),
+    };
     const calculations: CalculationResult[] = ([
       ["bear", input.multipliers.bear, scenarios.bear],
       ["base", input.multipliers.base, scenarios.base],
@@ -101,16 +157,18 @@ export function evaluateMarketComps(input: {
       completedCalculation({
         formulaId: "market_comps_v1",
         outputField: `${scenario}_valuation`,
-        inputRefs: [input.benchmarkValue!, multiplier],
+        inputRefs: [...benchmarkInputs, multiplier],
         output,
         unit: "currency",
-        currency: "USD",
+        currency: input.benchmarkValue!.currency,
         period: scenario,
         computedAt,
+        calculationScope: options.calculationScope,
       })
     );
 
     let pricingPremium: string | null = null;
+    let pricingPremiumCalculationId: string | null = null;
     if (input.currentReportedValuation !== null) {
       const current = requireNonNegativeDecimalString(
         input.currentReportedValuation.value,
@@ -119,16 +177,22 @@ export function evaluateMarketComps(input: {
         divideDecimalStrings(current, benchmark),
         "1",
       );
+      pricingPremiumCalculationId = calculationId(
+        options.calculationScope ?? "standalone",
+        "market_comps_v1",
+        "pricing_premium",
+      );
       calculations.push(completedCalculation({
         formulaId: "market_comps_v1",
         outputField: "pricing_premium",
         inputRefs: [
           input.currentReportedValuation,
-          input.benchmarkValue,
+          ...benchmarkInputs,
         ],
         output: pricingPremium,
         unit: "decimal",
         computedAt,
+        calculationScope: options.calculationScope,
       }));
     }
 
@@ -137,6 +201,9 @@ export function evaluateMarketComps(input: {
       scenarios,
       pricingPremium,
       calculations,
+      scenarioCalculationIds,
+      pricingPremiumCalculationId,
+      claimEdges: [],
       blockerCodes: [],
     };
   } catch {
@@ -153,6 +220,9 @@ function unavailable(
     scenarios: { ...emptyScenarios },
     pricingPremium: null,
     calculations: [],
+    scenarioCalculationIds: { ...emptyScenarios },
+    pricingPremiumCalculationId: null,
+    claimEdges: [],
     blockerCodes: [blockerCode],
   };
 }

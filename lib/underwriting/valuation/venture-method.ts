@@ -6,7 +6,9 @@ import {
   subtractDecimalStrings,
 } from "../numbers";
 import {
+  calculationId,
   completedCalculation,
+  type CalculationOptions,
   type FormulaEvaluation,
   type FormulaValueRef,
 } from "./contracts";
@@ -32,9 +34,7 @@ export function evaluateVentureMethod(input: {
   exitArr: FormulaValueRef | null;
   exitArrMultiple: FormulaValueRef | null;
   futureDilutionRate: FormulaValueRef | null;
-}, options: {
-  now?: () => Date;
-} = {}): FormulaEvaluation<VentureMethodValue> {
+}, options: CalculationOptions = {}): FormulaEvaluation<VentureMethodValue> {
   if (input.terms !== "simple_pre_money_preferred") {
     return unavailable("unsupported_terms", "unsupported_financing_terms");
   }
@@ -46,6 +46,18 @@ export function evaluateVentureMethod(input: {
     || input.futureDilutionRate === null
   ) {
     return unavailable("insufficient_input", "venture_method_input_missing");
+  }
+  if (input.investment.currency === null || input.exitArr.currency === null) {
+    return unavailable(
+      "insufficient_input",
+      "venture_method_currency_missing",
+    );
+  }
+  if (
+    input.investment.currency !== "USD"
+    || input.exitArr.currency !== input.investment.currency
+  ) {
+    return unavailable("unsupported_terms", "currency_unsupported");
   }
 
   try {
@@ -106,33 +118,124 @@ export function evaluateVentureMethod(input: {
     }
 
     const computedAt = (options.now ?? (() => new Date()))().toISOString();
-    const inputRefs = [
-      input.investment,
-      input.targetGrossMoic,
-      input.exitArr,
-      input.exitArrMultiple,
-      input.futureDilutionRate,
-    ];
-    const currencyOutputs = new Set([
-      "exitEquityValue",
-      "requiredExitProceeds",
-      "maximumAcceptablePostMoney",
-      "maximumAcceptablePreMoney",
-    ]);
+    const scope = options.calculationScope ?? "standalone";
+    const ids = {
+      exitEquityValue: calculationId(
+        scope,
+        "venture_return_method_v1",
+        "exit_equity_value",
+      ),
+      requiredExitProceeds: calculationId(
+        scope,
+        "venture_return_method_v1",
+        "required_exit_proceeds",
+      ),
+      requiredPostDilutionOwnership: calculationId(
+        scope,
+        "venture_return_method_v1",
+        "required_post_dilution_ownership",
+      ),
+      requiredInitialOwnership: calculationId(
+        scope,
+        "venture_return_method_v1",
+        "required_initial_ownership",
+      ),
+      maximumAcceptablePostMoney: calculationId(
+        scope,
+        "venture_return_method_v1",
+        "maximum_acceptable_post_money",
+      ),
+      maximumAcceptablePreMoney: calculationId(
+        scope,
+        "venture_return_method_v1",
+        "maximum_acceptable_pre_money",
+      ),
+    };
     return {
       status: "completed",
       value,
-      calculations: Object.entries(value).map(([outputField, output]) =>
+      calculations: [
         completedCalculation({
           formulaId: "venture_return_method_v1",
-          outputField,
-          inputRefs,
-          output,
-          unit: currencyOutputs.has(outputField) ? "currency" : "decimal",
-          currency: currencyOutputs.has(outputField) ? "USD" : null,
+          outputField: "exit_equity_value",
+          inputRefs: [input.exitArr, input.exitArrMultiple],
+          output: value.exitEquityValue,
+          unit: "currency",
+          currency: input.investment.currency,
           computedAt,
-        })
-      ),
+          calculationScope: options.calculationScope,
+        }),
+        completedCalculation({
+          formulaId: "venture_return_method_v1",
+          outputField: "required_exit_proceeds",
+          inputRefs: [input.investment, input.targetGrossMoic],
+          output: value.requiredExitProceeds,
+          unit: "currency",
+          currency: input.investment.currency,
+          computedAt,
+          calculationScope: options.calculationScope,
+        }),
+        completedCalculation({
+          formulaId: "venture_return_method_v1",
+          outputField: "required_post_dilution_ownership",
+          inputRefs: [],
+          output: value.requiredPostDilutionOwnership,
+          unit: "decimal",
+          computedAt,
+          calculationScope: options.calculationScope,
+        }),
+        completedCalculation({
+          formulaId: "venture_return_method_v1",
+          outputField: "required_initial_ownership",
+          inputRefs: [input.futureDilutionRate],
+          output: value.requiredInitialOwnership,
+          unit: "decimal",
+          computedAt,
+          calculationScope: options.calculationScope,
+        }),
+        completedCalculation({
+          formulaId: "venture_return_method_v1",
+          outputField: "maximum_acceptable_post_money",
+          inputRefs: [input.investment],
+          output: value.maximumAcceptablePostMoney,
+          unit: "currency",
+          currency: input.investment.currency,
+          computedAt,
+          calculationScope: options.calculationScope,
+        }),
+        completedCalculation({
+          formulaId: "venture_return_method_v1",
+          outputField: "maximum_acceptable_pre_money",
+          inputRefs: [input.investment],
+          output: value.maximumAcceptablePreMoney,
+          unit: "currency",
+          currency: input.investment.currency,
+          computedAt,
+          calculationScope: options.calculationScope,
+        }),
+      ],
+      claimEdges: [
+        calculationEdge(
+          ids.requiredPostDilutionOwnership,
+          ids.requiredExitProceeds,
+        ),
+        calculationEdge(
+          ids.requiredPostDilutionOwnership,
+          ids.exitEquityValue,
+        ),
+        calculationEdge(
+          ids.requiredInitialOwnership,
+          ids.requiredPostDilutionOwnership,
+        ),
+        calculationEdge(
+          ids.maximumAcceptablePostMoney,
+          ids.requiredInitialOwnership,
+        ),
+        calculationEdge(
+          ids.maximumAcceptablePreMoney,
+          ids.maximumAcceptablePostMoney,
+        ),
+      ],
       blockerCodes: [],
     };
   } catch {
@@ -148,6 +251,18 @@ function unavailable(
     status,
     value: null,
     calculations: [],
+    claimEdges: [],
     blockerCodes: [blockerCode],
+  };
+}
+
+function calculationEdge(
+  claimItemId: string,
+  dependencyItemId: string,
+) {
+  return {
+    claimItemId,
+    dependencyItemId,
+    dependencyType: "calculation" as const,
   };
 }
