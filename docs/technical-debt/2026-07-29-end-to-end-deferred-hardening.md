@@ -43,7 +43,7 @@
 | TD-SEED-002 | P2 | Backlog | Memory reset 不會同步清除獨立 Registry |
 | TD-IMP-001 | P1 | MVP deferred | Fixed corpus confirmation 不是單一交易 |
 | TD-XTR-001 | P2 | Backlog | 本機 reset 不一定能刪除遠端 XTrace memory |
-| TD-FWK-001 | P0 | Production gate | Side Quest 框架仍是 draft／unpublished，不能影響正式決策 |
+| TD-FWK-001 | P0 | Production gate | Side Quest 框架可產生實驗性觀點，但仍不能成為正式決策因子 |
 | TD-FWK-002 | P1 | Production gate | 真實框架的授權、來源版本與 Decision Utility 尚未全部核准 |
 | TD-COV-001 | P2 | Product limitation | 第一版深度估值只支援 Seed／Series A × B2B SaaS／Enterprise AI |
 | TD-OPS-001 | P2 | Backlog | 自動排程、訊息實際發送與 LinkedIn 發佈仍刻意停用 |
@@ -257,23 +257,34 @@
 - **重啟時機**
   - 正式提供 workspace deletion／reset 前。
 
-### TD-FWK-001：框架內容尚未可執行正式決策
+### TD-FWK-001：框架內容尚未可成為正式決策因子
 
 - **證據**
   - Side Quest handoff：20 packs、199 Cards、270 sources。
   - 所有 Cards 目前是 `draft`／`unpublished`，Decision weight 必須為 `0`。
   - 19 Cards 標記 `pending_review`。
-- **影響**
-  - 未核准的名人框架若直接影響 Invest Candidate，會讓決策缺乏可稽核性。
-- **暫時主線行為**
-  - 可匯入 quarantined internal-research registry。
-  - E2E 使用明確標為 synthetic、已發布的測試 Framework Cards 驗證引擎。
-  - draft Cards 可顯示研究結果，但不得影響 deterministic decision。
+- **已確認的產品行為**
+  - 180 張 `public_source_paraphrase` Cards 可以
+    `experimental_advisory` 模式真正執行，對同一份 Evidence Pack 產生
+    獨立觀點、支持證據、反證、未知、限制、來源與框架間分歧。
+  - 這些觀點必須進入最終報告、研究問題與 DD／Action Draft rationale；
+    不能只停留在資料夾或靜態展示。
+  - 19 張 `pending_review` Cards 不得執行。
+- **仍延後的正式決策邊界**
+  - draft／unpublished／weight `0` 的 named Cards 不得單獨將正式結果升為
+    `Invest Candidate`，也不得覆寫財務公式、Critical Evidence ceiling、
+    Fund Policy 或 deterministic Decision Policy。
+  - 正式決策仍由已發布的 core criteria、可稽核公式與版本化規則產生；
+    experimental advisory 結果以清楚標示的獨立觀點呈現。
+- **風險**
+  - 未核准的名人框架若被誤標為正式決策因子，會讓投資結論缺乏可稽核性，
+    也可能造成錯誤背書或來源權利問題。
 - **完成條件**
   - rights、source revision、content approval、publication 與 Decision
     Utility gates 全部通過。
 - **重啟時機**
-  - 對外宣稱使用特定名人框架、或讓其影響正式決策前。
+  - 將 named framework 從 `experimental_advisory` 提升為可影響正式
+    deterministic decision 的 factor 前。
 
 ### TD-FWK-002：授權與來源覆蓋缺口
 
