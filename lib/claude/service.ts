@@ -17,7 +17,7 @@ function evidencePrompt(input: MatchingInput) {
   });
 }
 
-function parseJson(text: string) {
+export function parseClaudeJson(text: string): unknown {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
   return JSON.parse((fenced?.[1] ?? text).trim()) as unknown;
 }
@@ -39,7 +39,7 @@ export function createClaudeReasoner(client: ClaudeClient) {
       });
       let parsed: unknown;
       try {
-        parsed = parseJson(text);
+        parsed = parseClaudeJson(text);
         return ClaudeReasonedMatchesSchema.parse(parsed);
       } catch (error) {
         text = await client.complete({
@@ -49,7 +49,7 @@ export function createClaudeReasoner(client: ClaudeClient) {
             content: `${prompt}\nYour previous output failed validation: ${String(error)}. Return valid JSON only.`,
           }],
         });
-        parsed = parseJson(text);
+        parsed = parseClaudeJson(text);
         return ClaudeReasonedMatchesSchema.parse(parsed);
       }
     },
