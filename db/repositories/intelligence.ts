@@ -8,6 +8,10 @@ import {
   type OpportunityReportItem,
   type ReportAnalysisStatus,
 } from "../../lib/contracts/domain";
+import {
+  IntegrationTransportError,
+  isRetryableTransportStatus,
+} from "../../lib/api/errors";
 import { withinPublicationWindow } from "../../lib/market/dedupe";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 import { sanitizeReportOpportunities } from "../../lib/reports/next-step-policy";
@@ -315,14 +319,20 @@ export function createSupabaseIntelligenceRepository(options: {
     "content-type": "application/json",
   };
   async function request(path: string, init: RequestInit = {}) {
-    const response = await fetchImpl(`${base}${path}`, {
-      ...init,
-      headers: { ...headers, ...(init.headers ?? {}) },
-      cache: "no-store",
-    });
+    let response: Response;
+    try {
+      response = await fetchImpl(`${base}${path}`, {
+        ...init,
+        headers: { ...headers, ...(init.headers ?? {}) },
+        cache: "no-store",
+      });
+    } catch {
+      throw new IntegrationTransportError({ retryable: true });
+    }
     if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(`PostgreSQL gateway ${response.status}: ${detail.slice(0, 240)}`);
+      throw new IntegrationTransportError({
+        retryable: isRetryableTransportStatus(response.status),
+      });
     }
     if (response.status === 204) return null;
     const body = await response.text();

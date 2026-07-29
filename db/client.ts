@@ -1,4 +1,8 @@
 import type { RunStatus } from "../lib/contracts/domain";
+import {
+  IntegrationTransportError,
+  isRetryableTransportStatus,
+} from "../lib/api/errors";
 
 export type RunMode = "xtrace" | "structured";
 export type StageStatus = "queued" | "running" | "skipped" | "completed" | "failed";
@@ -190,14 +194,20 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
   };
 
   async function request(path: string, init: RequestInit = {}) {
-    const response = await fetchImpl(`${base}${path}`, {
-      ...init,
-      headers: { ...headers, ...(init.headers ?? {}) },
-      cache: "no-store",
-    });
+    let response: Response;
+    try {
+      response = await fetchImpl(`${base}${path}`, {
+        ...init,
+        headers: { ...headers, ...(init.headers ?? {}) },
+        cache: "no-store",
+      });
+    } catch {
+      throw new IntegrationTransportError({ retryable: true });
+    }
     if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`PostgreSQL gateway ${response.status}: ${body.slice(0, 240)}`);
+      throw new IntegrationTransportError({
+        retryable: isRetryableTransportStatus(response.status),
+      });
     }
     if (response.status === 204) return null;
     const body = await response.text();

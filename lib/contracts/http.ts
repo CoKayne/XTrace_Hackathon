@@ -21,15 +21,22 @@ export const ChatRequestSchema = z.object({
   xtraceEnabled: z.boolean().default(true),
 });
 
+export const ApiErrorCodeSchema = z.enum([
+  "VALIDATION_ERROR",
+  "NOT_FOUND",
+  "CONFLICT",
+  "RATE_LIMITED",
+  "INTEGRATION_UNAVAILABLE",
+  "UNAUTHENTICATED",
+  "FORBIDDEN",
+  "INTERNAL_ERROR",
+]);
+
+export type ApiErrorCode = z.infer<typeof ApiErrorCodeSchema>;
+
 export const ApiErrorSchema = z.object({
   error: z.object({
-    code: z.enum([
-      "VALIDATION_ERROR",
-      "NOT_FOUND",
-      "CONFLICT",
-      "RATE_LIMITED",
-      "INTEGRATION_UNAVAILABLE",
-    ]),
+    code: ApiErrorCodeSchema,
     message: z.string().min(1),
     retryable: z.boolean(),
   }),

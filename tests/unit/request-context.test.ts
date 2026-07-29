@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { resolveRequestContext } from "../../lib/auth/request-context";
-import { errorResponse } from "../../lib/api/response";
+import { errorResponse, jsonError } from "../../lib/api/response";
+import { IntegrationTransportError } from "../../lib/api/errors";
+import { ApiErrorSchema } from "../../lib/contracts/http";
 
 function productContextFixture(input: {
   membership: { workspaceId: string; role: "owner" | "partner" | "associate" | "admin" } | null;
@@ -40,7 +42,13 @@ test("public demo resolves the server demo workspace with mutation disabled", as
 
 test("product mode ignores a forged workspace and resolves membership", async () => {
   const request = new Request("https://vsee.test/api/deals?workspaceId=attacker", {
-    headers: { "x-workspace-id": "attacker", cookie: "workspaceId=attacker" },
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-workspace-id": "attacker",
+      cookie: "workspaceId=attacker",
+    },
+    body: JSON.stringify({ workspaceId: "attacker" }),
   });
   const context = await resolveRequestContext(request, productContextFixture({
     membership: { workspaceId: "workspace_real", role: "partner" },
@@ -51,6 +59,21 @@ test("product mode ignores a forged workspace and resolves membership", async ()
   assert.equal(context.permissions.readPrivateSources, true);
   assert.equal(context.permissions.mutateSources, true);
 });
+
+for (const [role, permissions] of [
+  ["owner", { readWorkspace: true, readPrivateSources: true, mutateSources: true, managePolicy: true, administerFrameworks: false }],
+  ["partner", { readWorkspace: true, readPrivateSources: true, mutateSources: true, managePolicy: false, administerFrameworks: false }],
+  ["associate", { readWorkspace: true, readPrivateSources: true, mutateSources: false, managePolicy: false, administerFrameworks: false }],
+  ["admin", { readWorkspace: true, readPrivateSources: true, mutateSources: true, managePolicy: true, administerFrameworks: false }],
+] as const) {
+  test(`workspace ${role} permissions never grant framework administration`, async () => {
+    const context = await resolveRequestContext(
+      new Request("https://vsee.test/api/deals"),
+      productContextFixture({ membership: { workspaceId: "workspace_real", role } }),
+    );
+    assert.deepEqual(context.permissions, permissions);
+  });
+}
 
 test("product mode rejects an authenticated non-member", async () => {
   await assert.rejects(
@@ -84,6 +107,22 @@ test("missing or invalid deployment configuration never selects public demo", as
     }),
     /INTERNAL_ERROR/,
   );
+  await assert.rejects(
+    resolveRequestContext(new Request("https://vsee.test/api/deals"), {
+      environment: { VSEE_DEPLOYMENT_MODE: "public_demo" },
+    }),
+    /INTERNAL_ERROR/,
+  );
+});
+
+test("authenticated product mode fails closed when Supabase membership configuration is absent", async () => {
+  await assert.rejects(
+    resolveRequestContext(new Request("https://vsee.test/api/deals"), {
+      environment: { VSEE_DEPLOYMENT_MODE: "product" },
+      resolveSession: async () => ({ userId: "user_1", email: "user@example.com" }),
+    }),
+    /INTERNAL_ERROR/,
+  );
 });
 
 test("API errors expose fixed public messages and never leak unexpected details", async () => {
@@ -93,10 +132,22 @@ test("API errors expose fixed public messages and never leak unexpected details"
     error: { code: "UNAUTHENTICATED", message: "Authentication required", retryable: false },
   });
 
-  const unavailable = errorResponse(new TypeError("fetch failed"));
+  const forbidden = errorResponse(new Error("FORBIDDEN"));
+  assert.equal(forbidden.status, 403);
+  assert.deepEqual(await forbidden.json(), {
+    error: { code: "FORBIDDEN", message: "Access denied", retryable: false },
+  });
+
+  const unavailable = errorResponse(new IntegrationTransportError({ retryable: true }));
   assert.equal(unavailable.status, 503);
   assert.deepEqual(await unavailable.json(), {
     error: { code: "INTEGRATION_UNAVAILABLE", message: "A required service is unavailable", retryable: true },
+  });
+
+  const nonRetryableTransport = errorResponse(new IntegrationTransportError({ retryable: false }));
+  assert.equal(nonRetryableTransport.status, 500);
+  assert.deepEqual(await nonRetryableTransport.json(), {
+    error: { code: "INTERNAL_ERROR", message: "Internal server error", retryable: false },
   });
 
   const unexpected = errorResponse(new Error("postgres://admin:secret@internal.example"));
@@ -104,4 +155,20 @@ test("API errors expose fixed public messages and never leak unexpected details"
   assert.deepEqual(await unexpected.json(), {
     error: { code: "INTERNAL_ERROR", message: "Internal server error", retryable: false },
   });
+});
+
+test("every public API error envelope conforms to the shared schema", async () => {
+  for (const code of [
+    "VALIDATION_ERROR",
+    "NOT_FOUND",
+    "CONFLICT",
+    "RATE_LIMITED",
+    "INTEGRATION_UNAVAILABLE",
+    "UNAUTHENTICATED",
+    "FORBIDDEN",
+    "INTERNAL_ERROR",
+  ] as const) {
+    const response = jsonError(code, "A fixed public message", 400);
+    assert.equal(ApiErrorSchema.safeParse(await response.json()).success, true, code);
+  }
 });

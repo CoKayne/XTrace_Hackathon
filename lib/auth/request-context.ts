@@ -81,7 +81,7 @@ function permissionsForRole(role: WorkspaceMembershipRole): AuthorizedRequestCon
       readPrivateSources: true,
       mutateSources: true,
       managePolicy: true,
-      administerFrameworks: true,
+      administerFrameworks: false,
     };
   }
   if (role === "partner") {

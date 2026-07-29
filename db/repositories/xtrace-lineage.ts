@@ -1,4 +1,8 @@
 import type { Provenance } from "../../lib/contracts/domain";
+import {
+  IntegrationTransportError,
+  isRetryableTransportStatus,
+} from "../../lib/api/errors";
 
 export interface XTraceIngestLineage {
   jobId: string;
@@ -132,14 +136,20 @@ export function createSupabaseXTraceLineageRepository(options: {
     "content-type": "application/json",
   };
   async function request(path: string, init: RequestInit = {}) {
-    const response = await fetchImpl(`${base}${path}`, {
-      ...init,
-      headers: { ...headers, ...(init.headers ?? {}) },
-      cache: "no-store",
-    });
+    let response: Response;
+    try {
+      response = await fetchImpl(`${base}${path}`, {
+        ...init,
+        headers: { ...headers, ...(init.headers ?? {}) },
+        cache: "no-store",
+      });
+    } catch {
+      throw new IntegrationTransportError({ retryable: true });
+    }
     if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(`PostgreSQL gateway ${response.status}: ${detail.slice(0, 240)}`);
+      throw new IntegrationTransportError({
+        retryable: isRetryableTransportStatus(response.status),
+      });
     }
     if (response.status === 204) return null;
     const text = await response.text();

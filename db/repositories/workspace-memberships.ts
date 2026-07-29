@@ -1,3 +1,8 @@
+import {
+  IntegrationTransportError,
+  isRetryableTransportStatus,
+} from "../../lib/api/errors";
+
 export type WorkspaceMembershipRole = "owner" | "partner" | "associate" | "admin";
 
 export interface WorkspaceMembershipsRepository {
@@ -12,23 +17,39 @@ export function createSupabaseWorkspaceMembershipsRepository(options: {
   serviceRoleKey: string;
   fetchImpl?: typeof fetch;
 }): WorkspaceMembershipsRepository {
-  const base = `${options.url.replace(/\/$/, "")}/rest/v1`;
+  const configuration = parseSupabaseConfiguration(options);
+  const base = `${configuration.url}/rest/v1`;
   const fetchImpl = options.fetchImpl ?? fetch;
   const headers = {
-    apikey: options.serviceRoleKey,
-    authorization: `Bearer ${options.serviceRoleKey}`,
+    apikey: configuration.serviceRoleKey,
+    authorization: `Bearer ${configuration.serviceRoleKey}`,
   };
 
   return {
     async resolvePrimaryMembership(userId) {
-      const response = await fetchImpl(
-        `${base}/workspace_members?user_id=eq.${encodeURIComponent(userId)}&select=workspace_id,role&order=workspace_id.asc&limit=1`,
-        { headers, cache: "no-store" },
-      );
-      if (!response.ok) {
-        throw new Error(`PostgreSQL gateway ${response.status}`);
+      let response: Response;
+      try {
+        response = await fetchImpl(
+          `${base}/workspace_members?user_id=eq.${encodeURIComponent(userId)}&select=workspace_id,role&limit=2`,
+          { headers, cache: "no-store" },
+        );
+      } catch {
+        throw new IntegrationTransportError({ retryable: true });
       }
-      const rows = await response.json() as Array<Record<string, unknown>>;
+      if (!response.ok) {
+        throw new IntegrationTransportError({
+          retryable: isRetryableTransportStatus(response.status),
+        });
+      }
+      let payload: unknown;
+      try {
+        payload = await response.json();
+      } catch {
+        throw new Error("INTERNAL_ERROR");
+      }
+      if (!Array.isArray(payload)) throw new Error("INTERNAL_ERROR");
+      const rows = payload as Array<Record<string, unknown>>;
+      if (rows.length !== 1) return null;
       const row = rows[0];
       const workspaceId = typeof row?.workspace_id === "string" ? row.workspace_id.trim() : "";
       const role = row?.role;
@@ -41,10 +62,28 @@ export function createSupabaseWorkspaceMembershipsRepository(options: {
 export function getWorkspaceMembershipsRepository(
   environment: Record<string, string | undefined> = process.env,
 ): WorkspaceMembershipsRepository {
-  const url = environment.SUPABASE_URL;
-  const serviceRoleKey = environment.SUPABASE_SERVICE_ROLE_KEY;
+  return createSupabaseWorkspaceMembershipsRepository({
+    url: environment.SUPABASE_URL ?? "",
+    serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY ?? "",
+  });
+}
+
+function parseSupabaseConfiguration(input: {
+  url: string;
+  serviceRoleKey: string;
+}): { url: string; serviceRoleKey: string } {
+  const url = input.url.trim().replace(/\/$/, "");
+  const serviceRoleKey = input.serviceRoleKey.trim();
   if (!url || !serviceRoleKey) throw new Error("INTERNAL_ERROR");
-  return createSupabaseWorkspaceMembershipsRepository({ url, serviceRoleKey });
+  try {
+    const parsed = new URL(url);
+    if ((parsed.protocol !== "http:" && parsed.protocol !== "https:") || !parsed.hostname) {
+      throw new Error("invalid URL");
+    }
+  } catch {
+    throw new Error("INTERNAL_ERROR");
+  }
+  return { url, serviceRoleKey };
 }
 
 function isWorkspaceMembershipRole(value: unknown): value is WorkspaceMembershipRole {
