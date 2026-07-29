@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import "../helpers/public-demo";
 import { GET as readDocumentRoute } from "../../app/api/documents/[id]/route";
 import {
-  createDefaultPrivateDocumentAccess,
   createMemoryDemoDataStore,
   createMemoryPrivateObjectStorage,
   createPrivateDocumentAccess,
@@ -13,7 +13,7 @@ import {
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
 import { DEMO_FIXTURE_LABEL } from "../../lib/contracts/domain";
 
-test("private document access issues only same-origin backend reads valid for at most ten minutes", async () => {
+test("private document access signs and validates the exact workspace-scoped source capability", async () => {
   let now = 1_700_000_000_000;
   const access = createPrivateDocumentAccess({
     signingSecret: "unit-test-signing-secret-at-least-32-bytes",
@@ -21,17 +21,47 @@ test("private document access issues only same-origin backend reads valid for at
   });
 
   const url = await access.createPrivateReadUrl({
-    documentId: "doc_7bridges",
+    capability: {
+      workspaceId: "workspace_one",
+      sourceRevisionId: "doc_7bridges",
+      objectVersion: "sha256-version-one",
+      expiresAtEpochSeconds: 1_700_000_600,
+      permission: "read",
+    },
     expiresInSeconds: 600,
   });
   const parsed = new URL(url, "https://app.example.test");
   assert.equal(parsed.origin, "https://app.example.test");
   assert.equal(parsed.pathname, "/api/documents/doc_7bridges");
-  assert.equal(parsed.searchParams.get("expires"), "1700000600");
+  assert.match(parsed.searchParams.get("capability") ?? "", /^[A-Za-z0-9_-]+$/);
   assert.match(parsed.searchParams.get("signature") ?? "", /^[A-Za-z0-9_-]+$/);
   assert.equal(parsed.searchParams.has("token"), false);
   assert.equal(parsed.searchParams.has("write"), false);
-  assert.equal(await access.authorizePrivateRead(new Request(parsed)), "doc_7bridges");
+  assert.deepEqual(await access.authorizePrivateRead(new Request(parsed)), {
+    workspaceId: "workspace_one",
+    sourceRevisionId: "doc_7bridges",
+    objectVersion: "sha256-version-one",
+    expiresAtEpochSeconds: 1_700_000_600,
+    permission: "read",
+  });
+
+  const forged = new URL(parsed);
+  const encodedCapability = forged.searchParams.get("capability");
+  assert.ok(encodedCapability);
+  const decoded = JSON.parse(
+    Buffer.from(encodedCapability, "base64url").toString("utf8"),
+  ) as Record<string, unknown>;
+  forged.searchParams.set(
+    "capability",
+    Buffer.from(JSON.stringify({
+      ...decoded,
+      workspaceId: "workspace_attacker",
+    })).toString("base64url"),
+  );
+  await assert.rejects(
+    access.authorizePrivateRead(new Request(forged)),
+    /invalid/i,
+  );
 
   now += 601_000;
   await assert.rejects(
@@ -39,7 +69,16 @@ test("private document access issues only same-origin backend reads valid for at
     /expired/i,
   );
   await assert.rejects(
-    access.createPrivateReadUrl({ documentId: "doc_7bridges", expiresInSeconds: 601 }),
+    access.createPrivateReadUrl({
+      capability: {
+        workspaceId: "workspace_one",
+        sourceRevisionId: "doc_7bridges",
+        objectVersion: "sha256-version-one",
+        expiresAtEpochSeconds: 1_700_001_202,
+        permission: "read",
+      },
+      expiresInSeconds: 601,
+    }),
     /600 seconds/i,
   );
 });
@@ -175,21 +214,10 @@ test("PostgreSQL storage durably writes the synthetic decision rationale", async
   );
 });
 
-test("the backend document route requires a valid read capability and never exposes storage credentials", async () => {
+test("the public demo document route serves only the fixed preloaded PDF without storage credentials", async () => {
   const document = listPreloadedDocuments()[0];
-  const unsigned = await readDocumentRoute(
-    new Request(`https://app.example.test/api/documents/${document.id}`),
-    { params: Promise.resolve({ id: document.id }) },
-  );
-  assert.equal(unsigned.status, 404);
-
-  const access = createDefaultPrivateDocumentAccess();
-  const signedPath = await access.createPrivateReadUrl({
-    documentId: document.id,
-    expiresInSeconds: 600,
-  });
   const response = await readDocumentRoute(
-    new Request(new URL(signedPath, "https://app.example.test")),
+    new Request(`https://app.example.test/api/documents/${document.id}`),
     { params: Promise.resolve({ id: document.id }) },
   );
   assert.equal(response.status, 200);

@@ -3,8 +3,10 @@ import test from "node:test";
 
 import {
   rateLimitRequest,
+  requirePermission,
   takePublicRequest,
 } from "../../lib/api/safety";
+import type { AuthorizedRequestContext } from "../../lib/auth/request-context";
 
 test("public request limiter rejects calls beyond the scoped window", () => {
   let current = 1_000;
@@ -83,4 +85,89 @@ test("persistent request limiting fails closed when its transport rejects", asyn
 
   assert.deepEqual(result, { allowed: false, retryAfterSeconds: 60 });
   assert.doesNotMatch(JSON.stringify(result), /rate-limit-secret/i);
+});
+
+test("product request limiting keys by the authorized principal and workspace", async () => {
+  const hashes: string[] = [];
+  const environment = {
+    NODE_ENV: "production",
+    SUPABASE_URL: "https://database.example",
+    SUPABASE_SERVICE_ROLE_KEY: "server-only",
+  };
+  const fetchImpl: typeof fetch = async (_url, init) => {
+    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    hashes.push(String(body.p_client_hash));
+    return Response.json([{ allowed: true, retry_after_seconds: 0 }]);
+  };
+  const baseContext: AuthorizedRequestContext = {
+    mode: "product",
+    principal: { userId: "user_1", email: "one@example.test" },
+    workspaceId: "workspace_one",
+    role: "partner",
+    permissions: {
+      readWorkspace: true,
+      readPrivateSources: true,
+      mutateSources: true,
+      managePolicy: false,
+      administerFrameworks: false,
+    },
+  };
+  const forgedRequest = new Request(
+    "https://demo.example/api/runs?workspaceId=workspace_attacker",
+    {
+      headers: {
+        "cf-connecting-ip": "203.0.113.44",
+        "x-workspace-id": "workspace_attacker",
+        cookie: "workspaceId=workspace_attacker",
+      },
+    },
+  );
+
+  await rateLimitRequest(forgedRequest, "run-scan", 5, 60_000, {
+    environment,
+    fetchImpl,
+    context: baseContext,
+  });
+  await rateLimitRequest(forgedRequest, "run-scan", 5, 60_000, {
+    environment,
+    fetchImpl,
+    context: {
+      ...baseContext,
+      principal: { userId: "user_2", email: "two@example.test" },
+    },
+  });
+  await rateLimitRequest(forgedRequest, "run-scan", 5, 60_000, {
+    environment,
+    fetchImpl,
+    context: {
+      ...baseContext,
+      workspaceId: "workspace_two",
+    },
+  });
+
+  assert.equal(new Set(hashes).size, 3);
+  assert.ok(hashes.every((hash) => /^[a-f0-9]{64}$/.test(hash)));
+  assert.doesNotMatch(hashes.join(" "), /workspace_attacker|203\\.0\\.113\\.44/);
+});
+
+test("requirePermission rejects a missing explicit capability", () => {
+  const context: AuthorizedRequestContext = {
+    mode: "public_demo",
+    principal: null,
+    workspaceId: "workspace_demo",
+    role: "demo",
+    permissions: {
+      readWorkspace: true,
+      readPrivateSources: false,
+      mutateSources: false,
+      managePolicy: false,
+      administerFrameworks: false,
+    },
+  };
+
+  assert.doesNotThrow(() => requirePermission(context, "readWorkspace"));
+  assert.throws(
+    () => requirePermission(context, "readPrivateSources"),
+    /FORBIDDEN/,
+  );
 });

@@ -1,5 +1,6 @@
 import { errorResponse, jsonError, jsonOk } from "../../../lib/api/response";
-import { rateLimitRequest } from "../../../lib/api/safety";
+import { rateLimitRequest, requirePermission } from "../../../lib/api/safety";
+import { resolveRequestContext } from "../../../lib/auth/request-context";
 import { getIntelligenceRepository } from "../../../db/repositories/intelligence";
 import {
   createGroundedChatService,
@@ -22,8 +23,6 @@ import {
   isXTraceConfigured,
 } from "../../../lib/xtrace/client";
 import { createXTraceService } from "../../../lib/xtrace/service";
-
-const WORKSPACE_ID = "workspace_demo";
 
 export const dynamic = "force-dynamic";
 
@@ -67,13 +66,16 @@ function allDemoSources() {
   return sources;
 }
 
-async function searchRuntimeIntelligence(question: string): Promise<ChatEvidence[]> {
+async function searchRuntimeIntelligence(
+  question: string,
+  workspaceId: string,
+): Promise<ChatEvidence[]> {
   const tokens = evidenceQueryTokens(question);
   if (!tokens.length) return [];
   const repository = getIntelligenceRepository();
   const [events, reports] = await Promise.all([
-    repository.listMarketEvents(WORKSPACE_ID),
-    repository.listReports(WORKSPACE_ID),
+    repository.listMarketEvents(workspaceId),
+    repository.listReports(workspaceId),
   ]);
   const eventEvidence = events.flatMap((event) => {
     const haystack = [
@@ -101,16 +103,19 @@ async function searchRuntimeIntelligence(question: string): Promise<ChatEvidence
   return [...eventEvidence, ...reportEvidence].slice(0, 12);
 }
 
-async function recallExistingMemory(question: string): Promise<MemoryRecallOutcome> {
+async function recallExistingMemory(
+  question: string,
+  workspaceId: string,
+): Promise<MemoryRecallOutcome> {
   if (!isXTraceConfigured()) return { status: "unavailable" };
   const sourceById = allDemoSources();
   const deals = buildDemoViewModel().deals;
   const service = createXTraceService(getXTraceClient(), {
-    workspaceId: WORKSPACE_ID,
+    workspaceId,
   });
   try {
     const contexts = await service.recallDealContext({
-      workspaceId: WORKSPACE_ID,
+      workspaceId,
       query: question,
       candidateDealIds: deals.map((deal) => deal.id),
       limit: 8,
@@ -159,27 +164,35 @@ function deterministicCompletion(prompt: string) {
 }
 
 export async function POST(request: Request) {
-  const rate = await rateLimitRequest(request, "chat", 20);
-  if (!rate.allowed) {
-    return jsonError(
-      "RATE_LIMITED",
-      `Too many Chat requests. Try again in ${rate.retryAfterSeconds} seconds.`,
-      429,
-      true,
-    );
-  }
   try {
+    const context = await resolveRequestContext(request);
+    requirePermission(context, "readWorkspace");
+    const rate = await rateLimitRequest(
+      request,
+      "chat",
+      20,
+      undefined,
+      { context },
+    );
+    if (!rate.allowed) {
+      return jsonError(
+        "RATE_LIMITED",
+        `Too many Chat requests. Try again in ${rate.retryAfterSeconds} seconds.`,
+        429,
+        true,
+      );
+    }
     const input = ChatRequestSchema.parse(await request.json());
     const claude = process.env.ANTHROPIC_API_KEY ? createClaudeClient() : null;
     const service = createGroundedChatService({
       async searchExistingData({ question }) {
         return [
           ...searchDemoEvidence(question),
-          ...await searchRuntimeIntelligence(question),
+          ...await searchRuntimeIntelligence(question, context.workspaceId),
         ];
       },
       async recallMemory({ question }) {
-        return recallExistingMemory(question);
+        return recallExistingMemory(question, context.workspaceId);
       },
       async complete({ system, prompt }) {
         if (!claude) return deterministicCompletion(prompt);
@@ -191,7 +204,7 @@ export async function POST(request: Request) {
       },
     });
     return jsonOk(await service.answer({
-      workspaceId: WORKSPACE_ID,
+      workspaceId: context.workspaceId,
       question: input.question,
       xtraceEnabled: input.xtraceEnabled,
     }));

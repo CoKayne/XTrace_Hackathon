@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import "../helpers/public-demo";
 import { GET as getReport } from "../../app/api/reports/[id]/route";
 import {
   getIntelligenceRepository,

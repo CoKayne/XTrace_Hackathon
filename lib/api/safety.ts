@@ -1,3 +1,5 @@
+import type { AuthorizedRequestContext } from "../auth/request-context";
+
 type Environment = Record<string, string | undefined>;
 
 interface RateLimitInput {
@@ -16,6 +18,7 @@ interface RateLimitResult {
 interface PersistentRateLimitOptions {
   environment?: Environment;
   fetchImpl?: typeof fetch;
+  context?: AuthorizedRequestContext;
 }
 
 const requestWindows = new Map<string, number[]>();
@@ -57,10 +60,11 @@ export async function rateLimitRequest(
   options: PersistentRateLimitOptions = {},
 ): Promise<RateLimitResult> {
   const environment = options.environment ?? process.env;
+  const clientId = rateLimitClientIdentifier(request, options.context);
   const url = environment.SUPABASE_URL;
   const serviceRoleKey = environment.SUPABASE_SERVICE_ROLE_KEY;
   if (url && serviceRoleKey) {
-    const clientHash = await digestClientIdentifier(clientIdentifier(request));
+    const clientHash = await digestClientIdentifier(clientId);
     let response: Response;
     try {
       response = await (options.fetchImpl ?? fetch)(
@@ -101,10 +105,28 @@ export async function rateLimitRequest(
   }
   return takePublicRequest({
     scope,
-    clientId: clientIdentifier(request),
+    clientId,
     limit,
     windowMs,
   });
+}
+
+export function requirePermission(
+  context: AuthorizedRequestContext,
+  permission: keyof AuthorizedRequestContext["permissions"],
+): void {
+  if (!context.permissions[permission]) throw new Error("FORBIDDEN");
+}
+
+function rateLimitClientIdentifier(
+  request: Request,
+  context: AuthorizedRequestContext | undefined,
+): string {
+  if (context?.mode === "product") {
+    if (!context.principal) throw new Error("UNAUTHENTICATED");
+    return `principal:${context.principal.userId}:workspace:${context.workspaceId}`;
+  }
+  return clientIdentifier(request);
 }
 
 async function digestClientIdentifier(value: string): Promise<string> {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import "../helpers/public-demo";
 import {
   GET as listRuns,
   POST as createRun,
@@ -32,7 +33,9 @@ test("scan creation fails closed when no worker heartbeat is ready", async () =>
     assert.equal(body.error?.retryable, true);
     assert.match(body.error?.message ?? "", /worker/i);
 
-    const queued = await listRuns();
+    const queued = await listRuns(
+      new Request("http://localhost/api/runs"),
+    );
     const queuedBody = await queued.json() as { data: unknown[] };
     assert.deepEqual(queuedBody.data, []);
   } finally {

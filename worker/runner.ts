@@ -105,7 +105,7 @@ export async function runNextQueuedScan(): Promise<boolean> {
       xtrace,
     });
   } catch (error) {
-    const current = await runs.get(claimed.id);
+    const current = await runs.get(claimed.workspaceId, claimed.id);
     if (current?.status === "running" && current.workerId === WORKER_ID) {
       await runs.finish({
         runId: claimed.id,

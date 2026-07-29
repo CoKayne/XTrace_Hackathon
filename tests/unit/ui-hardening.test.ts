@@ -4,6 +4,7 @@ import { createElement, type ComponentType, type FormEvent } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import test from "node:test";
 
+import "../helpers/public-demo";
 import * as pageModule from "../../app/page";
 import { GET as getHealth } from "../../app/api/settings/health/route";
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
@@ -68,7 +69,9 @@ test("health response exposes worker readiness independently from PostgreSQL con
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   try {
-    const response = await getHealth();
+    const response = await getHealth(
+      new Request("http://localhost/api/settings/health"),
+    );
     const body = await response.json() as {
       data: { postgres: boolean; worker: boolean; corpusReady: boolean };
     };
@@ -91,7 +94,9 @@ test("health reports XTrace configured for an mmk key without an organization ID
   delete process.env.XTRACE_ORG_ID;
 
   try {
-    const response = await getHealth();
+    const response = await getHealth(
+      new Request("http://localhost/api/settings/health"),
+    );
     const body = await response.json() as { data: { xtrace: boolean } };
 
     assert.equal(body.data.xtrace, true);
@@ -114,7 +119,9 @@ test("health derives corpus readiness from durable confirmation, not browser sta
         documentId: document.id,
       });
     }
-    const response = await getHealth();
+    const response = await getHealth(
+      new Request("http://localhost/api/settings/health"),
+    );
     const body = await response.json() as {
       data: { corpusReady: boolean; corpusConfirmedCount: number };
     };

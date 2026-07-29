@@ -7,42 +7,58 @@ import {
   jsonError,
   jsonOk,
 } from "../../../lib/api/response";
-import { rateLimitRequest } from "../../../lib/api/safety";
+import { rateLimitRequest, requirePermission } from "../../../lib/api/safety";
+import { resolveRequestContext } from "../../../lib/auth/request-context";
 import { getProductInputReadiness } from "../../../lib/corpus/import-readiness";
 import { createDefaultDemoDataStore } from "../../../lib/storage/service";
 import { isXTraceConfigured } from "../../../lib/xtrace/client";
-
-const WORKSPACE_ID = "workspace_demo";
+import { toPublicRun } from "../../../lib/runs/public";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const runs = await createRunsRepository(getDataClient()).list(WORKSPACE_ID);
-  return jsonOk(runs);
+export async function GET(request: Request) {
+  try {
+    const context = await resolveRequestContext(request);
+    requirePermission(context, "readWorkspace");
+    const runs = await createRunsRepository(getDataClient()).list(
+      context.workspaceId,
+    );
+    return jsonOk(runs.map(toPublicRun));
+  } catch (error) {
+    return errorResponse(error);
+  }
 }
 
 export async function POST(request: Request) {
-  if (
-    process.env.NODE_ENV === "production" &&
-    (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)
-  ) {
-    return jsonError(
-      "INTEGRATION_UNAVAILABLE",
-      "Persistent PostgreSQL is required before a public scan can be queued.",
-      503,
-      true,
-    );
-  }
-  const rate = await rateLimitRequest(request, "run-scan", 5, 10 * 60_000);
-  if (!rate.allowed) {
-    return jsonError(
-      "RATE_LIMITED",
-      `Too many scans. Try again in ${rate.retryAfterSeconds} seconds.`,
-      429,
-      true,
-    );
-  }
   try {
+    const context = await resolveRequestContext(request);
+    requirePermission(context, "readWorkspace");
+    if (
+      process.env.NODE_ENV === "production" &&
+      (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)
+    ) {
+      return jsonError(
+        "INTEGRATION_UNAVAILABLE",
+        "Persistent PostgreSQL is required before a public scan can be queued.",
+        503,
+        true,
+      );
+    }
+    const rate = await rateLimitRequest(
+      request,
+      "run-scan",
+      5,
+      10 * 60_000,
+      { context },
+    );
+    if (!rate.allowed) {
+      return jsonError(
+        "RATE_LIMITED",
+        `Too many scans. Try again in ${rate.retryAfterSeconds} seconds.`,
+        429,
+        true,
+      );
+    }
     const parsed = CreateRunRequestSchema.parse(await request.json());
     const runs = createRunsRepository(getDataClient());
     let workerReady = false;
@@ -61,7 +77,7 @@ export async function POST(request: Request) {
     }
     const readiness = await getProductInputReadiness(
       createDefaultDemoDataStore(),
-      WORKSPACE_ID,
+      context.workspaceId,
     );
     if (!readiness.ready) {
       return jsonError(
@@ -87,11 +103,11 @@ export async function POST(request: Request) {
       );
     }
     const run = await runs.create({
-      workspaceId: WORKSPACE_ID,
+      workspaceId: context.workspaceId,
       mode: parsed.xtraceEnabled ? "xtrace" : "structured",
       windowDays: 14,
     });
-    return jsonCreated(run);
+    return jsonCreated(toPublicRun(run));
   } catch (error) {
     return errorResponse(error);
   }

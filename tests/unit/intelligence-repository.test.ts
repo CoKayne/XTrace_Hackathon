@@ -299,7 +299,7 @@ test("every report repository egress sanitizes a malicious legacy next step", as
   };
 
   const saved = await repository.saveReport(report);
-  const fetched = await repository.getReport(report.id);
+  const fetched = await repository.getReport(report.workspaceId, report.id);
   const listed = await repository.listReports(report.workspaceId);
 
   for (const result of [saved, fetched, listed[0]]) {
@@ -332,7 +332,7 @@ test("report repository reads normalize malformed durable opportunity shapes", a
     } as unknown as IntelligenceReportWrite;
     await repository.saveReport(report);
 
-    const fetched = await repository.getReport(report.id);
+    const fetched = await repository.getReport(report.workspaceId, report.id);
     assert.ok(fetched);
     assert.deepEqual(fetched.opportunities, [], report.id);
   }
@@ -344,11 +344,11 @@ test("stores one report with exactly nineteen ordered company analyses", async (
 
   await repository.saveReport(report);
 
-  const stored = await repository.getReport(report.id);
+  const stored = await repository.getReport(report.workspaceId, report.id);
   assert.equal(stored?.companyAnalyses.length, 19);
   assert.equal(stored?.counts.noMaterialChange, 19);
   assert.equal(
-    (await repository.getReportByRunId(report.runId))?.id,
+    (await repository.getReportByRunId(report.workspaceId, report.runId))?.id,
     report.id,
   );
   assert.deepEqual(
@@ -497,7 +497,10 @@ test("Supabase reads accept PostgREST timestamptz offset timestamps", async () =
     },
   });
 
-  const fetched = await repository.getReportByRunId(report.runId);
+  const fetched = await repository.getReportByRunId(
+    report.workspaceId,
+    report.runId,
+  );
   assert.equal(fetched?.companyAnalyses.length, 19);
   assert.equal(fetched?.companyAnalyses[0]?.createdAt, offsetCreatedAt);
 

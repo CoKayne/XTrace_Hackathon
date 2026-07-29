@@ -320,11 +320,26 @@ test("the public corpus service exposes only guarded operations and delegates a 
     Object.keys(service).sort(),
     ["confirmImport", "getSignedDocumentUrl", "list", "previewImport"],
   );
-  const signedUrl = await service.getSignedDocumentUrl(document.id);
+  const signedUrl = await service.getSignedDocumentUrl({
+    context: {
+      mode: "product",
+      principal: { userId: "user_1", email: "user@example.test" },
+      workspaceId: "workspace_demo",
+      role: "partner",
+      permissions: {
+        readWorkspace: true,
+        readPrivateSources: true,
+        mutateSources: true,
+        managePolicy: false,
+        administerFrameworks: false,
+      },
+    },
+    documentId: document.id,
+  });
   const parsed = new URL(signedUrl, "https://app.example.test");
   assert.equal(parsed.origin, "https://app.example.test");
   assert.equal(parsed.pathname, `/api/documents/${document.id}`);
-  assert.ok(parsed.searchParams.has("expires"));
+  assert.ok(parsed.searchParams.has("capability"));
   assert.ok(parsed.searchParams.has("signature"));
   assert.equal(parsed.searchParams.has("token"), false);
   assert.equal(writes.at(-1), `signed:${document.id}:600`);
@@ -348,9 +363,9 @@ function createPersistence(
       writes.push(`fixture:${input.fixture.id}:${input.fixture.provenance}`);
       return { fixtureId: input.fixture.id };
     },
-    async createPrivateReadUrl({ documentId, expiresInSeconds }) {
-      writes.push(`signed:${documentId}:${expiresInSeconds}`);
-      return `/api/documents/${encodeURIComponent(documentId)}?expires=1700000600&signature=read-only`;
+    async createPrivateReadUrl({ capability, expiresInSeconds }) {
+      writes.push(`signed:${capability.sourceRevisionId}:${expiresInSeconds}`);
+      return `/api/documents/${encodeURIComponent(capability.sourceRevisionId)}?capability=read-only&signature=read-only`;
     },
   };
 }

@@ -1,6 +1,7 @@
 import { getUploadedDocumentsRepository } from "../../../../db/repositories/uploaded-documents";
 import { errorResponse, jsonCreated, jsonError, jsonOk } from "../../../../lib/api/response";
-import { rateLimitRequest } from "../../../../lib/api/safety";
+import { rateLimitRequest, requirePermission } from "../../../../lib/api/safety";
+import { resolveRequestContext } from "../../../../lib/auth/request-context";
 import { createDefaultPrivateObjectStorage } from "../../../../lib/storage/service";
 import {
   MAX_UPLOAD_BYTES,
@@ -11,8 +12,7 @@ import {
   uploadedObjectKey,
   UnsupportedUploadError,
 } from "../../../../lib/uploads/service";
-
-const WORKSPACE_ID = "workspace_demo";
+import { toPublicUploadedDocument } from "../../../../lib/uploads/public";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,16 +20,24 @@ export const dynamic = "force-dynamic";
 // Uploads never join the fixed 14-document manifest or the 19-Deal scan
 // universe: they are stored separately and extracted by the background worker.
 export async function POST(request: Request) {
-  const rate = await rateLimitRequest(request, "document-upload", 10, 10 * 60_000);
-  if (!rate.allowed) {
-    return jsonError(
-      "RATE_LIMITED",
-      `Too many uploads. Try again in ${rate.retryAfterSeconds} seconds.`,
-      429,
-      true,
-    );
-  }
   try {
+    const context = await resolveRequestContext(request);
+    requirePermission(context, "mutateSources");
+    const rate = await rateLimitRequest(
+      request,
+      "document-upload",
+      10,
+      10 * 60_000,
+      { context },
+    );
+    if (!rate.allowed) {
+      return jsonError(
+        "RATE_LIMITED",
+        `Too many uploads. Try again in ${rate.retryAfterSeconds} seconds.`,
+        429,
+        true,
+      );
+    }
     const form = await request.formData();
     const file = form.get("file");
     if (!(file instanceof File) || file.size === 0) {
@@ -51,12 +59,18 @@ export async function POST(request: Request) {
     const checksum = await sha256Hex(bytes);
     const repository = getUploadedDocumentsRepository();
 
-    const existing = await repository.findByChecksum(WORKSPACE_ID, checksum);
-    if (existing) return jsonOk(existing);
+    const existing = await repository.findByChecksum(
+      context.workspaceId,
+      checksum,
+    );
+    if (existing) return jsonOk(toPublicUploadedDocument(existing));
 
-    const id = uploadedDocumentId({ workspaceId: WORKSPACE_ID, checksum });
+    const id = uploadedDocumentId({
+      workspaceId: context.workspaceId,
+      checksum,
+    });
     const objectKey = uploadedObjectKey({
-      workspaceId: WORKSPACE_ID,
+      workspaceId: context.workspaceId,
       uploadId: id,
       filename,
     });
@@ -67,14 +81,14 @@ export async function POST(request: Request) {
     });
     const record = await repository.create({
       id,
-      workspaceId: WORKSPACE_ID,
+      workspaceId: context.workspaceId,
       filename,
       contentType,
       byteSize: bytes.byteLength,
       checksum,
       objectKey,
     });
-    return jsonCreated(record);
+    return jsonCreated(toPublicUploadedDocument(record));
   } catch (error) {
     if (error instanceof UnsupportedUploadError) {
       return jsonError("VALIDATION_ERROR", error.message, 415);

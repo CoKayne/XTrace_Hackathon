@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import test from "node:test";
 
+import "../helpers/public-demo";
 import { POST } from "../../app/api/chat/route";
 import { getIntelligenceRepository } from "../../db/repositories/intelligence";
 

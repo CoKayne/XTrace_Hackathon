@@ -111,9 +111,20 @@ export interface MemoryPrivateObjectStorage extends PrivateObjectStorage {
   inspect(): Array<{ key: string; byteSize: number; contentType: string }>;
 }
 
+export interface PrivateSourceCapability {
+  workspaceId: string;
+  sourceRevisionId: string;
+  objectVersion: string;
+  expiresAtEpochSeconds: number;
+  permission: "read";
+}
+
 export interface PrivateDocumentAccess {
-  createPrivateReadUrl(input: { documentId: string; expiresInSeconds: number }): Promise<string>;
-  authorizePrivateRead(request: Request): Promise<string>;
+  createPrivateReadUrl(input: {
+    capability: PrivateSourceCapability;
+    expiresInSeconds: number;
+  }): Promise<string>;
+  authorizePrivateRead(request: Request): Promise<PrivateSourceCapability>;
 }
 
 const MAX_PRIVATE_READ_TTL_SECONDS = 10 * 60;
@@ -269,8 +280,8 @@ export function createPrivateDocumentAccess(options: {
   );
 
   return {
-    async createPrivateReadUrl({ documentId, expiresInSeconds }) {
-      if (!documentId.trim()) throw new Error("A document id is required.");
+    async createPrivateReadUrl({ capability, expiresInSeconds }) {
+      assertPrivateSourceCapability(capability);
       if (
         !Number.isInteger(expiresInSeconds)
         || expiresInSeconds < 1
@@ -278,10 +289,20 @@ export function createPrivateDocumentAccess(options: {
       ) {
         throw new Error(`Private document URLs may expire in at most ${MAX_PRIVATE_READ_TTL_SECONDS} seconds.`);
       }
-      const expires = Math.floor(now() / 1_000) + expiresInSeconds;
-      const signature = await signReadCapability(key, documentId, expires);
-      const query = new URLSearchParams({ expires: String(expires), signature });
-      return `${routePrefix}/${encodeURIComponent(documentId)}?${query}`;
+      const currentSeconds = Math.floor(now() / 1_000);
+      if (
+        capability.expiresAtEpochSeconds <= currentSeconds
+        || capability.expiresAtEpochSeconds > currentSeconds + expiresInSeconds
+      ) {
+        throw new Error("Private source capability expiry is outside the requested lifetime.");
+      }
+      const encodedCapability = encodePrivateSourceCapability(capability);
+      const signature = await signReadCapability(key, encodedCapability);
+      const query = new URLSearchParams({
+        capability: encodedCapability,
+        signature,
+      });
+      return `${routePrefix}/${encodeURIComponent(capability.sourceRevisionId)}?${query}`;
     },
     async authorizePrivateRead(request) {
       const url = new URL(request.url);
@@ -294,24 +315,30 @@ export function createPrivateDocumentAccess(options: {
         throw new Error("Invalid private document id.");
       }
       const documentId = decodeURIComponent(encodedDocumentId);
-      const expiresRaw = url.searchParams.get("expires");
+      const encodedCapability = url.searchParams.get("capability");
       const signature = url.searchParams.get("signature");
-      if (!expiresRaw || !signature || !/^\d+$/.test(expiresRaw)) {
+      if (!encodedCapability || !signature) {
         throw new Error("Private document read capability is missing.");
       }
-      const expires = Number(expiresRaw);
-      const currentSeconds = Math.floor(now() / 1_000);
-      if (expires <= currentSeconds) {
-        throw new Error("Private document read capability has expired.");
-      }
-      if (expires > currentSeconds + MAX_PRIVATE_READ_TTL_SECONDS) {
-        throw new Error("Private document read capability exceeds 600 seconds.");
-      }
-      const valid = await verifyReadCapability(key, documentId, expires, signature);
+      const valid = await verifyReadCapability(key, encodedCapability, signature);
       if (!valid) {
         throw new Error("Private document read capability is invalid.");
       }
-      return documentId;
+      const capability = decodePrivateSourceCapability(encodedCapability);
+      if (capability.sourceRevisionId !== documentId) {
+        throw new Error("Private document read capability is invalid.");
+      }
+      const currentSeconds = Math.floor(now() / 1_000);
+      if (capability.expiresAtEpochSeconds <= currentSeconds) {
+        throw new Error("Private document read capability has expired.");
+      }
+      if (
+        capability.expiresAtEpochSeconds
+          > currentSeconds + MAX_PRIVATE_READ_TTL_SECONDS
+      ) {
+        throw new Error("Private document read capability exceeds 600 seconds.");
+      }
+      return capability;
     },
   };
 }
@@ -690,21 +717,19 @@ function normalizeRoutePrefix(value: string): string {
 
 async function signReadCapability(
   key: Promise<CryptoKey>,
-  documentId: string,
-  expires: number,
+  encodedCapability: string,
 ): Promise<string> {
   const signature = await globalThis.crypto.subtle.sign(
     "HMAC",
     await key,
-    new TextEncoder().encode(`${documentId}:${expires}:read`),
+    new TextEncoder().encode(encodedCapability),
   );
   return toBase64Url(new Uint8Array(signature));
 }
 
 async function verifyReadCapability(
   key: Promise<CryptoKey>,
-  documentId: string,
-  expires: number,
+  encodedCapability: string,
   signature: string,
 ): Promise<boolean> {
   let decoded: Uint8Array;
@@ -717,8 +742,50 @@ async function verifyReadCapability(
     "HMAC",
     await key,
     toArrayBuffer(decoded),
-    new TextEncoder().encode(`${documentId}:${expires}:read`),
+    new TextEncoder().encode(encodedCapability),
   );
+}
+
+function encodePrivateSourceCapability(
+  capability: PrivateSourceCapability,
+): string {
+  return toBase64Url(new TextEncoder().encode(JSON.stringify(capability)));
+}
+
+function decodePrivateSourceCapability(
+  encoded: string,
+): PrivateSourceCapability {
+  let candidate: unknown;
+  try {
+    candidate = JSON.parse(new TextDecoder().decode(fromBase64Url(encoded)));
+  } catch {
+    throw new Error("Private document read capability is invalid.");
+  }
+  assertPrivateSourceCapability(candidate);
+  return candidate;
+}
+
+function assertPrivateSourceCapability(
+  candidate: unknown,
+): asserts candidate is PrivateSourceCapability {
+  if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+    throw new Error("Private document read capability is invalid.");
+  }
+  const value = candidate as Record<string, unknown>;
+  if (
+    Object.keys(value).sort().join(",")
+      !== "expiresAtEpochSeconds,objectVersion,permission,sourceRevisionId,workspaceId"
+    || typeof value.workspaceId !== "string"
+    || !value.workspaceId.trim()
+    || typeof value.sourceRevisionId !== "string"
+    || !value.sourceRevisionId.trim()
+    || typeof value.objectVersion !== "string"
+    || !value.objectVersion.trim()
+    || !Number.isInteger(value.expiresAtEpochSeconds)
+    || value.permission !== "read"
+  ) {
+    throw new Error("Private document read capability is invalid.");
+  }
 }
 
 function toBase64Url(value: Uint8Array): string {
@@ -728,6 +795,9 @@ function toBase64Url(value: Uint8Array): string {
 }
 
 function fromBase64Url(value: string): Uint8Array {
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) {
+    throw new Error("Invalid base64url value.");
+  }
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
   const padding = "=".repeat((4 - normalized.length % 4) % 4);
   const binary = atob(`${normalized}${padding}`);

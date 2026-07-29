@@ -1,10 +1,18 @@
 import { getIntelligenceRepository } from "../../../../db/repositories/intelligence";
-import { jsonOk } from "../../../../lib/api/response";
-
-const WORKSPACE_ID = "workspace_demo";
+import { errorResponse, jsonOk } from "../../../../lib/api/response";
+import { requirePermission } from "../../../../lib/api/safety";
+import { resolveRequestContext } from "../../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  return jsonOk(await getIntelligenceRepository().listMarketEvents(WORKSPACE_ID));
+export async function GET(request: Request) {
+  try {
+    const context = await resolveRequestContext(request);
+    requirePermission(context, "readWorkspace");
+    return jsonOk(
+      await getIntelligenceRepository().listMarketEvents(context.workspaceId),
+    );
+  } catch (error) {
+    return errorResponse(error);
+  }
 }

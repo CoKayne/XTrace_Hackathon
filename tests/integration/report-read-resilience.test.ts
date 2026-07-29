@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+process.env.VSEE_DEPLOYMENT_MODE = "public_demo";
+process.env.DEMO_WORKSPACE_ID = "workspace_demo";
 process.env.SUPABASE_URL = "http://127.0.0.1:1";
 process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";
 

@@ -23,8 +23,8 @@ export function createRunsRepository(client: DataClient) {
     isWorkerHealthy(maxAgeMs = 45_000) {
       return client.isWorkerHealthy(maxAgeMs);
     },
-    get(runId: string) {
-      return client.getRun(runId);
+    async get(workspaceId: string, runId: string) {
+      return client.getRun(runId, workspaceId);
     },
     list(workspaceId: string) {
       return client.listRuns(workspaceId);

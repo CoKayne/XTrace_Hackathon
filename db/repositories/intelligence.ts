@@ -56,8 +56,14 @@ export interface IntelligenceRepository {
   ): Promise<void>;
   listMarketEvents(workspaceId: string): Promise<NormalizedMarketEvent[]>;
   saveReport(report: IntelligenceReportWrite): Promise<IntelligenceReportRecord>;
-  getReport(reportId: string): Promise<IntelligenceReportRecord | null>;
-  getReportByRunId(runId: string): Promise<IntelligenceReportRecord | null>;
+  getReport(
+    workspaceId: string,
+    reportId: string,
+  ): Promise<IntelligenceReportRecord | null>;
+  getReportByRunId(
+    workspaceId: string,
+    runId: string,
+  ): Promise<IntelligenceReportRecord | null>;
   listReports(workspaceId: string): Promise<IntelligenceReportRecord[]>;
   listDealAnalyses(
     workspaceId: string,
@@ -269,13 +275,17 @@ export function createMemoryIntelligenceRepository(
       reports.set(report.id, structuredClone(validated));
       return structuredClone(validated);
     },
-    async getReport(reportId) {
+    async getReport(workspaceId, reportId) {
       const report = reports.get(reportId);
-      return report ? structuredClone(report) : null;
+      return report?.workspaceId === workspaceId
+        ? structuredClone(report)
+        : null;
     },
-    async getReportByRunId(runId) {
+    async getReportByRunId(workspaceId, runId) {
       const report = [...reports.values()].find(
-        (candidate) => candidate.runId === runId,
+        (candidate) =>
+          candidate.workspaceId === workspaceId
+          && candidate.runId === runId,
       );
       return report ? structuredClone(report) : null;
     },
@@ -399,13 +409,15 @@ export function createSupabaseIntelligenceRepository(options: {
     });
   }
   async function analysesForReportIds(
+    workspaceId: string,
     reportIds: string[],
   ): Promise<Map<string, CompanyAnalysis[]>> {
     const grouped = new Map<string, CompanyAnalysis[]>();
     if (reportIds.length === 0) return grouped;
     const filter = `(${reportIds.map(encodeURIComponent).join(",")})`;
     const rows = await request(
-      `/company_analyses?report_id=in.${filter}&order=created_at.asc,company_name.asc`,
+      `/company_analyses?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+      + `&report_id=in.${filter}&order=created_at.asc,company_name.asc`,
     ) as Record<string, unknown>[];
     for (const row of rows) {
       const analysis = toAnalysis(row);
@@ -467,21 +479,23 @@ export function createSupabaseIntelligenceRepository(options: {
       }) as Record<string, unknown>[];
       return toReport(rows[0], validated.companyAnalyses);
     },
-    async getReport(reportId) {
+    async getReport(workspaceId, reportId) {
       const rows = await request(
-        `/intelligence_reports?id=eq.${encodeURIComponent(reportId)}&limit=1`,
+        `/intelligence_reports?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+        + `&id=eq.${encodeURIComponent(reportId)}&limit=1`,
       ) as Record<string, unknown>[];
       if (!rows[0]) return null;
-      const analyses = await analysesForReportIds([reportId]);
+      const analyses = await analysesForReportIds(workspaceId, [reportId]);
       return toReport(rows[0], analyses.get(reportId) ?? []);
     },
-    async getReportByRunId(runId) {
+    async getReportByRunId(workspaceId, runId) {
       const rows = await request(
-        `/intelligence_reports?run_id=eq.${encodeURIComponent(runId)}&limit=1`,
+        `/intelligence_reports?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+        + `&run_id=eq.${encodeURIComponent(runId)}&limit=1`,
       ) as Record<string, unknown>[];
       if (!rows[0]) return null;
       const reportId = String(rows[0].id);
-      const analyses = await analysesForReportIds([reportId]);
+      const analyses = await analysesForReportIds(workspaceId, [reportId]);
       return toReport(rows[0], analyses.get(reportId) ?? []);
     },
     async listReports(workspaceId) {
@@ -489,7 +503,7 @@ export function createSupabaseIntelligenceRepository(options: {
         `/intelligence_reports?workspace_id=eq.${encodeURIComponent(workspaceId)}&order=created_at.desc`,
       ) as Record<string, unknown>[];
       const reportIds = rows.map((row) => String(row.id));
-      const analyses = await analysesForReportIds(reportIds);
+      const analyses = await analysesForReportIds(workspaceId, reportIds);
       return rows.map((row) => {
         const reportId = String(row.id);
         return toReport(row, analyses.get(reportId) ?? []);

@@ -1,13 +1,19 @@
 import { getUploadedDocumentsRepository } from "../../../../db/repositories/uploaded-documents";
 import { errorResponse, jsonOk } from "../../../../lib/api/response";
-
-const WORKSPACE_ID = "workspace_demo";
+import { requirePermission } from "../../../../lib/api/safety";
+import { resolveRequestContext } from "../../../../lib/auth/request-context";
+import { toPublicUploadedDocument } from "../../../../lib/uploads/public";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    return jsonOk(await getUploadedDocumentsRepository().list(WORKSPACE_ID));
+    const context = await resolveRequestContext(request);
+    requirePermission(context, "readPrivateSources");
+    const records = await getUploadedDocumentsRepository().list(
+      context.workspaceId,
+    );
+    return jsonOk(records.map(toPublicUploadedDocument));
   } catch (error) {
     return errorResponse(error);
   }

@@ -63,7 +63,7 @@ test("records stage progress and partial-run warnings", async () => {
     warning: "One provider timed out",
   });
 
-  const stored = await runs.get(run.id);
+  const stored = await runs.get(run.workspaceId, run.id);
   assert.equal(stored?.currentStage, "collect_market");
   assert.equal(stored?.warningCount, 1);
   assert.deepEqual(stored?.warnings, ["One provider timed out"]);
@@ -150,4 +150,21 @@ test("accepts successful empty Supabase heartbeat responses", async () => {
   }));
 
   await runs.touchWorkerHeartbeat("worker_1");
+});
+
+test("Supabase run reads scope the database query by workspace and run id", async () => {
+  let requestedUrl = "";
+  const runs = createRunsRepository(createSupabaseDataClient({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    async fetchImpl(input) {
+      requestedUrl = String(input);
+      return Response.json([]);
+    },
+  }));
+
+  assert.equal(await runs.get("workspace_one", "run_one"), null);
+  const url = new URL(requestedUrl);
+  assert.equal(url.searchParams.get("workspace_id"), "eq.workspace_one");
+  assert.equal(url.searchParams.get("id"), "eq.run_one");
 });

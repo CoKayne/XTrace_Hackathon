@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 import { errorResponse, jsonOk } from "../../../../lib/api/response";
+import { requirePermission } from "../../../../lib/api/safety";
+import { resolveRequestContext } from "../../../../lib/auth/request-context";
 import { previewImport } from "../../../../lib/corpus/service";
 
 const PreviewRequestSchema = z.object({
@@ -9,6 +11,8 @@ const PreviewRequestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const context = await resolveRequestContext(request);
+    requirePermission(context, "readWorkspace");
     const { documentIds } = PreviewRequestSchema.parse(await request.json());
     return jsonOk(previewImport(documentIds));
   } catch (error) {

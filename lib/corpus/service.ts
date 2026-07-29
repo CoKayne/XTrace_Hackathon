@@ -1,4 +1,6 @@
 import { DealMemoryBundleSchema, type DealMemoryBundle } from "../contracts/domain";
+import { requirePermission } from "../api/safety";
+import type { AuthorizedRequestContext } from "../auth/request-context";
 import { getDemoEvidenceForDeal } from "./evidence";
 import {
   getDemoFixtureForDeal,
@@ -31,14 +33,26 @@ export interface CorpusPersistence {
   ensureWorkspaceDocument(input: { workspaceId: string; documentId: string }): Promise<{ documentId: string }>;
   ensureDeal(input: { workspaceId: string; dealId: string; companyName: string }): Promise<{ dealId: string }>;
   ensureFixture(input: { workspaceId: string; fixture: DemoFixture }): Promise<{ fixtureId: string }>;
-  createPrivateReadUrl(input: { documentId: string; expiresInSeconds: number }): Promise<string>;
+  createPrivateReadUrl(input: {
+    capability: {
+      workspaceId: string;
+      sourceRevisionId: string;
+      objectVersion: string;
+      expiresAtEpochSeconds: number;
+      permission: "read";
+    };
+    expiresInSeconds: number;
+  }): Promise<string>;
 }
 
 export interface CorpusService {
   list(): readonly PreloadedDocument[];
   previewImport(documentIds: string[]): ImportPreviewItem[];
   confirmImport(input: ConfirmImportInput): Promise<ConfirmImportResult>;
-  getSignedDocumentUrl(documentId: string): Promise<string>;
+  getSignedDocumentUrl(input: {
+    context: AuthorizedRequestContext;
+    documentId: string;
+  }): Promise<string>;
 }
 
 export interface ConfirmImportResult {
@@ -93,20 +107,29 @@ export function createCorpusService(persistence: CorpusPersistence): CorpusServi
     list: listPreloadedDocuments,
     previewImport,
     confirmImport: (input) => confirmImport(input, persistence),
-    getSignedDocumentUrl: (documentId) => getSignedDocumentUrl(documentId, persistence),
+    getSignedDocumentUrl: (input) => getSignedDocumentUrl(input, persistence),
   };
 }
 
 export async function getSignedDocumentUrl(
-  documentId: string,
+  input: { context: AuthorizedRequestContext; documentId: string },
   persistence: Pick<CorpusPersistence, "createPrivateReadUrl">,
 ): Promise<string> {
-  if (!getPreloadedDocument(documentId)) {
-    throw new Error(`Unknown preloaded document: ${documentId}`);
+  requirePermission(input.context, "readPrivateSources");
+  const document = getPreloadedDocument(input.documentId);
+  if (!document) {
+    throw new Error(`Unknown preloaded document: ${input.documentId}`);
   }
 
   return persistence.createPrivateReadUrl({
-    documentId,
+    capability: {
+      workspaceId: input.context.workspaceId,
+      sourceRevisionId: document.id,
+      objectVersion: document.checksum,
+      expiresAtEpochSeconds: Math.floor(Date.now() / 1_000)
+        + SIGNED_DOCUMENT_URL_TTL_SECONDS,
+      permission: "read",
+    },
     expiresInSeconds: SIGNED_DOCUMENT_URL_TTL_SECONDS,
   });
 }

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import "../helpers/public-demo";
 import { POST as createRun } from "../../app/api/runs/route";
 import { getDataClient } from "../../db/client";
 import { createRunsRepository } from "../../db/repositories/runs";

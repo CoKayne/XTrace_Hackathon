@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import "../helpers/public-demo";
 import { GET } from "../../app/api/deals/route";
 
 test("Deals API filters by and returns the synthetic decision reason", async () => {

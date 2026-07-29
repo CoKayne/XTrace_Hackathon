@@ -87,7 +87,7 @@ test("a claimed run fails before market work when durable product-input confirma
   );
 
   assert.equal(marketCalled, false);
-  assert.equal((await runs.get(run.id))?.status, "failed");
+  assert.equal((await runs.get(run.workspaceId, run.id))?.status, "failed");
 });
 
 test("a failed stage persists its exact error in the durable run warnings", async () => {
@@ -120,7 +120,7 @@ test("a failed stage persists its exact error in the durable run warnings", asyn
     /FTC feed returned HTML/,
   );
 
-  const failed = await runs.get(run.id);
+  const failed = await runs.get(run.workspaceId, run.id);
   assert.equal(failed?.status, "failed");
   assert.equal(failed?.currentStage, "market_scan");
   assert.deepEqual(

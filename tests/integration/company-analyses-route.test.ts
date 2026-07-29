@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import "../helpers/public-demo";
 import { GET as listReports } from "../../app/api/reports/route";
 import { GET as getReport } from "../../app/api/reports/[id]/route";
 import { GET as getCompanyAnalysis } from "../../app/api/reports/[id]/companies/[dealId]/route";

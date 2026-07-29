@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 import { errorResponse, jsonError, jsonOk } from "../../../../lib/api/response";
-import { rateLimitRequest } from "../../../../lib/api/safety";
+import { rateLimitRequest, requirePermission } from "../../../../lib/api/safety";
+import { resolveRequestContext } from "../../../../lib/auth/request-context";
 import { createCorpusService } from "../../../../lib/corpus/service";
 import { listPreloadedDocuments } from "../../../../lib/corpus/manifest";
 import {
@@ -16,7 +17,6 @@ import {
 import { createXTraceService } from "../../../../lib/xtrace/service";
 
 const ConfirmRequestSchema = z.object({
-  workspaceId: z.literal("workspace_demo"),
   documentIds: z.array(z.string().min(1)).min(1),
   dealConfirmations: z.array(z.object({
     documentId: z.string().min(1),
@@ -25,27 +25,35 @@ const ConfirmRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (
-    process.env.NODE_ENV === "production" &&
-    (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)
-  ) {
-    return jsonError(
-      "INTEGRATION_UNAVAILABLE",
-      "Private cloud storage and PostgreSQL are required before sources can be confirmed.",
-      503,
-      true,
-    );
-  }
-  const rate = await rateLimitRequest(request, "confirm-import", 3, 10 * 60_000);
-  if (!rate.allowed) {
-    return jsonError(
-      "RATE_LIMITED",
-      `Too many import attempts. Try again in ${rate.retryAfterSeconds} seconds.`,
-      429,
-      true,
-    );
-  }
   try {
+    const context = await resolveRequestContext(request);
+    requirePermission(context, "mutateSources");
+    if (
+      process.env.NODE_ENV === "production" &&
+      (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)
+    ) {
+      return jsonError(
+        "INTEGRATION_UNAVAILABLE",
+        "Private cloud storage and PostgreSQL are required before sources can be confirmed.",
+        503,
+        true,
+      );
+    }
+    const rate = await rateLimitRequest(
+      request,
+      "confirm-import",
+      3,
+      10 * 60_000,
+      { context },
+    );
+    if (!rate.allowed) {
+      return jsonError(
+        "RATE_LIMITED",
+        `Too many import attempts. Try again in ${rate.retryAfterSeconds} seconds.`,
+        429,
+        true,
+      );
+    }
     const input = ConfirmRequestSchema.parse(await request.json());
     const requiredDocumentIds = listPreloadedDocuments()
       .filter((document) => document.role !== "reference")
@@ -67,23 +75,22 @@ export async function POST(request: Request) {
       createDefaultDemoDataStore(),
       createDefaultPrivateDocumentAccess(),
     ));
-    const result = await corpus.confirmImport(input);
+    const result = await corpus.confirmImport({
+      ...input,
+      workspaceId: context.workspaceId,
+    });
     const xtraceConfigured = isXTraceConfigured();
     const xtraceResults = xtraceConfigured
       ? await Promise.allSettled(result.memoryBundles.map((bundle) =>
           createXTraceService(getXTraceClient(), {
-            workspaceId: input.workspaceId,
+            workspaceId: context.workspaceId,
           }).ingestDealMemory(bundle)
         ))
       : [];
     const xtraceJobs = xtraceResults.flatMap((item) =>
       item.status === "fulfilled" ? [item.value] : []
     );
-    const xtraceErrors = xtraceResults.flatMap((item) =>
-      item.status === "rejected"
-        ? [item.reason instanceof Error ? item.reason.message : "XTrace ingestion failed"]
-        : []
-    );
+    const xtraceErrors = toPublicXTraceErrors(xtraceResults);
     return jsonOk({
       ...result,
       xtraceConfigured,
@@ -93,4 +100,12 @@ export async function POST(request: Request) {
   } catch (error) {
     return errorResponse(error);
   }
+}
+
+export function toPublicXTraceErrors(
+  results: readonly PromiseSettledResult<unknown>[],
+): string[] {
+  return results.flatMap((item) =>
+    item.status === "rejected" ? ["XTrace ingestion failed"] : []
+  );
 }

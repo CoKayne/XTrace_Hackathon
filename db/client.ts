@@ -45,7 +45,7 @@ export interface DataClient {
   claimNextRun(workerId: string): Promise<RunRecord | null>;
   renewRunLease(runId: string, workerId: string): Promise<boolean>;
   updateRun(runId: string, patch: Partial<RunRecord>): Promise<RunRecord>;
-  getRun(runId: string): Promise<RunRecord | null>;
+  getRun(runId: string, workspaceId?: string): Promise<RunRecord | null>;
   listRuns(workspaceId: string): Promise<RunRecord[]>;
   insertRunStage(input: Omit<RunStageRecord, "id">): Promise<RunStageRecord>;
   touchWorkerHeartbeat(workerId: string): Promise<void>;
@@ -133,9 +133,11 @@ export function createMemoryDataClient(options: {
       runs.set(runId, next);
       return structuredClone(next);
     },
-    async getRun(runId) {
+    async getRun(runId, workspaceId) {
       const run = runs.get(runId);
-      return run ? structuredClone(run) : null;
+      return run && (!workspaceId || run.workspaceId === workspaceId)
+        ? structuredClone(run)
+        : null;
     },
     async listRuns(workspaceId) {
       return [...runs.values()]
@@ -277,8 +279,13 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
       if (!rows[0]) throw new Error(`Run ${runId} was not found`);
       return toRunRecord(rows[0]);
     },
-    async getRun(runId) {
-      const rows = await request(`/scan_runs?id=eq.${encodeURIComponent(runId)}&limit=1`) as Record<string, unknown>[];
+    async getRun(runId, workspaceId) {
+      const workspaceFilter = workspaceId
+        ? `workspace_id=eq.${encodeURIComponent(workspaceId)}&`
+        : "";
+      const rows = await request(
+        `/scan_runs?${workspaceFilter}id=eq.${encodeURIComponent(runId)}&limit=1`,
+      ) as Record<string, unknown>[];
       return rows[0] ? toRunRecord(rows[0]) : null;
     },
     async listRuns(workspaceId) {
