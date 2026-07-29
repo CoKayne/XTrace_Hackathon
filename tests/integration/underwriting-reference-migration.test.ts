@@ -1,0 +1,168 @@
+import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import test from "node:test";
+
+const migrationPath = fileURLToPath(
+  new URL("../../drizzle/0010_underwriting_references.sql", import.meta.url),
+);
+const migrations = [
+  "0000_vsee_postgres.sql",
+  "0001_remove_report_delivery.sql",
+  "0002_durable_decision_lineage.sql",
+  "0003_sanitize_report_next_steps.sql",
+  "0004_company_analyses.sql",
+  "0005_sample_decision_label.sql",
+  "0006_reasoner_judgments.sql",
+  "0007_uploaded_documents.sql",
+  "0008_workspace_composite_identity.sql",
+  "0009_source_revision_deal_registry.sql",
+  "0010_underwriting_references.sql",
+].map((filename) =>
+  fileURLToPath(new URL(`../../drizzle/${filename}`, import.meta.url))
+);
+
+const postgresAvailable = spawnSync(
+  "psql",
+  [
+    "-d",
+    "postgres",
+    "-Atqc",
+    "select (rolsuper or rolcreatedb)::text from pg_roles where rolname = current_user",
+  ],
+  { encoding: "utf8" },
+);
+const canCreateTemporaryDatabase =
+  postgresAvailable.status === 0
+  && postgresAvailable.stdout.trim() === "true"
+  && spawnSync("createdb", ["--version"]).status === 0
+  && spawnSync("dropdb", ["--version"]).status === 0;
+const requirePostgres = process.env.REQUIRE_POSTGRES_MIGRATION_TESTS === "1";
+
+test("0010 declares the complete synthetic reference spine without named framework claims", () => {
+  const migration = readFileSync(migrationPath, "utf8");
+  for (const table of [
+    "benchmark_packs",
+    "benchmark_entries",
+    "fund_policy_versions",
+    "workspace_active_fund_policies",
+    "underwriting_contexts",
+    "critical_evidence_profiles",
+    "valuation_method_policies",
+    "decision_policies",
+    "framework_sources",
+    "framework_cards",
+    "framework_packs",
+    "framework_pack_cards",
+  ]) {
+    assert.match(migration, new RegExp(`create table if not exists public\\.${table}`));
+  }
+  assert.match(migration, /Product-owned synthetic fixture/);
+  assert.doesNotMatch(
+    migration,
+    /Peter Thiel|Sequoia|Hamilton Helmer|Bessemer|Damodaran|Carta|PitchBook|NVCA/i,
+  );
+  assert.match(
+    migration,
+    /revoke all privileges on table public\.framework_sources from service_role/i,
+  );
+});
+
+test(
+  "0010 installs immutable policy versions, four profiles, and eight synthetic cards",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      executeSql(database, `
+        do $$
+        begin
+          create role service_role nologin noinherit bypassrls;
+        exception when duplicate_object then null;
+        end;
+        $$;
+      `);
+      for (const migration of migrations) applySql(database, migration);
+
+      assert.equal(
+        executeSql(database, `
+          select
+            (select count(*) from public.underwriting_contexts)
+            || '|' ||
+            (select count(*) from public.framework_cards
+              where publication_status = 'published' and synthetic)
+            || '|' ||
+            (select count(*) from public.framework_cards
+              where not synthetic or formal_decision_weight <> 0);
+        `),
+        "4|8|0",
+      );
+
+      executeSql(database, `
+        insert into public.workspaces (id, name)
+        values ('workspace_policy', 'Policy');
+        select public.activate_fund_policy_version(jsonb_build_object(
+          'workspaceId', 'workspace_policy',
+          'actorId', null,
+          'expectedActiveVersionId', null,
+          'action', 'recommended'
+        ));
+      `);
+      assert.equal(
+        executeSql(database, `
+          select version || '|' || source || '|'
+            || (values ->> 'riskPreference')
+          from public.fund_policy_versions
+          where workspace_id = 'workspace_policy';
+        `),
+        "1|recommended_policy|balanced",
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          update public.fund_policy_versions
+          set values = jsonb_build_object('riskPreference', 'mutated')
+          where workspace_id = 'workspace_policy';
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          set role service_role;
+          select private_body from public.framework_sources limit 1;
+        `)
+      );
+    });
+  },
+);
+
+function withTemporaryDatabase(run: (database: string) => void): void {
+  const database =
+    `vsee_underwriting_refs_${process.pid}_${randomUUID().replaceAll("-", "")}`;
+  execFileSync("createdb", [database], { stdio: "pipe" });
+  try {
+    run(database);
+  } finally {
+    execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });
+  }
+}
+
+function applySql(database: string, path: string): void {
+  execFileSync(
+    "psql",
+    ["-v", "ON_ERROR_STOP=1", "-d", database, "-f", path],
+    { stdio: "pipe" },
+  );
+}
+
+function executeSql(database: string, sql: string): string {
+  return execFileSync(
+    "psql",
+    ["-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  ).trim();
+}

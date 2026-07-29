@@ -1,11 +1,14 @@
 import {
   bigint,
+  boolean,
   check,
+  date,
   doublePrecision,
   foreignKey,
   index,
   integer,
   jsonb,
+  numeric,
   pgTable,
   primaryKey,
   text,
@@ -25,6 +28,9 @@ import type {
   SourceRef,
 } from "../lib/contracts/domain";
 import type { ExtractionPreview } from "./repositories/uploaded-documents";
+import type {
+  FundPolicyValues,
+} from "../seed/underwriting/balanced-policy-v1";
 
 export const workspaces = pgTable("workspaces", {
   id: text("id").primaryKey(),
@@ -578,3 +584,213 @@ export const uploadedDocuments = pgTable("uploaded_documents", {
     table.checksum,
   ),
 ]);
+
+export const benchmarkPacks = pgTable("benchmark_packs", {
+  id: text("id").primaryKey(),
+  version: text("version").notNull(),
+  provider: text("provider").notNull(),
+  sourceUrl: text("source_url").notNull(),
+  publishedAt: date("published_at").notNull(),
+  retrievalDate: date("retrieval_date").notNull(),
+  geography: text("geography").notNull(),
+  sector: text("sector").notNull(),
+  observationWindow: text("observation_window").notNull(),
+  sampleNotes: text("sample_notes").notNull(),
+  staleAfterDays: integer("stale_after_days").notNull(),
+  synthetic: boolean("synthetic").notNull().default(false),
+  publicationStatus: text("publication_status").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+});
+
+export const benchmarkEntries = pgTable("benchmark_entries", {
+  id: text("id").primaryKey(),
+  benchmarkPackId: text("benchmark_pack_id").notNull().references(
+    () => benchmarkPacks.id,
+  ),
+  stage: text("stage").notNull(),
+  metric: text("metric").notNull(),
+  value: text("value").notNull(),
+  valuationBasis: text("valuation_basis"),
+  currency: text("currency"),
+  metricDefinition: text("metric_definition").notNull(),
+  effectiveAt: date("effective_at").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+});
+
+export const criticalEvidenceProfiles = pgTable(
+  "critical_evidence_profiles",
+  {
+    id: text("id").primaryKey(),
+    version: text("version").notNull(),
+    stage: text("stage").notNull(),
+    businessModel: text("business_model").notNull(),
+    requiredFields: jsonb("required_fields").$type<string[]>().notNull(),
+    synthetic: boolean("synthetic").notNull().default(false),
+    publicationStatus: text("publication_status").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+);
+
+export const valuationMethodPolicies = pgTable(
+  "valuation_method_policies",
+  {
+    id: text("id").primaryKey(),
+    version: text("version").notNull(),
+    stage: text("stage").notNull(),
+    businessModel: text("business_model").notNull(),
+    methods: jsonb("methods").$type<string[]>().notNull(),
+    synthetic: boolean("synthetic").notNull().default(false),
+    publicationStatus: text("publication_status").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+);
+
+export const decisionPolicies = pgTable("decision_policies", {
+  id: text("id").primaryKey(),
+  version: text("version").notNull(),
+  stage: text("stage").notNull(),
+  businessModel: text("business_model").notNull(),
+  rules: jsonb("rules").$type<Record<string, unknown>>().notNull(),
+  synthetic: boolean("synthetic").notNull().default(false),
+  publicationStatus: text("publication_status").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+});
+
+export const frameworkSources = pgTable("framework_sources", {
+  id: text("id").primaryKey(),
+  version: text("version").notNull(),
+  rightsStatus: text("rights_status").notNull(),
+  privateBody: text("private_body").notNull(),
+  privateObjectKey: text("private_object_key"),
+  adminReviewNote: text("admin_review_note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+});
+
+export const frameworkCards = pgTable("framework_cards", {
+  id: text("id").primaryKey(),
+  version: text("version").notNull(),
+  sourceId: text("source_id").notNull().references(() => frameworkSources.id),
+  title: text("title").notNull(),
+  synthetic: boolean("synthetic").notNull().default(false),
+  publicationStatus: text("publication_status").notNull(),
+  attribution: text("attribution").notNull(),
+  approvedNeutralParaphrase: text("approved_neutral_paraphrase").notNull(),
+  locator: text("locator").notNull(),
+  limitations: jsonb("limitations").$type<string[]>().notNull(),
+  rightsStatus: text("rights_status").notNull(),
+  formalDecisionWeight: numeric("formal_decision_weight").notNull().default("0"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+});
+
+export const frameworkPacks = pgTable("framework_packs", {
+  id: text("id").primaryKey(),
+  version: text("version").notNull(),
+  title: text("title").notNull(),
+  synthetic: boolean("synthetic").notNull().default(false),
+  publicationStatus: text("publication_status").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+});
+
+export const frameworkPackCards = pgTable("framework_pack_cards", {
+  frameworkPackId: text("framework_pack_id").notNull().references(
+    () => frameworkPacks.id,
+  ),
+  frameworkCardId: text("framework_card_id").notNull().references(
+    () => frameworkCards.id,
+  ),
+  position: integer("position").notNull(),
+}, (table) => [
+  primaryKey({
+    columns: [table.frameworkPackId, table.frameworkCardId],
+  }),
+  unique("framework_pack_cards_position_unique").on(
+    table.frameworkPackId,
+    table.position,
+  ),
+]);
+
+export const underwritingContexts = pgTable("underwriting_contexts", {
+  id: text("id").primaryKey(),
+  contextVersion: text("context_version").notNull(),
+  stage: text("stage").notNull(),
+  businessModel: text("business_model").notNull(),
+  supportedGeographies: jsonb("supported_geographies")
+    .$type<string[]>()
+    .notNull(),
+  securityType: text("security_type").notNull(),
+  criticalEvidenceProfileId: text("critical_evidence_profile_id")
+    .notNull()
+    .references(() => criticalEvidenceProfiles.id),
+  usBenchmarkPackId: text("us_benchmark_pack_id").references(
+    () => benchmarkPacks.id,
+  ),
+  usBenchmarkCompatibility: text("us_benchmark_compatibility").notNull(),
+  globalBenchmarkCompatibility: text("global_benchmark_compatibility")
+    .notNull(),
+  valuationMethodPolicyId: text("valuation_method_policy_id")
+    .notNull()
+    .references(() => valuationMethodPolicies.id),
+  decisionPolicyId: text("decision_policy_id").notNull().references(
+    () => decisionPolicies.id,
+  ),
+  frameworkPackId: text("framework_pack_id").notNull().references(
+    () => frameworkPacks.id,
+  ),
+  publicationStatus: text("publication_status").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, (table) => [
+  unique("underwriting_contexts_stage_model_version_unique").on(
+    table.stage,
+    table.businessModel,
+    table.contextVersion,
+  ),
+]);
+
+export const fundPolicyVersions = pgTable("fund_policy_versions", {
+  id: text("id").notNull(),
+  workspaceId: text("workspace_id").notNull().references(
+    () => workspaces.id,
+    { onDelete: "cascade" },
+  ),
+  version: integer("version").notNull(),
+  source: text("source").notNull(),
+  values: jsonb("values").$type<FundPolicyValues>().notNull(),
+  createdByUserId: text("created_by_user_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.workspaceId, table.id] }),
+  unique("fund_policy_versions_workspace_version_unique").on(
+    table.workspaceId,
+    table.version,
+  ),
+]);
+
+export const workspaceActiveFundPolicies = pgTable(
+  "workspace_active_fund_policies",
+  {
+    workspaceId: text("workspace_id").primaryKey().references(
+      () => workspaces.id,
+      { onDelete: "cascade" },
+    ),
+    versionId: text("version_id").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.workspaceId, table.versionId],
+      foreignColumns: [fundPolicyVersions.workspaceId, fundPolicyVersions.id],
+      name: "workspace_active_fund_policy_version_fkey",
+    }),
+  ],
+);

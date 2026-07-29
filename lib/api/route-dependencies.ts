@@ -1,4 +1,7 @@
 import type { UploadedDocumentsRepository } from "../../db/repositories/uploaded-documents";
+import type {
+  UnderwritingReferencesRepository,
+} from "../../db/repositories/underwriting-references";
 import {
   resolveRequestContext,
   type AuthorizedRequestContext,
@@ -15,6 +18,7 @@ export interface RouteDependencies {
   uploadedDocuments?: UploadedDocumentsRepository;
   documentAccess?: PrivateDocumentAccess;
   privateObjectStorage?: PrivateObjectStorage;
+  underwritingReferences?: UnderwritingReferencesRepository;
   now?: () => number;
 }
 
