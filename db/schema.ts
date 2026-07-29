@@ -17,6 +17,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import type {
@@ -27,6 +28,23 @@ import type {
   OpportunityReportItem,
   SourceRef,
 } from "../lib/contracts/domain";
+import type {
+  Calculation,
+  ClaimEdge,
+  EvidencePack,
+} from "../lib/contracts/evidence";
+import type {
+  ActionDraft,
+  DecisionResult,
+  FrameworkDisagreement,
+  FrameworkJudgment,
+  ResolvedUnderwritingContext,
+  ScenarioModel,
+  ValuationEvaluation,
+} from "../lib/contracts/underwriting";
+import type {
+  CandidateVersionSnapshot,
+} from "./repositories/underwriting-artifacts";
 import type { ExtractionPreview } from "./repositories/uploaded-documents";
 import type {
   FundPolicyValues,
@@ -794,3 +812,342 @@ export const workspaceActiveFundPolicies = pgTable(
     }),
   ],
 );
+
+export const underwritingBatches = pgTable("underwriting_batches", {
+  id: text("id").primaryKey(),
+  workspaceId: text("workspace_id").notNull().references(
+    () => workspaces.id,
+    { onDelete: "cascade" },
+  ),
+  scanRunId: uuid("scan_run_id").notNull(),
+  status: text("status").notNull(),
+  batchInputFingerprint: text("batch_input_fingerprint").notNull(),
+  fundPolicySnapshotId: text("fund_policy_snapshot_id").notNull(),
+  forceRefresh: boolean("force_refresh").notNull().default(false),
+  refreshNonce: text("refresh_nonce"),
+  rerunOfId: text("rerun_of_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, (table) => [
+  unique("underwriting_batches_workspace_id_unique").on(
+    table.workspaceId,
+    table.id,
+  ),
+  foreignKey({
+    columns: [table.workspaceId, table.scanRunId],
+    foreignColumns: [scanRuns.workspaceId, scanRuns.id],
+    name: "underwriting_batches_workspace_scan_fkey",
+  }),
+  foreignKey({
+    columns: [table.workspaceId, table.fundPolicySnapshotId],
+    foreignColumns: [fundPolicyVersions.workspaceId, fundPolicyVersions.id],
+    name: "underwriting_batches_workspace_policy_fkey",
+  }),
+  foreignKey({
+    columns: [table.workspaceId, table.rerunOfId],
+    foreignColumns: [table.workspaceId, table.id],
+    name: "underwriting_batches_workspace_rerun_fkey",
+  }),
+  check(
+    "underwriting_batches_status_check",
+    sql`${table.status} in ('queued', 'running', 'partial', 'completed', 'failed')`,
+  ),
+  check(
+    "underwriting_batches_fingerprint_check",
+    sql`${table.batchInputFingerprint} ~ '^sha256:[0-9a-f]{64}$'`,
+  ),
+  check(
+    "underwriting_batches_refresh_shape_check",
+    sql`(not ${table.forceRefresh} and ${table.refreshNonce} is null and ${table.rerunOfId} is null) or (${table.forceRefresh} and btrim(coalesce(${table.refreshNonce}, '')) <> '' and ${table.rerunOfId} is not null)`,
+  ),
+  uniqueIndex("underwriting_batches_idempotent_input_unique")
+    .on(table.workspaceId, table.batchInputFingerprint)
+    .where(sql`not ${table.forceRefresh}`),
+  uniqueIndex("underwriting_batches_refresh_nonce_unique")
+    .on(table.workspaceId, table.batchInputFingerprint, table.refreshNonce)
+    .where(sql`${table.forceRefresh}`),
+]);
+
+export const underwritingSelections = pgTable("underwriting_selections", {
+  batchId: text("batch_id").notNull(),
+  workspaceId: text("workspace_id").notNull(),
+  dealId: text("deal_id").notNull(),
+  status: text("status").notNull(),
+  rank: integer("rank"),
+  reason: text("reason").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.batchId, table.dealId] }),
+  foreignKey({
+    columns: [table.workspaceId, table.batchId],
+    foreignColumns: [underwritingBatches.workspaceId, underwritingBatches.id],
+    name: "underwriting_selections_workspace_batch_fkey",
+  }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.workspaceId, table.dealId],
+    foreignColumns: [deals.workspaceId, deals.id],
+    name: "underwriting_selections_workspace_deal_fkey",
+  }),
+  check(
+    "underwriting_selections_status_check",
+    sql`${table.status} in ('selected', 'not_selected')`,
+  ),
+  check(
+    "underwriting_selections_rank_shape_check",
+    sql`(${table.status} = 'selected' and ${table.rank} between 1 and 5) or (${table.status} = 'not_selected' and ${table.rank} is null)`,
+  ),
+  uniqueIndex("underwriting_selections_selected_rank_unique")
+    .on(table.batchId, table.rank)
+    .where(sql`${table.status} = 'selected'`),
+]);
+
+export const candidateRuns = pgTable("candidate_runs", {
+  id: text("id").primaryKey(),
+  batchId: text("batch_id").notNull(),
+  workspaceId: text("workspace_id").notNull(),
+  dealId: text("deal_id").notNull(),
+  status: text("status").notNull(),
+  candidateAnalysisFingerprint: text("candidate_analysis_fingerprint")
+    .notNull(),
+  rerunOfId: text("rerun_of_id"),
+  workerId: text("worker_id"),
+  leaseToken: text("lease_token"),
+  leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
+  unavailableReasonCodes: jsonb("unavailable_reason_codes")
+    .$type<string[]>()
+    .notNull()
+    .default([]),
+  publicFailureReason: text("public_failure_reason"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+  finalizedAt: timestamp("finalized_at", { withTimezone: true }),
+}, (table) => [
+  unique("candidate_runs_workspace_id_unique").on(table.workspaceId, table.id),
+  unique("candidate_runs_batch_deal_unique").on(table.batchId, table.dealId),
+  foreignKey({
+    columns: [table.workspaceId, table.batchId],
+    foreignColumns: [underwritingBatches.workspaceId, underwritingBatches.id],
+    name: "candidate_runs_workspace_batch_fkey",
+  }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.workspaceId, table.dealId],
+    foreignColumns: [deals.workspaceId, deals.id],
+    name: "candidate_runs_workspace_deal_fkey",
+  }),
+  foreignKey({
+    columns: [table.workspaceId, table.rerunOfId],
+    foreignColumns: [table.workspaceId, table.id],
+    name: "candidate_runs_workspace_rerun_fkey",
+  }),
+  check(
+    "candidate_runs_status_check",
+    sql`${table.status} in ('queued', 'running', 'partial', 'completed', 'unavailable', 'failed')`,
+  ),
+  check(
+    "candidate_runs_lease_shape_check",
+    sql`(${table.workerId} is null and ${table.leaseToken} is null and ${table.leaseExpiresAt} is null) or (${table.status} = 'running' and btrim(coalesce(${table.workerId}, '')) <> '' and btrim(coalesce(${table.leaseToken}, '')) <> '' and ${table.leaseExpiresAt} is not null)`,
+  ),
+  uniqueIndex("candidate_runs_completed_fingerprint_unique")
+    .on(table.workspaceId, table.candidateAnalysisFingerprint)
+    .where(sql`${table.status} = 'completed'`),
+  index("candidate_runs_claim_queue_idx").on(
+    table.status,
+    table.createdAt,
+    table.id,
+  ),
+]);
+
+export const candidateCheckpoints = pgTable("candidate_checkpoints", {
+  candidateRunId: text("candidate_run_id").notNull(),
+  workspaceId: text("workspace_id").notNull(),
+  stage: text("stage").notNull(),
+  status: text("status").notNull(),
+  artifactFingerprint: text("artifact_fingerprint").notNull(),
+  publicReason: text("public_reason"),
+  savedAt: timestamp("saved_at", { withTimezone: true }).notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.candidateRunId, table.stage] }),
+  foreignKey({
+    columns: [table.workspaceId, table.candidateRunId],
+    foreignColumns: [candidateRuns.workspaceId, candidateRuns.id],
+    name: "candidate_checkpoints_workspace_candidate_fkey",
+  }).onDelete("cascade"),
+]);
+
+export const evidencePacks = pgTable("evidence_packs", {
+  workspaceId: text("workspace_id").notNull(),
+  candidateRunId: text("candidate_run_id").notNull(),
+  artifactId: text("artifact_id").notNull(),
+  version: integer("version").notNull(),
+  payload: jsonb("payload").$type<EvidencePack>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, artifactTableConfig("evidence_packs_workspace_candidate_fkey"));
+
+export const candidateContextSnapshots = pgTable(
+  "candidate_context_snapshots",
+  {
+    workspaceId: text("workspace_id").notNull(),
+    candidateRunId: text("candidate_run_id").notNull(),
+    artifactId: text("artifact_id").notNull(),
+    payload: jsonb("payload").$type<ResolvedUnderwritingContext>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+  artifactTableConfig("candidate_context_snapshots_candidate_fkey"),
+);
+
+export const scenarioModels = pgTable("scenario_models", {
+  workspaceId: text("workspace_id").notNull(),
+  candidateRunId: text("candidate_run_id").notNull(),
+  artifactId: text("artifact_id").notNull(),
+  payload: jsonb("payload").$type<ScenarioModel>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, artifactTableConfig("scenario_models_workspace_candidate_fkey"));
+
+export const underwritingCalculations = pgTable(
+  "underwriting_calculations",
+  {
+    workspaceId: text("workspace_id").notNull(),
+    candidateRunId: text("candidate_run_id").notNull(),
+    artifactId: text("artifact_id").notNull(),
+    payload: jsonb("payload").$type<Calculation>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+  manyArtifactTableConfig("underwriting_calculations_candidate_fkey"),
+);
+
+export const frameworkJudgmentArtifacts = pgTable(
+  "framework_judgment_artifacts",
+  {
+    workspaceId: text("workspace_id").notNull(),
+    candidateRunId: text("candidate_run_id").notNull(),
+    artifactId: text("artifact_id").notNull(),
+    payload: jsonb("payload").$type<FrameworkJudgment>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+  manyArtifactTableConfig("framework_judgment_artifacts_candidate_fkey"),
+);
+
+export const frameworkDisagreementArtifacts = pgTable(
+  "framework_disagreement_artifacts",
+  {
+    workspaceId: text("workspace_id").notNull(),
+    candidateRunId: text("candidate_run_id").notNull(),
+    artifactId: text("artifact_id").notNull(),
+    payload: jsonb("payload").$type<FrameworkDisagreement>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+  manyArtifactTableConfig(
+    "framework_disagreement_artifacts_candidate_fkey",
+  ),
+);
+
+export const valuationEvaluations = pgTable("valuation_evaluations", {
+  workspaceId: text("workspace_id").notNull(),
+  candidateRunId: text("candidate_run_id").notNull(),
+  artifactId: text("artifact_id").notNull(),
+  payload: jsonb("payload").$type<ValuationEvaluation>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, artifactTableConfig("valuation_evaluations_workspace_candidate_fkey"));
+
+export const finalSyntheses = pgTable("final_syntheses", {
+  workspaceId: text("workspace_id").notNull(),
+  candidateRunId: text("candidate_run_id").notNull(),
+  artifactId: text("artifact_id").notNull(),
+  payload: jsonb("payload").$type<DecisionResult>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, artifactTableConfig("final_syntheses_workspace_candidate_fkey"));
+
+export const underwritingNarratives = pgTable("underwriting_narratives", {
+  workspaceId: text("workspace_id").notNull(),
+  candidateRunId: text("candidate_run_id").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, artifactTableConfig("underwriting_narratives_workspace_candidate_fkey"));
+
+export const actionDrafts = pgTable("action_drafts", {
+  workspaceId: text("workspace_id").notNull(),
+  candidateRunId: text("candidate_run_id").notNull(),
+  artifactId: text("artifact_id").notNull(),
+  payload: jsonb("payload").$type<ActionDraft>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, manyArtifactTableConfig("action_drafts_workspace_candidate_fkey"));
+
+export const underwritingClaimEdges = pgTable("underwriting_claim_edges", {
+  workspaceId: text("workspace_id").notNull(),
+  candidateRunId: text("candidate_run_id").notNull(),
+  claimItemId: text("claim_item_id").notNull(),
+  dependencyItemId: text("dependency_item_id").notNull(),
+  dependencyType: text("dependency_type").$type<ClaimEdge["dependencyType"]>()
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+    .notNull(),
+}, (table) => [
+  primaryKey({
+    columns: [
+      table.workspaceId,
+      table.candidateRunId,
+      table.claimItemId,
+      table.dependencyItemId,
+      table.dependencyType,
+    ],
+  }),
+  foreignKey({
+    columns: [table.workspaceId, table.candidateRunId],
+    foreignColumns: [candidateRuns.workspaceId, candidateRuns.id],
+    name: "underwriting_claim_edges_workspace_candidate_fkey",
+  }),
+]);
+
+export const candidateVersionSnapshots = pgTable(
+  "candidate_version_snapshots",
+  {
+    workspaceId: text("workspace_id").notNull(),
+    candidateRunId: text("candidate_run_id").notNull(),
+    payload: jsonb("payload").$type<CandidateVersionSnapshot>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
+      .notNull(),
+  },
+  artifactTableConfig("candidate_version_snapshots_workspace_candidate_fkey"),
+);
+
+function artifactTableConfig(constraintName: string) {
+  return (table: {
+    workspaceId: AnyPgColumn;
+    candidateRunId: AnyPgColumn;
+  }) => [
+    primaryKey({ columns: [table.workspaceId, table.candidateRunId] }),
+    foreignKey({
+      columns: [table.workspaceId, table.candidateRunId],
+      foreignColumns: [candidateRuns.workspaceId, candidateRuns.id],
+      name: constraintName,
+    }),
+  ];
+}
+
+function manyArtifactTableConfig(constraintName: string) {
+  return (table: {
+    workspaceId: AnyPgColumn;
+    candidateRunId: AnyPgColumn;
+    artifactId: AnyPgColumn;
+  }) => [
+    primaryKey({
+      columns: [table.workspaceId, table.candidateRunId, table.artifactId],
+    }),
+    foreignKey({
+      columns: [table.workspaceId, table.candidateRunId],
+      foreignColumns: [candidateRuns.workspaceId, candidateRuns.id],
+      name: constraintName,
+    }),
+  ];
+}
