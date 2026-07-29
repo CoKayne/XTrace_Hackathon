@@ -134,6 +134,17 @@ export async function runNextQueuedUpload(): Promise<boolean> {
   const uploads = getUploadedDocumentsRepository();
   const claimed = await uploads.claimNext(WORKER_ID);
   if (!claimed) return false;
+  const leaseHeartbeat = setInterval(() => {
+    void uploads.renewLease({
+      workspaceId: claimed.workspaceId,
+      id: claimed.id,
+      workerId: claimed.workerId,
+    }).catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[${WORKER_ID}] upload lease renewal failed: ${message}`);
+    });
+  }, 60_000);
+  leaseHeartbeat.unref();
 
   try {
     const bytes = await createDefaultPrivateObjectStorage()
@@ -154,8 +165,16 @@ export async function runNextQueuedUpload(): Promise<boolean> {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await uploads.fail(claimed.id, message);
+    const transitioned = await uploads.fail({
+      workspaceId: claimed.workspaceId,
+      id: claimed.id,
+      workerId: claimed.workerId,
+      reason: message,
+    });
+    if (!transitioned) console.error(`[${WORKER_ID}] upload ${claimed.id} claim was lost before failure transition`);
     console.error(`[${WORKER_ID}] upload ${claimed.id} failed: ${message}`);
+  } finally {
+    clearInterval(leaseHeartbeat);
   }
   return true;
 }

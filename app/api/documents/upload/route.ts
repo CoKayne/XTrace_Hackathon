@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const existing = await repository.findByChecksum(WORKSPACE_ID, checksum);
     if (existing) return jsonOk(existing);
 
-    const id = uploadedDocumentId(checksum);
+    const id = uploadedDocumentId({ workspaceId: WORKSPACE_ID, checksum });
     const objectKey = uploadedObjectKey({
       workspaceId: WORKSPACE_ID,
       uploadId: id,

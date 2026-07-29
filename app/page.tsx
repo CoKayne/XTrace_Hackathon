@@ -15,22 +15,9 @@ import {
 import { decisionReasonLabel } from "../lib/demo/decision-label";
 import { SAMPLE_DEAL_PROFILES } from "./deal-profiles";
 import type { ChatMemoryStatus } from "../lib/chat/service";
+import type { UploadedDocumentRecord } from "../db/repositories/uploaded-documents";
 
-interface UploadedDocument {
-  id: string;
-  filename: string;
-  contentType: string;
-  byteSize: number;
-  status: "queued" | "extracting" | "ready" | "failed";
-  failureReason: string | null;
-  companyName: string | null;
-  headline: string | null;
-  extractedFacts: Array<{ text: string; excerpt: string }>;
-  memoryTexts: string[];
-  memoryIds: string[];
-  dealId: string | null;
-  createdAt: string;
-}
+type UploadedDocument = UploadedDocumentRecord;
 
 type View =
   | "overview"
@@ -465,9 +452,7 @@ export default function Home() {
         ...current.filter((item) => item.id !== record.id),
       ]);
       setNotice(
-        record.status === "ready"
-          ? `${record.filename} was already extracted into XTrace memory.`
-          : `${record.filename} uploaded. The agent is extracting it into XTrace memory.`,
+        `${record.filename} uploaded. We will show an extraction preview before any Deal or memory action.`,
       );
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Could not upload the document");
@@ -865,14 +850,14 @@ function Metric({ label, value, note }: { label: string; value: string; note: st
 }
 
 function UploadedDealCards({ uploads }: { uploads: UploadedDocument[] }) {
-  const ready = uploads.filter((upload) => upload.status === "ready");
+  const ready = uploads.filter((upload) => upload.status === "awaiting_confirmation");
   const pending = uploads.filter((upload) =>
     upload.status === "queued" || upload.status === "extracting"
   );
   if (!ready.length && !pending.length) return null;
   return (
-    <section className="vsee-uploaded-deals" aria-label="Deals extracted from uploaded documents">
-      <span className="vsee-eyebrow">EXTRACTED BY XTRACE FROM YOUR UPLOADS</span>
+    <section className="vsee-uploaded-deals" aria-label="Upload extraction previews">
+      <span className="vsee-eyebrow">EXTRACTION PREVIEWS</span>
       {pending.map((upload) => (
         <article className="vsee-uploaded-deal pending" key={upload.id}>
           <div>
@@ -885,32 +870,21 @@ function UploadedDealCards({ uploads }: { uploads: UploadedDocument[] }) {
         <article className="vsee-uploaded-deal" key={upload.id}>
           <header>
             <div>
-              <strong>{upload.companyName}</strong>
+              <strong>{upload.extractionPreview?.candidateCompanyName ?? upload.filename}</strong>
               <small>{upload.filename}</small>
             </div>
-            <span className="vsee-status screening">screening</span>
+            <span className="vsee-status screening">awaiting confirmation</span>
           </header>
-          <p className="vsee-uploaded-headline">{upload.headline}</p>
-          {upload.extractedFacts.length > 0 && (
+          <p className="vsee-uploaded-headline">{upload.extractionPreview?.candidateHeadline}</p>
+          {(upload.extractionPreview?.facts.length ?? 0) > 0 && (
             <dl className="vsee-context-grid">
-              {upload.extractedFacts.map((fact) => (
-                <div key={fact.excerpt}>
+              {upload.extractionPreview?.facts.map((fact, index) => (
+                <div key={`${upload.id}-${index}`}>
                   <dt>{fact.text}</dt>
-                  <dd>“{fact.excerpt}”</dd>
+                  <dd>{fact.excerpt ? `“${fact.excerpt}”` : "Located in uploaded image"}</dd>
                 </div>
               ))}
             </dl>
-          )}
-          {upload.memoryTexts.length > 0 && (
-            <details className="vsee-details">
-              <summary>
-                Recalled from XTrace · {upload.memoryIds.length}{" "}
-                {upload.memoryIds.length === 1 ? "memory" : "memories"}
-              </summary>
-              {upload.memoryTexts.slice(0, 6).map((text, index) => (
-                <p key={`${upload.id}-memory-${index}`}>{text}</p>
-              ))}
-            </details>
           )}
         </article>
       ))}
@@ -1014,8 +988,11 @@ function DealsView({
 
 const uploadStatusCopy: Record<UploadedDocument["status"], string> = {
   queued: "Queued for extraction",
-  extracting: "XTrace is extracting",
-  ready: "In XTrace memory",
+  extracting: "Extracting preview",
+  awaiting_confirmation: "Awaiting your confirmation",
+  confirmed: "Confirmed for intake",
+  ingesting_memory: "Ingesting confirmed source",
+  ready: "Ready",
   failed: "Extraction failed",
 };
 
@@ -1034,11 +1011,11 @@ function UploadPanel({
       <header>
         <div>
           <span className="vsee-eyebrow">ADD YOUR OWN</span>
-          <h2 id="upload-title">Upload a document into memory.</h2>
+          <h2 id="upload-title">Upload a source for review.</h2>
           <p>
-            PDF, DOCX, TXT, or MD. The agent reads the file, extracts what it
-            states, and stores it in XTrace as a new Deal memory. Uploads never
-            join the fixed corpus or change the 14-day scan.
+            TXT, Markdown, JPEG, PNG, GIF, or WebP. We first show an extraction
+            preview; uploads never create a Deal, enter memory, join the fixed corpus,
+            or change the 14-day scan until later confirmation.
           </p>
         </div>
         <button
@@ -1051,7 +1028,7 @@ function UploadPanel({
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf,.docx,.txt,.md"
+          accept=".txt,.md,.jpg,.jpeg,.png,.gif,.webp"
           hidden
           onChange={(event) => {
             const file = event.target.files?.[0];
@@ -1065,7 +1042,7 @@ function UploadPanel({
           {uploads.map((upload) => (
             <article key={upload.id}>
               <div>
-                <strong>{upload.companyName ?? upload.filename}</strong>
+                <strong>{upload.extractionPreview?.candidateCompanyName ?? upload.filename}</strong>
                 <small>
                   {upload.filename} · {formatBytes(upload.byteSize)}
                 </small>
@@ -1074,8 +1051,8 @@ function UploadPanel({
                 {uploadStatusCopy[upload.status]}
               </span>
               <p>
-                {upload.status === "ready"
-                  ? `${upload.memoryIds.length} XTrace ${upload.memoryIds.length === 1 ? "memory" : "memories"} · ${upload.extractedFacts.length} extracted facts`
+                {upload.status === "awaiting_confirmation"
+                  ? `${upload.extractionPreview?.facts.length ?? 0} extracted facts. Awaiting your confirmation before Deal or memory actions.`
                   : upload.status === "failed"
                   ? upload.failureReason ?? "The document could not be extracted."
                   : "The background agent is reading this document."}

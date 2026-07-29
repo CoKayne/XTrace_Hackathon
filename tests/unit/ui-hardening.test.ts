@@ -142,6 +142,16 @@ test("dashboard keeps scans honest and requires explicit import review", async (
   assert.match(page, /role="status"/);
 });
 
+test("uploaded-source UI accepts only staged runtime formats and renders confirmation previews", async () => {
+  const page = await readFile(pagePath, "utf8");
+
+  assert.match(page, /accept="\.txt,\.md,\.jpg,\.jpeg,\.png,\.gif,\.webp"/);
+  assert.match(page, /awaiting_confirmation/);
+  assert.match(page, /Awaiting your confirmation/);
+  assert.doesNotMatch(page, /PDF, DOCX, TXT, or MD/);
+  assert.doesNotMatch(page, /stores it in XTrace as a new Deal memory/);
+});
+
 test("dashboard supports report deep links, page anchors, and a two-row mobile nav", async () => {
   const [page, css] = await Promise.all([
     readFile(pagePath, "utf8"),

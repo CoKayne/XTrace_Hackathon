@@ -65,6 +65,6 @@ export async function sha256Hex(bytes: Uint8Array): Promise<string> {
     .join("");
 }
 
-export function uploadedDocumentId(checksum: string): string {
-  return `upload_${checksum.slice(0, 20)}`;
+export function uploadedDocumentId(input: { workspaceId: string; checksum: string }): string {
+  return `upload_${input.workspaceId}_${input.checksum.slice(0, 20)}`;
 }

@@ -134,6 +134,31 @@ test("preview facts retain locators and complete extraction metadata", async () 
   });
 });
 
+test("image preview facts never persist a model quote as a verbatim excerpt", async () => {
+  let calls = 0;
+  const preview = await extractUploadPreview({
+    record: { ...RECORD, filename: "slide.png", contentType: "image/png" },
+    bytes: new Uint8Array([137, 80, 78, 71]),
+    client: {
+      async complete() {
+        calls += 1;
+        if (calls === 1) return "Acme serves 240 carriers.";
+        return JSON.stringify({
+          companyName: "Acme",
+          headline: "Acme serves carriers.",
+          facts: [{ text: "Funding", excerpt: "Acme raised $30M." }],
+        });
+      },
+    },
+  });
+
+  assert.deepEqual(preview.facts, [{
+    text: "Funding",
+    excerpt: null,
+    locator: { kind: "image", imageIndex: 0 },
+  }]);
+});
+
 test("an empty text document fails honestly", async () => {
   await assert.rejects(
     extractDocumentText({
@@ -171,11 +196,75 @@ test("claiming an upload is exclusive until its lease expires and saves a previe
   );
 
   const preview = previewFixture();
-  await repository.savePreview({ id: "upload_1", preview });
+  assert.equal(await repository.savePreview({
+    workspaceId: "workspace_demo",
+    id: "upload_1",
+    workerId: "worker-b",
+    preview,
+  }), true);
   const [record] = await repository.list("workspace_demo");
   assert.equal(record?.status, "awaiting_confirmation");
   assert.deepEqual(record?.extractionPreview, preview);
   assert.equal(await repository.claimNext("worker-c"), null);
+});
+
+test("same upload bytes coexist across workspaces and mutations require the current owner", async () => {
+  let clock = Date.parse("2026-07-25T12:00:00.000Z");
+  const repository = createMemoryUploadedDocumentsRepository({ now: () => new Date(clock) });
+  const checksum = "same-bytes";
+  await repository.create({
+    id: "upload_workspace_a_same-bytes",
+    workspaceId: "workspace_a",
+    filename: "a.txt",
+    contentType: "text/plain",
+    byteSize: 10,
+    checksum,
+    objectKey: "private/workspaces/workspace_a/uploads/upload_workspace_a_same-bytes/a.txt",
+  });
+  await repository.create({
+    id: "upload_workspace_b_same-bytes",
+    workspaceId: "workspace_b",
+    filename: "b.txt",
+    contentType: "text/plain",
+    byteSize: 10,
+    checksum,
+    objectKey: "private/workspaces/workspace_b/uploads/upload_workspace_b_same-bytes/b.txt",
+  });
+
+  assert.equal((await repository.list("workspace_a")).length, 1);
+  assert.equal((await repository.list("workspace_b")).length, 1);
+  assert.equal(await repository.get({ workspaceId: "workspace_b", id: "upload_workspace_a_same-bytes" }), null);
+
+  const firstClaim = await repository.claimNext("worker-a");
+  assert.equal(firstClaim?.workspaceId, "workspace_a");
+  clock += 6 * 60_000;
+  const secondClaim = await repository.claimNext("worker-b");
+  assert.equal(secondClaim?.id, firstClaim?.id);
+  assert.equal(await repository.savePreview({
+    workspaceId: "workspace_a",
+    id: firstClaim!.id,
+    workerId: "worker-a",
+    preview: previewFixture(),
+  }), false);
+  assert.equal(await repository.fail({
+    workspaceId: "workspace_a",
+    id: firstClaim!.id,
+    workerId: "worker-a",
+    reason: "late failure",
+  }), false);
+  assert.equal(await repository.savePreview({
+    workspaceId: "workspace_a",
+    id: firstClaim!.id,
+    workerId: "worker-b",
+    preview: previewFixture(),
+  }), true);
+  await repository.deleteAll("workspace_a");
+  assert.equal(await repository.savePreview({
+    workspaceId: "workspace_a",
+    id: firstClaim!.id,
+    workerId: "worker-b",
+    preview: previewFixture(),
+  }), false);
 });
 
 function previewFixture(): ExtractionPreview {

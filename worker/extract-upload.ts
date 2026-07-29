@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type {
+  ClaimedUploadedDocument,
   ExtractionPreview,
   UploadedDocumentRecord,
 } from "../db/repositories/uploaded-documents";
@@ -64,7 +65,7 @@ export async function extractUploadPreview(input: {
     if (isImage) {
       facts.push({
         text: fact.text,
-        excerpt: fact.excerpt,
+        excerpt: null,
         locator: { kind: "image", imageIndex: 0 },
       });
       continue;
@@ -95,16 +96,18 @@ export async function extractUploadPreview(input: {
 }
 
 export async function processClaimedUpload(
-  upload: UploadedDocumentRecord,
+  upload: ClaimedUploadedDocument,
   dependencies: {
-    extract: (upload: UploadedDocumentRecord) => Promise<ExtractionPreview>;
-    savePreview: (input: { id: string; preview: ExtractionPreview }) => Promise<void>;
+    extract: (upload: ClaimedUploadedDocument) => Promise<ExtractionPreview>;
+    savePreview: (input: { workspaceId: string; id: string; workerId: string; preview: ExtractionPreview }) => Promise<boolean>;
     createDeal?: () => Promise<void>;
     ingestXTrace?: () => Promise<void>;
   },
 ): Promise<UploadedDocumentRecord & { status: "awaiting_confirmation" }> {
   const preview = await dependencies.extract(upload);
-  await dependencies.savePreview({ id: upload.id, preview });
+  if (!await dependencies.savePreview({ workspaceId: upload.workspaceId, id: upload.id, workerId: upload.workerId, preview })) {
+    throw new Error("Upload claim was lost before its preview could be saved.");
+  }
   return { ...upload, status: "awaiting_confirmation", extractionPreview: preview };
 }
 

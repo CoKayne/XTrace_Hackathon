@@ -10,6 +10,7 @@ test("extraction stops at confirmation preview without Deal or XTrace side effec
     extract: async () => previewFixture(),
     savePreview: async () => {
       effects.push("preview");
+      return true;
     },
     createDeal: async () => {
       effects.push("deal");
@@ -32,6 +33,7 @@ function uploadFixture() {
     checksum: "checksum",
     objectKey: "private/workspaces/workspace_demo/uploads/upload_1/acme.txt",
     status: "extracting" as const,
+    workerId: "worker-a",
     failureReason: null,
     extractionPreview: null,
     createdAt: "2026-07-25T12:00:00.000Z",

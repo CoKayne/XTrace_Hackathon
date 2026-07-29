@@ -43,6 +43,10 @@ export interface UploadedDocumentRecord {
   updatedAt: string;
 }
 
+export interface ClaimedUploadedDocument extends UploadedDocumentRecord {
+  workerId: string;
+}
+
 export interface CreateUploadedDocumentInput {
   id: string;
   workspaceId: string;
@@ -56,11 +60,12 @@ export interface CreateUploadedDocumentInput {
 export interface UploadedDocumentsRepository {
   create(input: CreateUploadedDocumentInput): Promise<UploadedDocumentRecord>;
   list(workspaceId: string): Promise<UploadedDocumentRecord[]>;
-  get(id: string): Promise<UploadedDocumentRecord | null>;
+  get(input: { workspaceId: string; id: string }): Promise<UploadedDocumentRecord | null>;
   findByChecksum(workspaceId: string, checksum: string): Promise<UploadedDocumentRecord | null>;
-  claimNext(workerId: string): Promise<UploadedDocumentRecord | null>;
-  savePreview(input: { id: string; preview: ExtractionPreview }): Promise<void>;
-  fail(id: string, reason: string): Promise<void>;
+  claimNext(workerId: string): Promise<ClaimedUploadedDocument | null>;
+  renewLease(input: { workspaceId: string; id: string; workerId: string }): Promise<boolean>;
+  savePreview(input: { workspaceId: string; id: string; workerId: string; preview: ExtractionPreview }): Promise<boolean>;
+  fail(input: { workspaceId: string; id: string; workerId: string; reason: string }): Promise<boolean>;
   deleteAll(workspaceId: string): Promise<void>;
 }
 
@@ -69,7 +74,7 @@ const LEASE_MS = 5 * 60_000;
 export function createMemoryUploadedDocumentsRepository(options: {
   now?: () => Date;
 } = {}): UploadedDocumentsRepository {
-  const rows = new Map<string, UploadedDocumentRecord & { leaseExpiresAt: number | null }>();
+  const rows = new Map<string, UploadedDocumentRecord & { leaseExpiresAt: number | null; workerId: string | null }>();
   const now = options.now ?? (() => new Date());
   return {
     async create(input) {
@@ -82,8 +87,9 @@ export function createMemoryUploadedDocumentsRepository(options: {
         createdAt: timestamp,
         updatedAt: timestamp,
         leaseExpiresAt: null,
+        workerId: null,
       };
-      rows.set(input.id, record);
+      rows.set(`${input.workspaceId}:${input.id}`, record);
       return strip(record);
     },
     async list(workspaceId) {
@@ -92,8 +98,8 @@ export function createMemoryUploadedDocumentsRepository(options: {
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
         .map(strip);
     },
-    async get(id) {
-      const row = rows.get(id);
+    async get(input) {
+      const row = rows.get(`${input.workspaceId}:${input.id}`);
       return row ? strip(row) : null;
     },
     async findByChecksum(workspaceId, checksum) {
@@ -115,12 +121,19 @@ export function createMemoryUploadedDocumentsRepository(options: {
       row.status = "extracting";
       row.leaseExpiresAt = current + LEASE_MS;
       row.updatedAt = now().toISOString();
-      void workerId;
-      return strip(row);
+      row.workerId = workerId;
+      return { ...strip(row), workerId };
+    },
+    async renewLease(input) {
+      const row = rows.get(`${input.workspaceId}:${input.id}`);
+      if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
+      row.leaseExpiresAt = now().getTime() + LEASE_MS;
+      row.updatedAt = now().toISOString();
+      return true;
     },
     async savePreview(input) {
-      const row = rows.get(input.id);
-      if (!row) return;
+      const row = rows.get(`${input.workspaceId}:${input.id}`);
+      if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
       Object.assign(row, {
         status: "awaiting_confirmation" as const,
         failureReason: null,
@@ -128,14 +141,16 @@ export function createMemoryUploadedDocumentsRepository(options: {
         leaseExpiresAt: null,
         updatedAt: now().toISOString(),
       });
+      return true;
     },
-    async fail(id, reason) {
-      const row = rows.get(id);
-      if (!row) return;
+    async fail(input) {
+      const row = rows.get(`${input.workspaceId}:${input.id}`);
+      if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
       row.status = "failed";
-      row.failureReason = reason;
+      row.failureReason = input.reason;
       row.leaseExpiresAt = null;
       row.updatedAt = now().toISOString();
+      return true;
     },
     async deleteAll(workspaceId) {
       for (const [key, row] of rows) {
@@ -146,10 +161,11 @@ export function createMemoryUploadedDocumentsRepository(options: {
 }
 
 function strip(
-  row: UploadedDocumentRecord & { leaseExpiresAt: number | null },
+  row: UploadedDocumentRecord & { leaseExpiresAt: number | null; workerId: string | null },
 ): UploadedDocumentRecord {
   const record = { ...row } as Partial<typeof row>;
   delete record.leaseExpiresAt;
+  delete record.workerId;
   return structuredClone(record as UploadedDocumentRecord);
 }
 
@@ -223,9 +239,10 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       ) as Record<string, unknown>[];
       return rows.map(toRecord);
     },
-    async get(id) {
+    async get(input) {
       const rows = await request(
-        `/uploaded_documents?id=eq.${encodeURIComponent(id)}&limit=1`,
+        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&id=eq.${encodeURIComponent(input.id)}&limit=1`,
       ) as Record<string, unknown>[];
       return rows[0] ? toRecord(rows[0]) : null;
     },
@@ -246,9 +263,14 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       const candidate = candidates[0];
       if (!candidate) return null;
       const leaseExpiresAt = new Date(now().getTime() + LEASE_MS).toISOString();
+      const observedLease = candidate.lease_expires_at
+        ? `&lease_expires_at=eq.${encodeURIComponent(String(candidate.lease_expires_at))}`
+        : "&lease_expires_at=is.null";
       const claimed = await request(
-        `/uploaded_documents?id=eq.${encodeURIComponent(String(candidate.id))}`
-        + `&status=eq.${encodeURIComponent(String(candidate.status))}`,
+        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(String(candidate.workspace_id))}`
+        + `&id=eq.${encodeURIComponent(String(candidate.id))}`
+        + `&status=eq.${encodeURIComponent(String(candidate.status))}`
+        + observedLease,
         {
           method: "PATCH",
           headers: { Prefer: "return=representation" },
@@ -260,12 +282,27 @@ export function createSupabaseUploadedDocumentsRepository(options: {
           }),
         },
       ) as Record<string, unknown>[];
-      return claimed[0] ? toRecord(claimed[0]) : null;
+      return claimed[0] ? { ...toRecord(claimed[0]), workerId } : null;
+    },
+    async renewLease(input) {
+      const rows = await request(
+        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.extracting`
+        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`,
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({ lease_expires_at: new Date(now().getTime() + LEASE_MS).toISOString() }),
+        },
+      ) as Record<string, unknown>[];
+      return rows.length === 1;
     },
     async savePreview(input) {
-      await request(`/uploaded_documents?id=eq.${encodeURIComponent(input.id)}`, {
+      const rows = await request(`/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.extracting`
+        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`, {
         method: "PATCH",
-        headers: { Prefer: "return=minimal" },
+        headers: { Prefer: "return=representation" },
         body: JSON.stringify({
           status: "awaiting_confirmation",
           failure_reason: null,
@@ -273,19 +310,23 @@ export function createSupabaseUploadedDocumentsRepository(options: {
           lease_expires_at: null,
           updated_at: now().toISOString(),
         }),
-      });
+      }) as Record<string, unknown>[];
+      return rows.length === 1;
     },
-    async fail(id, reason) {
-      await request(`/uploaded_documents?id=eq.${encodeURIComponent(id)}`, {
+    async fail(input) {
+      const rows = await request(`/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.extracting`
+        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`, {
         method: "PATCH",
-        headers: { Prefer: "return=minimal" },
+        headers: { Prefer: "return=representation" },
         body: JSON.stringify({
           status: "failed",
-          failure_reason: reason.slice(0, 400),
+          failure_reason: input.reason.slice(0, 400),
           lease_expires_at: null,
           updated_at: now().toISOString(),
         }),
-      });
+      }) as Record<string, unknown>[];
+      return rows.length === 1;
     },
     async deleteAll(workspaceId) {
       await request(

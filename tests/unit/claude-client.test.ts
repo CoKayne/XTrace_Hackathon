@@ -94,3 +94,21 @@ test("Claude client retries once when the request itself fails", async () => {
   }), "ok");
   assert.equal(calls, 2);
 });
+
+test("Claude client rejects a response stopped by its max token limit", async () => {
+  const client = createClaudeClient({
+    apiKey: "test-key",
+    fetchImpl: async () => Response.json({
+      stop_reason: "max_tokens",
+      content: [{ type: "text", text: "partial visible text" }],
+    }),
+  });
+
+  await assert.rejects(
+    client.complete({
+      system: "Transcribe.",
+      messages: [{ role: "user", content: "Test" }],
+    }),
+    /max token limit/,
+  );
+});

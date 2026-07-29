@@ -22,6 +22,10 @@ export interface ClaudeClient {
   }): Promise<string>;
 }
 
+export class ClaudeCompletionTruncatedError extends Error {
+  readonly code = "CLAUDE_MAX_TOKENS";
+}
+
 export function createClaudeClient(options: {
   apiKey?: string;
   model?: string;
@@ -78,8 +82,12 @@ export function createClaudeClient(options: {
         throw new Error(`Anthropic request failed with ${response.status}`);
       }
       const body = await response.json() as {
+        stop_reason?: string;
         content?: Array<{ type: string; text?: string }>;
       };
+      if (body.stop_reason === "max_tokens") {
+        throw new ClaudeCompletionTruncatedError("Anthropic completion reached the max token limit.");
+      }
       const text = body.content?.find((block) => block.type === "text")?.text;
       if (!text) throw new Error("Anthropic returned no text content");
       return text;
