@@ -7,7 +7,9 @@ import {
   EvidenceFieldSchema,
   MarketEventSchema,
   OpportunityReportItemSchema,
+  SourceRefSchema,
 } from "../../lib/contracts/domain";
+import { ConfirmUploadSchema } from "../../lib/contracts/http";
 
 function companyAnalysisFixture(
   overrides: Record<string, unknown> = {},
@@ -98,6 +100,61 @@ function companyAnalysisFixture(
 
 test("normalizes the legacy interested status to watchlist", () => {
   assert.equal(DealStatusSchema.parse("interested"), "watchlist");
+});
+
+test("keeps the legacy SourceRef contract unchanged", () => {
+  const sourceRef = {
+    id: "source_1",
+    provenance: "source_document",
+    title: "Pitch deck",
+    documentId: "document_1",
+    page: 1,
+    excerpt: "Source-grounded evidence.",
+  };
+
+  assert.deepEqual(SourceRefSchema.parse(sourceRef), sourceRef);
+  assert.throws(() => SourceRefSchema.parse({
+    ...sourceRef,
+    provenance: "uploaded_document",
+  }));
+});
+
+test("rejects a client-supplied workspace in upload confirmation", () => {
+  const confirmation = {
+    companyName: "Acme",
+    assignment: {
+      kind: "existing_deal",
+      dealId: "deal_1",
+    },
+  };
+
+  assert.deepEqual(ConfirmUploadSchema.parse(confirmation), confirmation);
+  assert.throws(() => ConfirmUploadSchema.parse({
+    ...confirmation,
+    workspaceId: "forged",
+  }));
+});
+
+test("validates exact new-deal upload assignment", () => {
+  const confirmation = {
+    companyName: "  Acme  ",
+    assignment: {
+      kind: "new_deal",
+      dealStatus: "screening",
+    },
+  };
+
+  assert.deepEqual(ConfirmUploadSchema.parse(confirmation), {
+    ...confirmation,
+    companyName: "Acme",
+  });
+  assert.throws(() => ConfirmUploadSchema.parse({
+    companyName: "Acme",
+    assignment: {
+      kind: "new_deal",
+      dealStatus: "unknown",
+    },
+  }));
 });
 
 test("rejects a public market event without evidence", () => {

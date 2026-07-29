@@ -20,6 +20,7 @@
     "db:seed": "node --import tsx scripts/seed-demo.ts"
   },
   "dependencies": {
+    "decimal.js": "10.6.0",
     "drizzle-orm": "0.45.2",
     "next": "16.2.6",
     "react": "19.2.6",
