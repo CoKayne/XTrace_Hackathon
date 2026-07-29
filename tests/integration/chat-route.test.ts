@@ -5,6 +5,49 @@ import test from "node:test";
 import { POST } from "../../app/api/chat/route";
 import { getIntelligenceRepository } from "../../db/repositories/intelligence";
 
+test("Chat API rate-limit envelope remains public when persistent limiter transport rejects", async () => {
+  const secret = "rate-limit-secret: connection reset";
+  const previousUrl = process.env.SUPABASE_URL;
+  const previousServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const previousFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = "https://database.example";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "server-only";
+  globalThis.fetch = async () => {
+    throw new TypeError(secret);
+  };
+
+  try {
+    const response = await POST(new Request("http://localhost/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        question: "Why did we mark 7bridges as passed?",
+        xtraceEnabled: false,
+      }),
+    }));
+
+    assert.equal(response.status, 429);
+    const payload = await response.json();
+    assert.deepEqual(payload, {
+      error: {
+        code: "RATE_LIMITED",
+        message: "Too many Chat requests. Try again in 60 seconds.",
+        retryable: true,
+      },
+    });
+    assert.doesNotMatch(JSON.stringify(payload), /rate-limit-secret/i);
+  } finally {
+    if (previousUrl === undefined) delete process.env.SUPABASE_URL;
+    else process.env.SUPABASE_URL = previousUrl;
+    if (previousServiceRoleKey === undefined) {
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    } else {
+      process.env.SUPABASE_SERVICE_ROLE_KEY = previousServiceRoleKey;
+    }
+    globalThis.fetch = previousFetch;
+  }
+});
+
 test("Chat API answers the exact 7bridges question shown in the UI", async () => {
   const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
   delete process.env.ANTHROPIC_API_KEY;

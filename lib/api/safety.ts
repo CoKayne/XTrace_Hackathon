@@ -61,24 +61,29 @@ export async function rateLimitRequest(
   const serviceRoleKey = environment.SUPABASE_SERVICE_ROLE_KEY;
   if (url && serviceRoleKey) {
     const clientHash = await digestClientIdentifier(clientIdentifier(request));
-    const response = await (options.fetchImpl ?? fetch)(
-      `${url.replace(/\/$/, "")}/rest/v1/rpc/take_public_request`,
-      {
-        method: "POST",
-        headers: {
-          apikey: serviceRoleKey,
-          authorization: `Bearer ${serviceRoleKey}`,
-          "content-type": "application/json",
+    let response: Response;
+    try {
+      response = await (options.fetchImpl ?? fetch)(
+        `${url.replace(/\/$/, "")}/rest/v1/rpc/take_public_request`,
+        {
+          method: "POST",
+          headers: {
+            apikey: serviceRoleKey,
+            authorization: `Bearer ${serviceRoleKey}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            p_scope: scope,
+            p_client_hash: clientHash,
+            p_limit: limit,
+            p_window_seconds: Math.max(1, Math.ceil(windowMs / 1_000)),
+          }),
+          cache: "no-store",
         },
-        body: JSON.stringify({
-          p_scope: scope,
-          p_client_hash: clientHash,
-          p_limit: limit,
-          p_window_seconds: Math.max(1, Math.ceil(windowMs / 1_000)),
-        }),
-        cache: "no-store",
-      },
-    );
+      );
+    } catch {
+      return { allowed: false, retryAfterSeconds: 60 };
+    }
     if (!response.ok) {
       return { allowed: false, retryAfterSeconds: 60 };
     }

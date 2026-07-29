@@ -59,3 +59,28 @@ test("deployed request limiting uses the persistent PostgreSQL function", async 
   assert.match(String(calls[0].body.p_client_hash), /^[a-f0-9]{64}$/);
   assert.notEqual(calls[0].body.p_client_hash, "203.0.113.10");
 });
+
+test("persistent request limiting fails closed when its transport rejects", async () => {
+  const secret = "rate-limit-secret: connection reset";
+  const result = await rateLimitRequest(
+    new Request("https://demo.example/api/chat", {
+      headers: { "cf-connecting-ip": "203.0.113.11" },
+    }),
+    "chat",
+    20,
+    60_000,
+    {
+      environment: {
+        NODE_ENV: "production",
+        SUPABASE_URL: "https://database.example",
+        SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      },
+      fetchImpl: async () => {
+        throw new TypeError(secret);
+      },
+    },
+  );
+
+  assert.deepEqual(result, { allowed: false, retryAfterSeconds: 60 });
+  assert.doesNotMatch(JSON.stringify(result), /rate-limit-secret/i);
+});
