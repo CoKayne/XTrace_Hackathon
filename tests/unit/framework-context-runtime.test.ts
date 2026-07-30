@@ -159,3 +159,32 @@ test("aborts an in-flight real catalog resolution before authorizing a service",
     (error) => error === cancellation,
   );
 });
+
+test("isolates one caller abort while a concurrent same-key catalog resolution completes", async () => {
+  const resolver = createContextAwareFrameworkLensResolver({
+    execution,
+    client: {
+      async complete() {
+        throw new Error("Context resolution must not invoke the provider.");
+      },
+    },
+  });
+  const controller = new AbortController();
+  const cancellation = new Error("one candidate framework stage timed out");
+  const aborted = resolver.resolve(context, controller.signal);
+  const survivor = resolver.resolve({
+    ...context,
+    id: "same-selection-live-candidate",
+    contextVersion: "2",
+    asOfDate: "2026-07-30",
+  });
+  controller.abort(cancellation);
+
+  await assert.rejects(aborted, (error) => error === cancellation);
+  const authorized = await survivor;
+  const reused = await resolver.resolve(context);
+
+  assert.strictEqual(reused, authorized);
+  assert.strictEqual(reused.catalog, authorized.catalog);
+  assert.strictEqual(reused.service, authorized.service);
+});

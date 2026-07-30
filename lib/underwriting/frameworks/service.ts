@@ -229,6 +229,8 @@ export function createContextAwareFrameworkLensResolver(
     {
       controller: AbortController;
       promise: Promise<ContextAwareFrameworkLensSelection>;
+      waiters: Set<symbol>;
+      settled: boolean;
     }
   >();
 
@@ -245,8 +247,7 @@ export function createContextAwareFrameworkLensResolver(
       });
       const existing = selections.get(key);
       if (existing) {
-        forwardAbort(signal, existing.controller, existing.promise);
-        return existing.promise;
+        return waitForSelection(existing, signal);
       }
 
       const controller = new AbortController();
@@ -264,31 +265,75 @@ export function createContextAwareFrameworkLensResolver(
             advisoryCatalog: catalog,
           }),
         }));
-      const entry = { controller, promise: pending };
+      const entry = {
+        controller,
+        promise: pending,
+        waiters: new Set<symbol>(),
+        settled: false,
+      };
       selections.set(key, entry);
-      forwardAbort(signal, controller, pending);
-      void pending.catch(() => {
-        if (selections.get(key) === entry) selections.delete(key);
-      });
-      return pending;
+      void pending.then(
+        () => {
+          entry.settled = true;
+        },
+        () => {
+          entry.settled = true;
+          if (selections.get(key) === entry) selections.delete(key);
+        },
+      );
+      return waitForSelection(entry, signal);
     },
   };
 }
 
-function forwardAbort(
+function waitForSelection(
+  entry: {
+    controller: AbortController;
+    promise: Promise<ContextAwareFrameworkLensSelection>;
+    waiters: Set<symbol>;
+    settled: boolean;
+  },
   signal: AbortSignal | undefined,
-  controller: AbortController,
-  pending: Promise<unknown>,
-): void {
-  if (!signal) return;
-  const abort = () => controller.abort(signal.reason);
-  if (signal.aborted) {
-    abort();
-    return;
+): Promise<ContextAwareFrameworkLensSelection> {
+  const waiter = Symbol("framework-catalog-waiter");
+  entry.waiters.add(waiter);
+  if (!signal) {
+    const cleanup = () => entry.waiters.delete(waiter);
+    void entry.promise.then(cleanup, cleanup);
+    return entry.promise;
   }
-  signal.addEventListener("abort", abort, { once: true });
-  const cleanup = () => signal.removeEventListener("abort", abort);
-  void pending.then(cleanup, cleanup);
+  return new Promise((resolve, reject) => {
+    let active = true;
+    const finish = () => {
+      if (!active) return false;
+      active = false;
+      entry.waiters.delete(waiter);
+      signal.removeEventListener("abort", abort);
+      return true;
+    };
+    const abort = () => {
+      if (!finish()) return;
+      if (!entry.settled && entry.waiters.size === 0) {
+        entry.controller.abort(signal.reason);
+      }
+      reject(abortError(signal));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    void entry.promise.then(
+      (selection) => {
+        if (finish()) resolve(selection);
+      },
+      (error: unknown) => {
+        if (finish()) reject(error);
+      },
+    );
+  });
+}
+
+function abortError(signal: AbortSignal): Error {
+  return signal.reason instanceof Error
+    ? signal.reason
+    : new Error("Framework catalog resolution was aborted.");
 }
 
 export function createFrameworkLensService(options: {

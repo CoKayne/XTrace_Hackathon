@@ -436,6 +436,7 @@ export const CandidateCheckpointSchema = z.strictObject({
     "evidence_pack",
     "context_router",
     "valuation",
+    "framework_catalog",
     "framework_lenses",
     "decision",
     "narrative_drafts",

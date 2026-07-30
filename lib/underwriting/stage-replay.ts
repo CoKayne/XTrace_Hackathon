@@ -84,6 +84,11 @@ const FrameworkLensResultSchema = z.strictObject({
   judgments: z.array(FrameworkJudgmentSchema),
   disagreements: z.array(FrameworkDisagreementSchema),
 });
+const FrameworkCatalogBindingSchema = z.strictObject({
+  catalogVersion: IdSchema,
+  catalogFingerprint: FingerprintSchema,
+  corpusDigest: FingerprintSchema,
+});
 const NarrativeArtifactsSchema = z.strictObject({
   narrative: z.string().min(1),
   actionDrafts: z.array(ActionDraftSchema),
@@ -116,6 +121,14 @@ export function parseFrameworkLensResult(
   disagreements: z.infer<typeof FrameworkDisagreementSchema>[];
 } {
   return FrameworkLensResultSchema.parse(value);
+}
+
+export function parseFrameworkCatalogBinding(value: unknown): {
+  catalogVersion: string;
+  catalogFingerprint: string;
+  corpusDigest: string;
+} {
+  return FrameworkCatalogBindingSchema.parse(value);
 }
 
 export function parseDecisionResult(value: unknown) {

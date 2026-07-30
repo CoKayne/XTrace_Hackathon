@@ -1132,6 +1132,10 @@ export const candidateCheckpoints = pgTable("candidate_checkpoints", {
     sql`${table.status} in ('running', 'completed', 'failed')`,
   ),
   check(
+    "candidate_checkpoints_stage_check",
+    sql`${table.stage} in ('evidence_pack', 'context_router', 'valuation', 'framework_catalog', 'framework_lenses', 'decision', 'narrative_drafts', 'finalization')`,
+  ),
+  check(
     "candidate_checkpoints_usage_check",
     sql`${table.attemptCount} >= 0 and ${table.costUnits} >= 0 and ${table.tokenUnits} >= 0 and ${table.actualTokenUnits} >= 0`,
   ),

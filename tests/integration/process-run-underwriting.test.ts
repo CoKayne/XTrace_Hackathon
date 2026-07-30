@@ -1312,6 +1312,7 @@ test("runs the source-grounded candidate chain once and persists communication c
       ["context_router", "completed"],
       ["evidence_pack", "completed"],
       ["valuation", "completed"],
+      ["framework_catalog", "completed"],
       ["framework_lenses", "completed"],
       ["decision", "completed"],
       ["narrative_drafts", "completed"],
@@ -2121,6 +2122,115 @@ test("a reclaimed lease replays completed stages and restores provider usage wit
   ]);
 });
 
+test("a reclaimed lease recovers from a persisted catalog failure without changing the framework checkpoint input", async () => {
+  let sequence = 0;
+  let currentTime = NOW;
+  let rejectFirstTermination = true;
+  let frameworkResolutions = 0;
+  let lensExecutions = 0;
+  const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = createMemoryEvidencePacksRepository();
+  const storage = createMemoryUnderwritingRunsRepository({
+    now: () => currentTime,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+    artifacts,
+    evidencePacks,
+  });
+  const runs: typeof storage = {
+    ...storage,
+    async markCandidateUnavailable() {
+      throw new Error("simulated worker loss before unavailable write");
+    },
+    async markCandidateFailed(input) {
+      if (rejectFirstTermination) {
+        rejectFirstTermination = false;
+        throw new Error("simulated worker loss before terminal write");
+      }
+      return storage.markCandidateFailed(input);
+    },
+  };
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+    repository: evidencePacks,
+  });
+  const createOrchestrator = () => createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateLeaseSeconds: 1,
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      resolveFrameworkLenses: async () => {
+        frameworkResolutions += 1;
+        if (frameworkResolutions <= 2) {
+          throw new IntegrationTransportError({ retryable: true });
+        }
+        return {
+          catalogVersion: "research-framework-catalog-v1",
+          catalogFingerprint: `sha256:${"7".repeat(64)}`,
+          corpusDigest: `sha256:${"8".repeat(64)}`,
+          service: {
+            async runAll() {
+              lensExecutions += 1;
+              return { judgments: [], disagreements: [] };
+            },
+          },
+        };
+      },
+      now: () => currentTime,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => currentTime,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+  const input = {
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  };
+
+  await assert.rejects(
+    createOrchestrator().createBatchAndSelections(input),
+    /simulated worker loss before terminal write/,
+  );
+  assert.equal(storage.inspect().candidates[0]?.status, "running");
+  assert.equal(
+    storage.inspect().checkpoints.find(
+      ({ stage }) => stage === "framework_catalog",
+    )?.status,
+    "failed",
+  );
+
+  currentTime = new Date(NOW.getTime() + 2_000);
+  const resumed = await createOrchestrator().createBatchAndSelections(input);
+
+  assert.equal(resumed.status, "completed");
+  assert.equal(frameworkResolutions, 3);
+  assert.equal(lensExecutions, 1);
+  const catalogCheckpoint = storage.inspect().checkpoints.find(
+    ({ stage }) => stage === "framework_catalog",
+  );
+  const frameworkCheckpoint = storage.inspect().checkpoints.find(
+    ({ stage }) => stage === "framework_lenses",
+  );
+  assert.equal(catalogCheckpoint?.status, "completed");
+  assert.equal(catalogCheckpoint?.attemptCount, 3);
+  assert.equal(frameworkCheckpoint?.status, "completed");
+  assert.notEqual(
+    catalogCheckpoint?.inputFingerprint,
+    frameworkCheckpoint?.inputFingerprint,
+  );
+});
+
 test("framework timeout is visible unavailability and never generic failure or negative evidence", async () => {
   let sequence = 0;
   let providerSignal: AbortSignal | undefined;
@@ -2187,6 +2297,85 @@ test("framework timeout is visible unavailability and never generic failure or n
   );
 });
 
+test("retries a transient framework catalog transport failure before exposing unavailability", async () => {
+  let sequence = 0;
+  let frameworkResolutions = 0;
+  const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = createMemoryEvidencePacksRepository();
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+    artifacts,
+    evidencePacks,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+    repository: evidencePacks,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      resolveFrameworkLenses: async () => {
+        frameworkResolutions += 1;
+        if (frameworkResolutions === 1) {
+          throw new IntegrationTransportError({ retryable: true });
+        }
+        return {
+          catalogVersion: "research-framework-catalog-v1",
+          catalogFingerprint: `sha256:${"7".repeat(64)}`,
+          corpusDigest: `sha256:${"8".repeat(64)}`,
+          service: {
+            async runAll() {
+              return { judgments: [], disagreements: [] };
+            },
+          },
+        };
+      },
+      now: () => NOW,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  const batch = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(batch.status, "completed");
+  assert.equal(frameworkResolutions, 2);
+  assert.equal(runs.inspect().candidates[0]?.status, "completed");
+  assert.deepEqual(runs.inspect().unavailableReasons, {});
+  assert.deepEqual(
+    runs.inspect().checkpoints
+      .filter(({ stage }) => stage === "framework_catalog")
+      .map(({ status, attemptCount, reasonCode }) => ({
+        status,
+        attemptCount,
+        reasonCode,
+      })),
+    [{
+      status: "completed",
+      attemptCount: 2,
+      reasonCode: null,
+    }],
+  );
+});
+
 test("framework catalog resolution is aborted by the bounded framework stage timeout", async () => {
   let sequence = 0;
   let resolutionSignal: AbortSignal | undefined;
@@ -2203,7 +2392,7 @@ test("framework catalog resolution is aborted by the bounded framework stage tim
     activeFundPolicy: async () => policy,
     referenceCatalog: TEST_REFERENCE_CATALOG,
     candidateStagePolicies: {
-      framework_lenses: { timeoutMs: 5 },
+      framework_catalog: { timeoutMs: 5 },
     },
     candidateExecutor: createSourceGroundedCandidateExecutor({
       grounding,
@@ -2253,11 +2442,11 @@ test("framework catalog resolution is aborted by the bounded framework stage tim
   assert.equal(runs.inspect().candidates[0]?.status, "unavailable");
   assert.deepEqual(
     Object.values(runs.inspect().unavailableReasons),
-    [["CANDIDATE_STAGE_TIMEOUT_FRAMEWORK_LENSES"]],
+    [["CANDIDATE_STAGE_TIMEOUT_FRAMEWORK_CATALOG"]],
   );
   assert.deepEqual(
     runs.inspect().checkpoints
-      .filter(({ stage }) => stage === "framework_lenses")
+      .filter(({ stage }) => stage === "framework_catalog")
       .map(({ status, reasonCode, attemptCount, providerAttempts }) => ({
         status,
         reasonCode,
@@ -2266,7 +2455,7 @@ test("framework catalog resolution is aborted by the bounded framework stage tim
       })),
     [{
       status: "failed",
-      reasonCode: "CANDIDATE_STAGE_TIMEOUT_FRAMEWORK_LENSES",
+      reasonCode: "CANDIDATE_STAGE_TIMEOUT_FRAMEWORK_CATALOG",
       attemptCount: 1,
       providerAttemptCount: 0,
     }],
@@ -2320,7 +2509,7 @@ test("rejected framework catalog resolution is visible unavailability with a fai
   );
   assert.deepEqual(
     runs.inspect().checkpoints
-      .filter(({ stage }) => stage === "framework_lenses")
+      .filter(({ stage }) => stage === "framework_catalog")
       .map(({ status, reasonCode, attemptCount }) => ({
         status,
         reasonCode,
@@ -2328,7 +2517,7 @@ test("rejected framework catalog resolution is visible unavailability with a fai
       })),
     [{
       status: "failed",
-      reasonCode: "CANDIDATE_STAGE_EXECUTION_FRAMEWORK_LENSES",
+      reasonCode: "CANDIDATE_STAGE_EXECUTION_FRAMEWORK_CATALOG",
       attemptCount: 1,
     }],
   );

@@ -35,6 +35,7 @@ import {
 import { createValuationEngine } from "./valuation/service";
 import type { ValuationEngine } from "./valuation/contracts";
 import type { FrameworkLensService } from "./frameworks/service";
+import { IntegrationTransportError } from "../api/errors";
 import {
   createDecisionEngine,
   type DecisionEngine,
@@ -50,6 +51,7 @@ import {
 import {
   parseCandidateGroundingSnapshot,
   parseDecisionResult,
+  parseFrameworkCatalogBinding,
   parseFrameworkLensResult,
   parseGroundedEvidencePack,
   parseNarrativeArtifacts,
@@ -140,10 +142,23 @@ export interface FrameworkLensExecutionSelection {
   service: FrameworkLensService;
 }
 
-class FrameworkCatalogResolutionError extends Error {
+interface FrameworkCatalogBinding {
+  catalogVersion: string;
+  catalogFingerprint: string;
+  corpusDigest: string;
+}
+
+class FrameworkCatalogResolutionError extends IntegrationTransportError {
+  override readonly cause: unknown;
+
   constructor(cause: unknown) {
-    super("The audited Framework catalog could not be resolved.", { cause });
+    super({
+      retryable:
+        cause instanceof IntegrationTransportError && cause.retryable,
+    });
     this.name = "FrameworkCatalogResolutionError";
+    this.message = "The audited Framework catalog could not be resolved.";
+    this.cause = cause;
   }
 }
 
@@ -699,45 +714,33 @@ export function createSourceGroundedCandidateExecutor(options: {
       id: `scenario-model:${input.candidate.id}`,
       candidateRunId: input.candidate.id,
     };
-    let frameworkSelection: FrameworkLensExecutionSelection | {
-      catalogVersion: null;
-      catalogFingerprint: null;
-      corpusDigest: null;
-      service: FrameworkLensService;
-    };
+    let resolvedFrameworkSelection:
+      | FrameworkLensExecutionSelection
+      | undefined;
+    let frameworkCatalog: FrameworkCatalogBinding | null;
     try {
-      frameworkSelection = options.resolveFrameworkLenses
-        ? await input.stages.prepare({
-          stage: "framework_lenses",
+      frameworkCatalog = options.resolveFrameworkLenses
+        ? await input.stages.run({
+          stage: "framework_catalog",
           inputFingerprint: fingerprint({
-            stage: "framework_lenses",
-            phase: "catalog_resolution",
+            stage: "framework_catalog",
             candidateId: input.candidate.id,
             context,
             execution,
           }),
+          parseOutput: parseFrameworkCatalogBinding,
           operation: async (signal) => {
             try {
-              return validateFrameworkLensSelection(
+              resolvedFrameworkSelection = validateFrameworkLensSelection(
                 await options.resolveFrameworkLenses!(context, signal),
               );
+              return frameworkCatalogBinding(resolvedFrameworkSelection);
             } catch (error) {
-              if (
-                signal.aborted
-                && signal.reason instanceof CandidateStageTimeoutError
-              ) {
-                throw signal.reason;
-              }
-              throw new FrameworkCatalogResolutionError(error);
+              throw classifyFrameworkCatalogError(error, signal);
             }
           },
         })
-        : {
-          catalogVersion: null,
-          catalogFingerprint: null,
-          corpusDigest: null,
-          service: options.frameworkLenses!,
-        };
+        : null;
     } catch (error) {
       if (error instanceof CandidateStageTimeoutError) {
         return timeoutUnavailableExecution(error.stage);
@@ -757,32 +760,50 @@ export function createSourceGroundedCandidateExecutor(options: {
         calculations: valuationArtifacts.calculations,
         execution,
         frameworkCatalog: {
-          version: frameworkSelection.catalogVersion,
-          fingerprint: frameworkSelection.catalogFingerprint,
-          corpusDigest: frameworkSelection.corpusDigest,
+          version: frameworkCatalog?.catalogVersion ?? null,
+          fingerprint: frameworkCatalog?.catalogFingerprint ?? null,
+          corpusDigest: frameworkCatalog?.corpusDigest ?? null,
         },
       });
       lensResult = await input.stages.run({
         stage: "framework_lenses",
         inputFingerprint: frameworkInputFingerprint,
         parseOutput: parseFrameworkLensResult,
-        operation: (signal) => frameworkSelection.service.runAll({
-          candidate: input.candidate,
-          pack,
-          context,
-          calculations: valuationArtifacts.calculations,
-          signal,
-          providerAttempt: {
-            execute: (request) => input.stages.runProviderAttempt({
-              stage: "framework_lenses",
-              inputFingerprint: frameworkInputFingerprint,
-              attemptFingerprint: request.attemptFingerprint,
-              costUnits: 1,
-              tokenUnits: request.outputTokenUnits,
-              operation: request.operation,
-            }),
-          },
-        }),
+        operation: async (signal) => {
+          let service = options.frameworkLenses;
+          if (options.resolveFrameworkLenses) {
+            try {
+              resolvedFrameworkSelection ??=
+                validateFrameworkLensSelection(
+                  await options.resolveFrameworkLenses(context, signal),
+                );
+              assertFrameworkCatalogBinding(
+                resolvedFrameworkSelection,
+                frameworkCatalog!,
+              );
+              service = resolvedFrameworkSelection.service;
+            } catch (error) {
+              throw classifyFrameworkCatalogError(error, signal);
+            }
+          }
+          return service!.runAll({
+            candidate: input.candidate,
+            pack,
+            context,
+            calculations: valuationArtifacts.calculations,
+            signal,
+            providerAttempt: {
+              execute: (request) => input.stages.runProviderAttempt({
+                stage: "framework_lenses",
+                inputFingerprint: frameworkInputFingerprint,
+                attemptFingerprint: request.attemptFingerprint,
+                costUnits: 1,
+                tokenUnits: request.outputTokenUnits,
+                operation: request.operation,
+              }),
+            },
+          });
+        },
       });
     } catch (error) {
       if (error instanceof CandidateBudgetExhaustedError) {
@@ -790,6 +811,9 @@ export function createSourceGroundedCandidateExecutor(options: {
       }
       if (error instanceof CandidateStageTimeoutError) {
         return timeoutUnavailableExecution(error.stage);
+      }
+      if (error instanceof FrameworkCatalogResolutionError) {
+        return unavailableExecution(["FRAMEWORK_CATALOG_UNAVAILABLE"]);
       }
       throw error;
     }
@@ -905,13 +929,11 @@ export function createSourceGroundedCandidateExecutor(options: {
       decisionPolicy,
       referenceCatalogFingerprint:
         input.referenceCatalog.definitionFingerprint,
-      frameworkCatalog: frameworkSelection.catalogFingerprint
-        && frameworkSelection.corpusDigest
-        && frameworkSelection.catalogVersion
+      frameworkCatalog: frameworkCatalog
         ? {
-          version: frameworkSelection.catalogVersion,
-          fingerprint: frameworkSelection.catalogFingerprint,
-          corpusDigest: frameworkSelection.corpusDigest,
+          version: frameworkCatalog.catalogVersion,
+          fingerprint: frameworkCatalog.catalogFingerprint,
+          corpusDigest: frameworkCatalog.corpusDigest,
         }
         : null,
       formulaVersions,
@@ -958,14 +980,12 @@ export function createSourceGroundedCandidateExecutor(options: {
           decisionPolicy.definitionFingerprint,
         referenceCatalogFingerprint:
           input.referenceCatalog.definitionFingerprint,
-        ...(frameworkSelection.catalogVersion
-            && frameworkSelection.catalogFingerprint
-            && frameworkSelection.corpusDigest
+        ...(frameworkCatalog
           ? {
-            frameworkCatalogVersion: frameworkSelection.catalogVersion,
+            frameworkCatalogVersion: frameworkCatalog.catalogVersion,
             frameworkCatalogFingerprint:
-              frameworkSelection.catalogFingerprint,
-            frameworkCorpusDigest: frameworkSelection.corpusDigest,
+              frameworkCatalog.catalogFingerprint,
+            frameworkCorpusDigest: frameworkCatalog.corpusDigest,
           }
           : {}),
         formulaVersions,
@@ -1008,6 +1028,46 @@ function validateFrameworkLensSelection(
     corpusDigest,
     service: input.service,
   };
+}
+
+function frameworkCatalogBinding(
+  selection: FrameworkLensExecutionSelection,
+): FrameworkCatalogBinding {
+  return {
+    catalogVersion: selection.catalogVersion,
+    catalogFingerprint: selection.catalogFingerprint,
+    corpusDigest: selection.corpusDigest,
+  };
+}
+
+function assertFrameworkCatalogBinding(
+  selection: FrameworkLensExecutionSelection,
+  binding: FrameworkCatalogBinding,
+): void {
+  if (
+    selection.catalogVersion !== binding.catalogVersion
+    || selection.catalogFingerprint !== binding.catalogFingerprint
+    || selection.corpusDigest !== binding.corpusDigest
+  ) {
+    throw new Error(
+      "The resolved Framework catalog changed after its durable selection checkpoint.",
+    );
+  }
+}
+
+function classifyFrameworkCatalogError(
+  error: unknown,
+  signal: AbortSignal,
+): Error {
+  if (
+    signal.aborted
+    && signal.reason instanceof CandidateStageTimeoutError
+  ) {
+    return signal.reason;
+  }
+  return error instanceof FrameworkCatalogResolutionError
+    ? error
+    : new FrameworkCatalogResolutionError(error);
 }
 
 function qualifiedCandidates(
