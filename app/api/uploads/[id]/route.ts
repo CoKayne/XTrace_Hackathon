@@ -8,7 +8,7 @@ import {
 import { requirePermission } from "../../../../lib/api/safety";
 import {
   createUploadConfirmationService,
-  toUploadPreviewDto,
+  toUploadRecoveryDetailDto,
 } from "../../../../lib/uploads/confirmation";
 import { getSourceRegistry } from "../../../../db/repositories/source-registry";
 
@@ -40,7 +40,7 @@ export async function GET(
       sources: dependencies.sourceRegistry ?? getSourceRegistry(),
       deals: dependencies.dealRegistry ?? getDealRegistry(),
     });
-    return jsonOk(toUploadPreviewDto(
+    return jsonOk(toUploadRecoveryDetailDto(
       upload,
       await service.listCandidateDeals(requestContext.workspaceId),
     ));

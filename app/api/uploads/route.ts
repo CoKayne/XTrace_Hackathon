@@ -1,5 +1,5 @@
 import { getUploadedDocumentsRepository } from "../../../db/repositories/uploaded-documents";
-import { errorResponse, jsonError } from "../../../lib/api/response";
+import { errorResponse, jsonError, jsonOk } from "../../../lib/api/response";
 import {
   resolveRouteRequestContext,
   type RouteDependencies,
@@ -15,9 +15,28 @@ import {
   uploadedObjectKey,
   UnsupportedUploadError,
 } from "../../../lib/uploads/service";
+import { toUploadRecoveryDto } from "../../../lib/uploads/confirmation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+export async function GET(
+  request: Request,
+  _routeContext?: unknown,
+  dependencies: RouteDependencies = {},
+) {
+  try {
+    const context = await resolveRouteRequestContext(request, dependencies);
+    requirePermission(context, "readPrivateSources");
+    const uploads = dependencies.uploadedDocuments
+      ?? getUploadedDocumentsRepository();
+    return jsonOk(
+      (await uploads.list(context.workspaceId)).map(toUploadRecoveryDto),
+    );
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
 
 export async function POST(
   request: Request,

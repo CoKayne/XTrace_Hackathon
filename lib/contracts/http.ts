@@ -35,6 +35,13 @@ export const ChatRequestSchema = z.object({
   xtraceEnabled: z.boolean().default(true),
 });
 
+export const ReplaceActionDraftBodySchema = z.strictObject({
+  body: z.string().max(100_000).refine(
+    (body) => body.trim().length > 0,
+    "Action draft body cannot be blank",
+  ),
+});
+
 export const ApiErrorCodeSchema = z.enum([
   "VALIDATION_ERROR",
   "NOT_FOUND",
@@ -60,3 +67,6 @@ export type CreateRunRequest = z.infer<typeof CreateRunRequestSchema>;
 export type RunSummary = z.infer<typeof RunSummarySchema>;
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;
 export type ConfirmUpload = z.infer<typeof ConfirmUploadSchema>;
+export type ReplaceActionDraftBody = z.infer<
+  typeof ReplaceActionDraftBodySchema
+>;

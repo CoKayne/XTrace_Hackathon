@@ -5,6 +5,10 @@ import {
 } from "../../../lib/api/route-dependencies";
 import { requirePermission } from "../../../lib/api/safety";
 import { buildDemoViewModel } from "../../../lib/demo/view-model";
+import { getDealRegistry } from "../../../db/repositories/deal-registry";
+import { getIntelligenceRepository } from "../../../db/repositories/intelligence";
+import { getUploadedDocumentsRepository } from "../../../db/repositories/uploaded-documents";
+import { buildProductOverview } from "../../../lib/deals/read-model";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +20,19 @@ export async function GET(
   try {
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
-    return jsonOk(buildDemoViewModel());
+    return jsonOk(
+      context.mode === "product"
+        ? await buildProductOverview({
+          workspaceId: context.workspaceId,
+          deals: dependencies.dealRegistry ?? getDealRegistry(),
+          intelligence:
+            dependencies.intelligence ?? getIntelligenceRepository(),
+          uploads: dependencies.uploadedDocuments
+            ?? getUploadedDocumentsRepository(),
+          now: dependencies.now ?? Date.now,
+        })
+        : buildDemoViewModel(),
+    );
   } catch (error) {
     return errorResponse(error);
   }

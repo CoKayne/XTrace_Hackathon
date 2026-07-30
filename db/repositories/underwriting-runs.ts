@@ -52,6 +52,18 @@ export interface CandidateCheckpointWrite extends CandidateCheckpoint {
 }
 
 export interface UnderwritingRunsRepository {
+  getBatchByScanRunId(input: {
+    workspaceId: string;
+    scanRunId: string;
+  }): Promise<UnderwritingBatch | null>;
+  listSelectionsForBatch(input: {
+    workspaceId: string;
+    batchId: string;
+  }): Promise<UnderwritingSelection[]>;
+  listCandidatesForBatch(input: {
+    workspaceId: string;
+    batchId: string;
+  }): Promise<CandidateRun[]>;
   createOrReuseBatch(input: CreateBatchInput): Promise<UnderwritingBatch>;
   saveSelections(input: {
     batchId: string;
@@ -214,6 +226,50 @@ export function createMemoryUnderwritingRunsRepository(
   }
 
   return {
+    async getBatchByScanRunId(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const scanRunId = requiredText(input.scanRunId, "A scan run");
+      const batch = [...batches.values()]
+        .map(({ value }) => value)
+        .filter((value) =>
+          value.workspaceId === workspaceId
+          && value.scanRunId === scanRunId
+        )
+        .sort((left, right) =>
+          right.createdAt.localeCompare(left.createdAt)
+          || right.id.localeCompare(left.id)
+        )[0];
+      return batch ? structuredClone(batch) : null;
+    },
+
+    async listSelectionsForBatch(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const batchId = requiredText(input.batchId, "A batch");
+      const batch = batches.get(batchId)?.value;
+      if (!batch || batch.workspaceId !== workspaceId) return [];
+      return [...selections.values()]
+        .filter((selection) => selection.batchId === batchId)
+        .sort((left, right) =>
+          (left.rank ?? Number.MAX_SAFE_INTEGER)
+            - (right.rank ?? Number.MAX_SAFE_INTEGER)
+          || left.dealId.localeCompare(right.dealId)
+        )
+        .map((selection) => structuredClone(selection));
+    },
+
+    async listCandidatesForBatch(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const batchId = requiredText(input.batchId, "A batch");
+      const batch = batches.get(batchId)?.value;
+      if (!batch || batch.workspaceId !== workspaceId) return [];
+      return candidatesForBatch(batchId)
+        .sort((left, right) =>
+          left.createdAt.localeCompare(right.createdAt)
+          || left.id.localeCompare(right.id)
+        )
+        .map((candidate) => structuredClone(candidate));
+    },
+
     async createOrReuseBatch(rawInput) {
       const input = validateBatchInput(rawInput);
       if (!input.forceRefresh) {
@@ -724,6 +780,39 @@ export function createSupabaseUnderwritingRunsRepository(options: {
   }
 
   return {
+    async getBatchByScanRunId(input) {
+      const query = new URLSearchParams({
+        workspace_id: `eq.${requiredText(input.workspaceId, "A workspace")}`,
+        scan_run_id: `eq.${requiredText(input.scanRunId, "A scan run")}`,
+        order: "created_at.desc,id.desc",
+        limit: "1",
+      });
+      const rows = await read(`/underwriting_batches?${query}`) as unknown[];
+      return Array.isArray(rows) && rows[0] ? parseBatch(rows[0]) : null;
+    },
+
+    async listSelectionsForBatch(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const batchId = requiredText(input.batchId, "A batch");
+      const query = new URLSearchParams({
+        workspace_id: `eq.${workspaceId}`,
+        batch_id: `eq.${batchId}`,
+        order: "rank.asc.nullslast,deal_id.asc",
+      });
+      const rows = await read(`/underwriting_selections?${query}`) as unknown[];
+      return Array.isArray(rows) ? rows.map(parseSelection) : [];
+    },
+
+    async listCandidatesForBatch(input) {
+      const query = new URLSearchParams({
+        workspace_id: `eq.${requiredText(input.workspaceId, "A workspace")}`,
+        batch_id: `eq.${requiredText(input.batchId, "A batch")}`,
+        order: "created_at.asc,id.asc",
+      });
+      const rows = await read(`/candidate_runs?${query}`) as unknown[];
+      return Array.isArray(rows) ? rows.map(parseCandidate) : [];
+    },
+
     async createOrReuseBatch(input) {
       const validated = validateBatchInput(input);
       return parseBatch(await request(
@@ -927,6 +1016,19 @@ function parseCandidate(value: unknown): CandidateRun {
   });
 }
 
+function parseSelection(value: unknown): UnderwritingSelection {
+  const row = value as Record<string, unknown>;
+  return UnderwritingSelectionSchema.parse({
+    batchId: row.batchId ?? row.batch_id,
+    dealId: row.dealId ?? row.deal_id,
+    status: row.status,
+    rank: row.rank === null || row.rank === undefined
+      ? null
+      : Number(row.rank),
+    reason: row.reason,
+  });
+}
+
 function parseCheckpoint(value: unknown): CandidateCheckpoint {
   const row = value as Record<string, unknown>;
   return CandidateCheckpointSchema.parse({
@@ -1011,4 +1113,16 @@ function requiredFingerprint(value: string, label: string): string {
     throw new Error(`${label} must be a canonical SHA-256 digest.`);
   }
   return normalized;
+}
+
+let singleton: UnderwritingRunsRepository | undefined;
+
+export function getUnderwritingRunsRepository(): UnderwritingRunsRepository {
+  if (singleton) return singleton;
+  const url = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  singleton = url && serviceRoleKey
+    ? createSupabaseUnderwritingRunsRepository({ url, serviceRoleKey })
+    : createMemoryUnderwritingRunsRepository();
+  return singleton;
 }

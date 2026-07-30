@@ -32,6 +32,21 @@ export interface UploadPreviewDto {
   failure: string | null;
 }
 
+export type UploadRecoveryFields = {
+  dealId: string | null;
+  sourceRevisionId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type UploadRecoveryDto =
+  & Omit<UploadPreviewDto, "candidateDeals">
+  & UploadRecoveryFields;
+
+export type UploadRecoveryDetailDto =
+  & UploadPreviewDto
+  & UploadRecoveryFields;
+
 export interface ConfirmedUpload {
   uploadId: string;
   dealId: string;
@@ -72,6 +87,42 @@ export function toUploadPreviewDto(
       : null,
     candidateDeals: structuredClone(candidateDeals),
     failure: record.failureReason ? publicFailure(record.status) : null,
+  };
+}
+
+export function toUploadRecoveryDto(
+  record: UploadedDocumentRecord,
+): UploadRecoveryDto {
+  const preview = toUploadPreviewDto(record, []);
+  return {
+    uploadId: preview.uploadId,
+    status: preview.status,
+    filename: preview.filename,
+    contentType: preview.contentType,
+    preview: preview.preview,
+    failure: preview.failure,
+    ...uploadRecoveryFields(record),
+  };
+}
+
+export function toUploadRecoveryDetailDto(
+  record: UploadedDocumentRecord,
+  candidateDeals: UploadPreviewDto["candidateDeals"],
+): UploadRecoveryDetailDto {
+  return {
+    ...toUploadPreviewDto(record, candidateDeals),
+    ...uploadRecoveryFields(record),
+  };
+}
+
+function uploadRecoveryFields(
+  record: UploadedDocumentRecord,
+): UploadRecoveryFields {
+  return {
+    dealId: record.dealId ?? null,
+    sourceRevisionId: record.sourceRevisionId ?? null,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
   };
 }
 

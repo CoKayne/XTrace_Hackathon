@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { POST as chat } from "../../app/api/chat/route";
+import { GET as actionDrafts } from "../../app/api/action-drafts/route";
+import { PATCH as actionDraft } from "../../app/api/action-drafts/[id]/route";
 import { GET as dealAnalyses } from "../../app/api/deals/[id]/analyses/route";
 import { GET as deal } from "../../app/api/deals/[id]/route";
 import { GET as deals } from "../../app/api/deals/route";
@@ -11,7 +13,7 @@ import { GET as document } from "../../app/api/documents/[id]/route";
 import { GET as documents } from "../../app/api/documents/route";
 import { POST as uploadDocument } from "../../app/api/documents/upload/route";
 import { GET as uploadedDocuments } from "../../app/api/documents/uploaded/route";
-import { POST as createUpload } from "../../app/api/uploads/route";
+import { GET as listUploads, POST as createUpload } from "../../app/api/uploads/route";
 import { GET as getUpload } from "../../app/api/uploads/[id]/route";
 import { POST as confirmUpload } from "../../app/api/uploads/[id]/confirm/route";
 import { GET as accessSourceRevision } from "../../app/api/source-revisions/[id]/access/route";
@@ -24,7 +26,9 @@ import { GET as marketEvents } from "../../app/api/market/events/route";
 import { GET as overview } from "../../app/api/overview/route";
 import { GET as reportCompany } from "../../app/api/reports/[id]/companies/[dealId]/route";
 import { GET as report } from "../../app/api/reports/[id]/route";
+import { GET as reportUnderwriting } from "../../app/api/reports/[id]/underwriting/[dealId]/route";
 import { GET as reports } from "../../app/api/reports/route";
+import { GET as search } from "../../app/api/search/route";
 import { GET as run } from "../../app/api/runs/[id]/route";
 import { GET as runs, POST as createRun } from "../../app/api/runs/route";
 import { GET as health } from "../../app/api/settings/health/route";
@@ -36,10 +40,29 @@ import { toPublicUploadedDocument } from "../../lib/uploads/public";
 type RouteInvocation = () => Promise<Response>;
 
 const allCurrentRouteHandlers: Array<{
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "PATCH";
   path: string;
   invoke: RouteInvocation;
 }> = [
+  {
+    method: "GET",
+    path: "/api/action-drafts",
+    invoke: () => actionDrafts(request(
+      "/api/action-drafts?candidateRunId=candidate_missing",
+    )),
+  },
+  {
+    method: "PATCH",
+    path: "/api/action-drafts/[id]",
+    invoke: () => actionDraft(
+      request("/api/action-drafts/draft_missing", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ body: "Body" }),
+      }),
+      params({ id: "draft_missing" }),
+    ),
+  },
   {
     method: "POST",
     path: "/api/chat",
@@ -109,6 +132,11 @@ const allCurrentRouteHandlers: Array<{
   },
   {
     method: "GET",
+    path: "/api/uploads",
+    invoke: () => listUploads(request("/api/uploads")),
+  },
+  {
+    method: "GET",
     path: "/api/uploads/[id]",
     invoke: () => getUpload(
       request("/api/uploads/upload_missing"),
@@ -168,6 +196,19 @@ const allCurrentRouteHandlers: Array<{
       request("/api/reports/report_missing/companies/deal_7bridges"),
       params({ id: "report_missing", dealId: "deal_7bridges" }),
     ),
+  },
+  {
+    method: "GET",
+    path: "/api/reports/[id]/underwriting/[dealId]",
+    invoke: () => reportUnderwriting(
+      request("/api/reports/report_missing/underwriting/deal_7bridges"),
+      params({ id: "report_missing", dealId: "deal_7bridges" }),
+    ),
+  },
+  {
+    method: "GET",
+    path: "/api/search",
+    invoke: () => search(request("/api/search?q=carrier")),
   },
   {
     method: "GET",

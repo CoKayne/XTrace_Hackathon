@@ -143,6 +143,18 @@ export interface UnderwritingArtifactsRepository {
     workspaceId: string;
     candidateRunId: string;
   }): Promise<CandidateArtifactBundle | null>;
+  listFinalizedForWorkspace(input: {
+    workspaceId: string;
+  }): Promise<CandidateArtifactBundle[]>;
+  listActionDrafts(input: {
+    workspaceId: string;
+    candidateRunId: string;
+  }): Promise<ActionDraft[]>;
+  replaceActionDraftBody(input: {
+    workspaceId: string;
+    draftId: string;
+    body: string;
+  }): Promise<ActionDraft | null>;
 }
 
 export interface MemoryUnderwritingArtifactsRepository
@@ -170,11 +182,13 @@ export interface MemoryUnderwritingArtifactsRepository
   };
 }
 
-export function createMemoryUnderwritingArtifactsRepository():
-  MemoryUnderwritingArtifactsRepository {
+export function createMemoryUnderwritingArtifactsRepository(options: {
+  now?: () => Date;
+} = {}): MemoryUnderwritingArtifactsRepository {
   const bundles = new Map<string, CandidateArtifactBundle>();
   const reusable = new Map<string, ReusableCandidateArtifacts>();
   const aliases = new Map<string, string>();
+  const now = options.now ?? (() => new Date());
 
   return {
     async findReusable(input) {
@@ -203,6 +217,58 @@ export function createMemoryUnderwritingArtifactsRepository():
         artifactCandidateRunId,
       ));
       return value ? structuredClone(value) : null;
+    },
+
+    async listFinalizedForWorkspace(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      return [...bundles.values()]
+        .filter((bundle) => bundle.workspaceId === workspaceId)
+        .sort((left, right) =>
+          left.candidateRunId.localeCompare(right.candidateRunId)
+        )
+        .map((bundle) => structuredClone(bundle));
+    },
+
+    async listActionDrafts(input) {
+      const bundle = await this.getByCandidateRunId({
+        workspaceId: input.workspaceId,
+        candidateRunId: input.candidateRunId,
+      });
+      return bundle
+        ? bundle.actionDrafts
+          .map((draft) => structuredClone(draft))
+          .sort((left, right) =>
+            left.createdAt.localeCompare(right.createdAt)
+            || left.id.localeCompare(right.id)
+          )
+        : [];
+    },
+
+    async replaceActionDraftBody(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const draftId = requiredText(input.draftId, "An action draft");
+      const body = requiredBody(input.body);
+      const matches = [...bundles.values()].flatMap((bundle) =>
+        bundle.workspaceId === workspaceId
+          ? bundle.actionDrafts.flatMap((draft, index) =>
+            draft.id === draftId ? [{ bundle, draft, index }] : []
+          )
+          : []
+      );
+      if (matches.length === 0) return null;
+      if (matches.length !== 1) {
+        throw new Error(
+          "Action draft identity is ambiguous inside the workspace.",
+        );
+      }
+      const { bundle, draft, index } = matches[0];
+      const updated = ActionDraftSchema.parse({
+        ...draft,
+        body,
+        updatedAt: now().toISOString(),
+      });
+      bundle.actionDrafts[index] = updated;
+      return structuredClone(updated);
     },
 
     prepareFinalization({ candidate, finalization }) {
@@ -306,12 +372,17 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
     "Content-Type": "application/json",
   };
 
-  async function request(pathname: string): Promise<unknown> {
+  async function request(
+    pathname: string,
+    init: RequestInit = {},
+  ): Promise<unknown> {
     let response: Response;
     try {
       response = await fetchImpl(`${base}${pathname}`, {
+        ...init,
         headers,
         cache: "no-store",
+        ...(init.body === undefined ? {} : { body: init.body }),
       });
     } catch {
       throw new IntegrationTransportError({ retryable: true });
@@ -338,7 +409,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
     ) as Array<Record<string, unknown>>;
   }
 
-  return {
+  const repository: UnderwritingArtifactsRepository = {
     async findReusable(input) {
       const workspaceId = requiredText(input.workspaceId, "A workspace");
       const fingerprint = requiredText(
@@ -379,7 +450,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
       const candidateQuery = new URLSearchParams({
         workspace_id: `eq.${workspaceId}`,
         id: `eq.${candidateRunId}`,
-        status: "eq.completed",
+        status: "in.(completed,partial)",
         select:
           "id,batch_id,workspace_id,deal_id,candidate_analysis_fingerprint,artifact_source_candidate_run_id",
         limit: "1",
@@ -570,7 +641,50 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
       }
       return prepared;
     },
+    async listFinalizedForWorkspace(input) {
+      const workspaceId = requiredText(input.workspaceId, "A workspace");
+      const query = new URLSearchParams({
+        workspace_id: `eq.${workspaceId}`,
+        status: "in.(completed,partial)",
+        select: "id",
+        order: "created_at.asc,id.asc",
+      });
+      const candidates = await request(`/candidate_runs?${query}`) as Array<
+        Record<string, unknown>
+      >;
+      const values = await Promise.all(candidates.map((candidate) =>
+        repository.getByCandidateRunId({
+          workspaceId,
+          candidateRunId: String(candidate.id),
+        })
+      ));
+      return values.flatMap((value) => value ? [value] : []);
+    },
+    async listActionDrafts(input) {
+      const bundle = await repository.getByCandidateRunId(input);
+      return bundle
+        ? bundle.actionDrafts
+          .map((draft) => structuredClone(draft))
+          .sort((left, right) =>
+            left.createdAt.localeCompare(right.createdAt)
+            || left.id.localeCompare(right.id)
+          )
+        : [];
+    },
+    async replaceActionDraftBody(input) {
+      const value = await request("/rpc/replace_action_draft_body", {
+        method: "POST",
+        body: JSON.stringify({
+          p_workspace_id: requiredText(input.workspaceId, "A workspace"),
+          p_draft_id: requiredText(input.draftId, "An action draft"),
+          p_body: requiredBody(input.body),
+        }),
+      }) as Record<string, unknown> | Record<string, unknown>[] | null;
+      const row = Array.isArray(value) ? value[0] : value;
+      return row ? ActionDraftSchema.parse(row) : null;
+    },
   };
+  return repository;
 }
 
 function validateFinalization(
@@ -852,4 +966,30 @@ function requiredText(value: string, label: string): string {
     throw new Error(`${label} is required without surrounding whitespace.`);
   }
   return value;
+}
+
+function requiredBody(value: string): string {
+  if (
+    typeof value !== "string"
+    || value.length > 100_000
+    || value.trim().length === 0
+  ) {
+    throw new Error(
+      "An action draft body must contain text and be at most 100000 characters.",
+    );
+  }
+  return value;
+}
+
+let singleton: UnderwritingArtifactsRepository | undefined;
+
+export function getUnderwritingArtifactsRepository():
+  UnderwritingArtifactsRepository {
+  if (singleton) return singleton;
+  const url = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  singleton = url && serviceRoleKey
+    ? createSupabaseUnderwritingArtifactsRepository({ url, serviceRoleKey })
+    : createMemoryUnderwritingArtifactsRepository();
+  return singleton;
 }

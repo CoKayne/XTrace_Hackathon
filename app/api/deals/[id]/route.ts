@@ -5,6 +5,8 @@ import {
 } from "../../../../lib/api/route-dependencies";
 import { requirePermission } from "../../../../lib/api/safety";
 import { buildDemoViewModel } from "../../../../lib/demo/view-model";
+import { getDealRegistry } from "../../../../db/repositories/deal-registry";
+import { toProductDealView } from "../../../../lib/deals/read-model";
 
 export async function GET(
   request: Request,
@@ -18,7 +20,14 @@ export async function GET(
     );
     requirePermission(requestContext, "readWorkspace");
     const { id } = await context.params;
-    const deal = buildDemoViewModel().deals.find((candidate) => candidate.id === id);
+    const deal = requestContext.mode === "product"
+      ? await (
+        dependencies.dealRegistry ?? getDealRegistry()
+      ).findForWorkspace({
+        workspaceId: requestContext.workspaceId,
+        dealId: id,
+      }).then((value) => value ? toProductDealView(value) : null)
+      : buildDemoViewModel().deals.find((candidate) => candidate.id === id);
     return deal
       ? jsonOk(deal)
       : jsonError("NOT_FOUND", `Deal ${id} was not found`, 404);

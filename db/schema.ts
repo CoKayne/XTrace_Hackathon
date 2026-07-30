@@ -1247,7 +1247,15 @@ export const actionDrafts = pgTable("action_drafts", {
   payload: jsonb("payload").$type<ActionDraft>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
     .notNull(),
-}, manyArtifactTableConfig("action_drafts_workspace_candidate_fkey"));
+}, (table) => [
+  ...manyArtifactTableConfig(
+    "action_drafts_workspace_candidate_fkey",
+  )(table),
+  uniqueIndex("action_drafts_workspace_artifact_unique").on(
+    table.workspaceId,
+    table.artifactId,
+  ),
+]);
 
 export const underwritingClaimEdges = pgTable("underwriting_claim_edges", {
   workspaceId: text("workspace_id").notNull(),

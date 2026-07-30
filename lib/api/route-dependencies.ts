@@ -4,6 +4,15 @@ import type { DealRegistry } from "../../db/repositories/deal-registry";
 import type {
   UnderwritingReferencesRepository,
 } from "../../db/repositories/underwriting-references";
+import type {
+  UnderwritingRunsRepository,
+} from "../../db/repositories/underwriting-runs";
+import type {
+  UnderwritingArtifactsRepository,
+} from "../../db/repositories/underwriting-artifacts";
+import type {
+  IntelligenceRepository,
+} from "../../db/repositories/intelligence";
 import {
   resolveRequestContext,
   type AuthorizedRequestContext,
@@ -23,6 +32,9 @@ export interface RouteDependencies {
   documentAccess?: PrivateDocumentAccess;
   privateObjectStorage?: PrivateObjectStorage;
   underwritingReferences?: UnderwritingReferencesRepository;
+  underwritingRuns?: UnderwritingRunsRepository;
+  underwritingArtifacts?: UnderwritingArtifactsRepository;
+  intelligence?: IntelligenceRepository;
   now?: () => number;
 }
 

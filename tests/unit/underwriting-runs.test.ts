@@ -565,3 +565,82 @@ test("Supabase checkpoint replay reads only the exact workspace candidate", asyn
   );
   assert.equal(url.searchParams.get("order"), "saved_at.asc,stage.asc");
 });
+
+test("Supabase underwriting read models scope every batch projection to one workspace", async () => {
+  const requestedUrls: string[] = [];
+  const runs = createSupabaseUnderwritingRunsRepository({
+    url: "https://supabase.example",
+    serviceRoleKey: "secret",
+    fetchImpl: async (url) => {
+      const requestedUrl = String(url);
+      requestedUrls.push(requestedUrl);
+      if (requestedUrl.includes("/underwriting_batches?")) {
+        return Response.json([{
+          id: "batch_target",
+          workspace_id: "workspace_target",
+          scan_run_id: "scan_target",
+          status: "completed",
+          batch_input_fingerprint: `sha256:${"a".repeat(64)}`,
+          fund_policy_snapshot_id: "policy_target",
+          rerun_of_id: null,
+          created_at: "2026-07-29T12:00:00.000Z",
+        }]);
+      }
+      if (requestedUrl.includes("/underwriting_selections?")) {
+        return Response.json([{
+          batch_id: "batch_target",
+          deal_id: "deal_target",
+          status: "selected",
+          rank: 1,
+          reason: "Top candidate",
+        }]);
+      }
+      if (requestedUrl.includes("/candidate_runs?")) {
+        return Response.json([{
+          id: "candidate_target",
+          batch_id: "batch_target",
+          workspace_id: "workspace_target",
+          deal_id: "deal_target",
+          status: "completed",
+          candidate_analysis_fingerprint: `sha256:${"b".repeat(64)}`,
+          rerun_of_id: null,
+          created_at: "2026-07-29T12:00:00.000Z",
+          finalized_at: "2026-07-29T12:01:00.000Z",
+        }]);
+      }
+      throw new Error(`Unexpected URL ${requestedUrl}`);
+    },
+  });
+
+  assert.equal((await runs.getBatchByScanRunId({
+    workspaceId: "workspace_target",
+    scanRunId: "scan_target",
+  }))?.id, "batch_target");
+  assert.equal((await runs.listSelectionsForBatch({
+    workspaceId: "workspace_target",
+    batchId: "batch_target",
+  }))[0]?.dealId, "deal_target");
+  assert.equal((await runs.listCandidatesForBatch({
+    workspaceId: "workspace_target",
+    batchId: "batch_target",
+  }))[0]?.id, "candidate_target");
+
+  const [batchUrl, selectionUrl, candidateUrl] = requestedUrls.map(
+    (value) => new URL(value),
+  );
+  assert.equal(
+    batchUrl.searchParams.get("workspace_id"),
+    "eq.workspace_target",
+  );
+  assert.equal(batchUrl.searchParams.get("scan_run_id"), "eq.scan_target");
+  assert.equal(
+    selectionUrl.searchParams.get("workspace_id"),
+    "eq.workspace_target",
+  );
+  assert.equal(selectionUrl.searchParams.get("batch_id"), "eq.batch_target");
+  assert.equal(
+    candidateUrl.searchParams.get("workspace_id"),
+    "eq.workspace_target",
+  );
+  assert.equal(candidateUrl.searchParams.get("batch_id"), "eq.batch_target");
+});

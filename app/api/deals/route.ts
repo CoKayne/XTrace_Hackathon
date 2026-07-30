@@ -5,6 +5,8 @@ import {
 } from "../../../lib/api/route-dependencies";
 import { requirePermission } from "../../../lib/api/safety";
 import { buildDemoViewModel } from "../../../lib/demo/view-model";
+import { getDealRegistry } from "../../../db/repositories/deal-registry";
+import { listProductDeals } from "../../../lib/deals/read-model";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +21,14 @@ export async function GET(
     const url = new URL(request.url);
     const query = url.searchParams.get("q")?.trim().toLocaleLowerCase() ?? "";
     const status = url.searchParams.get("status")?.trim() ?? "";
-    const deals = buildDemoViewModel().deals.filter((deal) => {
+    const deals = context.mode === "product"
+      ? await listProductDeals({
+        workspaceId: context.workspaceId,
+        query,
+        status,
+        deals: dependencies.dealRegistry ?? getDealRegistry(),
+      })
+      : buildDemoViewModel().deals.filter((deal) => {
       if (status && deal.status !== status) return false;
       if (!query) return true;
       return [
@@ -31,7 +40,7 @@ export async function GET(
         ...(deal.fixture?.concerns ?? []),
         ...(deal.fixture?.revisitConditions ?? []),
       ].join(" ").toLocaleLowerCase().includes(query);
-    });
+      });
     return jsonOk(deals);
   } catch (error) {
     return errorResponse(error);
