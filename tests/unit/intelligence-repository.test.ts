@@ -717,6 +717,16 @@ test("Supabase reads quarantine malformed legacy analyses without hiding valid r
     investment_memory: null,
     company_brief: null,
   };
+  const missingCompanyNameRow = {
+    ...validRow,
+    id: "analysis_legacy_missing_company",
+    company_name: undefined,
+  };
+  const nullScoreRow = {
+    ...validRow,
+    id: "analysis_legacy_null_score",
+    score: null,
+  };
   const repository = createSupabaseIntelligenceRepository({
     url: "https://example.supabase.co",
     serviceRoleKey: "test-service-role-key",
@@ -741,7 +751,12 @@ test("Supabase reads quarantine malformed legacy analyses without hiding valid r
         }]);
       }
       if (url.includes("/company_analyses")) {
-        return Response.json([malformedLegacyRow, validRow]);
+        return Response.json([
+          malformedLegacyRow,
+          missingCompanyNameRow,
+          nullScoreRow,
+          validRow,
+        ]);
       }
       throw new Error(`Unexpected request: ${url}`);
     },
@@ -772,6 +787,83 @@ test("Supabase reads quarantine malformed legacy analyses without hiding valid r
     dealAnalyses.map((analysis) => analysis.id),
     [validAnalysis.id],
   );
+});
+
+test("Supabase reads never synthesize an analysis after every durable row is quarantined", async () => {
+  const report = completeReport([companyAnalysis(1)]);
+  const analysis = report.companyAnalyses[0];
+  const malformedRow = {
+    id: analysis.id,
+    workspace_id: report.workspaceId,
+    report_id: report.id,
+    run_id: analysis.runId,
+    deal_id: analysis.dealId,
+    company_name: analysis.companyName,
+    deal_status: analysis.dealStatus,
+    outcome: analysis.outcome,
+    confidence: analysis.confidence,
+    score: analysis.score,
+    investment_memory: null,
+    market_evidence: analysis.marketEvidence,
+    implications: analysis.implications,
+    recommended_next_move: analysis.recommendedNextMove,
+    company_brief: null,
+    source_refs: analysis.sources,
+    created_at: analysis.createdAt,
+  };
+  const legacyOpportunity = {
+    rank: 1,
+    dealId: analysis.dealId,
+    confidence: "medium",
+    score: 0.72,
+    whyNow: "Infrastructure activity increased.",
+    previousContext: "The fund previously passed.",
+    implications: { positive: [], negative: [] },
+    nextStep: "Review the cited evidence.",
+    sources: [{
+      id: "source_legacy",
+      provenance: "public_web",
+      title: "Legacy source",
+      url: "https://example.com/source",
+      excerpt: "Infrastructure activity increased.",
+    }],
+    demoFixtureIds: [],
+  };
+  const repository = createSupabaseIntelligenceRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      if (url.includes("/intelligence_reports")) {
+        return Response.json([{
+          id: report.id,
+          workspace_id: report.workspaceId,
+          run_id: report.runId,
+          created_at: report.createdAt,
+          market_summary: report.marketSummary,
+          opportunities: [legacyOpportunity],
+          analysis_status: report.analysisStatus,
+          company_count: 1,
+          belief_revised_count: 1,
+          monitor_count: 0,
+          no_material_change_count: 0,
+          analysis_unavailable_count: 0,
+          priority_deal_id: analysis.dealId,
+          evidence_coverage: report.evidenceCoverage,
+        }]);
+      }
+      if (url.includes("/company_analyses")) {
+        return Response.json([malformedRow]);
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    },
+  });
+
+  const fetched = await repository.getReportByRunId(
+    report.workspaceId,
+    report.runId,
+  );
+  assert.deepEqual(fetched?.companyAnalyses, []);
 });
 
 test("resetScanProducts wipes reports and market events but nothing else is reachable", async () => {

@@ -457,17 +457,18 @@ export function createSupabaseIntelligenceRepository(options: {
   function toAnalysis(
     row: Record<string, unknown>,
   ): CompanyAnalysis | null {
-    const sources = Array.isArray(row.source_refs) ? row.source_refs : [];
+    if (!Array.isArray(row.source_refs)) return null;
+    const sources = row.source_refs;
     const parsed = CompanyAnalysisSchema.safeParse({
-      id: String(row.id),
-      reportId: String(row.report_id),
-      runId: String(row.run_id),
-      dealId: String(row.deal_id),
-      companyName: String(row.company_name),
+      id: row.id,
+      reportId: row.report_id,
+      runId: row.run_id,
+      dealId: row.deal_id,
+      companyName: row.company_name,
       dealStatus: row.deal_status,
       outcome: row.outcome,
       confidence: row.confidence,
-      score: Number(row.score),
+      score: row.score,
       verifiedSourceCount: new Set(
         sources.flatMap((source) =>
           source && typeof source === "object" && "id" in source
@@ -478,10 +479,10 @@ export function createSupabaseIntelligenceRepository(options: {
       investmentMemory: row.investment_memory,
       marketEvidence: row.market_evidence,
       implications: row.implications,
-      recommendedNextMove: String(row.recommended_next_move),
+      recommendedNextMove: row.recommended_next_move,
       companyBrief: row.company_brief,
       sources,
-      createdAt: String(row.created_at),
+      createdAt: row.created_at,
     });
     return parsed.success ? parsed.data : null;
   }
@@ -514,7 +515,7 @@ export function createSupabaseIntelligenceRepository(options: {
       priorityDealId: row.priority_deal_id
         ? String(row.priority_deal_id)
         : null,
-      ...(analyses.length > 0 ? { companyAnalyses: analyses } : {}),
+      companyAnalyses: analyses,
     });
   }
   async function analysesForReportIds(
