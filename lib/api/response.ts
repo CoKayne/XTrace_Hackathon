@@ -2,12 +2,28 @@ import { ZodError } from "zod";
 import type { ApiErrorCode } from "../contracts/http";
 import { IntegrationTransportError } from "./errors";
 
+function privateNoStoreHeaders(headers?: HeadersInit): Headers {
+  const result = new Headers(headers);
+  result.set("cache-control", "private, no-store");
+  return result;
+}
+
 export function jsonOk<T>(data: T, init: ResponseInit = {}) {
-  return Response.json({ data }, { status: 200, ...init });
+  return Response.json(
+    { data },
+    {
+      status: 200,
+      ...init,
+      headers: privateNoStoreHeaders(init.headers),
+    },
+  );
 }
 
 export function jsonCreated<T>(data: T) {
-  return Response.json({ data }, { status: 201 });
+  return Response.json(
+    { data },
+    { status: 201, headers: privateNoStoreHeaders() },
+  );
 }
 
 export function jsonError(
@@ -16,7 +32,10 @@ export function jsonError(
   status: number,
   retryable = false,
 ) {
-  return Response.json({ error: { code, message, retryable } }, { status });
+  return Response.json(
+    { error: { code, message, retryable } },
+    { status, headers: privateNoStoreHeaders() },
+  );
 }
 
 export function errorResponse(error: unknown) {

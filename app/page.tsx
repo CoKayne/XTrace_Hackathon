@@ -201,6 +201,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const isFormData = init?.body instanceof FormData;
   const response = await fetch(url, {
     ...init,
+    cache: init?.cache ?? "no-store",
     headers: isFormData
       ? (init?.headers ?? {})
       : { "content-type": "application/json", ...(init?.headers ?? {}) },

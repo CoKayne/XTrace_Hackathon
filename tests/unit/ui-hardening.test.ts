@@ -424,6 +424,15 @@ test("reports open an editable internal draft dialog without sending email", asy
   assert.match(css, new RegExp("@media\\(max-width:680px\\).*\\.vsee-draft-dialog", "s"));
 });
 
+test("browser API reads bypass stale deployment caches", async () => {
+  const page = await readFile(pagePath, "utf8");
+
+  assert.match(
+    page,
+    /fetch\(url,\s*\{[\s\S]*cache:\s*init\?\.cache\s*\?\?\s*"no-store"/,
+  );
+});
+
 test("report draft dialog has no implicit submit or nested main landmark", async () => {
   const dialog = await readFile(dialogPath, "utf8");
 
