@@ -401,7 +401,13 @@ export default function Home() {
             "",
             `${url.pathname}${url.search}${url.hash}`,
           );
-          setNotice(report.priorityDealId
+          const structuredImageFallbacks =
+            report.evidenceCoverage.structuredImageFallbackDealCount ?? 0;
+          setNotice(structuredImageFallbacks > 0
+            ? `Scan partially complete. ${structuredImageFallbacks} image-only ${
+              structuredImageFallbacks === 1 ? "Deal uses" : "Deals use"
+            } canonical structured evidence without XTrace memory IDs.`
+            : report.priorityDealId
             ? "Scan complete. The highest-priority company analysis is ready."
             : "Scan complete. No investment belief changed at medium or high confidence; the full report is ready.");
           return;

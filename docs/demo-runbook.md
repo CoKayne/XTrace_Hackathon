@@ -11,7 +11,7 @@
 > 真正的 product acceptance 必須在 `VSEE_DEPLOYMENT_MODE=product`、
 > `VSEE_TRUSTED_AUTH_PROVIDER=openai_sites` 的 Web，加上獨立部署且健康的
 > Worker 上執行。Web 與 Worker 必須來自同一 validated source version、
-> 共用完整 `0000`–`0015` schema、研究 corpus、模型與 provider 設定。
+> 共用完整 `0000`–`0016` schema、研究 corpus、模型與 provider 設定。
 
 > Reports 頁**只顯示最新一份報告**（歷史仍在資料庫與 API，UI 不再列出）。
 > belief_revised 門檻：medium 信心 = 加權分數 ≥ 0.50（2026-07-25 產品決策）。
@@ -92,7 +92,11 @@ medium 52.5% 出現，與凍結判斷一致。）
 - product health 的 worker=false：Worker 沒在跑或剛重啟，等 15 秒或重跑
   步驟 1。
 - POST /api/runs 回 503：fail-closed 機制，同上，等 worker 心跳恢復。
-- 換新資料庫部署時：migrations 必須依序套用 0000 到 0015（README 已更新）。
+- 換新資料庫部署時：migrations 必須依序套用 0000 到 0016（README 已更新）。
+- 0016 之後 `service_role` 只能以欄位級 INSERT 建立 immutable upload
+  staging／bundled corpus 列；claim、lease、transition、confirmation 與
+  canonical evidence 寫入全部走受控 RPC。舊版純文字確認會保守回填，
+  無法證明逐字來源的舊版圖片摘要不會被冒充為引用。
 - 彩排結果不理想且證據已變（凍結模式會把第一次的新判斷存起來重放）：
   刪掉最新一列判斷快取，強制下一掃重新判斷：
   `curl -s "$SUPABASE_URL/rest/v1/reasoner_judgments?select=fingerprint&order=updated_at.desc&limit=1" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"`

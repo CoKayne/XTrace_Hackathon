@@ -118,11 +118,13 @@ export const sourceDocuments = pgTable("source_documents", {
   role: text("role").notNull(),
   companyName: text("company_name"),
   dealId: text("deal_id"),
-  checksum: text("checksum").notNull().unique(),
+  checksum: text("checksum").notNull(),
   byteSize: integer("byte_size").notNull(),
   objectKey: text("object_key").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}, (table) => [
+  index("source_documents_checksum_idx").on(table.checksum),
+]);
 
 export const workspaceDocuments = pgTable("workspace_documents", {
   workspaceId: text("workspace_id").notNull().references(
@@ -443,6 +445,7 @@ export const sourceEvidence = pgTable("source_evidence", {
   page: integer("page").notNull(),
   fact: text("fact").notNull(),
   excerpt: text("excerpt").notNull(),
+  analysisQuarantineReason: text("analysis_quarantine_reason"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   primaryKey({ columns: [table.workspaceId, table.id] }),

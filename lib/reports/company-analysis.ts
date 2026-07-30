@@ -24,6 +24,7 @@ export function buildCompanyAnalyses(input: {
   bundles: DealMemoryBundle[];
   contextsByDeal: ReadonlyMap<string, MemoryContext[]>;
   recallFailures: ReadonlySet<string>;
+  structuredImageFallbackDealIds?: ReadonlySet<string>;
   groundedMatches: GroundedMatch[];
 }): CompanyAnalysis[] {
   const groundedByDeal = new Map(
@@ -32,10 +33,15 @@ export function buildCompanyAnalyses(input: {
 
   return input.bundles.map((bundle) => {
     const contexts = input.contextsByDeal.get(bundle.dealId);
+    const recallFailed = input.recallFailures.has(bundle.dealId);
+    const usesStructuredImageFallback =
+      input.structuredImageFallbackDealIds?.has(bundle.dealId) === true;
     if (
-      input.recallFailures.has(bundle.dealId)
-      || !contexts
-      || contexts.length === 0
+      recallFailed
+      || (
+        (!contexts || contexts.length === 0)
+        && !usesStructuredImageFallback
+      )
     ) {
       return unavailableAnalysis({
         reportId: input.reportId,
@@ -50,7 +56,7 @@ export function buildCompanyAnalyses(input: {
       runId: input.runId,
       createdAt: input.createdAt,
       bundle,
-      contexts,
+      contexts: contexts ?? [],
       match: groundedByDeal.get(bundle.dealId),
     });
   });

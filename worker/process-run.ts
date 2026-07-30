@@ -37,6 +37,9 @@ import type { MarketService } from "../lib/market/service";
 import type { MemoryContext } from "../lib/xtrace/service";
 import type { PersistedIngest } from "../lib/xtrace/service";
 import {
+  STRUCTURED_IMAGE_EVIDENCE_PREFIX,
+} from "../lib/uploads/structured-image-evidence";
+import {
   buildCompanyAnalyses,
   countCompanyAnalyses,
 } from "../lib/reports/company-analysis";
@@ -222,6 +225,7 @@ export async function processClaimedRun(
       ? new Map<string, MemoryContext[]>()
       : structuredContextsByDeal(bundles);
     const unavailableDealIds = new Set<string>();
+    const structuredImageFallbackDealIds = new Set<string>();
 
     if (claimedRun.mode === "xtrace") {
       await updateStage("memory_ingest_sync", "running");
@@ -274,28 +278,53 @@ export async function processClaimedRun(
       }
 
       await updateStage("memory_recall", "running");
+      const xtraceRecallBundles = bundles.filter((bundle) => {
+        if (isCanonicalImageOnlyBundle(bundle)) {
+          structuredImageFallbackDealIds.add(bundle.dealId);
+          return false;
+        }
+        return true;
+      });
       const recalled = await recallAllDealContexts({
         workspaceId: claimedRun.workspaceId,
         runId: claimedRun.id,
-        bundles,
+        bundles: xtraceRecallBundles,
         service: dependencies.xtrace,
       });
       contextsByDeal = recalled.contextsByDeal;
       for (const failure of recalled.failures) {
         unavailableDealIds.add(failure.dealId);
       }
-      for (const bundle of bundles) {
+      for (const bundle of xtraceRecallBundles) {
         if ((contextsByDeal.get(bundle.dealId)?.length ?? 0) === 0) {
           unavailableDealIds.add(bundle.dealId);
         }
       }
+      const recallWarnings: string[] = [];
+      if (structuredImageFallbackDealIds.size > 0) {
+        recallWarnings.push(
+          `XTrace recall was intentionally bypassed for ${
+            structuredImageFallbackDealIds.size
+          } image-only ${
+            structuredImageFallbackDealIds.size === 1 ? "Deal" : "Deals"
+          }; canonical structured image evidence is being used as a partial fallback. `
+            + "These Deals are not counted as XTrace recall and receive no XTrace memory IDs.",
+        );
+      }
       if (unavailableDealIds.size > 0) {
-        const warning =
+        recallWarnings.push(
           `XTrace recall was unavailable for ${unavailableDealIds.size} ${
             unavailableDealIds.size === 1 ? "Deal" : "Deals"
-          }; those company analyses are marked unavailable.`;
-        warnings.push(warning);
-        await updateStage("memory_recall", "failed", warning);
+          }; those company analyses are marked unavailable.`,
+        );
+      }
+      if (recallWarnings.length > 0) {
+        warnings.push(...recallWarnings);
+        await updateStage(
+          "memory_recall",
+          "failed",
+          recallWarnings.join(" "),
+        );
       } else {
         await updateStage("memory_recall", "completed");
       }
@@ -307,14 +336,25 @@ export async function processClaimedRun(
     await updateStage("opportunity_matching", "running");
     const matchingBundles = bundles.filter((bundle) =>
       (contextsByDeal.get(bundle.dealId)?.length ?? 0) > 0
+      || structuredImageFallbackDealIds.has(bundle.dealId)
     );
     const deals = allDeals.filter((deal) =>
       (contextsByDeal.get(deal.id)?.length ?? 0) > 0
+      || structuredImageFallbackDealIds.has(deal.id)
     );
-    const memoryContexts = matchingMemoryContexts(
-      matchingBundles,
-      contextsByDeal,
+    const recalledMatchingBundles = matchingBundles.filter((bundle) =>
+      !structuredImageFallbackDealIds.has(bundle.dealId)
     );
+    const structuredFallbackBundles = matchingBundles.filter((bundle) =>
+      structuredImageFallbackDealIds.has(bundle.dealId)
+    );
+    const memoryContexts = [
+      ...matchingMemoryContexts(
+        recalledMatchingBundles,
+        contextsByDeal,
+      ),
+      ...buildStructuredMemoryContexts(structuredFallbackBundles),
+    ];
     const sources = buildMatchingSources(
       matchingBundles,
       analysisEvents,
@@ -347,6 +387,7 @@ export async function processClaimedRun(
       bundles,
       contextsByDeal,
       recallFailures: unavailableDealIds,
+      structuredImageFallbackDealIds,
       groundedMatches,
     });
     const counts = countCompanyAnalyses(companyAnalyses);
@@ -359,7 +400,9 @@ export async function processClaimedRun(
       createdAt,
       marketSummary: buildMarketSummary(market, marketSelection),
       opportunities,
-      analysisStatus: counts.analysisUnavailable > 0
+      analysisStatus:
+        counts.analysisUnavailable > 0
+          || structuredImageFallbackDealIds.size > 0
         ? "incomplete"
         : "completed",
       evidenceCoverage: {
@@ -373,6 +416,8 @@ export async function processClaimedRun(
           (contexts) => contexts.length > 0,
         ).length,
         unavailableDealCount: counts.analysisUnavailable,
+        structuredImageFallbackDealCount:
+          structuredImageFallbackDealIds.size,
       },
       counts,
       priorityDealId,
@@ -428,6 +473,21 @@ export async function processClaimedRun(
     });
     throw error;
   }
+}
+
+function isCanonicalImageOnlyBundle(bundle: DealMemoryBundle): boolean {
+  return bundle.interactions.length === 0
+    && bundle.facts.length > 0
+    && bundle.facts.every((fact) =>
+      fact.text.startsWith(STRUCTURED_IMAGE_EVIDENCE_PREFIX)
+      && fact.sources.length > 0
+      && fact.sources.every((source) =>
+        source.provenance === "model_inference"
+        && Boolean(source.documentId)
+        && Boolean(source.sourceRevisionId)
+        && source.excerpt.startsWith(STRUCTURED_IMAGE_EVIDENCE_PREFIX)
+      )
+    );
 }
 
 function structuredContextsByDeal(

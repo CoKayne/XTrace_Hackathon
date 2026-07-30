@@ -69,7 +69,7 @@ export interface UploadedDocumentRecord {
 export interface ConfirmedUploadEvidenceInput {
   id: string;
   fact: string;
-  excerpt: string;
+  excerpt: string | null;
   page: number;
   locator: EvidenceLocator;
   structured: NonNullable<
@@ -530,7 +530,6 @@ export function createSupabaseUploadedDocumentsRepository(options: {
           byte_size: input.byteSize,
           checksum: input.checksum,
           object_key: input.objectKey,
-          status: "queued",
         }),
       }) as Record<string, unknown>[];
       return toRecord(rows[0]);

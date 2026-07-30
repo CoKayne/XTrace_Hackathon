@@ -21,6 +21,14 @@ const task13MigrationName = "0012_source_grounded_underwriting.sql";
 const task13MigrationPath = fileURLToPath(
   new URL(`../../drizzle/${task13MigrationName}`, import.meta.url),
 );
+const sourceEvidenceBridgeMigrationName =
+  "0016_confirmed_upload_source_evidence_bridge.sql";
+const sourceEvidenceBridgeMigrationPath = fileURLToPath(
+  new URL(
+    `../../drizzle/${sourceEvidenceBridgeMigrationName}`,
+    import.meta.url,
+  ),
+);
 const journalPath = fileURLToPath(
   new URL("../../drizzle/meta/_journal.json", import.meta.url),
 );
@@ -38,6 +46,43 @@ const validTask6JournalEntry: MigrationJournalEntry = {
   tag: "0013_confirmed_upload_ingest",
   breakpoints: true,
 };
+const validSourceEvidenceBridgeJournalEntry: MigrationJournalEntry = {
+  idx: 16,
+  version: "7",
+  when: 1785394800000,
+  tag: "0016_confirmed_upload_source_evidence_bridge",
+  breakpoints: true,
+};
+const migrationsThroughImmutableUploadConfirmation = [
+  "0000_vsee_postgres.sql",
+  "0001_remove_report_delivery.sql",
+  "0002_durable_decision_lineage.sql",
+  "0003_sanitize_report_next_steps.sql",
+  "0004_company_analyses.sql",
+  "0005_sample_decision_label.sql",
+  "0006_reasoner_judgments.sql",
+  "0007_uploaded_documents.sql",
+  "0008_workspace_composite_identity.sql",
+  "0009_source_revision_deal_registry.sql",
+  "0010_underwriting_references.sql",
+  "0011_underwriting_runs.sql",
+  "0012_source_grounded_underwriting.sql",
+  "0013_confirmed_upload_ingest.sql",
+] as const;
+
+function validateSourceEvidenceBridgeJournal(
+  entries: MigrationJournalEntry[],
+): void {
+  const indices = entryIndices(
+    entries,
+    validSourceEvidenceBridgeJournalEntry.tag,
+  );
+  assert.equal(indices.length, 1, "0016 requires one exact journal entry.");
+  const index = indices[0]!;
+  assert.deepEqual(entries[index], validSourceEvidenceBridgeJournalEntry);
+  const task6Index = entryIndices(entries, validTask6JournalEntry.tag)[0]!;
+  assert.ok(index > task6Index, "0016 must follow the immutable 0013 migration.");
+}
 
 function validatedTaskMigrationNames(
   entries: MigrationJournalEntry[],
@@ -223,15 +268,18 @@ test("task migration journal guard rejects malformed metadata and physical order
 
 test("Task 6 migration is additive and journaled after the reserved Task 13 migration number", () => {
   assert.equal(existsSync(migrationPath), true);
+  assert.equal(existsSync(sourceEvidenceBridgeMigrationPath), true);
   const task13MigrationExists = existsSync(task13MigrationPath);
+  const entries = readMigrationJournalEntries();
   validatedTaskMigrationNames(
-    readMigrationJournalEntries(),
+    entries,
     task13MigrationExists,
   );
+  validateSourceEvidenceBridgeJournal(entries);
 });
 
 test(
-  "0013 atomically promotes confirmation and enforces lease capabilities",
+  "0016 upgrades an already-applied 0013 and bridges confirmed evidence without changing source bytes",
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   () => {
     assert.equal(
@@ -262,6 +310,9 @@ test(
         "0010_underwriting_references.sql",
         "0011_underwriting_runs.sql",
         ...taskMigrations,
+        "0014_read_api_action_drafts.sql",
+        "0015_framework_catalog_checkpoint.sql",
+        sourceEvidenceBridgeMigrationName,
       ]) {
         execFileSync("psql", [
           "-v",
@@ -738,6 +789,27 @@ test(
                   'publishedAt', null,
                   'eventAt', null
                 )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_21',
+                'fact', 'The image reports ARR of $2,000,000 USD.',
+                'excerpt', null,
+                'page', 1,
+                'locator', jsonb_build_object(
+                  'kind', 'image',
+                  'imageIndex', 0,
+                  'region', null
+                ),
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
               )
             )
           ));
@@ -923,6 +995,13 @@ test(
              where workspace_id = 'workspace_upload') || '|' ||
             (select count(*) from public.deal_source_assignments
              where workspace_id = 'workspace_upload') || '|' ||
+            (select document.checksum
+             from public.source_documents as document
+             where document.id = 'source_1') || '|' ||
+            (select revision.content_hash
+             from public.source_revisions as revision
+             where revision.workspace_id = 'workspace_upload'
+               and revision.id = 'revision_1') || '|' ||
             (select count(*) from public.source_evidence
              where workspace_id = 'workspace_upload') || '|' ||
             (select count(*) from public.source_evidence_items
@@ -954,7 +1033,15 @@ test(
                     (item.payload ->> 'sourceId')
              from public.source_evidence_items as item
              where item.workspace_id = 'workspace_backfill'
-               and item.evidence_id = 'evidence_backfill')
+               and item.evidence_id = 'evidence_backfill') || '|' ||
+            (select
+               (item.payload #>> '{locator,kind}') || ':' ||
+               (item.payload #>> '{locator,imageIndex}') || ':' ||
+               (item.payload ->> 'field') || ':' ||
+               (item.payload ->> 'acceptedForGate')
+             from public.source_evidence_items as item
+             where item.workspace_id = 'workspace_upload'
+               and item.evidence_id = 'evidence_21')
           from public.uploaded_documents as confirmed
           cross join public.uploaded_documents as extraction
           where confirmed.workspace_id = 'workspace_upload'
@@ -965,7 +1052,7 @@ test(
       ], { encoding: "utf8" }).trim();
       assert.equal(
         output,
-        "confirmed|failed|deal_1|revision_1|1|1|20|20|"
+        "confirmed|failed|deal_1|revision_1|1|1|content-hash|content-hash|20|21|"
           + "evidence_1:ARR:true,"
           + "evidence_2:unstructured_source_fact:false,"
           + "evidence_3:unstructured_source_fact:false,"
@@ -986,9 +1073,1052 @@ test(
           + ",evidence_18:ARR:true"
           + ",evidence_19:unstructured_source_fact:false"
           + ",evidence_20:unstructured_source_fact:false"
+          + ",evidence_21:ARR:true"
           + "|ARR:$2,000,000:currency:USD:2025-01-01:2025-12-31:"
           + "2026-01-15T10:30:00.000Z:2025-12-31T23:59:59.000Z"
-          + "|source_backfill:source_backfill",
+          + "|source_backfill:source_backfill"
+          + "|image:0:ARR:true",
+      );
+    } finally {
+      execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });
+    }
+  },
+);
+
+test(
+  "0016 backfills pre-upgrade text confirmations, quarantines image summaries, and narrows upload privileges",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    const database = `vsee_upload_legacy_${process.pid}_${
+      randomUUID().replaceAll("-", "")
+    }`;
+    execFileSync("createdb", [database], { stdio: "pipe" });
+    try {
+      for (const migration of migrationsThroughImmutableUploadConfirmation) {
+        execFileSync("psql", [
+          "-v",
+          "ON_ERROR_STOP=1",
+          "-d",
+          database,
+          "-f",
+          fileURLToPath(new URL(`../../drizzle/${migration}`, import.meta.url)),
+        ], { stdio: "pipe" });
+      }
+
+      execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-c",
+        `
+          insert into public.workspaces (id, name) values
+            ('workspace_legacy_text', 'Legacy text'),
+            ('workspace_legacy_image', 'Legacy image');
+          insert into public.uploaded_documents (
+            id, workspace_id, filename, content_type, byte_size, checksum,
+            object_key, status, extraction_preview
+          ) values
+            (
+              'upload_legacy_text', 'workspace_legacy_text', 'legacy.md',
+              'text/markdown', 38, 'legacy-text-hash',
+              'private/workspace_legacy_text/legacy.md',
+              'awaiting_confirmation',
+              '{"extractionMetadata":{"extractorId":"plain_text_v1","extractorVersion":"1","extractedAt":"2026-07-28T10:00:00.000Z"}}'
+            ),
+            (
+              'upload_legacy_image', 'workspace_legacy_image', 'legacy.png',
+              'image/png', 128, 'legacy-image-hash',
+              'private/workspace_legacy_image/legacy.png',
+              'awaiting_confirmation',
+              '{"extractionMetadata":{"extractorId":"claude_vision_v1","extractorVersion":"1","extractedAt":"2026-07-28T11:00:00.000Z"}}'
+            );
+          select public.confirm_uploaded_document(jsonb_build_object(
+            'workspaceId', 'workspace_legacy_text',
+            'uploadId', 'upload_legacy_text',
+            'confirmationFingerprint', 'sha256:${"a".repeat(64)}',
+            'dealId', 'deal_legacy_text',
+            'companyId', 'company_legacy_text',
+            'companyName', 'Legacy Text Co',
+            'dealStatus', 'watchlist',
+            'sourceId', 'source_legacy_text',
+            'sourceRevisionId', 'revision_legacy_text',
+            'assignedByUserId', 'user_legacy',
+            'confirmedAt', '2026-07-28T10:05:00.000Z',
+            'evidence', jsonb_build_array(jsonb_build_object(
+              'id', 'evidence_legacy_text',
+              'fact', 'Legacy Text Co serves 42 enterprise customers.',
+              'excerpt', 'Legacy Text Co serves 42 enterprise customers.',
+              'page', 1
+            ))
+          ));
+          select public.confirm_uploaded_document(jsonb_build_object(
+            'workspaceId', 'workspace_legacy_image',
+            'uploadId', 'upload_legacy_image',
+            'confirmationFingerprint', 'sha256:${"b".repeat(64)}',
+            'dealId', 'deal_legacy_image',
+            'companyId', 'company_legacy_image',
+            'companyName', 'Legacy Image Co',
+            'dealStatus', 'screening',
+            'sourceId', 'source_legacy_image',
+            'sourceRevisionId', 'revision_legacy_image',
+            'assignedByUserId', 'user_legacy',
+            'confirmedAt', '2026-07-28T11:05:00.000Z',
+            'evidence', jsonb_build_array(jsonb_build_object(
+              'id', 'evidence_legacy_image',
+              'fact', 'The vision model inferred $8M ARR.',
+              'excerpt', 'The vision model inferred $8M ARR.',
+              'page', 1
+            ))
+          ));
+
+          insert into public.scan_runs (
+            id, workspace_id, mode, status
+          ) values
+            (
+              '11111111-1111-4111-8111-111111111111',
+              'workspace_legacy_text', 'structured', 'completed'
+            ),
+            (
+              '22222222-2222-4222-8222-222222222222',
+              'workspace_legacy_image', 'structured', 'completed'
+            ),
+            (
+              '33333333-3333-4333-8333-333333333333',
+              'workspace_legacy_image', 'structured', 'completed'
+            );
+          insert into public.intelligence_reports (
+            id, workspace_id, run_id, market_summary, opportunities,
+            analysis_status, company_count
+          ) values
+            (
+              'report_legacy_text',
+              'workspace_legacy_text',
+              '11111111-1111-4111-8111-111111111111',
+              'Text-backed report must survive the bridge.',
+              jsonb_build_array(jsonb_build_object(
+                'dealId', 'deal_legacy_text',
+                'sources', jsonb_build_array(jsonb_build_object(
+                  'id', 'evidence_legacy_text'
+                ))
+              )),
+              'completed', 1
+            ),
+            (
+              'report_legacy_image_analysis',
+              'workspace_legacy_image',
+              '22222222-2222-4222-8222-222222222222',
+              'Image-derived analysis must be invalidated.',
+              '[]'::jsonb,
+              'completed', 1
+            ),
+            (
+              'report_legacy_image_opportunity',
+              'workspace_legacy_image',
+              '33333333-3333-4333-8333-333333333333',
+              'Image-derived opportunity must be invalidated.',
+              jsonb_build_array(jsonb_build_object(
+                'dealId', 'deal_legacy_image',
+                'sources', jsonb_build_array(jsonb_build_object(
+                  'id', 'evidence_legacy_image'
+                ))
+              )),
+              'completed', 0
+            );
+          insert into public.company_analyses (
+            id, workspace_id, report_id, run_id, deal_id, company_name,
+            deal_status, outcome, confidence, score, investment_memory,
+            market_evidence, implications, recommended_next_move,
+            company_brief, source_refs
+          ) values
+            (
+              'analysis_legacy_text',
+              'workspace_legacy_text',
+              'report_legacy_text',
+              '11111111-1111-4111-8111-111111111111',
+              'deal_legacy_text', 'Legacy Text Co', 'watchlist', 'monitor',
+              'medium', 0.5, '{}'::jsonb, '{}'::jsonb,
+              '{"positive":[],"negative":[]}'::jsonb,
+              'Keep the clean text-backed analysis.',
+              '{}'::jsonb,
+              jsonb_build_array(jsonb_build_object(
+                'id', 'evidence_legacy_text'
+              ))
+            ),
+            (
+              'analysis_legacy_image',
+              'workspace_legacy_image',
+              'report_legacy_image_analysis',
+              '22222222-2222-4222-8222-222222222222',
+              'deal_legacy_image', 'Legacy Image Co', 'screening',
+              'belief_revised', 'high', 0.9, '{}'::jsonb, '{}'::jsonb,
+              '{"positive":[],"negative":[]}'::jsonb,
+              'Act on the ungrounded image summary.',
+              '{}'::jsonb,
+              jsonb_build_array(jsonb_build_object(
+                'id', 'evidence_legacy_image'
+              ))
+            );
+
+          insert into public.xtrace_ingest_jobs (
+            job_id, workspace_id, deal_id, source_revision_ids, source_ids,
+            fixture_ids, bundle_fingerprint, serializer_version, provenance,
+            status, memory_ids
+          ) values
+            (
+              'job_legacy_text',
+              'workspace_legacy_text',
+              'deal_legacy_text',
+              '["revision_legacy_text"]'::jsonb,
+              '["source_legacy_text"]'::jsonb,
+              '[]'::jsonb,
+              'fingerprint-legacy-text',
+              'deal-memory-v1',
+              'source_document',
+              'succeeded',
+              '["memory_legacy_text"]'::jsonb
+            ),
+            (
+              'job_legacy_image',
+              'workspace_legacy_image',
+              'deal_legacy_image',
+              '["revision_legacy_image"]'::jsonb,
+              '["source_legacy_image"]'::jsonb,
+              '[]'::jsonb,
+              'fingerprint-legacy-image',
+              'deal-memory-v1',
+              'source_document',
+              'succeeded',
+              '["memory_legacy_image"]'::jsonb
+            );
+          insert into public.xtrace_memory_links (
+            memory_id, workspace_id, deal_id, source_revision_ids, source_ids,
+            fixture_ids, provenance
+          ) values
+            (
+              'memory_legacy_text',
+              'workspace_legacy_text',
+              'deal_legacy_text',
+              '["revision_legacy_text"]'::jsonb,
+              '["source_legacy_text"]'::jsonb,
+              '[]'::jsonb,
+              'source_document'
+            ),
+            (
+              'memory_legacy_image',
+              'workspace_legacy_image',
+              'deal_legacy_image',
+              '["revision_legacy_image"]'::jsonb,
+              '["source_legacy_image"]'::jsonb,
+              '[]'::jsonb,
+              'source_document'
+            );
+
+          insert into public.fund_policy_versions (
+            id, workspace_id, version, source, values
+          ) values
+            (
+              'fund_legacy_text', 'workspace_legacy_text', 1,
+              'recommended_policy', '{}'::jsonb
+            ),
+            (
+              'fund_legacy_image', 'workspace_legacy_image', 1,
+              'recommended_policy', '{}'::jsonb
+            );
+          insert into public.underwriting_batches (
+            id, workspace_id, scan_run_id, status, batch_input_fingerprint,
+            fund_policy_snapshot_id, force_refresh, refresh_nonce, rerun_of_id
+          ) values
+            (
+              'batch_legacy_text', 'workspace_legacy_text',
+              '11111111-1111-4111-8111-111111111111', 'completed',
+              'sha256:${"c".repeat(64)}', 'fund_legacy_text',
+              false, null, null
+            ),
+            (
+              'batch_legacy_image', 'workspace_legacy_image',
+              '22222222-2222-4222-8222-222222222222', 'completed',
+              'sha256:${"d".repeat(64)}', 'fund_legacy_image',
+              false, null, null
+            ),
+            (
+              'batch_legacy_image_alias', 'workspace_legacy_image',
+              '22222222-2222-4222-8222-222222222222', 'completed',
+              'sha256:${"d".repeat(64)}', 'fund_legacy_image',
+              true, 'legacy-image-alias', 'batch_legacy_image'
+            );
+          insert into public.underwriting_selections (
+            batch_id, workspace_id, deal_id, status, rank, reason
+          ) values
+            (
+              'batch_legacy_text', 'workspace_legacy_text',
+              'deal_legacy_text', 'selected', 1,
+              'Clean text candidate must survive.'
+            ),
+            (
+              'batch_legacy_image', 'workspace_legacy_image',
+              'deal_legacy_image', 'selected', 1,
+              'Legacy image candidate must be invalidated.'
+            ),
+            (
+              'batch_legacy_image_alias', 'workspace_legacy_image',
+              'deal_legacy_image', 'selected', 1,
+              'Legacy image alias must also be invalidated.'
+            );
+          insert into public.candidate_runs (
+            id, batch_id, workspace_id, deal_id, status,
+            candidate_analysis_fingerprint, rerun_of_id,
+            artifact_source_candidate_run_id, finalized_at
+          ) values
+            (
+              'candidate_legacy_text', 'batch_legacy_text',
+              'workspace_legacy_text', 'deal_legacy_text', 'completed',
+              'sha256:${"e".repeat(64)}', null, null,
+              '2026-07-28T12:00:00.000Z'
+            ),
+            (
+              'candidate_legacy_image', 'batch_legacy_image',
+              'workspace_legacy_image', 'deal_legacy_image', 'completed',
+              'sha256:${"f".repeat(64)}', null, null,
+              '2026-07-28T12:00:00.000Z'
+            ),
+            (
+              'candidate_legacy_image_alias', 'batch_legacy_image_alias',
+              'workspace_legacy_image', 'deal_legacy_image', 'completed',
+              'sha256:${"f".repeat(64)}', 'candidate_legacy_image',
+              'candidate_legacy_image', '2026-07-28T12:00:00.000Z'
+            );
+          insert into public.candidate_checkpoints (
+            candidate_run_id, workspace_id, stage, status,
+            input_fingerprint, saved_at
+          ) values
+            (
+              'candidate_legacy_text', 'workspace_legacy_text',
+              'finalization', 'completed', 'checkpoint-text',
+              '2026-07-28T12:00:00.000Z'
+            ),
+            (
+              'candidate_legacy_image', 'workspace_legacy_image',
+              'finalization', 'completed', 'checkpoint-image',
+              '2026-07-28T12:00:00.000Z'
+            );
+          insert into public.evidence_packs (
+            workspace_id, candidate_run_id, artifact_id, version, payload
+          ) values
+            (
+              'workspace_legacy_text', 'candidate_legacy_text',
+              'pack_legacy_text', 1, '{}'::jsonb
+            ),
+            (
+              'workspace_legacy_image', 'candidate_legacy_image',
+              'pack_legacy_image', 1, '{}'::jsonb
+            );
+          insert into public.underwriting_narratives (
+            workspace_id, candidate_run_id, body
+          ) values
+            (
+              'workspace_legacy_text', 'candidate_legacy_text',
+              'Clean text-only searchable narrative.'
+            ),
+            (
+              'workspace_legacy_image', 'candidate_legacy_image',
+              'Polluted legacy image searchable narrative.'
+            );
+          insert into public.final_syntheses (
+            workspace_id, candidate_run_id, artifact_id, payload
+          ) values
+            (
+              'workspace_legacy_text', 'candidate_legacy_text',
+              'synthesis_legacy_text', '{}'::jsonb
+            ),
+            (
+              'workspace_legacy_image', 'candidate_legacy_image',
+              'synthesis_legacy_image', '{}'::jsonb
+            );
+          insert into public.action_drafts (
+            workspace_id, candidate_run_id, artifact_id, payload
+          ) values
+            (
+              'workspace_legacy_text', 'candidate_legacy_text',
+              'draft_legacy_text',
+              '{
+                "id":"draft_legacy_text",
+                "workspaceId":"workspace_legacy_text",
+                "candidateRunId":"candidate_legacy_text",
+                "channel":"email",
+                "audienceType":"internal",
+                "body":"Clean text draft",
+                "createdAt":"2026-07-28T12:00:00.000Z",
+                "updatedAt":"2026-07-28T12:00:00.000Z"
+              }'::jsonb
+            ),
+            (
+              'workspace_legacy_image', 'candidate_legacy_image',
+              'draft_legacy_image',
+              '{
+                "id":"draft_legacy_image",
+                "workspaceId":"workspace_legacy_image",
+                "candidateRunId":"candidate_legacy_image",
+                "channel":"email",
+                "audienceType":"internal",
+                "body":"Quarantined image draft",
+                "createdAt":"2026-07-28T12:00:00.000Z",
+                "updatedAt":"2026-07-28T12:00:00.000Z"
+              }'::jsonb
+            );
+          insert into public.candidate_version_snapshots (
+            workspace_id, candidate_run_id, payload
+          ) values
+            (
+              'workspace_legacy_text', 'candidate_legacy_text', '{}'::jsonb
+            ),
+            (
+              'workspace_legacy_image', 'candidate_legacy_image', '{}'::jsonb
+            );
+          insert into public.evidence_pack_builds (
+            workspace_id, input_fingerprint, pack_id, pack_payload,
+            source_revision_snapshots
+          ) values
+            (
+              'workspace_legacy_text', 'sha256:${"1".repeat(64)}',
+              'build_pack_legacy_text',
+              '{"workspaceId":"workspace_legacy_text","id":"build_pack_legacy_text","dealId":"deal_legacy_text"}'::jsonb,
+              '[]'::jsonb
+            ),
+            (
+              'workspace_legacy_image', 'sha256:${"2".repeat(64)}',
+              'build_pack_legacy_image',
+              '{"workspaceId":"workspace_legacy_image","id":"build_pack_legacy_image","dealId":"deal_legacy_image"}'::jsonb,
+              '[]'::jsonb
+            );
+        `,
+      ], { stdio: "pipe" });
+
+      for (const migration of [
+        "0014_read_api_action_drafts.sql",
+        "0015_framework_catalog_checkpoint.sql",
+        sourceEvidenceBridgeMigrationName,
+      ]) {
+        execFileSync("psql", [
+          "-v",
+          "ON_ERROR_STOP=1",
+          "-d",
+          database,
+          "-f",
+          fileURLToPath(new URL(`../../drizzle/${migration}`, import.meta.url)),
+        ], { stdio: "pipe" });
+      }
+
+      execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-c",
+        `
+          do $shape_guard$
+          begin
+            begin
+              update public.uploaded_documents
+              set status = 'failed',
+                  failure_reason = 'arbitrary confirmed failure'
+              where workspace_id = 'workspace_legacy_text'
+                and id = 'upload_legacy_text';
+              raise exception
+                'arbitrary confirmed failed lineage passed the shape guard';
+            exception when check_violation then
+              null;
+            end;
+            begin
+              update public.uploaded_documents
+              set source_revision_id = null
+              where workspace_id = 'workspace_legacy_image'
+                and id = 'upload_legacy_image';
+              raise exception
+                'partial quarantined lineage passed the shape guard';
+            exception when check_violation then
+              null;
+            end;
+          end;
+          $shape_guard$;
+        `,
+      ], { stdio: "pipe" });
+
+      const draftEditBoundary = execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-AtF",
+        "|",
+        "-c",
+        `
+          select
+            coalesce(
+              public.replace_action_draft_body(
+                'workspace_legacy_image',
+                'draft_legacy_image',
+                'Unsafe quarantined edit'
+              )::text,
+              'null'
+            ),
+            (
+              select draft.payload ->> 'body'
+              from public.action_drafts as draft
+              where draft.workspace_id = 'workspace_legacy_image'
+                and draft.artifact_id = 'draft_legacy_image'
+            ),
+            (
+              public.replace_action_draft_body(
+                'workspace_legacy_text',
+                'draft_legacy_text',
+                'Clean revised draft'
+              ) ->> 'body'
+            );
+        `,
+      ], { encoding: "utf8" }).trim();
+      assert.equal(
+        draftEditBoundary,
+        "null|Quarantined image draft|Clean revised draft",
+      );
+
+      const retainedUnderwritingProducts = execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-AtF",
+        "|",
+        "-c",
+        `
+          select
+            (select string_agg(
+                      batch.id || ':' || batch.status,
+                      ',' order by batch.id
+                    )
+             from public.underwriting_batches as batch),
+            (select string_agg(
+                      selection.batch_id || ':' || selection.deal_id,
+                      ',' order by selection.batch_id
+                    )
+             from public.underwriting_selections as selection),
+            (select string_agg(
+                      candidate.id || ':' || candidate.status || ':' ||
+                      coalesce(candidate.artifact_source_candidate_run_id, '-')
+                      || ':' ||
+                      candidate.unavailable_reason_codes::text || ':' ||
+                      coalesce(candidate.public_failure_reason, '-'),
+                      ',' order by candidate.id
+                    )
+             from public.candidate_runs as candidate),
+            (select string_agg(checkpoint.candidate_run_id, ','
+                               order by checkpoint.candidate_run_id)
+             from public.candidate_checkpoints as checkpoint),
+            (select string_agg(pack.candidate_run_id, ','
+                               order by pack.candidate_run_id)
+             from public.evidence_packs as pack),
+            (select string_agg(narrative.candidate_run_id, ','
+                               order by narrative.candidate_run_id)
+             from public.underwriting_narratives as narrative),
+            (select string_agg(synthesis.candidate_run_id, ','
+                               order by synthesis.candidate_run_id)
+             from public.final_syntheses as synthesis),
+            (select string_agg(draft.candidate_run_id, ','
+                               order by draft.candidate_run_id)
+             from public.action_drafts as draft),
+            (select string_agg(snapshot.candidate_run_id, ','
+                               order by snapshot.candidate_run_id)
+             from public.candidate_version_snapshots as snapshot),
+            (select string_agg(build.pack_id, ',' order by build.pack_id)
+             from public.evidence_pack_builds as build),
+            (select trigger.tgenabled
+             from pg_catalog.pg_trigger as trigger
+             where trigger.tgrelid =
+                 'public.underwriting_narratives'::regclass
+               and trigger.tgname =
+                 'underwriting_narratives_immutable'
+               and not trigger.tgisinternal);
+        `,
+      ], { encoding: "utf8" }).trim();
+      assert.equal(
+        retainedUnderwritingProducts,
+        "batch_legacy_image:failed,batch_legacy_image_alias:failed,"
+          + "batch_legacy_text:completed|"
+          + "batch_legacy_image:deal_legacy_image,"
+          + "batch_legacy_image_alias:deal_legacy_image,"
+          + "batch_legacy_text:deal_legacy_text|"
+          + "candidate_legacy_image:unavailable:-:"
+          + "[\"legacy_image_evidence_quarantined\"]:"
+          + "This underwriting result is unavailable because legacy image "
+          + "evidence was quarantined. Upload the image again and run "
+          + "analysis before relying on this result.,"
+          + "candidate_legacy_image_alias:unavailable:-:"
+          + "[\"legacy_image_evidence_quarantined\"]:"
+          + "This underwriting result is unavailable because legacy image "
+          + "evidence was quarantined. Upload the image again and run "
+          + "analysis before relying on this result.,"
+          + "candidate_legacy_text:completed:-:[]:-|"
+          + "candidate_legacy_image,candidate_legacy_text|"
+          + "candidate_legacy_image,candidate_legacy_text|"
+          + "candidate_legacy_image,candidate_legacy_text|"
+          + "candidate_legacy_image,candidate_legacy_text|"
+          + "candidate_legacy_image,candidate_legacy_text|"
+          + "candidate_legacy_image,candidate_legacy_text|"
+          + "build_pack_legacy_image,build_pack_legacy_text|O",
+      );
+
+      const invalidatedLegacyProducts = execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-AtF",
+        "|",
+        "-c",
+        `
+          select
+            (select string_agg(report.id, ',' order by report.id)
+             from public.intelligence_reports as report),
+            (select string_agg(analysis.id, ',' order by analysis.id)
+             from public.company_analyses as analysis),
+            (select string_agg(job.job_id, ',' order by job.job_id)
+             from public.xtrace_ingest_jobs as job),
+            (select string_agg(memory.memory_id, ',' order by memory.memory_id)
+             from public.xtrace_memory_links as memory),
+            (select upload.status
+             from public.uploaded_documents as upload
+             where upload.workspace_id = 'workspace_legacy_image'
+               and upload.id = 'upload_legacy_image'),
+            (select upload.failure_reason
+             from public.uploaded_documents as upload
+             where upload.workspace_id = 'workspace_legacy_image'
+               and upload.id = 'upload_legacy_image'),
+            (select upload.status
+             from public.uploaded_documents as upload
+             where upload.workspace_id = 'workspace_legacy_text'
+               and upload.id = 'upload_legacy_text'),
+            coalesce((
+              select upload.failure_reason
+              from public.uploaded_documents as upload
+              where upload.workspace_id = 'workspace_legacy_text'
+                and upload.id = 'upload_legacy_text'
+            ), '-');
+        `,
+      ], { encoding: "utf8" }).trim();
+      assert.equal(
+        invalidatedLegacyProducts,
+        "report_legacy_text|analysis_legacy_text|"
+          + "job_legacy_text|memory_legacy_text|failed|"
+          + "Legacy image evidence was quarantined because the prior "
+          + "vision-model summary was not an exact quotation. "
+          + "Upload the image again before using it for analysis."
+          + "|confirmed|-",
+      );
+
+      execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-c",
+        `
+          insert into public.workspaces (id, name)
+          values ('workspace_worker_rpc', 'Worker RPC');
+          insert into public.uploaded_documents (
+            id, workspace_id, filename, content_type, byte_size, checksum,
+            object_key
+          ) values (
+            'upload_worker_rpc', 'workspace_worker_rpc', 'worker.txt',
+            'text/plain', 12, 'worker-rpc-hash',
+            'private/workspace_worker_rpc/worker.txt'
+          );
+        `,
+      ], { stdio: "pipe" });
+      execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-c",
+        `
+          begin;
+          set local role service_role;
+          select id, lease_token
+          from public.claim_next_uploaded_document(
+            'queued', 'worker-before-expiry', 300
+          );
+          commit;
+        `,
+      ], { stdio: "pipe" });
+      const firstClaim = execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-qAtF",
+        "|",
+        "-d",
+        database,
+        "-c",
+        `
+          select id, lease_token
+          from public.uploaded_documents
+          where workspace_id = 'workspace_worker_rpc'
+            and worker_id = 'worker-before-expiry';
+        `,
+      ], { encoding: "utf8" }).trim();
+      const [claimedId, firstLeaseToken] = firstClaim.split("|");
+      assert.equal(claimedId, "upload_worker_rpc");
+      assert.match(
+        firstLeaseToken ?? "",
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+      );
+      execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-c",
+        `
+          update public.uploaded_documents
+          set lease_expires_at = clock_timestamp() - interval '1 second'
+          where workspace_id = 'workspace_worker_rpc'
+            and id = 'upload_worker_rpc';
+        `,
+      ], { stdio: "pipe" });
+      execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-c",
+        `
+          begin;
+          set local role service_role;
+          select id, lease_token
+          from public.claim_next_uploaded_document(
+            'queued', 'worker-after-expiry', 300
+          );
+          commit;
+        `,
+      ], { stdio: "pipe" });
+      const reclaimed = execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-qAtF",
+        "|",
+        "-d",
+        database,
+        "-c",
+        `
+          select id, lease_token
+          from public.uploaded_documents
+          where workspace_id = 'workspace_worker_rpc'
+            and worker_id = 'worker-after-expiry';
+        `,
+      ], { encoding: "utf8" }).trim();
+      const [reclaimedId, secondLeaseToken] = reclaimed.split("|");
+      assert.equal(reclaimedId, "upload_worker_rpc");
+      assert.notEqual(secondLeaseToken, firstLeaseToken);
+      execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-c",
+        `
+          begin;
+          set local role service_role;
+          select public.transition_uploaded_document_lease(
+            'workspace_worker_rpc',
+            'upload_worker_rpc',
+            'worker-after-expiry',
+            '${secondLeaseToken}'::uuid,
+            'extraction_fail',
+            null,
+            'terminal extraction failure'
+          );
+          commit;
+        `,
+      ], { stdio: "pipe" });
+      const failedStatus = execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-qAt",
+        "-d",
+        database,
+        "-c",
+        `
+          select status
+          from public.uploaded_documents
+          where workspace_id = 'workspace_worker_rpc'
+            and id = 'upload_worker_rpc';
+        `,
+      ], { encoding: "utf8" }).trim();
+      assert.equal(failedStatus, "failed");
+
+      const output = execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-AtF",
+        "|",
+        "-c",
+        `
+          select
+            text_item.workspace_id,
+            text_item.deal_id,
+            text_item.source_id,
+            text_item.source_revision_id,
+            text_item.payload ->> 'field',
+            text_item.payload ->> 'value',
+            text_item.payload ->> 'acceptedForGate',
+            text_item.payload #>> '{locator,kind}',
+            text_item.payload #>> '{locator,page}',
+            text_item.payload #>> '{locator,excerpt}',
+            (select count(*) from public.source_evidence_items
+             where workspace_id = 'workspace_legacy_image'),
+            (select count(*) from public.source_evidence
+             where workspace_id = 'workspace_legacy_image'),
+            (select analysis_quarantine_reason
+             from public.source_evidence
+             where workspace_id = 'workspace_legacy_image'
+               and id = 'evidence_legacy_image'),
+            coalesce((
+              select analysis_quarantine_reason
+              from public.source_evidence
+              where workspace_id = 'workspace_legacy_text'
+                and id = 'evidence_legacy_text'
+            ), 'eligible'),
+            (select checksum from public.source_documents
+             where id = 'source_legacy_text'),
+            has_table_privilege(
+              'service_role', 'public.uploaded_documents', 'SELECT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.uploaded_documents', 'INSERT'
+            ),
+            has_column_privilege(
+              'service_role', 'public.uploaded_documents', 'id', 'INSERT'
+            ),
+            has_column_privilege(
+              'service_role', 'public.uploaded_documents', 'status', 'INSERT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.uploaded_documents', 'UPDATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.uploaded_documents', 'DELETE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.uploaded_documents', 'TRUNCATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_documents', 'SELECT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_documents', 'INSERT'
+            ),
+            has_column_privilege(
+              'service_role', 'public.source_documents', 'id', 'INSERT'
+            ),
+            has_column_privilege(
+              'service_role', 'public.source_documents', 'created_at',
+              'INSERT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_documents', 'UPDATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_documents', 'DELETE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_documents', 'TRUNCATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.workspace_documents', 'SELECT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.workspace_documents', 'INSERT'
+            ),
+            has_column_privilege(
+              'service_role', 'public.workspace_documents', 'workspace_id',
+              'INSERT'
+            ),
+            has_column_privilege(
+              'service_role', 'public.workspace_documents', 'created_at',
+              'INSERT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.workspace_documents', 'UPDATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.workspace_documents', 'DELETE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.workspace_documents', 'TRUNCATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence', 'SELECT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence', 'INSERT'
+            ),
+            has_column_privilege(
+              'service_role', 'public.source_evidence', 'id', 'INSERT'
+            ),
+            has_column_privilege(
+              'service_role', 'public.source_evidence', 'created_at',
+              'INSERT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence', 'UPDATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence', 'DELETE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence', 'TRUNCATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence_items', 'SELECT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence_items', 'INSERT'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence_items', 'UPDATE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence_items', 'DELETE'
+            ),
+            has_table_privilege(
+              'service_role', 'public.source_evidence_items', 'TRUNCATE'
+            ),
+            has_function_privilege(
+              'service_role',
+              'public.claim_next_uploaded_document(text,text,integer)',
+              'EXECUTE'
+            ),
+            has_function_privilege(
+              'service_role',
+              'public.renew_uploaded_document_lease(text,text,text,uuid,integer)',
+              'EXECUTE'
+            ),
+            has_function_privilege(
+              'service_role',
+              'public.transition_uploaded_document_lease(text,text,text,uuid,text,jsonb,text)',
+              'EXECUTE'
+            ),
+            has_function_privilege(
+              'service_role',
+              'public.confirm_uploaded_document(jsonb)',
+              'EXECUTE'
+            )
+          from public.source_evidence_items as text_item
+          where text_item.workspace_id = 'workspace_legacy_text'
+            and text_item.evidence_id = 'evidence_legacy_text';
+        `,
+      ], { encoding: "utf8" }).trim();
+      assert.equal(
+        output,
+        "workspace_legacy_text|deal_legacy_text|source_legacy_text|"
+          + "revision_legacy_text|unstructured_source_fact|"
+          + "Legacy Text Co serves 42 enterprise customers.|false|"
+          + "pdf_page|1|Legacy Text Co serves 42 enterprise customers.|"
+          + "0|1|legacy_model_derived_image_summary|eligible|"
+          + "legacy-text-hash|"
+          + "t|f|t|f|f|f|f|"
+          + "t|f|t|f|f|f|f|"
+          + "t|f|t|f|f|f|f|"
+          + "t|f|t|f|f|f|f|"
+          + "t|f|f|f|f|"
+          + "t|t|t|t",
+      );
+
+      const privilegeMatrix = execFileSync("psql", [
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-AtF",
+        "|",
+        "-c",
+        `
+          with protected_tables(table_name) as (
+            values
+              ('source_documents'),
+              ('source_evidence'),
+              ('source_evidence_items'),
+              ('uploaded_documents'),
+              ('workspace_documents')
+          )
+          select
+            protected.table_name,
+            coalesce((
+              select string_agg(grant_row.column_name, ','
+                               order by grant_row.column_name)
+              from information_schema.role_column_grants as grant_row
+              where grant_row.grantee = 'service_role'
+                and grant_row.table_schema = 'public'
+                and grant_row.table_name = protected.table_name
+                and grant_row.privilege_type = 'INSERT'
+            ), '-'),
+            has_table_privilege(
+              'service_role',
+              'public.' || protected.table_name,
+              'SELECT'
+            ),
+            has_table_privilege(
+              'service_role',
+              'public.' || protected.table_name,
+              'INSERT'
+            ),
+            has_table_privilege(
+              'service_role',
+              'public.' || protected.table_name,
+              'UPDATE'
+            ),
+            has_table_privilege(
+              'service_role',
+              'public.' || protected.table_name,
+              'DELETE'
+            ),
+            has_table_privilege(
+              'service_role',
+              'public.' || protected.table_name,
+              'TRUNCATE'
+            ),
+            has_table_privilege(
+              'service_role',
+              'public.' || protected.table_name,
+              'REFERENCES'
+            ),
+            has_table_privilege(
+              'service_role',
+              'public.' || protected.table_name,
+              'TRIGGER'
+            )
+          from protected_tables as protected
+          order by protected.table_name;
+        `,
+      ], { encoding: "utf8" }).trim();
+      assert.equal(
+        privilegeMatrix,
+        [
+          "source_documents|byte_size,checksum,company_name,deal_id,filename,"
+            + "id,object_key,role,title|t|f|f|f|f|f|f",
+          "source_evidence|company_name,deal_id,document_id,excerpt,fact,id,"
+            + "page,provenance,source_revision_id,workspace_id|t|f|f|f|f|f|f",
+          "source_evidence_items|-|t|f|f|f|f|f|f",
+          "uploaded_documents|byte_size,checksum,content_type,filename,id,"
+            + "object_key,workspace_id|t|f|f|f|f|f|f",
+          "workspace_documents|document_id,workspace_id|t|f|f|f|f|f|f",
+        ].join("\n"),
       );
     } finally {
       execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });

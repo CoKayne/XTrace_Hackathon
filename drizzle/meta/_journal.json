@@ -71,6 +71,13 @@
       "when": 1785391200000,
       "tag": "0015_framework_catalog_checkpoint",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1785394800000,
+      "tag": "0016_confirmed_upload_source_evidence_bridge",
+      "breakpoints": true
     }
   ]
 }

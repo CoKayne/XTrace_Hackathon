@@ -122,12 +122,20 @@ without gaps:
 14. [`drizzle/0013_confirmed_upload_ingest.sql`](drizzle/0013_confirmed_upload_ingest.sql)
 15. [`drizzle/0014_read_api_action_drafts.sql`](drizzle/0014_read_api_action_drafts.sql)
 16. [`drizzle/0015_framework_catalog_checkpoint.sql`](drizzle/0015_framework_catalog_checkpoint.sql)
+17. [`drizzle/0016_confirmed_upload_source_evidence_bridge.sql`](drizzle/0016_confirmed_upload_source_evidence_bridge.sql)
 
 `0008` introduces workspace-composite identities, `0009` adds immutable source
 revisions, `0010`–`0012` add versioned underwriting references and artifacts,
 `0013` promotes confirmed uploads atomically, `0014` adds controlled
 latest-only draft replacement, and `0015` separates framework-catalog
-checkpoint replay. Do not start Web or Worker against a partial chain.
+checkpoint replay. `0016` upgrades already-applied `0013` databases with the
+confirmed-upload source-evidence bridge, conservative legacy text-evidence
+backfill, byte-checksum preservation, immutable image evidence locators, and
+least-privilege upload/source-table grants. Legacy image summaries are not
+promoted as quotations. The bundled corpus loader retains only exact
+column-level immutable INSERT grants and uses conflict-ignore writes; canonical
+runtime-upload evidence remains writable only through controlled RPCs. Do not
+start Web or Worker against a partial chain.
 
 ```bash
 npm install
@@ -136,7 +144,7 @@ npm run db:seed
 
 CI and release verification must run `npm run test:migrations`. It executes the
 relevant PostgreSQL migration suites serially to avoid races between tests that
-exercise cluster-global roles, applies the complete `0000`–`0015` path, and
+exercise cluster-global roles, applies the complete `0000`–`0016` path, and
 fails when a disposable PostgreSQL database cannot be created.
 
 ### Product authentication
@@ -214,7 +222,7 @@ worker heartbeat.
 
 ### Worker runbook
 
-1. For a new database, apply migrations `0000` through `0015` in order; for an
+1. For a new database, apply migrations `0000` through `0016` in order; for an
    existing database, apply the migrations it is missing in order. Then seed
    the corpus before starting the Worker.
 2. Start the Worker and wait for the container health status to become

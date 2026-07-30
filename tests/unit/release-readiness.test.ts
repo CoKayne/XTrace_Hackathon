@@ -21,6 +21,7 @@ const migrationNames = [
   "0013_confirmed_upload_ingest.sql",
   "0014_read_api_action_drafts.sql",
   "0015_framework_catalog_checkpoint.sql",
+  "0016_confirmed_upload_source_evidence_bridge.sql",
 ];
 
 const migrationTestNames = [
@@ -55,7 +56,7 @@ test("release migration verification is serial and includes every migration suit
   }
 });
 
-test("the physical migration chain is contiguous from 0000 through 0015", async () => {
+test("the physical migration chain is contiguous from 0000 through 0016", async () => {
   const actual = (await readdir(new URL("drizzle/", repositoryRoot)))
     .filter((filename) => /^\d{4}_.+\.sql$/.test(filename))
     .sort();
@@ -63,7 +64,7 @@ test("the physical migration chain is contiguous from 0000 through 0015", async 
   assert.deepEqual(actual, migrationNames);
 });
 
-test("journaled forward migrations preserve physical order and include 0010 through 0015", async () => {
+test("journaled forward migrations preserve physical order and include 0010 through 0016", async () => {
   const journal = JSON.parse(
     await readFile(
       new URL("drizzle/meta/_journal.json", repositoryRoot),
@@ -76,7 +77,7 @@ test("journaled forward migrations preserve physical order and include 0010 thro
   );
 
   assert.deepEqual(
-    actualForwardEntries.filter((tag) => /^001[0-5]_/.test(tag)),
+    actualForwardEntries.filter((tag) => /^001[0-6]_/.test(tag)),
     physicalTags.slice(10),
   );
   let previousPhysicalPosition = -1;

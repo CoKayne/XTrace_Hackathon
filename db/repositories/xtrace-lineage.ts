@@ -123,7 +123,9 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
         : "";
       if (!dealId) return null;
       const job = [...jobs.values()].find((candidate) =>
-        candidate.workspaceId === input.workspaceId && candidate.dealId === dealId
+        candidate.workspaceId === input.workspaceId
+        && candidate.dealId === dealId
+        && candidate.memoryIds.includes(input.memoryId)
       );
       if (
         !job
@@ -303,9 +305,15 @@ export function createSupabaseXTraceLineageRepository(options: {
         : "";
       if (!dealId) return null;
       const jobs = await request(
-        `/xtrace_ingest_jobs?workspace_id=eq.${encodeURIComponent(input.workspaceId)}&deal_id=eq.${encodeURIComponent(dealId)}&order=created_at.desc&limit=1`,
+        `/xtrace_ingest_jobs?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&deal_id=eq.${encodeURIComponent(dealId)}`
+        + `&memory_ids=cs.${encodeURIComponent(JSON.stringify([input.memoryId]))}`
+        + "&order=created_at.desc&limit=1",
       ) as Record<string, unknown>[];
-      const job = jobs[0];
+      const job = jobs.find((candidate) =>
+        Array.isArray(candidate.memory_ids)
+        && candidate.memory_ids.map(String).includes(input.memoryId)
+      );
       if (!job) return null;
       const sourceIds = Array.isArray(job.source_ids) ? job.source_ids.map(String) : [];
       const sourceRevisionIds = Array.isArray(job.source_revision_ids)

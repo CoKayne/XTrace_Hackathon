@@ -3,6 +3,7 @@ import type {
   DealUnderwritingSelectionView,
   PublicCandidateVersionSnapshot,
 } from "../lib/underwriting/read-model";
+import { LEGACY_IMAGE_QUARANTINE_NOTICE } from "../lib/uploads/quarantine";
 
 export type FinancialValuationField =
   | "maximumAcceptablePreMoney"
@@ -57,18 +58,38 @@ export function describeUploadState(input: {
     | "ready"
     | "failed";
   failure: string | null;
+  memoryNotice?: string | null;
 }): {
   label: string;
   tone: "neutral" | "active" | "warning" | "success" | "error";
   description: string;
   retryable: boolean;
 } {
+  if (
+    input.status === "failed"
+    && input.failure === LEGACY_IMAGE_QUARANTINE_NOTICE
+  ) {
+    return {
+      label: "Legacy image quarantined",
+      tone: "warning",
+      description: input.failure,
+      retryable: false,
+    };
+  }
   if (input.status === "confirmed" && input.failure) {
     return {
       label: "Retryable memory failure",
       tone: "warning",
       description: input.failure,
       retryable: true,
+    };
+  }
+  if (input.status === "ready" && input.memoryNotice) {
+    return {
+      label: "Ready · structured evidence only",
+      tone: "warning",
+      description: input.memoryNotice,
+      retryable: false,
     };
   }
   const states = {

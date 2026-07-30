@@ -384,30 +384,47 @@ export async function runNextConfirmedUpload(): Promise<boolean> {
   }, 60_000);
   leaseHeartbeat.unref();
   try {
-    if (!isXTraceConfigured()) {
-      throw new Error("XTrace is not configured for confirmed source ingest.");
-    }
     const deals = getDealRegistry();
-    const xtrace = createXTraceService(getXTraceClient(), {
-      workspaceId: claimed.workspaceId,
-      lineageRepository: getXTraceLineageRepository(),
-    });
-    await processConfirmedSource(claimed, {
+    const evidencePacks = getEvidencePacksRepository();
+    const xtrace = isXTraceConfigured()
+      ? createXTraceService(getXTraceClient(), {
+        workspaceId: claimed.workspaceId,
+        lineageRepository: getXTraceLineageRepository(),
+      })
+      : null;
+    const result = await processConfirmedSource(claimed, {
       loadBundle: (upload) => deals.getExactSourceBundle({
         workspaceId: upload.workspaceId,
         dealId: upload.dealId!,
         sourceId: upload.sourceId!,
         sourceRevisionId: upload.sourceRevisionId!,
       }),
-      ingest: (bundle, lineage) =>
-        xtrace.ingestDealMemory(bundle, lineage),
-      poll: (jobId, options) => xtrace.pollIngestJob(jobId, options),
+      loadCanonicalEvidence: (upload) =>
+        evidencePacks.listSourceEvidence({
+          workspaceId: upload.workspaceId,
+          dealId: upload.dealId!,
+          sourceRevisionIds: [upload.sourceRevisionId!],
+        }),
+      ...(xtrace
+        ? {
+          ingest: (bundle, lineage) =>
+            xtrace.ingestDealMemory(bundle, lineage),
+          poll: (jobId, options) => xtrace.pollIngestJob(jobId, options),
+        }
+        : {}),
       complete: (input) => uploads.completeConfirmed(input),
       fail: (input) => uploads.failConfirmed(input),
     });
-    console.log(
-      `[${WORKER_ID}] ingested confirmed upload ${claimed.id}`,
-    );
+    if (result.kind === "ready_without_xtrace_memory") {
+      console.log(
+        `[${WORKER_ID}] confirmed image upload ${claimed.id} is ready `
+          + "from canonical evidence; no XTrace memory was created",
+      );
+    } else {
+      console.log(
+        `[${WORKER_ID}] ingested confirmed upload ${claimed.id}`,
+      );
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const current = await uploads.get({

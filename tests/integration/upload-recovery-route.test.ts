@@ -34,6 +34,35 @@ const preview: ExtractionPreview = {
   },
 };
 
+const imagePreview: ExtractionPreview = {
+  candidateCompanyName: "Image Recovery Co",
+  candidateHeadline: "Image Recovery Co reported $8M ARR.",
+  facts: [{
+    text: "Image Recovery Co reported $8M ARR.",
+    excerpt: null,
+    locator: { kind: "image", imageIndex: 0 },
+    structured: {
+      field: "arr",
+      value: "8000000",
+      unit: null,
+      currency: "USD",
+      periodStart: null,
+      periodEnd: "2026-06-30",
+      publishedAt: null,
+      eventAt: null,
+    },
+  }],
+  extractionMetadata: {
+    extractorId: "claude_vision_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T12:00:00.000Z",
+    contentHash: "image-recovery-hash",
+    inputBytes: 4096,
+    extractedCharacters: 35,
+    truncated: false,
+  },
+};
+
 function dependencies(
   workspaceId: string,
   uploads = createMemoryUploadedDocumentsRepository(),
@@ -101,6 +130,46 @@ async function readyUpload() {
   return { workspaceId, uploads };
 }
 
+async function readyImageUpload() {
+  const workspaceId = "workspace_image_recovery";
+  const uploads = createMemoryUploadedDocumentsRepository();
+  await uploads.create({
+    id: "upload_image_recovery",
+    workspaceId,
+    filename: "recovery.png",
+    contentType: "image/png",
+    byteSize: 4096,
+    checksum: "image-recovery-hash",
+    objectKey: "private/workspaces/workspace_image_recovery/recovery.png",
+  });
+  const extracting = await uploads.claimNext("extractor");
+  assert.ok(extracting);
+  assert.equal(await uploads.savePreview({
+    workspaceId,
+    id: extracting.id,
+    workerId: extracting.workerId,
+    leaseToken: extracting.leaseToken,
+    preview: imagePreview,
+  }), true);
+  await uploads.markConfirmed({
+    workspaceId,
+    id: extracting.id,
+    confirmationFingerprint: `sha256:${"d".repeat(64)}`,
+    dealId: "deal_image_recovery",
+    sourceId: "source_image_recovery",
+    sourceRevisionId: "revision_image_recovery",
+  });
+  const ingesting = await uploads.claimNextConfirmed("memory-worker");
+  assert.ok(ingesting);
+  assert.equal(await uploads.completeConfirmed({
+    workspaceId,
+    id: ingesting.id,
+    workerId: ingesting.workerId,
+    leaseToken: ingesting.leaseToken,
+  }), true);
+  return { workspaceId, uploads };
+}
+
 test("upload listing returns safe recovery DTOs with terminal lineage", async () => {
   const fixture = await readyUpload();
   const response = await listUploads(
@@ -124,6 +193,7 @@ test("upload listing returns safe recovery DTOs with terminal lineage", async ()
       facts: preview.facts,
     },
     failure: null,
+    memoryNotice: null,
     dealId: "deal_recovery",
     sourceRevisionId: "revision_recovery",
     createdAt: payload.data[0].createdAt,
@@ -133,6 +203,26 @@ test("upload listing returns safe recovery DTOs with terminal lineage", async ()
     JSON.stringify(payload),
     /workspace_upload_recovery|objectKey|checksum|extractor|contentHash/,
   );
+});
+
+test("ready image recovery discloses canonical-only evidence after reload", async () => {
+  const fixture = await readyImageUpload();
+  const response = await listUploads(
+    new Request("https://vsee.test/api/uploads"),
+    undefined,
+    dependencies(fixture.workspaceId, fixture.uploads),
+  );
+  assert.equal(response.status, 200);
+  const payload = await response.json() as {
+    data: Array<Record<string, unknown>>;
+  };
+  assert.equal(
+    payload.data[0]?.memoryNotice,
+    "Ready for underwriting from canonical image evidence. "
+      + "No XTrace memory was created because no exact quotation was available.",
+  );
+  assert.equal(payload.data[0]?.failure, null);
+  assert.equal(payload.data[0]?.status, "ready");
 });
 
 test("terminal upload detail preserves deal and source revision recovery ids", async () => {

@@ -8,6 +8,7 @@ import {
   createMemoryUnderwritingArtifactsRepository,
   createSupabaseUnderwritingArtifactsRepository,
   type CandidateArtifactBundle,
+  type UnderwritingArtifactsRepository,
 } from "../../db/repositories/underwriting-artifacts";
 import type { RouteDependencies } from "../../lib/api/route-dependencies";
 import type { PublicActionDraft } from "../../lib/underwriting/read-model";
@@ -45,7 +46,7 @@ const ORDINARY_EMAIL_WITH_MATCHING_LINES = [
 ].join("\n");
 
 function productDependencies(
-  artifacts: ReturnType<typeof createMemoryUnderwritingArtifactsRepository>,
+  artifacts: UnderwritingArtifactsRepository,
   workspaceId = WORKSPACE_ID,
 ): RouteDependencies {
   return {
@@ -202,6 +203,37 @@ test("PATCH replaces only the current draft body on the same identity", async ()
     })).length,
     1,
   );
+});
+
+test("PATCH returns 404 when PostgreSQL refuses an unavailable candidate draft", async () => {
+  const artifacts = createSupabaseUnderwritingArtifactsRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "service-role",
+    fetchImpl: async () => Response.json(null),
+  });
+  assert.equal(await artifacts.replaceActionDraftBody({
+    workspaceId: WORKSPACE_ID,
+    draftId: DRAFT_ID,
+    body: "Unsafe quarantined edit",
+  }), null);
+
+  const response = await updateDraft(
+    new Request(`https://vsee.test/api/action-drafts/${DRAFT_ID}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ body: "Unsafe quarantined edit" }),
+    }),
+    { params: Promise.resolve({ id: DRAFT_ID }) },
+    productDependencies(artifacts),
+  );
+  assert.equal(response.status, 404);
+  assert.deepEqual(await response.json(), {
+    error: {
+      code: "NOT_FOUND",
+      message: "Action draft was not found",
+      retryable: false,
+    },
+  });
 });
 
 test("GET and PATCH sanitize only the exact legacy generated advisory spans", async () => {
@@ -419,7 +451,7 @@ test("PostgreSQL draft replacement uses the controlled RPC and no direct table P
   );
 });
 
-test("PostgreSQL finalized-artifact listing excludes alias candidates", async () => {
+test("PostgreSQL finalized-artifact reads require completed non-alias candidates", async () => {
   let requestedUrl = "";
   const repository = createSupabaseUnderwritingArtifactsRepository({
     url: "https://example.supabase.co",
@@ -435,9 +467,18 @@ test("PostgreSQL finalized-artifact listing excludes alias candidates", async ()
   }), []);
   const query = new URL(requestedUrl).searchParams;
   assert.equal(query.get("workspace_id"), `eq.${WORKSPACE_ID}`);
-  assert.equal(query.get("status"), "in.(completed,partial)");
+  assert.equal(query.get("status"), "eq.completed");
   assert.equal(
     query.get("artifact_source_candidate_run_id"),
     "is.null",
   );
+
+  assert.equal(await repository.getByCandidateRunId({
+    workspaceId: WORKSPACE_ID,
+    candidateRunId: CANDIDATE_RUN_ID,
+  }), null);
+  const directQuery = new URL(requestedUrl).searchParams;
+  assert.equal(directQuery.get("workspace_id"), `eq.${WORKSPACE_ID}`);
+  assert.equal(directQuery.get("id"), `eq.${CANDIDATE_RUN_ID}`);
+  assert.equal(directQuery.get("status"), "eq.completed");
 });

@@ -663,6 +663,89 @@ test("identical XTrace job and memory ids remain isolated by workspace", async (
   );
 });
 
+test("memory lineage rejects a residual provider memory that is absent from exact local memory ids", async () => {
+  const lineage = createMemoryXTraceLineageRepository();
+  await lineage.recordSubmission({
+    jobId: "job_clean_text",
+    workspaceId: "workspace_demo",
+    dealId: "deal_1",
+    sourceRevisionIds: ["revision_clean_text"],
+    sourceIds: ["source_clean_text"],
+    fixtureIds: [],
+    bundleFingerprint: "clean-text-fingerprint",
+    serializerVersion: "deal-memory-v1",
+    provenance: "source_document",
+    status: "pending",
+  });
+  await lineage.recordCompletion({
+    workspaceId: "workspace_demo",
+    jobId: "job_clean_text",
+    status: "succeeded",
+    memoryIds: ["memory_clean_text"],
+  });
+
+  assert.equal(
+    await lineage.resolve({
+      workspaceId: "workspace_demo",
+      memoryId: "memory_quarantined_image_residual",
+      convId: "deal:deal_1",
+    }),
+    null,
+  );
+  assert.equal(
+    (await lineage.resolve({
+      workspaceId: "workspace_demo",
+      memoryId: "memory_clean_text",
+      convId: "deal:deal_1",
+    }))?.sourceRevisionIds[0],
+    "revision_clean_text",
+  );
+});
+
+test("Supabase lineage requires an exact job memory id before conv-id recovery", async () => {
+  const requests: string[] = [];
+  const repository = createSupabaseXTraceLineageRepository({
+    url: "https://database.example.test",
+    serviceRoleKey: "test-service-role",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      requests.push(url);
+      if (url.includes("/xtrace_memory_links?")) return Response.json([]);
+      return Response.json([{
+        job_id: "job_clean_text",
+        workspace_id: "workspace_demo",
+        deal_id: "deal_1",
+        source_revision_ids: ["revision_clean_text"],
+        source_ids: ["source_clean_text"],
+        fixture_ids: [],
+        bundle_fingerprint: "clean-text-fingerprint",
+        serializer_version: "deal-memory-v1",
+        provenance: "source_document",
+        status: "succeeded",
+        memory_ids: ["memory_clean_text"],
+      }]);
+    },
+  });
+
+  assert.equal(
+    await repository.resolve({
+      workspaceId: "workspace_demo",
+      memoryId: "memory_quarantined_image_residual",
+      convId: "deal:deal_1",
+    }),
+    null,
+  );
+  assert.equal(
+    (await repository.resolve({
+      workspaceId: "workspace_demo",
+      memoryId: "memory_clean_text",
+      convId: "deal:deal_1",
+    }))?.sourceIds[0],
+    "source_clean_text",
+  );
+  assert.equal(requests.length, 4);
+});
+
 test("keeps polling through running and throws when the polling budget is exhausted", async () => {
   let calls = 0;
   const lineage = createMemoryXTraceLineageRepository();

@@ -475,6 +475,32 @@ export function createSupabaseDemoDataStore(options: {
     return { value: structuredClone(value), created: existing.length === 0 };
   }
 
+  async function insertImmutable<T>(
+    table: string,
+    conflictColumns: string[],
+    match: Record<string, string>,
+    row: Record<string, unknown>,
+    value: T,
+  ): Promise<UpsertResult<T>> {
+    const lookup = new URLSearchParams({
+      select: conflictColumns.join(","),
+      limit: "1",
+    });
+    for (const [column, columnValue] of Object.entries(match)) {
+      lookup.set(column, `eq.${columnValue}`);
+    }
+    const existing = await request(`/${table}?${lookup}`) as unknown[];
+    const query = new URLSearchParams({
+      on_conflict: conflictColumns.join(","),
+    });
+    await request(`/${table}?${query}`, {
+      method: "POST",
+      headers: { Prefer: "resolution=ignore-duplicates,return=minimal" },
+      body: JSON.stringify(row),
+    });
+    return { value: structuredClone(value), created: existing.length === 0 };
+  }
+
   return {
     ensureWorkspace: (input) => upsert(
       "workspaces",
@@ -497,14 +523,14 @@ export function createSupabaseDemoDataStore(options: {
       { workspace_id: input.workspaceId, user_id: input.userId, role: input.role },
       input,
     ),
-    ensureDocument: (input) => upsert(
+    ensureDocument: (input) => insertImmutable(
       "source_documents",
-      ["checksum"],
-      { checksum: input.checksum },
+      ["id"],
+      { id: input.id },
       toDocumentRow(input),
       input,
     ),
-    ensureWorkspaceDocument: (input) => upsert(
+    ensureWorkspaceDocument: (input) => insertImmutable(
       "workspace_documents",
       ["workspace_id", "document_id"],
       { workspace_id: input.workspaceId, document_id: input.documentId },
@@ -540,7 +566,7 @@ export function createSupabaseDemoDataStore(options: {
       },
       input,
     ),
-    ensureEvidence: (input) => upsert(
+    ensureEvidence: (input) => insertImmutable(
       "source_evidence",
       ["workspace_id", "id"],
       { workspace_id: input.workspaceId, id: input.id },

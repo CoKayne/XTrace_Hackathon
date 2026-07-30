@@ -32,6 +32,7 @@ export const SourceRefSchema = z.object({
   publisher: z.string().min(1).optional(),
   publishedAt: z.string().datetime().optional(),
   excerpt: z.string().min(1),
+  sourceRevisionId: z.string().min(1).optional(),
 });
 
 export const DealFactSchema = z.object({
@@ -326,6 +327,7 @@ export const EvidenceCoverageSchema = z.object({
   truncatedPublicEvents: z.number().int().nonnegative(),
   recalledDealCount: z.number().int().nonnegative(),
   unavailableDealCount: z.number().int().nonnegative(),
+  structuredImageFallbackDealCount: z.number().int().nonnegative().optional(),
 });
 
 export type Provenance = z.infer<typeof ProvenanceSchema>;

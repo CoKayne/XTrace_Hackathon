@@ -630,6 +630,143 @@ async function uploadedDealRegistry() {
   return { registry, sources };
 }
 
+async function imageOnlyDealRegistry() {
+  const sources = createMemorySourceRegistry();
+  await sources.createInitialRevision({
+    id: "revision_image",
+    workspaceId: "workspace_1",
+    sourceId: "document_image",
+    contentHash: `sha256:${"9".repeat(64)}`,
+    objectKey: "private/uploads/image-acme.png",
+    objectVersion: "object:image-acme:v1",
+    contentType: "image/png",
+    extractorId: "claude_vision_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T10:00:00.000Z",
+    createdAt: "2026-07-29T10:00:01.000Z",
+  });
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  const structuredText =
+    "Structured image evidence (not a quotation): ARR = 8000000 USD.";
+  await registry.confirmSourceAssignment({
+    requestId: "confirm_image",
+    workspaceId: "workspace_1",
+    dealId: "deal_image",
+    companyId: "company_image",
+    companyName: "Image Acme",
+    status: "passed",
+    sourceRevisionId: "revision_image",
+    assignedByUserId: "user_1",
+    reason: "User confirmed the image upload and Deal assignment.",
+    confirmedAt: "2026-07-29T10:01:00.000Z",
+    memoryBundle: {
+      dealId: "deal_image",
+      companyName: "Image Acme",
+      status: "passed",
+      facts: [{
+        text: structuredText,
+        sources: [{
+          id: "evidence_image_arr",
+          provenance: "model_inference",
+          title: "image-acme.png",
+          documentId: "document_image",
+          sourceRevisionId: "revision_image",
+          excerpt: structuredText,
+        }],
+      }],
+      interactions: [],
+    },
+    memoryLineage: {
+      evidence: {
+        evidence_image_arr: {
+          workspaceId: "workspace_1",
+          dealId: "deal_image",
+          sourceId: "document_image",
+          sourceRevisionId: "revision_image",
+        },
+      },
+      interactions: {},
+    },
+  });
+  return { registry, sources, structuredText };
+}
+
+function imageMarketScan() {
+  return {
+    status: "completed" as const,
+    window: {
+      from: "2026-07-15T12:00:00.000Z",
+      to: NOW.toISOString(),
+      days: 14 as const,
+    },
+    providers: [{
+      providerId: "official",
+      providerName: "Official source",
+      fetchedCount: 1,
+      acceptedCount: 1,
+      rejectedCount: 0,
+      lastSuccessAt: NOW.toISOString(),
+    }],
+    events: [{
+      id: "market_image",
+      title: "Image Acme wins enterprise deployment",
+      eventType: "customer",
+      sectors: ["enterprise software"],
+      themes: ["revenue", "adoption"],
+      summary: "Image Acme won a new enterprise deployment.",
+      positiveImplications: [
+        "The deployment supports continued commercial adoption.",
+      ],
+      negativeImplications: [],
+      publishedAt: "2026-07-28T00:00:00.000Z",
+      confidence: "high" as const,
+      sources: [{
+        id: "market_source_image",
+        provenance: "public_web" as const,
+        title: "Image Acme wins enterprise deployment",
+        url: "https://example.com/image-acme-deployment",
+        publishedAt: "2026-07-28T00:00:00.000Z",
+        excerpt: "Image Acme won a new enterprise deployment.",
+      }],
+      canonicalUrl: "https://example.com/image-acme-deployment",
+      contentChecksum: "image-acme-market-v1",
+      retrievedAt: NOW.toISOString(),
+      providerId: "official",
+      entityKeys: ["image-acme"],
+    }],
+  };
+}
+
+function imageReasonedMatch(structuredText: string) {
+  return {
+    dealId: "deal_image",
+    whyNow: "Image Acme won a new enterprise deployment.",
+    previousContext: structuredText,
+    positiveImplications: [
+      "Image Acme won a new enterprise deployment.",
+    ],
+    negativeImplications: [],
+    nextStep: "Review the structured image evidence and deployment source.",
+    citedSourceIds: [
+      "market_source_image",
+      "evidence_image_arr",
+    ],
+    demoFixtureIds: [],
+    scoreInputs: {
+      eventRelevance: 0.9,
+      dealRelevance: 0.9,
+      priorContextStrength: 0.8,
+      evidenceQuality: 0.9,
+    },
+    claimSourceIds: {
+      "Image Acme won a new enterprise deployment.": [
+        "market_source_image",
+      ],
+      [structuredText]: ["evidence_image_arr"],
+    },
+  };
+}
+
 test("selects at most five medium/high belief revisions and records every eligible Deal", async () => {
   let sequence = 0;
   const runs = createMemoryUnderwritingRunsRepository({
@@ -2674,6 +2811,159 @@ test("processes a confirmed uploaded Deal from the authoritative registry before
   );
 });
 
+test("structured mode matches an image-only Deal into the ranked opportunity report", async () => {
+  const { registry, structuredText } = await imageOnlyDealRegistry();
+  const runs = createRunsRepository(createMemoryDataClient({
+    now: () => NOW,
+  }));
+  await runs.create({
+    workspaceId: "workspace_1",
+    mode: "structured",
+    windowDays: 14,
+  });
+  const claimed = await runs.claimNext("worker_1");
+  assert.ok(claimed);
+
+  const result = await processClaimedRun(claimed, {
+    runs,
+    intelligence: createMemoryIntelligenceRepository({ now: () => NOW }),
+    dealRegistry: registry,
+    importGate: { async assertReady() {} },
+    market: {
+      async scanMarketWindow() {
+        return imageMarketScan();
+      },
+    },
+    reasoner: {
+      async reason(input) {
+        assert.deepEqual(input.deals.map(({ id }) => id), ["deal_image"]);
+        assert.equal(input.memoryContexts[0]?.text.includes(structuredText), true);
+        assert.deepEqual(
+          input.sources.find(({ id }) => id === "evidence_image_arr"),
+          {
+            id: "evidence_image_arr",
+            provenance: "model_inference",
+            title: "image-acme.png",
+            documentId: "document_image",
+            sourceRevisionId: "revision_image",
+            excerpt: structuredText,
+          },
+        );
+        return [imageReasonedMatch(structuredText)];
+      },
+    },
+    underwriting: {
+      async createBatchAndSelections() {
+        return {
+          id: "batch_image_structured",
+          workspaceId: "workspace_1",
+          scanRunId: claimed.id,
+          status: "completed",
+          batchInputFingerprint: `sha256:${"1".repeat(64)}`,
+          fundPolicySnapshotId: policy.id,
+          rerunOfId: null,
+          createdAt: NOW.toISOString(),
+        };
+      },
+      async processCandidate() {
+        throw new Error("The process-run seam owns automatic processing.");
+      },
+    },
+    now: () => NOW,
+  });
+
+  assert.equal(result.report.opportunities[0]?.dealId, "deal_image");
+  assert.equal(result.report.companyAnalyses[0]?.outcome, "belief_revised");
+  assert.equal(
+    result.report.companyAnalyses[0]?.sources.some(
+      (source) => source.provenance === "model_inference",
+    ),
+    true,
+  );
+});
+
+test("XTrace mode uses a partial structured fallback only for an image-only Deal", async () => {
+  const { registry, structuredText } = await imageOnlyDealRegistry();
+  const runs = createRunsRepository(createMemoryDataClient({
+    now: () => NOW,
+  }));
+  await runs.create({
+    workspaceId: "workspace_1",
+    mode: "xtrace",
+    windowDays: 14,
+  });
+  const claimed = await runs.claimNext("worker_1");
+  assert.ok(claimed);
+
+  const result = await processClaimedRun(claimed, {
+    runs,
+    intelligence: createMemoryIntelligenceRepository({ now: () => NOW }),
+    dealRegistry: registry,
+    importGate: { async assertReady() {} },
+    market: {
+      async scanMarketWindow() {
+        return imageMarketScan();
+      },
+    },
+    reasoner: {
+      async reason(input) {
+        assert.deepEqual(input.deals.map(({ id }) => id), ["deal_image"]);
+        assert.equal(input.memoryContexts[0]?.text.includes(structuredText), true);
+        return [imageReasonedMatch(structuredText)];
+      },
+    },
+    xtrace: {
+      async listOpenIngestJobs() {
+        return [];
+      },
+      async pollIngestJob() {
+        throw new Error("No pending jobs expected.");
+      },
+      async recallDealContext() {
+        assert.fail(
+          "Canonical image-only Deals must bypass XTrace recall.",
+        );
+      },
+    },
+    underwriting: {
+      async createBatchAndSelections() {
+        return {
+          id: "batch_image_xtrace_fallback",
+          workspaceId: "workspace_1",
+          scanRunId: claimed.id,
+          status: "completed",
+          batchInputFingerprint: `sha256:${"2".repeat(64)}`,
+          fundPolicySnapshotId: policy.id,
+          rerunOfId: null,
+          createdAt: NOW.toISOString(),
+        };
+      },
+      async processCandidate() {
+        throw new Error("The process-run seam owns automatic processing.");
+      },
+    },
+    now: () => NOW,
+  });
+
+  const imageAnalysis = result.report.companyAnalyses[0];
+  assert.equal(result.run.status, "partial");
+  assert.equal(result.report.analysisStatus, "incomplete");
+  assert.equal(result.report.opportunities[0]?.dealId, "deal_image");
+  assert.equal(imageAnalysis?.outcome, "belief_revised");
+  assert.deepEqual(imageAnalysis?.investmentMemory.memoryIds, []);
+  assert.equal(result.report.evidenceCoverage.recalledDealCount, 0);
+  assert.equal(result.report.evidenceCoverage.unavailableDealCount, 0);
+  assert.equal(
+    result.report.evidenceCoverage.structuredImageFallbackDealCount,
+    1,
+  );
+  assert.ok(result.run.warnings.some((warning) =>
+    /structured image evidence.*partial fallback/i.test(warning)
+    && /intentionally bypassed/i.test(warning)
+    && /not counted as XTrace recall/i.test(warning)
+  ));
+});
+
 test("keeps XTrace partial recall visible while underwriting receives every eligible Deal analysis", async () => {
   const { registry, sources } = await uploadedDealRegistry();
   await sources.createInitialRevision({
@@ -2816,6 +3106,10 @@ test("keeps XTrace partial recall visible while underwriting receives every elig
   assert.equal(result.run.status, "partial");
   assert.equal(result.report.companyAnalyses.length, 2);
   assert.equal(result.report.counts.analysisUnavailable, 1);
+  assert.equal(
+    result.report.evidenceCoverage.structuredImageFallbackDealCount,
+    0,
+  );
   assert.equal(underwritingAnalyses.length, 2);
   assert.equal(
     underwritingAnalyses.find(({ dealId }) => dealId === "deal_seeded")

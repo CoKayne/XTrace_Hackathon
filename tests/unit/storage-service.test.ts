@@ -270,6 +270,63 @@ test("Supabase corpus upserts use workspace-composite lookup and conflict identi
   }
 });
 
+test("immutable preloaded source writes ignore conflicts without UPDATE", async () => {
+  const writes: Array<{
+    pathname: string;
+    conflict: string | null;
+    prefer: string | null;
+  }> = [];
+  const data = createSupabaseDemoDataStore({
+    url: "https://database.example.test",
+    serviceRoleKey: "test-service-role",
+    async fetchImpl(input, init) {
+      if (init?.method === "POST") {
+        writes.push({
+          pathname: new URL(String(input)).pathname,
+          conflict: new URL(String(input)).searchParams.get("on_conflict"),
+          prefer: new Headers(init.headers).get("Prefer"),
+        });
+        return new Response(null, { status: 204 });
+      }
+      return Response.json([]);
+    },
+  });
+  const document = listPreloadedDocuments()[0]!;
+  const evidence = DEMO_DEAL_EVIDENCE[0]!;
+
+  await data.ensureDocument({
+    ...document,
+    objectKey: `private/demo-corpus/${document.checksum}/${document.filename}`,
+  });
+  await data.ensureWorkspaceDocument({
+    workspaceId: "workspace_demo",
+    documentId: document.id,
+  });
+  await data.ensureEvidence({
+    ...evidence,
+    workspaceId: "workspace_demo",
+    sourceRevisionId: `source_revision_${evidence.documentId}_1`,
+  });
+
+  assert.deepEqual(writes, [
+    {
+      pathname: "/rest/v1/source_documents",
+      conflict: "id",
+      prefer: "resolution=ignore-duplicates,return=minimal",
+    },
+    {
+      pathname: "/rest/v1/workspace_documents",
+      conflict: "workspace_id,document_id",
+      prefer: "resolution=ignore-duplicates,return=minimal",
+    },
+    {
+      pathname: "/rest/v1/source_evidence",
+      conflict: "workspace_id,id",
+      prefer: "resolution=ignore-duplicates,return=minimal",
+    },
+  ]);
+});
+
 test("Supabase storage uploads when a missing object is reported as HTTP 400 with nested 404", async () => {
   const methods: string[] = [];
   const objects = createSupabasePrivateObjectStorage({

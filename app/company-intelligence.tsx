@@ -99,6 +99,10 @@ function leadSentence(text: string): string {
   return dedupeSentences(text).split(/(?<=\.)\s+(?=["“(A-Z])/)[0] ?? text;
 }
 
+function traceableSourceLabel(count: number): string {
+  return `${count} traceable ${count === 1 ? "source" : "sources"}`;
+}
+
 export function CompanyIntelligenceReport({
   report,
   focused,
@@ -154,6 +158,28 @@ export function CompanyIntelligenceReport({
       </header>
 
       <ReportCoverage report={report} />
+
+      {(report.evidenceCoverage.structuredImageFallbackDealCount ?? 0) > 0 && (
+        <section
+          className="vsee-no-belief-change vsee-partial-coverage"
+          role="status"
+        >
+          <span>PARTIAL XTRACE COVERAGE</span>
+          <h2>
+            Structured image evidence was used for{" "}
+            {report.evidenceCoverage.structuredImageFallbackDealCount}{" "}
+            image-only{" "}
+            {report.evidenceCoverage.structuredImageFallbackDealCount === 1
+              ? "Deal"
+              : "Deals"}.
+          </h2>
+          <p>
+            These analyses are grounded in canonical structured evidence.
+            They contain no XTrace memory IDs and are not counted as recalled
+            Deal memories.
+          </p>
+        </section>
+      )}
 
       {priority ? (
         <PriorityResult
@@ -215,6 +241,10 @@ function ReportCoverage({ report }: { report: IntelligenceReportView }) {
     ["Unavailable", report.counts.analysisUnavailable],
     ["Accepted public events", report.evidenceCoverage.acceptedPublicEvents],
     ["Recalled Deal memories", report.evidenceCoverage.recalledDealCount],
+    [
+      "Structured image fallbacks",
+      report.evidenceCoverage.structuredImageFallbackDealCount ?? 0,
+    ],
   ] as const;
   return (
     <section className="vsee-report-coverage" aria-label="Report evidence coverage">
@@ -280,7 +310,7 @@ export function PriorityResult({
               ? "The required evidence or memory could not be analyzed."
               : "No material evidence matched this company in the current scan."}
           </p>
-          <small>{analysis.verifiedSourceCount} verified sources</small>
+          <small>{traceableSourceLabel(analysis.verifiedSourceCount)}</small>
         </section>
         <section>
           <span>NOW / MARKET EVIDENCE</span>
@@ -438,7 +468,10 @@ export function CompanyAnalysisList({
           >
             <div>
               <strong>{analysis.companyName}</strong>
-              <small>{analysis.dealStatus} · {analysis.verifiedSourceCount} verified sources</small>
+              <small>
+                {analysis.dealStatus} ·{" "}
+                {traceableSourceLabel(analysis.verifiedSourceCount)}
+              </small>
             </div>
             <span className={`vsee-analysis-outcome ${analysis.outcome}`}>
               {outcomeLabels[analysis.outcome]}

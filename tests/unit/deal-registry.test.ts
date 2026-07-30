@@ -108,6 +108,42 @@ test("seed and confirmed upload share one analysis-eligible query", async () => 
   assert.deepEqual(ids, ["deal_seed_7bridges", "deal_uploaded"]);
 });
 
+test("an exact confirmed assignment remains verifiable without quote-backed memory facts", async () => {
+  const sources = createMemorySourceRegistry();
+  const registry = createMemoryDealRegistry({ sourceRegistry: sources });
+  const input = await assignment(sources, {
+    workspaceId: "workspace_image",
+    dealId: "deal_image",
+    sourceId: "source_image",
+    companyName: "Image Co",
+  });
+  await registry.confirmSourceAssignment(input);
+  const revision = await sources.getRevision({
+    workspaceId: input.workspaceId,
+    revisionId: input.sourceRevisionId,
+  });
+  assert.ok(revision);
+
+  assert.deepEqual(await registry.getExactSourceBundle({
+    workspaceId: input.workspaceId,
+    dealId: input.dealId,
+    sourceId: revision.sourceId,
+    sourceRevisionId: revision.id,
+  }), {
+    workspaceId: input.workspaceId,
+    dealId: input.dealId,
+    sourceId: revision.sourceId,
+    sourceRevisionId: revision.id,
+    bundle: {
+      dealId: input.dealId,
+      companyName: input.companyName,
+      status: input.status,
+      facts: [],
+      interactions: [],
+    },
+  });
+});
+
 test("the registry captures one canonical eligible Deal snapshot token", async () => {
   const sources = createMemorySourceRegistry();
   const registry = createMemoryDealRegistry({ sourceRegistry: sources });
@@ -941,7 +977,242 @@ test("Supabase exact-source reads bind every ownership dimension", async () => {
       "eq.source_one",
     );
     assert.equal(query.get("source_revision_id"), "eq.revision_one");
+    if (url.includes("/source_evidence?")) {
+      assert.equal(
+        query.get("analysis_quarantine_reason"),
+        "is.null",
+      );
+    }
   }
+});
+
+test("Supabase Deal memory excludes quarantined legacy image summaries", async () => {
+  const evidenceRequests: string[] = [];
+  const canonicalRequests: string[] = [];
+  const repository = createSupabaseDealRegistry({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      const query = new URL(url).searchParams;
+      if (url.includes("/deals?")) {
+        return Response.json([{
+          id: "deal_image",
+          workspace_id: "workspace_one",
+          company_id: "company_image",
+          company_name: "Image Co",
+          status: "screening",
+          analysis_eligible_at: "2026-07-28T11:00:00.000Z",
+          active_source_revision_fingerprint:
+            sourceRevisionFingerprint(["revision_image"]),
+        }]);
+      }
+      if (url.includes("/deal_source_assignments?")) {
+        if (query.get("select") === "source_revision_id") {
+          return Response.json([{
+            source_revision_id: "revision_image",
+          }]);
+        }
+        return Response.json([{
+          deal_id: "deal_image",
+          source_id: "source_image",
+          source_revision_id: "revision_image",
+        }]);
+      }
+      if (url.includes("/source_evidence?")) {
+        evidenceRequests.push(url);
+        if (query.get("analysis_quarantine_reason") === "is.null") {
+          return Response.json([]);
+        }
+        return Response.json([{
+          id: "evidence_legacy_image",
+          workspace_id: "workspace_one",
+          deal_id: "deal_image",
+          document_id: "source_image",
+          source_revision_id: "revision_image",
+          provenance: "source_document",
+          page: 1,
+          fact: "The vision model inferred $8M ARR.",
+          excerpt: "The vision model inferred $8M ARR.",
+          analysis_quarantine_reason:
+            "legacy_model_derived_image_summary",
+        }]);
+      }
+      if (url.includes("/source_evidence_items?")) {
+        canonicalRequests.push(url);
+        return Response.json([{
+          workspace_id: "workspace_one",
+          evidence_id: "evidence_image_arr",
+          deal_id: "deal_image",
+          source_id: "source_image",
+          source_revision_id: "revision_image",
+          payload: {
+            id: "evidence_image_arr",
+            workspaceId: "workspace_one",
+            dealId: "deal_image",
+            sourceId: "source_image",
+            sourceRevisionId: "revision_image",
+            provenanceOrigin: "uploaded_document",
+            field: "ARR",
+            value: "8000000",
+            unit: "currency",
+            currency: "USD",
+            periodStart: null,
+            periodEnd: "2026-06-30",
+            publishedAt: null,
+            eventAt: null,
+            retrievedAt: "2026-07-28T11:00:00.000Z",
+            locator: {
+              kind: "image",
+              imageIndex: 0,
+              region: null,
+            },
+            sourceRole: "management",
+            assertionStatus: "reported",
+            verificationMethod: null,
+            freshness: "current",
+            acceptedForGate: true,
+          },
+        }]);
+      }
+      if (url.includes("/source_documents?")) {
+        return Response.json([{
+          id: "source_image",
+          title: "legacy.png",
+        }]);
+      }
+      return Response.json([]);
+    },
+  });
+
+  const [bundle] = await repository.listAnalysisEligibleBundles(
+    "workspace_one",
+  );
+  const structuredImageFact = {
+    text:
+      "Structured image evidence (not a quotation): ARR = 8000000 USD.",
+    sources: [{
+      id: "evidence_image_arr",
+      provenance: "model_inference",
+      title: "legacy.png",
+      documentId: "source_image",
+      sourceRevisionId: "revision_image",
+      excerpt:
+        "Structured image evidence (not a quotation): ARR = 8000000 USD.",
+    }],
+  };
+  assert.deepEqual(bundle?.facts, [structuredImageFact]);
+  assert.deepEqual(await repository.getExactSourceBundle({
+    workspaceId: "workspace_one",
+    dealId: "deal_image",
+    sourceId: "source_image",
+    sourceRevisionId: "revision_image",
+  }), {
+    workspaceId: "workspace_one",
+    dealId: "deal_image",
+    sourceId: "source_image",
+    sourceRevisionId: "revision_image",
+    bundle: {
+      dealId: "deal_image",
+      companyName: "Image Co",
+      status: "screening",
+      facts: [structuredImageFact],
+      interactions: [],
+    },
+  });
+  assert.equal(evidenceRequests.length, 2);
+  assert.equal(canonicalRequests.length, 2);
+  for (const request of evidenceRequests) {
+    assert.equal(
+      new URL(request).searchParams.get("analysis_quarantine_reason"),
+      "is.null",
+    );
+  }
+});
+
+test("Supabase Deal memory rejects canonical image evidence with foreign exact source identity", async () => {
+  const repository = createSupabaseDealRegistry({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      const query = new URL(url).searchParams;
+      if (url.includes("/deals?")) {
+        return Response.json([{
+          id: "deal_image",
+          workspace_id: "workspace_one",
+          company_id: "company_image",
+          company_name: "Image Co",
+          status: "screening",
+          analysis_eligible_at: "2026-07-28T11:00:00.000Z",
+          active_source_revision_fingerprint:
+            sourceRevisionFingerprint(["revision_image"]),
+        }]);
+      }
+      if (url.includes("/deal_source_assignments?")) {
+        if (query.get("select") === "source_revision_id") {
+          return Response.json([{
+            source_revision_id: "revision_image",
+          }]);
+        }
+        return Response.json([{
+          deal_id: "deal_image",
+          source_id: "source_image",
+          source_revision_id: "revision_image",
+        }]);
+      }
+      if (url.includes("/source_evidence_items?")) {
+        return Response.json([{
+          workspace_id: "workspace_one",
+          evidence_id: "evidence_image_arr",
+          deal_id: "deal_image",
+          source_id: "source_image",
+          source_revision_id: "revision_image",
+          payload: {
+            id: "evidence_image_arr",
+            workspaceId: "workspace_one",
+            dealId: "deal_image",
+            sourceId: "source_foreign",
+            sourceRevisionId: "revision_image",
+            provenanceOrigin: "uploaded_document",
+            field: "ARR",
+            value: "8000000",
+            unit: "currency",
+            currency: "USD",
+            periodStart: null,
+            periodEnd: null,
+            publishedAt: null,
+            eventAt: null,
+            retrievedAt: "2026-07-28T11:00:00.000Z",
+            locator: {
+              kind: "image",
+              imageIndex: 0,
+              region: null,
+            },
+            sourceRole: "management",
+            assertionStatus: "reported",
+            verificationMethod: null,
+            freshness: "current",
+            acceptedForGate: true,
+          },
+        }]);
+      }
+      if (url.includes("/source_evidence?")) return Response.json([]);
+      if (url.includes("/deal_interactions?")) return Response.json([]);
+      if (url.includes("/source_documents?")) {
+        return Response.json([{
+          id: "source_image",
+          title: "image.png",
+        }]);
+      }
+      return Response.json([]);
+    },
+  });
+
+  await assert.rejects(
+    repository.listAnalysisEligibleBundles("workspace_one"),
+    /canonical image evidence.*identity/i,
+  );
 });
 
 test("Supabase eligible reads reject a stale active-revision fingerprint", async () => {

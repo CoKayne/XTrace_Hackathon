@@ -468,7 +468,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
       const candidateQuery = new URLSearchParams({
         workspace_id: `eq.${workspaceId}`,
         id: `eq.${candidateRunId}`,
-        status: "in.(completed,partial)",
+        status: "eq.completed",
         select:
           "id,batch_id,workspace_id,deal_id,candidate_analysis_fingerprint,artifact_source_candidate_run_id",
         limit: "1",
@@ -663,7 +663,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
       const workspaceId = requiredText(input.workspaceId, "A workspace");
       const query = new URLSearchParams({
         workspace_id: `eq.${workspaceId}`,
-        status: "in.(completed,partial)",
+        status: "eq.completed",
         artifact_source_candidate_run_id: "is.null",
         select: "id",
         order: "created_at.asc,id.asc",

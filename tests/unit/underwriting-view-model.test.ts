@@ -71,6 +71,36 @@ test("upload presentation distinguishes retryable memory failure from terminal e
   });
 });
 
+test("upload presentation labels quarantined legacy image evidence as non-analysis-ready", () => {
+  const notice =
+    "Legacy image evidence is quarantined because its prior model summary "
+    + "was not an exact quotation. Upload the image again before analysis.";
+  assert.deepEqual(describeUploadState({
+    status: "failed",
+    failure: notice,
+  }), {
+    label: "Legacy image quarantined",
+    tone: "warning",
+    description: notice,
+    retryable: false,
+  });
+});
+
+test("ready image evidence discloses that no XTrace memory was created", () => {
+  const stateInput = {
+    status: "ready" as const,
+    failure: null,
+    memoryNotice:
+      "Ready for underwriting from canonical image evidence. No XTrace memory was created because no exact quotation was available.",
+  };
+  assert.deepEqual(describeUploadState(stateInput), {
+    label: "Ready · structured evidence only",
+    tone: "warning",
+    description: stateInput.memoryNotice,
+    retryable: false,
+  });
+});
+
 test("formal-claim lineage resolves the upstream calculation chain to exact source revisions", () => {
   const result = lineageForClaim({
     claimItemId: "decision_1",

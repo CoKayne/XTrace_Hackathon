@@ -19,6 +19,16 @@ import type { SourceRegistry } from "../../db/repositories/source-registry";
 import type { ConfirmUpload } from "../contracts/http";
 import type { DealMemoryBundle, DealStatus } from "../contracts/domain";
 import { safeFilename } from "./service";
+import { structuredImageDealFact } from "./structured-image-evidence";
+import {
+  LEGACY_IMAGE_QUARANTINE_NOTICE,
+  LEGACY_IMAGE_QUARANTINE_REASON,
+} from "./quarantine";
+
+export {
+  LEGACY_IMAGE_QUARANTINE_NOTICE,
+  LEGACY_IMAGE_QUARANTINE_REASON,
+} from "./quarantine";
 
 export interface UploadPreviewDto {
   uploadId: string;
@@ -36,7 +46,12 @@ export interface UploadPreviewDto {
     status: DealStatus;
   }>;
   failure: string | null;
+  memoryNotice: string | null;
 }
+
+export const IMAGE_WITHOUT_XTRACE_MEMORY_NOTICE =
+  "Ready for underwriting from canonical image evidence. "
+  + "No XTrace memory was created because no exact quotation was available.";
 
 export type UploadRecoveryFields = {
   dealId: string | null;
@@ -92,7 +107,8 @@ export function toUploadPreviewDto(
         }
       : null,
     candidateDeals: structuredClone(candidateDeals),
-    failure: record.failureReason ? publicFailure(record.status) : null,
+    failure: record.failureReason ? publicFailure(record) : null,
+    memoryNotice: imageWithoutXTraceMemoryNotice(record),
   };
 }
 
@@ -107,6 +123,7 @@ export function toUploadRecoveryDto(
     contentType: preview.contentType,
     preview: preview.preview,
     failure: preview.failure,
+    memoryNotice: preview.memoryNotice,
     ...uploadRecoveryFields(record),
   };
 }
@@ -130,6 +147,22 @@ function uploadRecoveryFields(
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
+}
+
+function imageWithoutXTraceMemoryNotice(
+  record: UploadedDocumentRecord,
+): string | null {
+  if (
+    record.status !== "ready"
+    || !record.contentType.startsWith("image/")
+    || !record.extractionPreview?.facts.length
+    || record.extractionPreview.facts.some((fact) =>
+      fact.excerpt !== null || fact.locator.kind !== "image"
+    )
+  ) {
+    return null;
+  }
+  return IMAGE_WITHOUT_XTRACE_MEMORY_NOTICE;
 }
 
 export function createUploadConfirmationService(dependencies: {
@@ -233,7 +266,7 @@ export function createUploadConfirmationService(dependencies: {
         const evidence = upload.extractionPreview.facts.map((fact, index) => ({
           id: `evidence_${sourceRevisionId}_${index}`,
           fact: fact.text,
-          excerpt: fact.excerpt ?? fact.text,
+          excerpt: fact.excerpt,
           page: 1,
           locator: evidenceLocator(fact),
           structured: completeStructuredFact(fact),
@@ -391,9 +424,14 @@ function evidenceLocator(
       region: null,
     };
   }
+  if (!fact.excerpt) {
+    throw new UploadConfirmationConflictError(
+      "Text evidence requires an exact source excerpt.",
+    );
+  }
   return {
     ...fact.locator,
-    excerpt: fact.excerpt ?? fact.text,
+    excerpt: fact.excerpt,
   };
 }
 
@@ -405,10 +443,16 @@ function completeStructuredFact(
   const value = trimStructuredText(structured?.value ?? "");
   if (!structured || !field || !value) return null;
   const excerpt = trimStructuredText(fact.excerpt ?? "");
+  const imageLocated = fact.locator.kind === "image";
   if (
-    !excerpt
-    || !sourceContains(excerpt, field)
-    || !sourceContains(excerpt, value)
+    (!excerpt && !imageLocated)
+    || (
+      excerpt
+      && (
+        !sourceContains(excerpt, field)
+        || !sourceContains(excerpt, value)
+      )
+    )
   ) {
     return null;
   }
@@ -424,7 +468,7 @@ function completeStructuredFact(
     if (
       unit !== "currency"
       || currency !== "USD"
-      || !sourceContains(excerpt, currency)
+      || (excerpt && !sourceContains(excerpt, currency))
       || !SUPPORTED_CURRENCY_VALUE.test(value)
     ) {
       return null;
@@ -436,6 +480,7 @@ function completeStructuredFact(
       || !SUPPORTED_RATE_VALUE.test(value)
       || (
         !value.endsWith("%")
+        && Boolean(excerpt)
         && !sourceContains(excerpt, "percent")
       )
     ) {
@@ -457,8 +502,13 @@ function completeStructuredFact(
         !isStrictIsoDate(periodStart)
         || !isStrictIsoDate(periodEnd)
         || periodEnd < periodStart
-        || !sourceContains(excerpt, periodStart)
-        || !sourceContains(excerpt, periodEnd)
+        || (
+          Boolean(excerpt)
+          && (
+            !sourceContains(excerpt, periodStart)
+            || !sourceContains(excerpt, periodEnd)
+          )
+        )
       )
     )
   ) {
@@ -473,7 +523,7 @@ function completeStructuredFact(
       timestamp !== null
       && (
         !isStrictIsoTimestamp(timestamp)
-        || !sourceContains(excerpt, timestamp)
+        || (Boolean(excerpt) && !sourceContains(excerpt, timestamp))
       )
     )
   ) {
@@ -645,21 +695,47 @@ function memoryBundle(input: {
   sourceId: string;
   sourceRevisionId: string;
 }): DealMemoryBundle {
+  const filename = safeFilename(input.upload.filename);
   return {
     dealId: input.dealId,
     companyName: input.companyName,
     status: input.status,
-    facts: input.upload.extractionPreview!.facts.map((fact, index) => ({
-      text: fact.text,
-      sources: [{
-        id: `evidence_${input.sourceRevisionId}_${index}`,
-        documentId: input.sourceId,
-        provenance: "source_document",
-        title: safeFilename(input.upload.filename),
-        page: 1,
-        excerpt: fact.excerpt ?? fact.text,
-      }],
-    })),
+    facts: input.upload.extractionPreview!.facts.flatMap((fact, index) => {
+      const evidenceId = `evidence_${input.sourceRevisionId}_${index}`;
+      if (fact.excerpt) {
+        return [{
+            text: fact.text,
+            sources: [{
+              id: evidenceId,
+              documentId: input.sourceId,
+              provenance: "source_document" as const,
+              title: filename,
+              page: 1,
+              excerpt: fact.excerpt,
+            }],
+          }];
+      }
+      const structured = completeStructuredFact(fact);
+      if (fact.locator.kind !== "image" || !structured) return [];
+      const projected = structuredImageDealFact({
+        evidence: {
+          id: evidenceId,
+          workspaceId: input.upload.workspaceId,
+          dealId: input.dealId,
+          sourceId: input.sourceId,
+          sourceRevisionId: input.sourceRevisionId,
+          provenanceOrigin: "uploaded_document",
+          field: structured.field,
+          value: structured.value,
+          unit: structured.unit,
+          currency: structured.currency,
+          locator: fact.locator,
+          acceptedForGate: true,
+        },
+        title: filename,
+      });
+      return projected ? [projected] : [];
+    }),
     interactions: [],
   };
 }
@@ -732,8 +808,11 @@ function fingerprint(values: string[]): string {
     .digest("hex")}`;
 }
 
-function publicFailure(status: UploadedDocumentRecord["status"]): string {
-  return status === "confirmed"
+function publicFailure(record: UploadedDocumentRecord): string {
+  if (record.failureReason === LEGACY_IMAGE_QUARANTINE_REASON) {
+    return LEGACY_IMAGE_QUARANTINE_NOTICE;
+  }
+  return record.status === "confirmed"
     ? "Memory ingestion failed. Retry is available."
     : "Document processing failed.";
 }

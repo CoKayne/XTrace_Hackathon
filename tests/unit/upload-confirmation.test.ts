@@ -16,6 +16,8 @@ import {
 } from "../../db/repositories/evidence-packs";
 import {
   createUploadConfirmationService,
+  LEGACY_IMAGE_QUARANTINE_NOTICE,
+  LEGACY_IMAGE_QUARANTINE_REASON,
   toUploadPreviewDto,
 } from "../../lib/uploads/confirmation";
 import {
@@ -128,6 +130,7 @@ test("preview DTO exposes only safe fields and candidate Deal choices", async ()
       status: "watchlist",
     }],
     failure: null,
+    memoryNotice: null,
   });
   for (const privateField of [
     "workspaceId",
@@ -141,6 +144,32 @@ test("preview DTO exposes only safe fields and candidate Deal choices", async ()
   ]) {
     assert.equal(privateField in dto, false);
   }
+});
+
+test("legacy image quarantine is disclosed without exposing arbitrary worker failures", () => {
+  const dto = toUploadPreviewDto({
+    id: "upload_legacy_image",
+    workspaceId: "workspace_1",
+    filename: "legacy.png",
+    contentType: "image/png",
+    byteSize: 128,
+    checksum: "legacy-image-hash",
+    objectKey: "private/workspaces/workspace_1/legacy.png",
+    status: "failed",
+    failureReason: LEGACY_IMAGE_QUARANTINE_REASON,
+    extractionPreview: null,
+    dealId: "deal_legacy_image",
+    sourceId: "source_legacy_image",
+    sourceRevisionId: "revision_legacy_image",
+    confirmationFingerprint: `sha256:${"a".repeat(64)}`,
+    createdAt: "2026-07-28T11:00:00.000Z",
+    updatedAt: "2026-07-30T11:00:00.000Z",
+  }, []);
+
+  assert.equal(dto.status, "failed");
+  assert.equal(dto.failure, LEGACY_IMAGE_QUARANTINE_NOTICE);
+  assert.equal(dto.memoryNotice, null);
+  assert.doesNotMatch(JSON.stringify(dto), /legacy_model_derived|object_key/i);
 });
 
 test("confirmation promotes an upload to a new Deal once and replays idempotently", async () => {
@@ -287,6 +316,189 @@ test("memory confirmation bridges exact source tuples into canonical underwritin
   assert.equal(normalizedArr.field, "arr");
   assert.equal(normalizedArr.value, "2000000");
   assert.equal(normalizedArr.currency, "USD");
+});
+
+test("image confirmation preserves a null excerpt and accepts only its exact structured locator fact", async () => {
+  const imageFact: ExtractionPreview["facts"][number] = {
+    text: "The image reports ARR of $2,000,000 USD.",
+    excerpt: null,
+    locator: { kind: "image", imageIndex: 0 },
+    structured: {
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "USD",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+  };
+  const evidence = await confirmEvidence([imageFact]);
+
+  assert.deepEqual(
+    evidence.map((item) => ({
+      field: item.field,
+      value: item.value,
+      locator: item.locator,
+      acceptedForGate: item.acceptedForGate,
+    })),
+    [{
+      field: "ARR",
+      value: "$2,000,000",
+      locator: {
+        kind: "image",
+        imageIndex: 0,
+        region: null,
+      },
+      acceptedForGate: true,
+    }],
+  );
+
+  const baseUploads = await awaitingUpload(
+    createMemoryUploadedDocumentsRepository(),
+    { ...preview, facts: [imageFact] },
+  );
+  let received:
+    | Parameters<
+      NonNullable<UploadedDocumentsRepository["promoteAtomically"]>
+    >[0]["evidence"][number]
+    | undefined;
+  const uploads: UploadedDocumentsRepository = {
+    ...baseUploads,
+    async promoteAtomically(input) {
+      received = input.evidence[0];
+      return {
+        ...(await baseUploads.get({
+          workspaceId: input.workspaceId,
+          id: input.uploadId,
+        }))!,
+        status: "confirmed",
+      };
+    },
+  };
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const service = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+    evidencePacks: createMemoryEvidencePacksRepository(),
+  });
+  await service.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  });
+
+  assert.equal(received?.excerpt, null);
+  assert.deepEqual(received?.locator, {
+    kind: "image",
+    imageIndex: 0,
+    region: null,
+  });
+  assert.deepEqual(received?.structured, imageFact.structured);
+  const memoryService = createUploadConfirmationService({
+    uploads: baseUploads,
+    sources,
+    deals,
+    evidencePacks: createMemoryEvidencePacksRepository(),
+  });
+  const memoryResult = await memoryService.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  });
+  const confirmedImage = await baseUploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_1",
+  });
+  assert.ok(confirmedImage?.sourceId);
+  assert.deepEqual(
+    (await deals.listAnalysisEligibleBundles("workspace_1"))[0]?.facts,
+    [{
+      text:
+        "Structured image evidence (not a quotation): ARR = $2,000,000 USD.",
+      sources: [{
+        id: `evidence_${memoryResult.sourceRevisionId}_0`,
+        provenance: "model_inference",
+        title: "acme.md",
+        documentId: confirmedImage.sourceId,
+        sourceRevisionId: memoryResult.sourceRevisionId,
+        excerpt:
+          "Structured image evidence (not a quotation): ARR = $2,000,000 USD.",
+      }],
+    }],
+    "Structured image evidence must remain visibly non-quotational.",
+  );
+});
+
+test("unsupported image inference is not projected into analysis memory", async () => {
+  const unsupportedImageFact: ExtractionPreview["facts"][number] = {
+    text: "The image appears to show strong product-market fit.",
+    excerpt: null,
+    locator: { kind: "image", imageIndex: 0 },
+    structured: {
+      field: "Product/Market Fit Score",
+      value: "strong",
+      unit: null,
+      currency: null,
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+  };
+  const uploads = await awaitingUpload(
+    createMemoryUploadedDocumentsRepository(),
+    { ...preview, facts: [unsupportedImageFact] },
+  );
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const evidencePacks = createMemoryEvidencePacksRepository();
+  const service = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+    evidencePacks,
+  });
+
+  const result = await service.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  });
+
+  assert.deepEqual(
+    (await deals.listAnalysisEligibleBundles("workspace_1"))[0]?.facts,
+    [],
+  );
+  assert.deepEqual(
+    (await evidencePacks.listSourceEvidence({
+      workspaceId: "workspace_1",
+      dealId: result.dealId,
+      sourceRevisionIds: [result.sourceRevisionId],
+    })).map(({ field, acceptedForGate }) => ({
+      field,
+      acceptedForGate,
+    })),
+    [{
+      field: "unstructured_source_fact",
+      acceptedForGate: false,
+    }],
+  );
 });
 
 test("confirmation keeps inferred financial metadata out of formal gates", async () => {

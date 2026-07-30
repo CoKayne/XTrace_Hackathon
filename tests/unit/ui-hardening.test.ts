@@ -308,6 +308,89 @@ test("reports render the complete company intelligence hierarchy", async () => {
   assert.match(page, /CompanyIntelligenceReport/);
 });
 
+test("reports make structured image fallback and missing XTrace memory explicit", () => {
+  const CompanyIntelligenceReport = (
+    pageCompanyIntelligenceModule as unknown as {
+      CompanyIntelligenceReport: ComponentType<{
+        report: {
+          id: string;
+          createdAt: string;
+          marketSummary: string;
+          opportunities: never[];
+          analysisStatus: "incomplete";
+          evidenceCoverage: {
+            acceptedPublicEvents: number;
+            excludedPublicItems: number;
+            truncatedPublicEvents: number;
+            recalledDealCount: number;
+            unavailableDealCount: number;
+            structuredImageFallbackDealCount: number;
+          };
+          counts: {
+            companyCount: number;
+            beliefRevised: number;
+            monitor: number;
+            noMaterialChange: number;
+            analysisUnavailable: number;
+          };
+          priorityDealId: null;
+          companyAnalyses: ReturnType<typeof priorityAnalysisFixture>[];
+        };
+        focused: boolean;
+        allowDraft: boolean;
+        onDraft(): void;
+        showDemoProfiles: boolean;
+        underwritingEnabled: boolean;
+        canSaveActionDrafts: boolean;
+      }>;
+    }
+  ).CompanyIntelligenceReport;
+
+  const html = renderToStaticMarkup(createElement(
+    CompanyIntelligenceReport,
+    {
+      report: {
+        id: "report_image_partial",
+        createdAt: "2026-07-29T12:00:00.000Z",
+        marketSummary: "One source-backed event was accepted.",
+        opportunities: [],
+        analysisStatus: "incomplete",
+        evidenceCoverage: {
+          acceptedPublicEvents: 1,
+          excludedPublicItems: 0,
+          truncatedPublicEvents: 0,
+          recalledDealCount: 0,
+          unavailableDealCount: 0,
+          structuredImageFallbackDealCount: 1,
+        },
+        counts: {
+          companyCount: 1,
+          beliefRevised: 0,
+          monitor: 1,
+          noMaterialChange: 0,
+          analysisUnavailable: 0,
+        },
+        priorityDealId: null,
+        companyAnalyses: [priorityAnalysisFixture()],
+      },
+      focused: true,
+      allowDraft: false,
+      onDraft() {},
+      showDemoProfiles: false,
+      underwritingEnabled: false,
+      canSaveActionDrafts: false,
+    },
+  ));
+
+  assert.match(html, /PARTIAL XTRACE COVERAGE/);
+  assert.match(html, /Structured image evidence was used for[\s\S]*1[\s\S]*image-only[\s\S]*Deal/);
+  assert.match(html, /contain no XTrace memory IDs/);
+  assert.match(html, /not counted as recalled Deal memories/);
+  assert.match(html, />1<\/strong><span>Structured image fallbacks<\/span>/);
+  assert.match(html, /1 traceable source/);
+  assert.doesNotMatch(html, /verified sources?/i);
+});
+
 test("Deals render the complete labeled synthetic decision context", async () => {
   const page = await readFile(pagePath, "utf8");
 
@@ -925,6 +1008,8 @@ test("product Deals and report priority never render demo profile fixtures as pe
     },
   ));
   assert.doesNotMatch(priorityHtml, /\$9\.8M|Sample deal profile/);
+  assert.match(priorityHtml, /1 traceable source/);
+  assert.doesNotMatch(priorityHtml, /verified sources?/i);
 });
 
 function upload(
@@ -946,6 +1031,7 @@ function upload(
     preview: null,
     candidateDeals: [],
     failure: null,
+    memoryNotice: null,
     dealId: null,
     sourceRevisionId: null,
     createdAt: "2026-07-29T12:00:00.000Z",

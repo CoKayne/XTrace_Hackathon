@@ -19,6 +19,10 @@ import {
   createMemorySourceRegistry,
   getSourceRegistry,
 } from "./source-registry";
+import {
+  structuredImageDealFact,
+  type CanonicalStructuredImageEvidence,
+} from "../../lib/uploads/structured-image-evidence";
 
 export interface RegisteredDeal {
   id: string;
@@ -305,6 +309,60 @@ function lengthFrame(values: readonly string[]): string {
 
 function sha256(value: string): string {
   return `sha256:${createHash("sha256").update(value, "utf8").digest("hex")}`;
+}
+
+function canonicalImageFactFromRow(input: {
+  row: Record<string, unknown>;
+  expectedWorkspaceId: string;
+  expectedDealId: string;
+  activeAssignments: ReadonlySet<string>;
+  titleForSource(sourceId: string): string;
+}) {
+  const payload = input.row.payload;
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error(
+      "Canonical image evidence payload does not preserve exact identity.",
+    );
+  }
+  const item = payload as Record<string, unknown>;
+  const rowIdentity = {
+    workspaceId: String(input.row.workspace_id ?? ""),
+    id: String(input.row.evidence_id ?? ""),
+    dealId: String(input.row.deal_id ?? ""),
+    sourceId: String(input.row.source_id ?? ""),
+    sourceRevisionId: String(input.row.source_revision_id ?? ""),
+  };
+  if (
+    rowIdentity.workspaceId !== input.expectedWorkspaceId
+    || rowIdentity.dealId !== input.expectedDealId
+    || String(item.workspaceId ?? "") !== rowIdentity.workspaceId
+    || String(item.id ?? "") !== rowIdentity.id
+    || String(item.dealId ?? "") !== rowIdentity.dealId
+    || String(item.sourceId ?? "") !== rowIdentity.sourceId
+    || String(item.sourceRevisionId ?? "") !== rowIdentity.sourceRevisionId
+    || !input.activeAssignments.has(JSON.stringify([
+      rowIdentity.sourceId,
+      rowIdentity.sourceRevisionId,
+    ]))
+  ) {
+    throw new Error(
+      "Canonical image evidence does not preserve exact source identity.",
+    );
+  }
+  const evidence: CanonicalStructuredImageEvidence = {
+    ...rowIdentity,
+    provenanceOrigin: String(item.provenanceOrigin ?? ""),
+    field: String(item.field ?? ""),
+    value: String(item.value ?? ""),
+    unit: typeof item.unit === "string" ? item.unit : null,
+    currency: typeof item.currency === "string" ? item.currency : null,
+    locator: item.locator,
+    acceptedForGate: item.acceptedForGate === true,
+  };
+  return structuredImageDealFact({
+    evidence,
+    title: input.titleForSource(evidence.sourceId),
+  });
 }
 
 function confirmationFingerprint(
@@ -869,6 +927,25 @@ export function createMemoryDealRegistry(options: {
           interactions: [],
         }));
       }
+      const exactOwnership: DealMemoryOwnership = {
+        workspaceId: input.workspaceId,
+        dealId: input.dealId,
+        sourceId: sourceRevision.sourceId,
+        sourceRevisionId: sourceRevision.id,
+      };
+      const exactKey = exactSourceIdentity(exactOwnership);
+      if (!exactSourceBundles.has(exactKey)) {
+        exactSourceBundles.set(exactKey, {
+          ...exactOwnership,
+          bundle: DealMemoryBundleSchema.parse({
+            dealId: deal.id,
+            companyName: deal.companyName,
+            status: deal.status,
+            facts: [],
+            interactions: [],
+          }),
+        });
+      }
       return {
         deal: cloneDeal(deal),
         sourceRevision,
@@ -1142,6 +1219,7 @@ export function createSupabaseDealRegistry(options: {
       const evidenceQuery = new URLSearchParams({
         workspace_id: `eq.${workspaceId}`,
         deal_id: dealFilter,
+        analysis_quarantine_reason: "is.null",
         order: "deal_id.asc,id.asc",
         select:
           "id,workspace_id,deal_id,document_id,source_revision_id,provenance,page,fact,excerpt",
@@ -1153,8 +1231,19 @@ export function createSupabaseDealRegistry(options: {
         select:
           "id,workspace_id,deal_id,document_id,source_revision_id,occurred_at,meeting_summary,decision_reason,concerns,revisit_conditions,provenance,label",
       });
-      const [evidenceRows, interactionRows] = await Promise.all([
+      const canonicalEvidenceQuery = new URLSearchParams({
+        workspace_id: `eq.${workspaceId}`,
+        deal_id: dealFilter,
+        order: "deal_id.asc,evidence_id.asc",
+        select:
+          "workspace_id,evidence_id,deal_id,source_id,source_revision_id,payload",
+      });
+      const [evidenceRows, canonicalEvidenceRows, interactionRows] =
+        await Promise.all([
         request(`/source_evidence?${evidenceQuery}`) as Promise<
+          Record<string, unknown>[]
+        >,
+        request(`/source_evidence_items?${canonicalEvidenceQuery}`) as Promise<
           Record<string, unknown>[]
         >,
         request(`/deal_interactions?${interactionQuery}`) as Promise<
@@ -1163,9 +1252,11 @@ export function createSupabaseDealRegistry(options: {
       ]);
       const documentIds = [
         ...new Set(
-          [...evidenceRows, ...interactionRows].map((row) =>
-            String(row.document_id)
-          ),
+          [
+            ...evidenceRows.map((row) => String(row.document_id)),
+            ...canonicalEvidenceRows.map((row) => String(row.source_id)),
+            ...interactionRows.map((row) => String(row.document_id)),
+          ],
         ),
       ];
       const documentRows = documentIds.length
@@ -1200,6 +1291,9 @@ export function createSupabaseDealRegistry(options: {
         const dealInteractions = interactionRows.filter((interaction) =>
           String(interaction.deal_id) === dealId
         );
+        const dealCanonicalEvidence = canonicalEvidenceRows.filter(
+          (evidence) => String(evidence.deal_id) === dealId,
+        );
         for (const ownedRow of [...dealEvidence, ...dealInteractions]) {
           if (
             String(ownedRow.workspace_id) !== workspaceId
@@ -1214,22 +1308,36 @@ export function createSupabaseDealRegistry(options: {
             );
           }
         }
+        const canonicalImageFacts = dealCanonicalEvidence.flatMap((item) => {
+          const fact = canonicalImageFactFromRow({
+            row: item,
+            expectedWorkspaceId: workspaceId,
+            expectedDealId: dealId,
+            activeAssignments,
+            titleForSource: (sourceId) =>
+              documentTitles.get(sourceId) ?? sourceId,
+          });
+          return fact ? [fact] : [];
+        });
         return DealMemoryBundleSchema.parse({
           dealId,
           companyName: row.company_name,
           status: row.status,
-          facts: dealEvidence.map((evidence) => ({
-            text: evidence.fact,
-            sources: [{
-              id: evidence.id,
-              provenance: evidence.provenance,
-              title: documentTitles.get(String(evidence.document_id))
-                ?? String(evidence.document_id),
-              documentId: evidence.document_id,
-              page: Number(evidence.page),
-              excerpt: evidence.excerpt,
-            }],
-          })),
+          facts: [
+            ...dealEvidence.map((evidence) => ({
+              text: evidence.fact,
+              sources: [{
+                id: evidence.id,
+                provenance: evidence.provenance,
+                title: documentTitles.get(String(evidence.document_id))
+                  ?? String(evidence.document_id),
+                documentId: evidence.document_id,
+                page: Number(evidence.page),
+                excerpt: evidence.excerpt,
+              }],
+            })),
+            ...canonicalImageFacts,
+          ],
           interactions: dealInteractions.map((interaction) => ({
             id: interaction.id,
             occurredAt: interaction.occurred_at,
@@ -1262,11 +1370,27 @@ export function createSupabaseDealRegistry(options: {
         deal_id: `eq.${input.dealId}`,
         document_id: `eq.${input.sourceId}`,
         source_revision_id: `eq.${input.sourceRevisionId}`,
+        analysis_quarantine_reason: "is.null",
         order: "id.asc",
         select:
           "id,workspace_id,deal_id,document_id,source_revision_id,provenance,page,fact,excerpt",
       });
-      const [deal, assignmentRows, evidenceRows, documentRows] =
+      const canonicalEvidenceQuery = new URLSearchParams({
+        workspace_id: `eq.${input.workspaceId}`,
+        deal_id: `eq.${input.dealId}`,
+        source_id: `eq.${input.sourceId}`,
+        source_revision_id: `eq.${input.sourceRevisionId}`,
+        order: "evidence_id.asc",
+        select:
+          "workspace_id,evidence_id,deal_id,source_id,source_revision_id,payload",
+      });
+      const [
+        deal,
+        assignmentRows,
+        evidenceRows,
+        canonicalEvidenceRows,
+        documentRows,
+      ] =
         await Promise.all([
           findForWorkspace({
             workspaceId: input.workspaceId,
@@ -1278,6 +1402,9 @@ export function createSupabaseDealRegistry(options: {
           request(`/source_evidence?${evidenceQuery}`) as Promise<
             Record<string, unknown>[]
           >,
+          request(`/source_evidence_items?${canonicalEvidenceQuery}`) as Promise<
+            Record<string, unknown>[]
+          >,
           request(`/source_documents?${
             new URLSearchParams({
               id: `eq.${input.sourceId}`,
@@ -1286,7 +1413,7 @@ export function createSupabaseDealRegistry(options: {
             })
           }`) as Promise<Record<string, unknown>[]>,
         ]);
-      if (!deal || assignmentRows.length !== 1 || evidenceRows.length === 0) {
+      if (!deal || assignmentRows.length !== 1) {
         return null;
       }
       for (const evidence of evidenceRows) {
@@ -1304,23 +1431,39 @@ export function createSupabaseDealRegistry(options: {
       const title = documentRows[0]
         ? String(documentRows[0].title)
         : input.sourceId;
+      const activeAssignments = new Set([
+        JSON.stringify([input.sourceId, input.sourceRevisionId]),
+      ]);
+      const canonicalImageFacts = canonicalEvidenceRows.flatMap((item) => {
+        const fact = canonicalImageFactFromRow({
+          row: item,
+          expectedWorkspaceId: input.workspaceId,
+          expectedDealId: input.dealId,
+          activeAssignments,
+          titleForSource: () => title,
+        });
+        return fact ? [fact] : [];
+      });
       return {
         ...input,
         bundle: DealMemoryBundleSchema.parse({
           dealId: deal.id,
           companyName: deal.companyName,
           status: deal.status,
-          facts: evidenceRows.map((evidence) => ({
-            text: evidence.fact,
-            sources: [{
-              id: evidence.id,
-              provenance: evidence.provenance,
-              title,
-              documentId: evidence.document_id,
-              page: Number(evidence.page),
-              excerpt: evidence.excerpt,
-            }],
-          })),
+          facts: [
+            ...evidenceRows.map((evidence) => ({
+              text: evidence.fact,
+              sources: [{
+                id: evidence.id,
+                provenance: evidence.provenance,
+                title,
+                documentId: evidence.document_id,
+                page: Number(evidence.page),
+                excerpt: evidence.excerpt,
+              }],
+            })),
+            ...canonicalImageFacts,
+          ],
           interactions: [],
         }),
       };

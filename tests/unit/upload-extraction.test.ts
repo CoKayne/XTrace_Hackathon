@@ -357,6 +357,56 @@ test("Supabase claims an expired upload immediately after expiry but not before"
   assert.equal(await before.claimNext("worker-b"), null);
 });
 
+test("Supabase upload creation relies on the database queued default", async () => {
+  const requestBodies: Array<Record<string, unknown>> = [];
+  const now = "2026-07-25T12:00:00.000Z";
+  const repository = createSupabaseUploadedDocumentsRepository({
+    url: "https://db.test",
+    serviceRoleKey: "key",
+    fetchImpl: async (_url, init) => {
+      const requestBody = JSON.parse(
+        String(init?.body),
+      ) as Record<string, unknown>;
+      requestBodies.push(requestBody);
+      return Response.json([{
+        ...requestBody,
+        status: "queued",
+        failure_reason: null,
+        extraction_preview: null,
+        deal_id: null,
+        source_id: null,
+        source_revision_id: null,
+        confirmation_fingerprint: null,
+        created_at: now,
+        updated_at: now,
+      }]);
+    },
+  });
+
+  await repository.create({
+    id: "upload_staging",
+    workspaceId: "workspace_demo",
+    filename: "staging.txt",
+    contentType: "text/plain",
+    byteSize: 12,
+    checksum: "staging-hash",
+    objectKey: "private/workspaces/workspace_demo/staging.txt",
+  });
+
+  const requestBody = requestBodies[0];
+  assert.ok(requestBody);
+  assert.equal(requestBody.status, undefined);
+  assert.deepEqual(Object.keys(requestBody).sort(), [
+    "byte_size",
+    "checksum",
+    "content_type",
+    "filename",
+    "id",
+    "object_key",
+    "workspace_id",
+  ]);
+});
+
 test("Supabase terminal lease mutations use the database-time transition RPC", async () => {
   const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
   const repository = createSupabaseUploadedDocumentsRepository({

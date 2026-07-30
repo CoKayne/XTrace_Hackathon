@@ -6,6 +6,7 @@ import {
   createMemoryUploadedDocumentsRepository,
   type ExtractionPreview,
 } from "../../db/repositories/uploaded-documents";
+import type { SourceEvidenceInput } from "../../db/repositories/evidence-packs";
 import { createXTraceService } from "../../lib/xtrace/service";
 import { processConfirmedSource } from "../../worker/ingest-confirmed-source";
 
@@ -24,6 +25,35 @@ const preview: ExtractionPreview = {
     contentHash: "hash",
     inputBytes: 23,
     extractedCharacters: 23,
+    truncated: false,
+  },
+};
+
+const imagePreview: ExtractionPreview = {
+  candidateCompanyName: "Image Co",
+  candidateHeadline: "Image Co reported $8M ARR.",
+  facts: [{
+    text: "Image Co reported $8M ARR.",
+    excerpt: null,
+    locator: { kind: "image", imageIndex: 0 },
+    structured: {
+      field: "arr",
+      value: "8000000",
+      unit: null,
+      currency: "USD",
+      periodStart: null,
+      periodEnd: "2026-06-30",
+      publishedAt: null,
+      eventAt: null,
+    },
+  }],
+  extractionMetadata: {
+    extractorId: "claude_vision_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T12:00:00.000Z",
+    contentHash: "image-hash",
+    inputBytes: 4096,
+    extractedCharacters: 26,
     truncated: false,
   },
 };
@@ -209,6 +239,357 @@ test("only a confirmed claim reaches XTrace and success is lease-token guarded",
   }))?.status, "ready");
 });
 
+test("confirmed image evidence becomes ready without inventing XTrace memory", async () => {
+  const uploads = createMemoryUploadedDocumentsRepository();
+  await uploads.create({
+    id: "upload_image",
+    workspaceId: "workspace_1",
+    filename: "image.png",
+    contentType: "image/png",
+    byteSize: 4096,
+    checksum: "image-hash",
+    objectKey: "private/image.png",
+  });
+  await stageConfirmed(uploads, {
+    id: "upload_image",
+    dealId: "deal_image",
+    sourceId: "source_image",
+    sourceRevisionId: "revision_image",
+  }, imagePreview);
+  const claimed = await uploads.claimNextConfirmed("worker-image");
+  assert.ok(claimed);
+  let failCalls = 0;
+  const canonicalEvidence: SourceEvidenceInput[] = [{
+    id: "evidence_image_0",
+    workspaceId: "workspace_1",
+    dealId: "deal_image",
+    sourceId: "source_image",
+    sourceRevisionId: "revision_image",
+    provenanceOrigin: "uploaded_document",
+    field: "arr",
+    value: "8000000",
+    unit: null,
+    currency: "USD",
+    periodStart: null,
+    periodEnd: "2026-06-30",
+    publishedAt: null,
+    eventAt: null,
+    retrievedAt: "2026-07-29T12:00:00.000Z",
+    locator: { kind: "image", imageIndex: 0, region: null },
+    sourceRole: "management",
+    assertionStatus: "reported",
+    verificationMethod: null,
+    freshness: "current",
+    acceptedForGate: true,
+  }];
+  const dependencies = {
+    loadBundle: async () => ({
+      workspaceId: "workspace_1",
+      dealId: "deal_image",
+      sourceId: "source_image",
+      sourceRevisionId: "revision_image",
+      bundle: {
+        dealId: "deal_image",
+        companyName: "Image Co",
+        status: "screening" as const,
+        facts: [{
+          text:
+            "Structured image evidence (not a quotation): arr = 8000000 USD.",
+          sources: [{
+            id: "evidence_image_0",
+            provenance: "model_inference" as const,
+            title: "image.png",
+            documentId: "source_image",
+            sourceRevisionId: "revision_image",
+            excerpt:
+              "Structured image evidence (not a quotation): arr = 8000000 USD.",
+          }],
+        }],
+        interactions: [],
+      },
+    }),
+    loadCanonicalEvidence: async () => canonicalEvidence,
+    complete: (input: Parameters<typeof uploads.completeConfirmed>[0]) =>
+      uploads.completeConfirmed(input),
+    fail: async (
+      input: Parameters<typeof uploads.failConfirmed>[0],
+    ) => {
+      failCalls += 1;
+      return uploads.failConfirmed(input);
+    },
+  };
+
+  const result = await processConfirmedSource(claimed, dependencies);
+
+  assert.deepEqual(result, {
+    kind: "ready_without_xtrace_memory",
+    reason: "image_without_exact_quote",
+  });
+  assert.equal(failCalls, 0);
+  assert.equal((await uploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_image",
+  }))?.status, "ready");
+  assert.equal(await uploads.claimNextConfirmed("worker-next"), null);
+});
+
+test("image completion stays retryable when no accepted structured fact was projected", async () => {
+  const uploads = createMemoryUploadedDocumentsRepository();
+  await uploads.create({
+    id: "upload_image_without_fact",
+    workspaceId: "workspace_1",
+    filename: "image-without-fact.png",
+    contentType: "image/png",
+    byteSize: 4096,
+    checksum: "image-without-fact-hash",
+    objectKey: "private/image-without-fact.png",
+  });
+  await stageConfirmed(uploads, {
+    id: "upload_image_without_fact",
+    dealId: "deal_image",
+    sourceId: "source_image",
+    sourceRevisionId: "revision_image",
+  }, imagePreview);
+  const claimed = await uploads.claimNextConfirmed("worker-image");
+  assert.ok(claimed);
+  let completeCalls = 0;
+  let failCalls = 0;
+
+  await assert.rejects(processConfirmedSource(claimed, {
+    loadBundle: async () => ({
+      workspaceId: "workspace_1",
+      dealId: "deal_image",
+      sourceId: "source_image",
+      sourceRevisionId: "revision_image",
+      bundle: {
+        dealId: "deal_image",
+        companyName: "Image Co",
+        status: "screening",
+        facts: [],
+        interactions: [],
+      },
+    }),
+    loadCanonicalEvidence: async (): Promise<SourceEvidenceInput[]> => [{
+      id: "evidence_image_unaccepted",
+      workspaceId: "workspace_1",
+      dealId: "deal_image",
+      sourceId: "source_image",
+      sourceRevisionId: "revision_image",
+      provenanceOrigin: "uploaded_document",
+      field: "unstructured_source_fact",
+      value: "Image Co reported $8M ARR.",
+      unit: null,
+      currency: null,
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+      retrievedAt: "2026-07-29T12:00:00.000Z",
+      locator: { kind: "image", imageIndex: 0, region: null },
+      sourceRole: "management",
+      assertionStatus: "reported",
+      verificationMethod: null,
+      freshness: "current",
+      acceptedForGate: false,
+    }],
+    complete: async (
+      input: Parameters<typeof uploads.completeConfirmed>[0],
+    ) => {
+      completeCalls += 1;
+      return uploads.completeConfirmed(input);
+    },
+    fail: async (
+      input: Parameters<typeof uploads.failConfirmed>[0],
+    ) => {
+      failCalls += 1;
+      return uploads.failConfirmed(input);
+    },
+  }), /no exact source-backed facts/i);
+
+  assert.equal(completeCalls, 0);
+  assert.equal(failCalls, 1);
+  const retryable = await uploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_image_without_fact",
+  });
+  assert.equal(retryable?.status, "confirmed");
+  assert.equal(
+    retryable?.failureReason,
+    "Memory ingestion failed. Retry is available.",
+  );
+});
+
+test("image completion rejects canonical evidence owned by another source", async () => {
+  const uploads = createMemoryUploadedDocumentsRepository();
+  await uploads.create({
+    id: "upload_image_foreign",
+    workspaceId: "workspace_1",
+    filename: "image-foreign.png",
+    contentType: "image/png",
+    byteSize: 4096,
+    checksum: "image-foreign-hash",
+    objectKey: "private/image-foreign.png",
+  });
+  await stageConfirmed(uploads, {
+    id: "upload_image_foreign",
+    dealId: "deal_image",
+    sourceId: "source_image",
+    sourceRevisionId: "revision_image",
+  }, imagePreview);
+  const claimed = await uploads.claimNextConfirmed("worker-image");
+  assert.ok(claimed);
+  let ingestCalls = 0;
+  let failCalls = 0;
+  const dependencies = {
+    loadBundle: async () => ({
+      workspaceId: "workspace_1",
+      dealId: "deal_image",
+      sourceId: "source_image",
+      sourceRevisionId: "revision_image",
+      bundle: {
+        dealId: "deal_image",
+        companyName: "Image Co",
+        status: "screening" as const,
+        facts: [{
+          text:
+            "Structured image evidence (not a quotation): arr = 8000000 USD.",
+          sources: [{
+            id: "evidence_image_foreign",
+            provenance: "model_inference" as const,
+            title: "image-foreign.png",
+            documentId: "source_image",
+            sourceRevisionId: "revision_image",
+            excerpt:
+              "Structured image evidence (not a quotation): arr = 8000000 USD.",
+          }],
+        }],
+        interactions: [],
+      },
+    }),
+    loadCanonicalEvidence: async (): Promise<SourceEvidenceInput[]> => [{
+      id: "evidence_image_foreign",
+      workspaceId: "workspace_1",
+      dealId: "deal_image",
+      sourceId: "source_foreign",
+      sourceRevisionId: "revision_image",
+      provenanceOrigin: "uploaded_document",
+      field: "arr",
+      value: "8000000",
+      unit: null,
+      currency: "USD",
+      periodStart: null,
+      periodEnd: "2026-06-30",
+      publishedAt: null,
+      eventAt: null,
+      retrievedAt: "2026-07-29T12:00:00.000Z",
+      locator: { kind: "image", imageIndex: 0, region: null },
+      sourceRole: "management",
+      assertionStatus: "reported",
+      verificationMethod: null,
+      freshness: "current",
+      acceptedForGate: true,
+    }],
+    ingest: async () => {
+      ingestCalls += 1;
+      return {
+        dealId: "deal_image",
+        jobId: "job_image_foreign",
+        status: "succeeded" as const,
+        memoryIds: ["memory_image_foreign"],
+      };
+    },
+    complete: (input: Parameters<typeof uploads.completeConfirmed>[0]) =>
+      uploads.completeConfirmed(input),
+    fail: async (
+      input: Parameters<typeof uploads.failConfirmed>[0],
+    ) => {
+      failCalls += 1;
+      return uploads.failConfirmed(input);
+    },
+  };
+
+  await assert.rejects(
+    processConfirmedSource(claimed, dependencies),
+    /canonical image evidence ownership/i,
+  );
+
+  assert.equal(ingestCalls, 0);
+  assert.equal(failCalls, 1);
+  const failed = await uploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_image_foreign",
+  });
+  assert.equal(failed?.status, "confirmed");
+  assert.equal(
+    failed?.failureReason,
+    "Memory ingestion failed. Retry is available.",
+  );
+});
+
+test("text confirmation without a configured XTrace ingest remains retryable", async () => {
+  const uploads = createMemoryUploadedDocumentsRepository();
+  await uploads.create({
+    id: "upload_text_unconfigured",
+    workspaceId: "workspace_1",
+    filename: "unconfigured.txt",
+    contentType: "text/plain",
+    byteSize: 23,
+    checksum: "unconfigured-hash",
+    objectKey: "private/unconfigured.txt",
+  });
+  await stageConfirmed(uploads, {
+    id: "upload_text_unconfigured",
+    dealId: "deal_unconfigured",
+    sourceId: "source_unconfigured",
+    sourceRevisionId: "revision_unconfigured",
+  });
+  const claimed = await uploads.claimNextConfirmed("worker-unconfigured");
+  assert.ok(claimed);
+  let failCalls = 0;
+  const dependencies = {
+    loadBundle: async () => ({
+      workspaceId: "workspace_1",
+      dealId: "deal_unconfigured",
+      sourceId: "source_unconfigured",
+      sourceRevisionId: "revision_unconfigured",
+      bundle: {
+        dealId: "deal_unconfigured",
+        companyName: "Unconfigured Co",
+        status: "screening" as const,
+        facts: [{
+          text: "Unconfigured Co has customers.",
+          sources: [{
+            id: "evidence_unconfigured",
+            documentId: "source_unconfigured",
+            provenance: "source_document" as const,
+            title: "unconfigured.txt",
+            excerpt: "Unconfigured Co has customers.",
+          }],
+        }],
+        interactions: [],
+      },
+    }),
+    complete: (input: Parameters<typeof uploads.completeConfirmed>[0]) =>
+      uploads.completeConfirmed(input),
+    fail: async (
+      input: Parameters<typeof uploads.failConfirmed>[0],
+    ) => {
+      failCalls += 1;
+      return uploads.failConfirmed(input);
+    },
+  };
+
+  await assert.rejects(
+    processConfirmedSource(claimed, dependencies),
+    /XTrace is not configured/i,
+  );
+  assert.equal(failCalls, 1);
+  assert.equal((await uploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_text_unconfigured",
+  }))?.status, "confirmed");
+});
+
 test("XTrace failure returns the upload to a visible retryable confirmed state", async () => {
   const uploads = createMemoryUploadedDocumentsRepository();
   await uploads.create({
@@ -276,6 +657,7 @@ async function stageConfirmed(
     sourceId: string;
     sourceRevisionId: string;
   },
+  extractionPreview: ExtractionPreview = preview,
 ) {
   const extraction = await uploads.claimNext("extractor");
   assert.ok(extraction);
@@ -284,7 +666,7 @@ async function stageConfirmed(
     id: input.id,
     workerId: extraction.workerId,
     leaseToken: extraction.leaseToken,
-    preview,
+    preview: extractionPreview,
   }), true);
   await uploads.markConfirmed({
     workspaceId: "workspace_1",

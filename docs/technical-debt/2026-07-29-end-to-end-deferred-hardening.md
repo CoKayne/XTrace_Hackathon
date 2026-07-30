@@ -46,6 +46,8 @@
 | TD-FWK-001 | P0 | Production gate | Side Quest 框架可產生實驗性觀點，但仍不能成為正式決策因子 |
 | TD-FWK-002 | P1 | Production gate | 真實框架的授權、來源版本與 Decision Utility 尚未全部核准 |
 | TD-COV-001 | P2 | Product limitation | 第一版深度估值只支援 Seed／Series A × B2B SaaS／Enterprise AI |
+| TD-COV-002 | P2 | Backlog | `verifiedSourceCount` 名稱包含可追溯但未獨立驗證的 model inference |
+| TD-COV-003 | P2 | Backlog | 同時含文字與圖片的 Deal 尚未在歷史匹配階段合併兩類 evidence |
 | TD-OPS-001 | P2 | Backlog | 自動排程、訊息實際發送與 LinkedIn 發佈仍刻意停用 |
 | TD-OPS-002 | P1 | Production gate | 舊版 hosted report rows 可能無法投影成目前 read DTO |
 | TD-UI-001 | P2 | Test hardening | Action Draft Save 尚缺實際按鈕到 PATCH 的互動測試 |
@@ -314,6 +316,47 @@
     不得假裝已完成專業估值。
 - **重啟時機**
   - 第一條垂直流程穩定後，以一個 sector/stage 一個版本擴充。
+
+### TD-COV-002：`verifiedSourceCount` public contract 命名過度承諾
+
+- **現況**
+  - `CompanyAnalysis.verifiedSourceCount` 實際計算所有可追溯、可引用的
+    source lineage，其中可能包含 `provenance=model_inference` 的圖片結構化
+    證據。
+  - 這代表來源可追溯，不代表該推論已被獨立驗證。
+  - 本輪已將使用者可見文案改為 `traceable source(s)`；為維持既有 API 與
+    persisted report 相容性，public contract 欄位名稱暫時不變。
+- **未來修正**
+  - 將欄位版本化更名為 `traceableSourceCount`。
+  - 視產品需要增加選填的 `modelInferenceSourceCount`，讓 UI 與下游 consumer
+    能區分文件引文、公開來源與模型推論。
+- **完成條件**
+  - 新舊 report 有明確 migration／compatibility adapter。
+  - API、資料庫、Chat、Report 與 Underwriting 使用一致且不誇大的計數語意。
+
+### TD-COV-003：混合文字＋圖片 Deal 的歷史匹配覆蓋不完整
+
+- **現況**
+  - 純文字 Deal 會使用 XTrace recall；純圖片 Deal 會使用有完整本機 lineage
+    的結構化圖片 evidence fallback。
+  - 同一 Deal 同時具有文字與圖片來源時，歷史機會匹配目前只使用成功
+    recall 的文字 context；圖片 evidence 仍會進入後續 underwriting，
+    但不參與該次 matching，也不會增加 partial coverage 計數。
+- **影響**
+  - 主要流程與報告仍可完成，且不會把未引用內容冒充證據；但若關鍵訊號
+    只存在於圖片，該 Deal 在 Top 5 歷史匹配時可能被低估或漏選。
+- **暫時控制**
+  - Demo corpus 應避免把決定 matching 的唯一資訊只放在混合 Deal 的圖片。
+  - 報告仍必須顯示實際使用的來源與 coverage，不得宣稱已分析未使用的圖片。
+- **完整修正**
+  - 在 historical-context builder 以 source revision 為單位合併 XTrace
+    recall 與 structured image evidence，去重後共同參與 matching。
+  - 增加混合來源 Deal 的成功、部分失敗、全失敗與 citation-lineage 測試。
+- **完成條件**
+  - 圖片中的關鍵產業／公司訊號能影響混合 Deal 排名；報告精確揭露文字與
+    圖片各自的使用狀態，且所有引用仍可回到固定 source revision。
+- **重啟時機**
+  - 擴大真實 mixed-media corpus 或把圖片內容作為主要歷史 Deal 證據前。
 
 ### TD-OPS-001：自動執行與對外發送刻意停用
 
