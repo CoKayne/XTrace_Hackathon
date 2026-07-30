@@ -35,14 +35,16 @@ export async function GET(
     if (!report) {
       return jsonError("NOT_FOUND", `Report ${id} was not found`, 404);
     }
-    const underwritingBatch = await buildUnderwritingBatchSummary({
-      workspaceId: requestContext.workspaceId,
-      scanRunId: report.runId,
-      runs: dependencies.underwritingRuns
-        ?? getUnderwritingRunsRepository(),
-      artifacts: dependencies.underwritingArtifacts
-        ?? getUnderwritingArtifactsRepository(),
-    });
+    const underwritingBatch = requestContext.mode === "product"
+      ? await buildUnderwritingBatchSummary({
+        workspaceId: requestContext.workspaceId,
+        scanRunId: report.runId,
+        runs: dependencies.underwritingRuns
+          ?? getUnderwritingRunsRepository(),
+        artifacts: dependencies.underwritingArtifacts
+          ?? getUnderwritingArtifactsRepository(),
+      })
+      : null;
     return jsonOk({
       ...toPublicReport(report),
       ...(underwritingBatch ? { underwritingBatch } : {}),

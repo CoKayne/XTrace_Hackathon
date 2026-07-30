@@ -240,3 +240,26 @@ test("PostgreSQL draft replacement uses the controlled RPC and no direct table P
     false,
   );
 });
+
+test("PostgreSQL finalized-artifact listing excludes alias candidates", async () => {
+  let requestedUrl = "";
+  const repository = createSupabaseUnderwritingArtifactsRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "service-role",
+    fetchImpl: async (input) => {
+      requestedUrl = String(input);
+      return Response.json([]);
+    },
+  });
+
+  assert.deepEqual(await repository.listFinalizedForWorkspace({
+    workspaceId: WORKSPACE_ID,
+  }), []);
+  const query = new URL(requestedUrl).searchParams;
+  assert.equal(query.get("workspace_id"), `eq.${WORKSPACE_ID}`);
+  assert.equal(query.get("status"), "in.(completed,partial)");
+  assert.equal(
+    query.get("artifact_source_candidate_run_id"),
+    "is.null",
+  );
+});

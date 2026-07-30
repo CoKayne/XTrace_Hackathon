@@ -373,6 +373,51 @@ test("report detail attaches an explicit persisted underwriting batch summary", 
   ]);
 });
 
+test("public demo report detail never reads persisted underwriting state", async () => {
+  const intelligence = createMemoryIntelligenceRepository();
+  await intelligence.saveReport({
+    id: "report_demo",
+    workspaceId: "workspace_demo",
+    runId: "run_demo",
+    createdAt: "2026-07-29T12:00:00.000Z",
+    marketSummary: "Synthetic demo report",
+    opportunities: [],
+  });
+  const runs = createMemoryUnderwritingRunsRepository();
+  runs.getBatchByScanRunId = async () => {
+    throw new Error("Demo mode reached persisted underwriting");
+  };
+  const response = await getReport(
+    new Request("https://vsee.test/api/reports/report_demo"),
+    params("report_demo"),
+    {
+      async resolveRequestContext() {
+        return {
+          mode: "public_demo",
+          principal: null,
+          workspaceId: "workspace_demo",
+          role: "demo",
+          permissions: {
+            readWorkspace: true,
+            readPrivateSources: false,
+            mutateSources: false,
+            managePolicy: false,
+            administerFrameworks: false,
+          },
+        };
+      },
+      intelligence,
+      underwritingRuns: runs,
+    },
+  );
+
+  assert.equal(response.status, 200);
+  const payload = await response.json() as {
+    data: Record<string, unknown>;
+  };
+  assert.equal("underwritingBatch" in payload.data, false);
+});
+
 test("candidate detail returns persisted artifacts and hides internal provider metadata", async () => {
   const repositories = await readRepositories();
   const response = await getUnderwriting(

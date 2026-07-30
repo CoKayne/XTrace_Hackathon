@@ -646,6 +646,7 @@ export function createSupabaseUnderwritingArtifactsRepository(options: {
       const query = new URLSearchParams({
         workspace_id: `eq.${workspaceId}`,
         status: "in.(completed,partial)",
+        artifact_source_candidate_run_id: "is.null",
         select: "id",
         order: "created_at.asc,id.asc",
       });
