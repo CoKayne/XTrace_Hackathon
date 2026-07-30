@@ -365,28 +365,210 @@ test(
             'sourceRevisionId', 'revision_1',
             'assignedByUserId', 'user_1',
             'confirmedAt', '2026-07-29T12:05:00.000Z',
-            'evidence', jsonb_build_array(jsonb_build_object(
-              'id', 'evidence_1',
-              'fact', 'ARR was $2,000,000.',
-              'excerpt', 'ARR was $2,000,000.',
-              'page', 1,
-              'locator', jsonb_build_object(
-                'kind', 'text_range',
-                'start', 0,
-                'end', 21,
-                'excerpt', 'ARR was $2,000,000.'
+            'evidence', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'evidence_1',
+                'fact',
+                  'ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31.',
+                'excerpt',
+                  'ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', '2025-01-01',
+                  'periodEnd', '2025-12-31',
+                  'publishedAt', null,
+                  'eventAt', null
+                )
               ),
-              'structured', jsonb_build_object(
-                'field', 'ARR',
-                'value', '$2,000,000',
-                'unit', 'currency',
-                'currency', 'USD',
-                'periodStart', '2025-01-01',
-                'periodEnd', '2025-12-31',
-                'publishedAt', null,
-                'eventAt', null
+              jsonb_build_object(
+                'id', 'evidence_2',
+                'fact', 'ARR was $2,000,000 for calendar 2025.',
+                'excerpt', 'ARR was $2,000,000 for calendar 2025.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', '2025-01-01',
+                  'periodEnd', '2025-12-31',
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_3',
+                'fact', 'Product/Market Fit Score: strong.',
+                'excerpt', 'Product/Market Fit Score: strong.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'Product/Market Fit Score',
+                  'value', 'strong',
+                  'unit', null,
+                  'currency', null,
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_4',
+                'fact', 'Monthly Recurring Revenue was $200,000 USD.',
+                'excerpt', 'Monthly Recurring Revenue was $200,000 USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'Monthly Recurring Revenue',
+                  'value', '$200,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_5',
+                'fact', 'ARR was $2M USD.',
+                'excerpt', 'ARR was $2M USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2M',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_6',
+                'fact', 'ARR was $2,000,000 ABC.',
+                'excerpt', 'ARR was $2,000,000 ABC.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'ABC',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_7',
+                'fact',
+                  'ARR was $2,000,000 USD from 2025-02-30 through 2025-12-31.',
+                'excerpt',
+                  'ARR was $2,000,000 USD from 2025-02-30 through 2025-12-31.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', '2025-02-30',
+                  'periodEnd', '2025-12-31',
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_8',
+                'fact',
+                  'ARR was $2,000,000 USD as of 2025-02-30T12:00:00.000Z.',
+                'excerpt',
+                  'ARR was $2,000,000 USD as of 2025-02-30T12:00:00.000Z.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', '2025-02-30T12:00:00.000Z'
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_9',
+                'fact',
+                  'ARR was $2,000,000 USD from 2025-12-31 through 2025-01-01.',
+                'excerpt',
+                  'ARR was $2,000,000 USD from 2025-12-31 through 2025-01-01.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', '2025-12-31',
+                  'periodEnd', '2025-01-01',
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_10',
+                'fact', 'ARR was $2,000,000 in a USDA filing.',
+                'excerpt', 'ARR was $2,000,000 in a USDA filing.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_11',
+                'fact', 'The company carried $2,000,000 USD.',
+                'excerpt', 'The company carried $2,000,000 USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_12',
+                'fact',
+                  'ARR was $2,000,000 USD as of 2025-01-01T12:00:00.000+19:00.',
+                'excerpt',
+                  'ARR was $2,000,000 USD as of 2025-01-01T12:00:00.000+19:00.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', '2025-01-01T12:00:00.000+19:00'
+                )
               )
-            ))
+            )
           ));
           select count(*)
           from public.claim_next_uploaded_document(
@@ -574,12 +756,15 @@ test(
              where workspace_id = 'workspace_upload') || '|' ||
             (select count(*) from public.source_evidence_items
              where workspace_id = 'workspace_upload') || '|' ||
-            (select item.source_id || ':' || item.source_revision_id || ':' ||
-                    (item.payload ->> 'field') || ':' ||
-                    (item.payload ->> 'acceptedForGate')
+            (select string_agg(
+                      item.evidence_id || ':' ||
+                      (item.payload ->> 'field') || ':' ||
+                      (item.payload ->> 'acceptedForGate'),
+                      ',' order by
+                        substring(item.evidence_id from '[0-9]+$')::integer
+                    )
              from public.source_evidence_items as item
-             where item.workspace_id = 'workspace_upload'
-               and item.evidence_id = 'evidence_1') || '|' ||
+             where item.workspace_id = 'workspace_upload') || '|' ||
             (select item.source_id || ':' ||
                     (item.payload ->> 'sourceId')
              from public.source_evidence_items as item
@@ -595,7 +780,20 @@ test(
       ], { encoding: "utf8" }).trim();
       assert.equal(
         output,
-        "confirmed|failed|deal_1|revision_1|1|1|1|1|source_1:revision_1:ARR:true|source_backfill:source_backfill",
+        "confirmed|failed|deal_1|revision_1|1|1|12|12|"
+          + "evidence_1:ARR:true,"
+          + "evidence_2:unstructured_source_fact:false,"
+          + "evidence_3:unstructured_source_fact:false,"
+          + "evidence_4:unstructured_source_fact:false,"
+          + "evidence_5:unstructured_source_fact:false,"
+          + "evidence_6:unstructured_source_fact:false,"
+          + "evidence_7:unstructured_source_fact:false,"
+          + "evidence_8:unstructured_source_fact:false,"
+          + "evidence_9:unstructured_source_fact:false"
+          + ",evidence_10:unstructured_source_fact:false"
+          + ",evidence_11:unstructured_source_fact:false"
+          + ",evidence_12:unstructured_source_fact:false"
+          + "|source_backfill:source_backfill",
       );
     } finally {
       execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });

@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   createMemoryUploadedDocumentsRepository,
   type ExtractionPreview,
+  type UploadedDocumentsRepository,
 } from "../../db/repositories/uploaded-documents";
 import { createMemorySourceRegistry } from "../../db/repositories/source-registry";
 import {
@@ -17,6 +18,9 @@ import {
   createUploadConfirmationService,
   toUploadPreviewDto,
 } from "../../lib/uploads/confirmation";
+import {
+  normalizeSourceEvidence,
+} from "../../lib/underwriting/evidence/normalization";
 
 const preview: ExtractionPreview = {
   candidateCompanyName: "Acme",
@@ -60,6 +64,39 @@ async function awaitingUpload(
     preview: extractionPreview,
   }), true);
   return repository;
+}
+
+async function confirmEvidence(
+  facts: ExtractionPreview["facts"],
+) {
+  const uploads = await awaitingUpload(
+    createMemoryUploadedDocumentsRepository(),
+    { ...preview, facts },
+  );
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const evidencePacks = createMemoryEvidencePacksRepository();
+  const service = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+    evidencePacks,
+    now: () => new Date("2026-07-29T12:05:00.000Z"),
+  });
+  const result = await service.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  });
+  return evidencePacks.listSourceEvidence({
+    workspaceId: "workspace_1",
+    dealId: result.dealId,
+    sourceRevisionIds: [result.sourceRevisionId],
+  });
 }
 
 test("preview DTO exposes only safe fields and candidate Deal choices", async () => {
@@ -153,9 +190,11 @@ test("memory confirmation bridges exact source tuples into canonical underwritin
     ...preview,
     facts: [
       {
-        text: "ARR was $2,000,000 for calendar 2025.",
-        excerpt: "ARR was $2,000,000 for calendar 2025.",
-        locator: { kind: "text_range", start: 0, end: 41 },
+        text:
+          "ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31.",
+        excerpt:
+          "ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31.",
+        locator: { kind: "text_range", start: 0, end: 58 },
         structured: {
           field: "ARR",
           value: "$2,000,000",
@@ -244,6 +283,267 @@ test("memory confirmation bridges exact source tuples into canonical underwritin
       },
     ],
   );
+  const normalizedArr = normalizeSourceEvidence(evidence[0]!);
+  assert.equal(normalizedArr.field, "arr");
+  assert.equal(normalizedArr.value, "2000000");
+  assert.equal(normalizedArr.currency, "USD");
+});
+
+test("confirmation keeps inferred financial metadata out of formal gates", async () => {
+  const evidence = await confirmEvidence([{
+    text: "ARR was $2,000,000 for calendar 2025.",
+    excerpt: "ARR was $2,000,000 for calendar 2025.",
+    locator: { kind: "text_range", start: 0, end: 41 },
+    structured: {
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "USD",
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+      publishedAt: null,
+      eventAt: null,
+    },
+  }]);
+
+  assert.deepEqual(
+    evidence.map(({ field, value, acceptedForGate }) => ({
+      field,
+      value,
+      acceptedForGate,
+    })),
+    [{
+      field: "unstructured_source_fact",
+      value: "ARR was $2,000,000 for calendar 2025.",
+      acceptedForGate: false,
+    }],
+  );
+});
+
+test("confirmation fails closed for unsupported structured semantics and values", async () => {
+  const cases = [
+    {
+      label: "PMF variant",
+      field: "Product/Market Fit Score",
+      value: "strong",
+      unit: null,
+      currency: null,
+      excerpt: "Product/Market Fit Score: strong.",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+    {
+      label: "unlisted financial metric",
+      field: "Monthly Recurring Revenue",
+      value: "$200,000",
+      unit: "currency",
+      currency: "USD",
+      excerpt: "Monthly Recurring Revenue was $200,000 USD.",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+    {
+      label: "abbreviated native value",
+      field: "ARR",
+      value: "$2M",
+      unit: "currency",
+      currency: "USD",
+      excerpt: "ARR was $2M USD.",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+    {
+      label: "invented currency code",
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "ABC",
+      excerpt: "ARR was $2,000,000 ABC.",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+    {
+      label: "currency code only appears inside another word",
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "USD",
+      excerpt: "ARR was $2,000,000 in a USDA filing.",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+    {
+      label: "field label only appears inside another word",
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "USD",
+      excerpt: "The company carried $2,000,000 USD.",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+    {
+      label: "invalid calendar date",
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "USD",
+      excerpt:
+        "ARR was $2,000,000 USD from 2025-02-30 through 2025-12-31.",
+      periodStart: "2025-02-30",
+      periodEnd: "2025-12-31",
+      publishedAt: null,
+      eventAt: null,
+    },
+    {
+      label: "invalid as-of timestamp",
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "USD",
+      excerpt:
+        "ARR was $2,000,000 USD as of 2025-02-30T12:00:00.000Z.",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: "2025-02-30T12:00:00.000Z",
+    },
+    {
+      label: "invalid ISO offset",
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "USD",
+      excerpt:
+        "ARR was $2,000,000 USD as of 2025-01-01T12:00:00.000+19:00.",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: "2025-01-01T12:00:00.000+19:00",
+    },
+  ] as const;
+  const evidence = await confirmEvidence(cases.map((item, index) => ({
+    text: item.excerpt,
+    excerpt: item.excerpt,
+    locator: {
+      kind: "text_range" as const,
+      start: index * 100,
+      end: index * 100 + item.excerpt.length,
+    },
+    structured: {
+      field: item.field,
+      value: item.value,
+      unit: item.unit,
+      currency: item.currency,
+      periodStart: item.periodStart,
+      periodEnd: item.periodEnd,
+      publishedAt: item.publishedAt,
+      eventAt: item.eventAt,
+    },
+  })));
+
+  assert.deepEqual(
+    evidence.map(({ field, acceptedForGate }) => ({
+      field,
+      acceptedForGate,
+    })),
+    cases.map(() => ({
+      field: "unstructured_source_fact",
+      acceptedForGate: false,
+    })),
+  );
+});
+
+test("atomic upload adapters receive exact locator and structured evidence", async () => {
+  const baseUploads = await awaitingUpload(
+    createMemoryUploadedDocumentsRepository(),
+    {
+      ...preview,
+      facts: [{
+        text:
+          "ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31.",
+        excerpt:
+          "ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31.",
+        locator: { kind: "text_range", start: 0, end: 58 },
+        structured: {
+          field: "ARR",
+          value: "$2,000,000",
+          unit: "currency",
+          currency: "USD",
+          periodStart: "2025-01-01",
+          periodEnd: "2025-12-31",
+          publishedAt: null,
+          eventAt: null,
+        },
+      }],
+    },
+  );
+  let received:
+    | Parameters<
+      NonNullable<UploadedDocumentsRepository["promoteAtomically"]>
+    >[0]["evidence"][number]
+    | undefined;
+  const uploads: UploadedDocumentsRepository = {
+    ...baseUploads,
+    async promoteAtomically(input) {
+      received = input.evidence[0];
+      return {
+        ...(await baseUploads.get({
+          workspaceId: input.workspaceId,
+          id: input.uploadId,
+        }))!,
+        status: "confirmed",
+      };
+    },
+  };
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const service = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+    evidencePacks: createMemoryEvidencePacksRepository(),
+  });
+
+  await service.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  });
+
+  assert.deepEqual(received?.locator, {
+    kind: "text_range",
+    start: 0,
+    end: 58,
+    excerpt:
+      "ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31.",
+  });
+  assert.deepEqual(received?.structured, {
+    field: "ARR",
+    value: "$2,000,000",
+    unit: "currency",
+    currency: "USD",
+    periodStart: "2025-01-01",
+    periodEnd: "2025-12-31",
+    publishedAt: null,
+    eventAt: null,
+  });
 });
 
 test("memory confirmation remains one atomic idempotent receipt across service instances", async () => {

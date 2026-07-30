@@ -5,6 +5,7 @@ import {
   IntegrationTransportError,
   isRetryableTransportStatus,
 } from "../../lib/api/errors";
+import type { EvidenceLocator } from "../../lib/contracts/evidence";
 
 export type UploadedDocumentStatus =
   | "queued"
@@ -65,6 +66,17 @@ export interface UploadedDocumentRecord {
   updatedAt: string;
 }
 
+export interface ConfirmedUploadEvidenceInput {
+  id: string;
+  fact: string;
+  excerpt: string;
+  page: number;
+  locator: EvidenceLocator;
+  structured: NonNullable<
+    ExtractionPreview["facts"][number]["structured"]
+  > | null;
+}
+
 export interface ClaimedUploadedDocument extends UploadedDocumentRecord {
   workerId: string;
   leaseToken: string;
@@ -114,12 +126,7 @@ export interface UploadedDocumentsRepository {
     sourceRevisionId: string;
     assignedByUserId: string;
     confirmedAt: string;
-    evidence: Array<{
-      id: string;
-      fact: string;
-      excerpt: string;
-      page: number;
-    }>;
+    evidence: ConfirmedUploadEvidenceInput[];
   }): Promise<UploadedDocumentRecord>;
   completeConfirmed(input: {
     workspaceId: string;

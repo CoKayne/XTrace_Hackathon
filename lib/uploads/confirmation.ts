@@ -401,67 +401,178 @@ function completeStructuredFact(
   fact: ExtractionPreview["facts"][number],
 ): NonNullable<typeof fact.structured> | null {
   const structured = fact.structured;
-  if (!structured?.field.trim() || !structured.value.trim()) return null;
+  const field = structured?.field.trim() ?? "";
+  const value = structured?.value.trim() ?? "";
+  if (!structured || !field || !value) return null;
   const excerpt = fact.excerpt?.trim();
-  if (!excerpt || !excerpt.toLowerCase().includes(
-    structured.value.trim().toLowerCase(),
-  )) {
+  if (
+    !excerpt
+    || !sourceContains(excerpt, field)
+    || !sourceContains(excerpt, value)
+  ) {
     return null;
   }
-  const normalizedField = structured.field.toLowerCase()
-    .replace(/[_/]+/g, " ")
+  const category = STRUCTURED_FIELD_CATEGORIES[
+    normalizedStructuredField(field)
+  ];
+  if (!category) return null;
+
+  const unit = structured.unit?.trim().toLowerCase() || null;
+  const currency = structured.currency?.trim() || null;
+  if (category === "currency") {
+    if (
+      unit !== "currency"
+      || currency !== "USD"
+      || !sourceContains(excerpt, currency)
+      || !SUPPORTED_CURRENCY_VALUE.test(value)
+    ) {
+      return null;
+    }
+  } else if (category === "rate") {
+    if (
+      unit !== "percent"
+      || currency !== null
+      || !SUPPORTED_RATE_VALUE.test(value)
+      || (
+        !value.endsWith("%")
+        && !sourceContains(excerpt, "percent")
+      )
+    ) {
+      return null;
+    }
+  } else if (unit !== null || currency !== null) {
+    return null;
+  }
+
+  const periodStart = structured.periodStart?.trim() || null;
+  const periodEnd = structured.periodEnd?.trim() || null;
+  if (
+    (periodStart === null) !== (periodEnd === null)
+    || (
+      periodStart !== null
+      && periodEnd !== null
+      && (
+        !isStrictIsoDate(periodStart)
+        || !isStrictIsoDate(periodEnd)
+        || periodEnd < periodStart
+        || !sourceContains(excerpt, periodStart)
+        || !sourceContains(excerpt, periodEnd)
+      )
+    )
+  ) {
+    return null;
+  }
+
+  const publishedAt = structured.publishedAt?.trim() || null;
+  const eventAt = structured.eventAt?.trim() || null;
+  if (
+    [publishedAt, eventAt].some((timestamp) =>
+      timestamp !== null
+      && (
+        !isStrictIsoTimestamp(timestamp)
+        || !sourceContains(excerpt, timestamp)
+      )
+    )
+  ) {
+    return null;
+  }
+
+  return {
+    field,
+    value,
+    unit,
+    currency,
+    periodStart,
+    periodEnd,
+    publishedAt,
+    eventAt,
+  };
+}
+
+type StructuredFieldCategory = "currency" | "rate" | "text";
+
+// Formal upload evidence is deliberately closed over fields and units that
+// downstream normalization and valuation can consume without inference.
+const STRUCTURED_FIELD_CATEGORIES: Readonly<
+  Record<string, StructuredFieldCategory>
+> = Object.freeze({
+  "annual recurring revenue": "currency",
+  arr: "currency",
+  "sales pipeline": "currency",
+  pipeline: "currency",
+  "gross merchandise value": "currency",
+  gmv: "currency",
+  "total revenue": "currency",
+  revenue: "currency",
+  "recurring revenue": "currency",
+  "subscription revenue": "currency",
+  "professional services revenue": "currency",
+  "services revenue": "currency",
+  "pass through revenue": "currency",
+  "pre money valuation": "currency",
+  "post money valuation": "currency",
+  "reported valuation": "currency",
+  "round price": "currency",
+  "yoy growth": "rate",
+  "year over year growth": "rate",
+  growth: "rate",
+  "company identity": "text",
+  "company id": "text",
+  "valuation basis": "text",
+  stage: "text",
+  "business model": "text",
+  geography: "text",
+  "security type": "text",
+});
+
+const DECIMAL_SOURCE_VALUE =
+  "(?:(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d*)?|\\.\\d+)";
+const SUPPORTED_CURRENCY_VALUE = new RegExp(
+  `^(?:[+-]?\\$?${DECIMAL_SOURCE_VALUE}(?:\\s*USD)?`
+    + `|\\(\\$?${DECIMAL_SOURCE_VALUE}(?:\\s*USD)?\\))$`,
+);
+const SUPPORTED_RATE_VALUE = new RegExp(
+  `^[+-]?${DECIMAL_SOURCE_VALUE}%?$`,
+);
+const STRICT_ISO_TIMESTAMP =
+  /^(\d{4}-\d{2}-\d{2})T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[+-](?:0\d|1[0-3]):[0-5]\d|[+-]14:00)$/;
+
+function normalizedStructuredField(value: string): string {
+  return value.toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  if (
-    ["pmf", "product market fit", "product-market fit"].includes(
-      normalizedField,
-    )
-  ) {
-    return null;
+}
+
+function sourceContains(source: string, exactValue: string): boolean {
+  const normalizedSource = source.toLowerCase();
+  const normalizedValue = exactValue.toLowerCase();
+  const start = normalizedSource.indexOf(normalizedValue);
+  if (start < 0) return false;
+  const before = normalizedSource[start - 1] ?? "";
+  const after = normalizedSource[start + normalizedValue.length] ?? "";
+  const beginsWithWord = /^[a-z0-9]/.test(normalizedValue);
+  const endsWithWord = /[a-z0-9]$/.test(normalizedValue);
+  return (!beginsWithWord || !/[a-z0-9]/.test(before))
+    && (!endsWithWord || !/[a-z0-9]/.test(after));
+}
+
+function isStrictIsoDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith("0000-")) {
+    return false;
   }
-  const financialField = [
-    "annual recurring revenue",
-    "arr",
-    "sales pipeline",
-    "pipeline",
-    "gross merchandise value",
-    "gmv",
-    "total revenue",
-    "revenue",
-    "recurring revenue",
-    "subscription revenue",
-    "professional services revenue",
-    "services revenue",
-    "pass through revenue",
-    "pass-through revenue",
-    "pre money valuation",
-    "pre-money valuation",
-    "post money valuation",
-    "post-money valuation",
-    "reported valuation",
-    "round price",
-  ].includes(normalizedField);
-  if (
-    (financialField || structured.unit?.toLowerCase() === "currency")
-    && !/^[A-Z]{3}$/.test(structured.currency ?? "")
-  ) {
-    return null;
-  }
-  if (
-    [structured.periodStart, structured.periodEnd]
-      .some((value) => value !== null && !/^\d{4}-\d{2}-\d{2}$/.test(value))
-    || (
-      structured.periodStart
-      && structured.periodEnd
-      && structured.periodEnd < structured.periodStart
-    )
-    || [structured.publishedAt, structured.eventAt].some((value) =>
-      value !== null && !Number.isFinite(Date.parse(value))
-    )
-  ) {
-    return null;
-  }
-  return structuredClone(structured);
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(parsed.valueOf())
+    && parsed.toISOString().slice(0, 10) === value;
+}
+
+function isStrictIsoTimestamp(value: string): boolean {
+  const match = value.match(STRICT_ISO_TIMESTAMP);
+  return Boolean(
+    match
+    && isStrictIsoDate(match[1]!)
+    && Number.isFinite(Date.parse(value)),
+  );
 }
 
 function canonicalSourceEvidence(input: {

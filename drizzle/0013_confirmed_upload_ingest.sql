@@ -382,6 +382,18 @@ declare
   structured_item jsonb;
   canonical_item jsonb;
   structured_complete boolean;
+  structured_category text;
+  normalized_field text;
+  normalized_unit text;
+  structured_value text;
+  structured_currency text;
+  evidence_excerpt text;
+  period_start_value text;
+  period_end_value text;
+  published_at_value text;
+  event_at_value text;
+  source_supported_value text;
+  source_supported_position integer;
 begin
   if jsonb_typeof(p_confirmation) <> 'object' then
     raise exception 'p_confirmation must be a JSON object';
@@ -499,37 +511,215 @@ begin
     )
   loop
     structured_item := evidence_item -> 'structured';
+    normalized_field := btrim(regexp_replace(
+      regexp_replace(
+        lower(btrim(coalesce(structured_item ->> 'field', ''))),
+        '[^a-z0-9]+',
+        ' ',
+        'g'
+      ),
+      '[[:space:]]+',
+      ' ',
+      'g'
+    ));
+    -- Mirror the closed formal field catalog in upload confirmation.
+    structured_category := case
+      when normalized_field in (
+        'annual recurring revenue', 'arr', 'sales pipeline', 'pipeline',
+        'gross merchandise value', 'gmv', 'total revenue', 'revenue',
+        'recurring revenue', 'subscription revenue',
+        'professional services revenue', 'services revenue',
+        'pass through revenue', 'pre money valuation',
+        'post money valuation', 'reported valuation', 'round price'
+      ) then 'currency'
+      when normalized_field in (
+        'yoy growth', 'year over year growth', 'growth'
+      ) then 'rate'
+      when normalized_field in (
+        'company identity', 'company id', 'valuation basis', 'stage',
+        'business model', 'geography', 'security type'
+      ) then 'text'
+      else null
+    end;
+    normalized_unit := nullif(
+      lower(btrim(coalesce(structured_item ->> 'unit', ''))),
+      ''
+    );
+    structured_value := btrim(
+      coalesce(structured_item ->> 'value', '')
+    );
+    structured_currency := nullif(
+      btrim(coalesce(structured_item ->> 'currency', '')),
+      ''
+    );
+    evidence_excerpt := btrim(coalesce(evidence_item ->> 'excerpt', ''));
+    period_start_value := nullif(
+      btrim(coalesce(structured_item ->> 'periodStart', '')),
+      ''
+    );
+    period_end_value := nullif(
+      btrim(coalesce(structured_item ->> 'periodEnd', '')),
+      ''
+    );
+    published_at_value := nullif(
+      btrim(coalesce(structured_item ->> 'publishedAt', '')),
+      ''
+    );
+    event_at_value := nullif(
+      btrim(coalesce(structured_item ->> 'eventAt', '')),
+      ''
+    );
     structured_complete :=
       jsonb_typeof(structured_item) = 'object'
       and btrim(coalesce(structured_item ->> 'field', '')) <> ''
-      and btrim(coalesce(structured_item ->> 'value', '')) <> ''
-      and lower(btrim(structured_item ->> 'field')) not in (
-        'pmf', 'product market fit', 'product-market fit'
-      )
-      and position(
-        lower(btrim(structured_item ->> 'value'))
-        in lower(btrim(evidence_item ->> 'excerpt'))
-      ) > 0
+      and structured_value <> ''
+      and evidence_excerpt <> ''
+      and structured_category is not null
       and (
-        lower(btrim(coalesce(structured_item ->> 'unit', '')))
-          <> 'currency'
-        or btrim(coalesce(structured_item ->> 'currency', ''))
-          ~ '^[A-Z]{3}$'
-      )
-      and (
-        lower(btrim(structured_item ->> 'field')) not in (
-          'annual recurring revenue', 'arr', 'sales pipeline', 'pipeline',
-          'gross merchandise value', 'gmv', 'total revenue', 'revenue',
-          'recurring revenue', 'subscription revenue',
-          'professional services revenue', 'services revenue',
-          'pass through revenue', 'pass-through revenue',
-          'pre money valuation', 'pre-money valuation',
-          'post money valuation', 'post-money valuation',
-          'reported valuation', 'round price'
+        (
+          structured_category = 'currency'
+          and normalized_unit = 'currency'
+          and structured_currency = 'USD'
+          and structured_value ~
+            '^([+-]?[$]?(([0-9]{1,3}(,[0-9]{3})+|[0-9]+)([.][0-9]*)?|[.][0-9]+)([[:space:]]*USD)?|[(][$]?(([0-9]{1,3}(,[0-9]{3})+|[0-9]+)([.][0-9]*)?|[.][0-9]+)([[:space:]]*USD)?[)])$'
         )
-        or btrim(coalesce(structured_item ->> 'currency', ''))
-          ~ '^[A-Z]{3}$'
+        or (
+          structured_category = 'rate'
+          and normalized_unit = 'percent'
+          and structured_currency is null
+          and structured_value ~
+            '^[+-]?(([0-9]{1,3}(,[0-9]{3})+|[0-9]+)([.][0-9]*)?|[.][0-9]+)%?$'
+        )
+        or (
+          structured_category = 'text'
+          and normalized_unit is null
+          and structured_currency is null
+        )
+      )
+      and (
+        (
+          period_start_value is null
+          and period_end_value is null
+        )
+        or (
+          period_start_value is not null
+          and period_end_value is not null
+        )
       );
+    if structured_complete then
+      foreach source_supported_value in array array[
+        btrim(structured_item ->> 'field'),
+        structured_value,
+        case
+          when structured_category = 'currency' then structured_currency
+          when structured_category = 'rate'
+            and right(structured_value, 1) <> '%'
+          then 'percent'
+          else null
+        end,
+        period_start_value,
+        period_end_value,
+        published_at_value,
+        event_at_value
+      ]
+      loop
+        continue when source_supported_value is null;
+        source_supported_position := position(
+          lower(source_supported_value) in lower(evidence_excerpt)
+        );
+        if source_supported_position = 0
+          or (
+            substring(source_supported_value from 1 for 1)
+              ~ '[A-Za-z0-9]'
+            and source_supported_position > 1
+            and substring(
+              evidence_excerpt
+              from source_supported_position - 1
+              for 1
+            ) ~ '[A-Za-z0-9]'
+          )
+          or (
+            substring(
+              source_supported_value
+              from char_length(source_supported_value)
+              for 1
+            ) ~ '[A-Za-z0-9]'
+            and source_supported_position
+                + char_length(source_supported_value)
+              <= char_length(evidence_excerpt)
+            and substring(
+              evidence_excerpt
+              from source_supported_position
+                + char_length(source_supported_value)
+              for 1
+            ) ~ '[A-Za-z0-9]'
+          )
+        then
+          structured_complete := false;
+          exit;
+        end if;
+      end loop;
+    end if;
+    if structured_complete then
+      begin
+        structured_complete :=
+          (
+            period_start_value is null
+            or (
+              period_start_value ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+              and period_start_value !~ '^0000-'
+              and to_char(
+                period_start_value::date,
+                'YYYY-MM-DD'
+              ) = period_start_value
+            )
+          )
+          and (
+            period_end_value is null
+            or (
+              period_end_value ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+              and period_end_value !~ '^0000-'
+              and to_char(
+                period_end_value::date,
+                'YYYY-MM-DD'
+              ) = period_end_value
+            )
+          )
+          and (
+            period_start_value is null
+            or period_end_value::date >= period_start_value::date
+          )
+          and (
+            published_at_value is null
+            or (
+              published_at_value ~
+                '^([0-9]{4}-[0-9]{2}-[0-9]{2})T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]+)?(Z|[+-](0[0-9]|1[0-3]):[0-5][0-9]|[+-]14:00)$'
+              and substring(published_at_value from 1 for 4) <> '0000'
+              and to_char(
+                substring(published_at_value from 1 for 10)::date,
+                'YYYY-MM-DD'
+              ) = substring(published_at_value from 1 for 10)
+              and published_at_value::timestamptz is not null
+            )
+          )
+          and (
+            event_at_value is null
+            or (
+              event_at_value ~
+                '^([0-9]{4}-[0-9]{2}-[0-9]{2})T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]+)?(Z|[+-](0[0-9]|1[0-3]):[0-5][0-9]|[+-]14:00)$'
+              and substring(event_at_value from 1 for 4) <> '0000'
+              and to_char(
+                substring(event_at_value from 1 for 10)::date,
+                'YYYY-MM-DD'
+              ) = substring(event_at_value from 1 for 10)
+              and event_at_value::timestamptz is not null
+            )
+          );
+      exception
+        when others then
+          structured_complete := false;
+      end;
+    end if;
     canonical_item := jsonb_build_object(
       'id', btrim(evidence_item ->> 'id'),
       'workspaceId', target_workspace_id,
@@ -546,27 +736,27 @@ begin
         else btrim(evidence_item ->> 'fact')
       end,
       'unit', case
-        when structured_complete then structured_item -> 'unit'
+        when structured_complete then to_jsonb(normalized_unit)
         else 'null'::jsonb
       end,
       'currency', case
-        when structured_complete then structured_item -> 'currency'
+        when structured_complete then to_jsonb(structured_currency)
         else 'null'::jsonb
       end,
       'periodStart', case
-        when structured_complete then structured_item -> 'periodStart'
+        when structured_complete then to_jsonb(period_start_value)
         else 'null'::jsonb
       end,
       'periodEnd', case
-        when structured_complete then structured_item -> 'periodEnd'
+        when structured_complete then to_jsonb(period_end_value)
         else 'null'::jsonb
       end,
       'publishedAt', case
-        when structured_complete then structured_item -> 'publishedAt'
+        when structured_complete then to_jsonb(published_at_value)
         else 'null'::jsonb
       end,
       'eventAt', case
-        when structured_complete then structured_item -> 'eventAt'
+        when structured_complete then to_jsonb(event_at_value)
         else 'null'::jsonb
       end,
       'retrievedAt', preview_metadata ->> 'extractedAt',
