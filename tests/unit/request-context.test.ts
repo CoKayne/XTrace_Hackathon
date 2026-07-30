@@ -60,6 +60,61 @@ test("product mode ignores a forged workspace and resolves membership", async ()
   assert.equal(context.permissions.mutateSources, true);
 });
 
+test("product mode uses the enabled OpenAI Sites identity and one server-side membership", async () => {
+  let resolvedUserId: string | null = null;
+  const context = await resolveRequestContext(
+    new Request("https://vsee.test/api/deals?workspaceId=attacker", {
+      headers: {
+        cookie: "workspaceId=attacker",
+        "oai-authenticated-user-email": "Alice@Example.COM",
+        "x-workspace-id": "attacker",
+      },
+    }),
+    {
+      environment: {
+        VSEE_DEPLOYMENT_MODE: "product",
+        VSEE_TRUSTED_AUTH_PROVIDER: "openai_sites",
+      },
+      memberships: {
+        resolvePrimaryMembership: async (userId) => {
+          resolvedUserId = userId;
+          return { workspaceId: "workspace_real", role: "owner" };
+        },
+      },
+    },
+  );
+
+  assert.equal(
+    resolvedUserId,
+    "openai_sites:ff8d9819fc0e12bf0d24892e45987e249a28dce836a85cad60e28eaaa8c6d976",
+  );
+  assert.ok(context.principal);
+  assert.equal(context.principal.email, "alice@example.com");
+  assert.equal(context.workspaceId, "workspace_real");
+});
+
+test("product mode rejects unsigned Sites-shaped headers when the provider is disabled", async () => {
+  await assert.rejects(
+    resolveRequestContext(
+      new Request("https://vsee.test/api/deals", {
+        headers: {
+          "oai-authenticated-user-email": "alice@example.com",
+        },
+      }),
+      {
+        environment: { VSEE_DEPLOYMENT_MODE: "product" },
+        memberships: {
+          resolvePrimaryMembership: async () => ({
+            workspaceId: "workspace_real",
+            role: "owner",
+          }),
+        },
+      },
+    ),
+    /UNAUTHENTICATED/,
+  );
+});
+
 for (const [role, permissions] of [
   ["owner", { readWorkspace: true, readPrivateSources: true, mutateSources: true, managePolicy: true, administerFrameworks: false }],
   ["partner", { readWorkspace: true, readPrivateSources: true, mutateSources: true, managePolicy: false, administerFrameworks: false }],

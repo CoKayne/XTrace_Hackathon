@@ -16,6 +16,19 @@ test("worker image has a non-root long-running command and health check", async 
   assert.match(dockerfile, /^CMD \["npm",\s*"run",\s*"worker"\]$/m);
 });
 
+test("worker build context includes every seed and research runtime import", async () => {
+  const dockerfile = await readFile(dockerfilePath, "utf8");
+
+  assert.match(
+    dockerfile,
+    /^COPY --chown=node:node seed\/underwriting \.\/seed\/underwriting$/m,
+  );
+  assert.match(
+    dockerfile,
+    /^COPY --chown=node:node research\/framework-authoring \.\/research\/framework-authoring$/m,
+  );
+});
+
 test("worker scripts and production runbook stay documented", async () => {
   const [packageText, readme] = await Promise.all([
     readFile(packagePath, "utf8"),

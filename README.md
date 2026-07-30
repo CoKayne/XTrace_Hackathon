@@ -1,31 +1,45 @@
 # VSee — VC Decision Intelligence
 
-VSee is a public, single-workspace Hackathon Web App that connects recent
-public-market evidence with previously reviewed venture Deals. XTrace supplies
-long-term Deal-memory recall; Anthropic performs evidence-constrained matching.
+VSee is a source-grounded venture-underwriting Web App that connects confirmed
+private Deal sources, recent public-market evidence, and previously reviewed
+venture decisions. XTrace supplies long-term Deal-memory recall; Anthropic
+performs bounded evidence analysis; deterministic policy and valuation code
+retains formal decision authority.
+
+The runtime has two explicit modes:
+
+- `public_demo` is anonymous, synthetic, and read-only. It never exposes
+  private sources or accepts mutations.
+- `product` requires an OpenAI Sites-authenticated user and exactly one
+  server-resolved workspace membership. Browser workspace selectors are never
+  authorization input.
 
 The product does not claim that a matched company has improved. It gives the
-investor a cited reason to perform a second look.
+investor a cited, replayable reason to perform a second look.
 
 ## Product flow
 
-1. Confirm the fixed private source corpus.
-2. Extract source-backed Deal facts and explicitly labeled synthetic VC
-   decision records.
-3. Ingest eligible Deal memory into XTrace.
-4. Manually queue a scan of public information published in the latest 14 days.
-5. The background worker normalizes and deduplicates public evidence, recalls
-   relevant Deal context, asks Claude to match the two sides, and retains only
-   the Top 5 medium/high-confidence results.
-6. Persist an intelligence report, then use **Draft this report** to prepare
-   and copy an editable browser-local subject and message without sending it.
-   Demo choreography: the **RESET DEMO** control calls `POST /api/demo/reset`,
-   which wipes prior scan products (reports, analyses, finished runs, market
-   events) so the next scan starts from a clean slate. The corpus, XTrace
-   lineage, and stored judgments survive, as do queued and running scans.
-   Reset is always an explicit action; page loads never trigger it.
-7. Use Chat to query only data already stored in VSee; Chat never browses or
-   mutates Deal state.
+1. Upload and explicitly confirm a source into an exact
+   `(workspace, document, source revision, Deal)` lineage.
+2. Extract source-backed Deal facts and persist the canonical evidence needed
+   by the Evidence Pack. Missing structured facts remain explicitly
+   unavailable.
+3. Ingest the confirmed Deal revision into XTrace without treating recalled
+   text as citation authority.
+4. Manually queue a scan of public information published in the latest 14
+   days.
+5. The background Worker normalizes public evidence, recalls historical
+   context, ranks every eligible Deal, and records ranks after five as
+   `not_selected`.
+6. Selected candidates run through eight core checks plus up to twenty
+   approved advisory frameworks. Each framework retains its own citations,
+   judgment, and disagreements; advisory formal decision weight stays zero.
+7. Persist a report, report-underwriting detail, and latest-only action drafts.
+   Editing a draft replaces only its current body on the same immutable draft
+   identity; no version history, send, publish, Email, SMS, or LinkedIn side
+   effect exists.
+8. Use Search and Chat to query only data already persisted in VSee. Neither
+   browses, recalculates underwriting, creates actions, or mutates Deal state.
 
 ## Runtime architecture
 
@@ -35,12 +49,14 @@ investor a cited reason to perform a second look.
 - Background work: durable PostgreSQL queue plus `npm run worker`
 - Memory: XTrace Memory Manager
 - Reasoning: Anthropic Messages API
+- Underwriting: immutable Evidence Packs, deterministic policy/valuation, eight
+  core framework checks, and an audited context-selected advisory catalog
 - Market sources: Federal Register, FDA, SEC, FTC, TechCrunch venture,
   configured official/stable RSS feeds, and optional authorized Crunchbase API
 
-When Supabase is not configured, the app uses process-local memory and bundled
-PDFs for tests. That fallback is not shared between the Web process and the
-background worker and is not suitable for a deployed demo.
+Process-local memory and bundled PDFs are test/public-demo fixtures only. They
+are not shared between Web and Worker and are never a product-mode persistence
+fallback.
 
 ## Fixed MVP corpus
 
@@ -71,8 +87,8 @@ bundles, XTrace, recall queries, or matching input (a regression test
 pins this).
 
 The fixed corpus is the demo's initial private knowledge base. It does not
-replace the live market scan: every manual run still collects public evidence
-published in the latest 14 days.
+replace the live market scan: every product manual run still collects public
+evidence published in the latest 14 days.
 
 ## Setup
 
@@ -86,34 +102,61 @@ Requirements:
 Copy `.env.example` to a local ignored environment file and configure the
 server-only values. Do not expose service keys through `NEXT_PUBLIC_*`.
 
-Apply [`drizzle/0000_vsee_postgres.sql`](drizzle/0000_vsee_postgres.sql), then
-apply [`drizzle/0001_remove_report_delivery.sql`](drizzle/0001_remove_report_delivery.sql),
-then [`drizzle/0002_durable_decision_lineage.sql`](drizzle/0002_durable_decision_lineage.sql),
-then [`drizzle/0003_sanitize_report_next_steps.sql`](drizzle/0003_sanitize_report_next_steps.sql),
-then [`drizzle/0004_company_analyses.sql`](drizzle/0004_company_analyses.sql),
-then [`drizzle/0005_sample_decision_label.sql`](drizzle/0005_sample_decision_label.sql),
-then [`drizzle/0006_reasoner_judgments.sql`](drizzle/0006_reasoner_judgments.sql),
-then [`drizzle/0007_uploaded_documents.sql`](drizzle/0007_uploaded_documents.sql),
-then [`drizzle/0008_workspace_composite_identity.sql`](drizzle/0008_workspace_composite_identity.sql),
-and finally
-[`drizzle/0009_source_revision_deal_registry.sql`](drizzle/0009_source_revision_deal_registry.sql)
-to the Supabase PostgreSQL database before seeding the fixed corpus. Operators
-upgrading a database that already has earlier migrations applied may apply the
-missing migrations in order. Company intelligence reports require `0004`;
-uploaded-source staging requires `0007`; and all product deployments require
-`0008` before using workspace-scoped conflict targets. Source revision and
-analysis eligibility require `0009`. Without `0008`, tenant external IDs are
-still globally keyed and the server's composite upserts will fail.
+For a new database, apply every physical migration below in this exact order.
+For an existing database, begin with its first missing migration and continue
+without gaps:
+
+1. [`drizzle/0000_vsee_postgres.sql`](drizzle/0000_vsee_postgres.sql)
+2. [`drizzle/0001_remove_report_delivery.sql`](drizzle/0001_remove_report_delivery.sql)
+3. [`drizzle/0002_durable_decision_lineage.sql`](drizzle/0002_durable_decision_lineage.sql)
+4. [`drizzle/0003_sanitize_report_next_steps.sql`](drizzle/0003_sanitize_report_next_steps.sql)
+5. [`drizzle/0004_company_analyses.sql`](drizzle/0004_company_analyses.sql)
+6. [`drizzle/0005_sample_decision_label.sql`](drizzle/0005_sample_decision_label.sql)
+7. [`drizzle/0006_reasoner_judgments.sql`](drizzle/0006_reasoner_judgments.sql)
+8. [`drizzle/0007_uploaded_documents.sql`](drizzle/0007_uploaded_documents.sql)
+9. [`drizzle/0008_workspace_composite_identity.sql`](drizzle/0008_workspace_composite_identity.sql)
+10. [`drizzle/0009_source_revision_deal_registry.sql`](drizzle/0009_source_revision_deal_registry.sql)
+11. [`drizzle/0010_underwriting_references.sql`](drizzle/0010_underwriting_references.sql)
+12. [`drizzle/0011_underwriting_runs.sql`](drizzle/0011_underwriting_runs.sql)
+13. [`drizzle/0012_source_grounded_underwriting.sql`](drizzle/0012_source_grounded_underwriting.sql)
+14. [`drizzle/0013_confirmed_upload_ingest.sql`](drizzle/0013_confirmed_upload_ingest.sql)
+15. [`drizzle/0014_read_api_action_drafts.sql`](drizzle/0014_read_api_action_drafts.sql)
+16. [`drizzle/0015_framework_catalog_checkpoint.sql`](drizzle/0015_framework_catalog_checkpoint.sql)
+
+`0008` introduces workspace-composite identities, `0009` adds immutable source
+revisions, `0010`–`0012` add versioned underwriting references and artifacts,
+`0013` promotes confirmed uploads atomically, `0014` adds controlled
+latest-only draft replacement, and `0015` separates framework-catalog
+checkpoint replay. Do not start Web or Worker against a partial chain.
 
 ```bash
 npm install
 npm run db:seed
 ```
 
-CI and release verification must run `npm run test:migrations`; unlike the
-portable full suite, that command fails when a disposable PostgreSQL database
-cannot be created, so the live `0000`–`0009` upgrade and catalog assertions
-cannot be silently skipped.
+CI and release verification must run `npm run test:migrations`. It executes the
+relevant PostgreSQL migration suites serially to avoid races between tests that
+exercise cluster-global roles, applies the complete `0000`–`0015` path, and
+fails when a disposable PostgreSQL database cannot be created.
+
+### Product authentication
+
+Public demo needs no identity provider. Product mode accepts Sites-injected
+`oai-authenticated-user-email` (and optional encoded full-name metadata) only
+when the server environment explicitly contains:
+
+```bash
+VSEE_DEPLOYMENT_MODE=product
+VSEE_TRUSTED_AUTH_PROVIDER=openai_sites
+```
+
+The server trims and lowercases the email, validates it, and derives the
+membership user ID as `openai_sites:<sha256(normalized-email)>`. Provision
+exactly one `workspace_members` row for that ID. The hash is stable and
+non-secret; it is not an authentication credential. A missing, malformed, or
+ambiguous identity/membership is rejected. Query parameters, request bodies,
+cookies, `x-workspace-id`, and other browser-provided workspace values are
+ignored for authorization.
 
 Start the Web App and worker as separate processes:
 
@@ -171,14 +214,15 @@ worker heartbeat.
 
 ### Worker runbook
 
-1. For a new database, apply migrations `0000` through `0009` in order; for an
+1. For a new database, apply migrations `0000` through `0015` in order; for an
    existing database, apply the migrations it is missing in order. Then seed
    the corpus before starting the Worker.
 2. Start the Worker and wait for the container health status to become
    `healthy`.
 3. Confirm `/api/settings/health` reports both `postgres: true` and
    `worker: true`.
-4. Queue the manual 14-day scan only after both checks pass.
+4. In product mode, confirm each source and its exact revision lineage before
+   queuing the manual 14-day scan. Queue only after both health checks pass.
 5. Inspect `docker logs vsee-worker` when health becomes stale. Check database
    connectivity and the `worker_heartbeats` table before restarting.
 6. Restarting is safe for queued work: PostgreSQL leases allow stale running
@@ -197,9 +241,20 @@ row-level security with no browser-facing policies; only server-side code
 using the Supabase service role may read or mutate them. Source files stay in
 a private bucket and are opened through short-lived signed URLs.
 
-Because this is a public single-workspace demo, POST endpoints must also retain
-their server-side rate limits. Public access to the Web App is not public
-access to PostgreSQL or Storage.
+In `public_demo`, anonymous reads are restricted to data explicitly safe for
+the demo workspace, including bundled preloaded PDFs and persisted
+synthetic/demo reports. Uploads, private source URLs, run creation, reset,
+policy changes, and action draft edits are rejected. In `product`, every route
+requires the trusted principal and the one membership selected by the server.
+Role capabilities still apply, and POST endpoints retain server-side rate
+limits. Public access to the Web App is never public access to PostgreSQL or
+Storage.
+
+Private source links are minted only after an authenticated permission check.
+The short-lived bearer capability is scoped to the exact workspace, source
+revision, object version, permission, and expiry; it is not reusable for a
+different source. Provider diagnostics, private framework source content,
+credentials, and hidden reasoning are not public DTO fields.
 
 ## Market-source configuration
 
@@ -239,6 +294,21 @@ present. Unit tests never make live provider requests.
 ## Deployment note
 
 The Web App and long-running queue worker are separate deployable processes.
-The Web deployment alone can enqueue jobs, but a continuously running
-`npm run worker` process is required to claim and finish them. Both processes
-share state through Supabase PostgreSQL.
+A product Web deployment may enqueue jobs only after it verifies a fresh
+Worker heartbeat; the public-demo Web cannot enqueue at all. A continuously
+running `npm run worker` process is required to claim and finish product jobs.
+Both product processes share state through Supabase PostgreSQL.
+
+Deploy Web and Worker from the same committed source version after applying the
+same schema. They must use the same bundled underwriting seed/reference data
+and audited `research/framework-authoring` corpus, `ANTHROPIC_MODEL`, provider
+configuration, XTrace configuration, and source-version code. Keep
+`.openai/hosting.json` bound to the existing Sites project
+`appgprj_6a63b033ea0481918530ccddd4830672`; do not create a second Site.
+The validated Web `public_demo` may be deployed through that existing Sites
+project. Sites does not provide the long-running product Worker: product-mode
+manual scans require a separate Worker deployment whose health is confirmed
+before a run is queued.
+
+Known non-blocking limitations and production gates remain tracked in
+[`docs/technical-debt/2026-07-29-end-to-end-deferred-hardening.md`](docs/technical-debt/2026-07-29-end-to-end-deferred-hardening.md).

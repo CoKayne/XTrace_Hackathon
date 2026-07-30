@@ -1,10 +1,17 @@
-# VSee Demo Runbook（2026-07-25 版）
+# VSee Demo Runbook（2026-07-29 release-readiness 版）
 
-> **公開網址（交給評審的連結）**：https://vsee-vc.j6m3c041008.workers.dev
-> Web 部署在 Cloudflare Workers（`npx vinext deploy` 重新部署；secrets 已
-> 用 wrangler 設好）。**背景 worker 跑在你的 Mac 上**——連結存活期間
-> Mac 必須開機、worker 必須在跑（開演前檢查清單步驟 1）。頁面重整不會
-> 清資料；清空只有頂欄 RESET DEMO 按鈕會做。
+> **公開網址（交給評審的連結）**：
+> https://vsee-vc-intelligence.dream86625.chatgpt.site
+>
+> 公開 Sites Web 使用 `public_demo`：匿名、synthetic、read-only。它不接受
+> upload、reset、run、policy 或 action-draft mutation，也不承載長時間運作的
+> Worker；所以該站 health 的 `worker=false` 是預期狀態，不能拿它證明
+> product manual scan 已可執行。
+>
+> 真正的 product acceptance 必須在 `VSEE_DEPLOYMENT_MODE=product`、
+> `VSEE_TRUSTED_AUTH_PROVIDER=openai_sites` 的 Web，加上獨立部署且健康的
+> Worker 上執行。Web 與 Worker 必須來自同一 validated source version、
+> 共用完整 `0000`–`0015` schema、研究 corpus、模型與 provider 設定。
 
 > Reports 頁**只顯示最新一份報告**（歷史仍在資料庫與 API，UI 不再列出）。
 > belief_revised 門檻：medium 信心 = 加權分數 ≥ 0.50（2026-07-25 產品決策）。
@@ -13,9 +20,10 @@
 > 才會重新判斷。worker 加 `REASONER_JUDGMENT_REFRESH=1` 可強制重判
 > （銀行模式，找到好結果後拿掉此變數即凍結）。
 
-## 開演前 10 分鐘檢查清單
+## Product 開演前 10 分鐘檢查清單
 
-1. 啟動 worker（在任何終端機貼上；金鑰從 macOS Keychain 讀取，不會顯示）：
+1. 啟動獨立 Worker（本機只適合彩排；正式 product 環境使用持續運作的
+   Worker service）。金鑰從 macOS Keychain 讀取，不會顯示：
 
 ```bash
 cd ~/Documents/Codex/2026-07-21/referenced-chatgpt-conversation-this-is-untrusted/XTrace_Hackathon
@@ -28,18 +36,15 @@ export MARKET_PUBLISHER_FEEDS_JSON='[{"id":"a16z-news","name":"a16z News","url":
 npm run worker
 ```
 
-2. 另開一個終端機啟動 web（`.env.local` 已含全部設定，vinext 會自動讀）：
+2. 使用同一 validated source version 的 product Web。真正 acceptance 的
+   OpenAI Sites 身分標頭必須由平台注入；直接在本機 `npm run dev`、手動偽造
+   header 不能算通過 product authentication。公開 `public_demo` Sites 也不能
+   代替 product acceptance。
 
-```bash
-cd ~/Documents/Codex/2026-07-21/referenced-chatgpt-conversation-this-is-untrusted/XTrace_Hackathon
-npm run dev
-```
-
-3. 健康檢查（全部 true 才開演）：
-
-```bash
-curl -s http://localhost:3000/api/settings/health
-```
+3. 登入 product Sites 後，用同一個已驗證的瀏覽器 session 查看頁面 health
+   狀態（或在該 session 內讀取 `/api/settings/health`）。`postgres` 與
+   `worker` 全部 true 才能按 manual run；未帶平台 Sites 身分的本機
+   `curl` 會正確回 401，不能當 acceptance probe。
 
 ## Demo 編排：乾淨開場、現場揭曉（2026-07-25 定案）
 
@@ -52,7 +57,7 @@ medium 52.5% 出現，與凍結判斷一致。）
 **重置改為手動：頂欄的 RESET DEMO 按鈕**會清空所有掃描產物——報告、
 分析、已完成的 run 歷史、市場事件。保留 Deal 語料、來源、XTrace 記憶
 與判斷快取；排隊中/執行中的掃描不受影響。頁面重整**不會**清資料
-（公開連結給評審看也安全）。
+（這段只適用 product；公開 `public_demo` 根本不開放 reset）。
 
 1. **開演前 1-2 小時彩排**：按 WAKE AGENT & SCAN MARKET。記下結果——
    證據沒變的話台上會得到一模一樣的報告；有新證據則是誠實的新判斷。
@@ -83,9 +88,11 @@ medium 52.5% 出現，與凍結判斷一致。）
 
 ## 疑難排解
 
-- health 的 worker=false：worker 沒在跑或剛重啟，等 15 秒或重跑步驟 1。
+- 公開 `public_demo` health 的 worker=false：預期狀態，不要偽造 heartbeat。
+- product health 的 worker=false：Worker 沒在跑或剛重啟，等 15 秒或重跑
+  步驟 1。
 - POST /api/runs 回 503：fail-closed 機制，同上，等 worker 心跳恢復。
-- 換新資料庫部署時：migrations 必須依序套用 0000 到 0009（README 已更新）。
+- 換新資料庫部署時：migrations 必須依序套用 0000 到 0015（README 已更新）。
 - 彩排結果不理想且證據已變（凍結模式會把第一次的新判斷存起來重放）：
   刪掉最新一列判斷快取，強制下一掃重新判斷：
   `curl -s "$SUPABASE_URL/rest/v1/reasoner_judgments?select=fingerprint&order=updated_at.desc&limit=1" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"`

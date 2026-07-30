@@ -47,6 +47,9 @@
 | TD-FWK-002 | P1 | Production gate | 真實框架的授權、來源版本與 Decision Utility 尚未全部核准 |
 | TD-COV-001 | P2 | Product limitation | 第一版深度估值只支援 Seed／Series A × B2B SaaS／Enterprise AI |
 | TD-OPS-001 | P2 | Backlog | 自動排程、訊息實際發送與 LinkedIn 發佈仍刻意停用 |
+| TD-OPS-002 | P1 | Production gate | 舊版 hosted report rows 可能無法投影成目前 read DTO |
+| TD-UI-001 | P2 | Test hardening | Action Draft Save 尚缺實際按鈕到 PATCH 的互動測試 |
+| TD-UI-002 | P3 | Test hardening | Product source link 尚缺實際 click 到 signed URL navigation 的互動測試 |
 | TD-RUN-001 | P0 | Production gate | Underwriting SECURITY DEFINER owner 尚未完全隔離既有 membership |
 | TD-RUN-002 | P1 | Production gate | SQL finalization 對 artifact 內部引用只做粗粒度驗證 |
 | TD-RUN-003 | P1 | MVP deferred | 相同 batch fingerprint 的並行 create-or-reuse 仍可能競態 |
@@ -325,6 +328,58 @@
     unsubscribe/consent 與 provider retry。
 - **重啟時機**
   - 使用者完成草稿品質驗證並明確要求自動化之後。
+
+### TD-OPS-002：舊版 hosted report rows 需要 backfill 或 quarantine
+
+- **證據**
+  - 2026-07-29 對現有公開 `public_demo` Sites 資料做只讀 probe 時，
+    PostgreSQL、XTrace、Anthropic、Storage 與 corpus 設定皆可用，但既有
+    `/api/reports` rows 中有早於目前 underwriting/read DTO shape 的 legacy
+    payload，投影時會 fail closed。
+- **影響**
+  - 舊 hosted 資料仍在時，report list 可能回傳 server error；這不代表新的
+    `0000`–`0015` database 或目前 serializer 可以接受 malformed rows。
+  - 公開 Sites 的 `worker=false` 是另一件事：`public_demo` 本來就 read-only，
+    Sites 也不提供長時間 Worker。不得用假 heartbeat 掩蓋。
+- **暫時限制**
+  - 公開 `public_demo` 不執行 manual scan 或任何 mutation。
+  - Product acceptance 使用完整 migration chain、目前 seed/backfill 與獨立
+    healthy Worker，不把 legacy hosted row 當成功 fixture。
+- **完整修正**
+  - 為 legacy report payload 建立一次性、可稽核的 backfill 或 quarantine；
+    不得在 read path 猜測缺失的投資事實。
+- **完成條件**
+  - 既有 hosted rows 全部能通過目前 DTO validation，或被明確 quarantine。
+  - `/api/reports` 不因單一 legacy row 讓整個 workspace list 失敗，且沒有
+    fabricated fallback。
+
+### TD-UI-001：Action Draft Save 缺少真正的 UI 互動覆蓋
+
+- **證據**
+  - 目前整合測試會直接呼叫 `saveActionDraftBody`，並完整覆蓋
+    helper → `PATCH` route → repository。
+  - 元件渲染測試則把 `ActionDraftEditor` 的 `onSave` 設成 no-op；兩者沒有
+    證明實際 Save 按鈕會呼叫 session wiring。
+- **影響**
+  - 如果按鈕 handler 或頁面 wiring 退化，helper、route 與 repository
+    測試仍可能全部通過。
+- **完整修正／完成條件**
+  - 用 browser 或 DOM interaction 測試修改 body、按 Save，並觀察真正的
+    authenticated `PATCH`、成功狀態與重新讀取後的 current body。
+
+### TD-UI-002：Product source link 缺少真正的 click/navigation 覆蓋
+
+- **證據**
+  - 目前測試分別驗證 server-rendered product `href`，以及直接呼叫
+    `openSourceRevision` 後的 guarded route、signed URL 與最終 document read。
+  - 尚未證明 `SourceRevisionLink` 的 click handler 真的連到該 helper 與
+    browser navigation fallback。
+- **影響**
+  - click wiring 或 window navigation 退化時，route／capability／storage
+    測試仍可能保持綠燈。
+- **完整修正／完成條件**
+  - 用 browser 或 DOM interaction 測試點擊 product source link，驗證它經過
+    authenticated access route，最後導向對應的短效 signed URL。
 
 ### TD-RUN-001：Underwriting RPC owner 尚未完全隔離
 

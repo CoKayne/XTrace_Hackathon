@@ -58,7 +58,9 @@ export async function resolveRequestContext(
 
   if (mode !== "product") throw new Error("INTERNAL_ERROR");
 
-  const principal = await (dependencies.resolveSession ?? resolveTrustedSession)(request);
+  const principal = await (
+    dependencies.resolveSession ?? resolveTrustedSession
+  )(request, environment);
   if (!principal) throw new Error("UNAUTHENTICATED");
 
   const memberships = dependencies.memberships ?? getWorkspaceMembershipsRepository(environment);
