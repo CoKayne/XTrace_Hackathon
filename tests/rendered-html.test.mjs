@@ -46,6 +46,11 @@ test("server-renders the VSee investor workflow shell", async () => {
   }
   assert.doesNotMatch(html, /aria-label="Open Runs"/);
   assert.match(html, /Loading workspace evidence/);
+  assert.match(
+    html,
+    /\/assets-[a-z0-9-]+\/page-[A-Za-z0-9_-]+\.js/,
+    "client assets must live under a release-specific path",
+  );
 });
 
 test("keeps company intelligence and responsive hierarchy in the production source", async () => {
