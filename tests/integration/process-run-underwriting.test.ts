@@ -52,9 +52,19 @@ import {
   createCanonicalFingerprint,
   createReferenceCatalogSnapshot,
 } from "../../lib/underwriting/fingerprints";
+import {
+  createContextAwareFrameworkLensResolver,
+} from "../../lib/underwriting/frameworks/service";
 import type {
   FrameworkLensService,
 } from "../../lib/underwriting/frameworks/service";
+import type {
+  FrameworkCard,
+} from "../../lib/underwriting/frameworks/schemas";
+import type {
+  ClaudeClient,
+  ClaudeCompleteInput,
+} from "../../lib/claude/client";
 import { BALANCED_POLICY_VALUES } from "../../seed/underwriting/balanced-policy-v1";
 import { processClaimedRun } from "../../worker/process-run";
 
@@ -1347,16 +1357,46 @@ test("runs the source-grounded candidate chain once and persists communication c
   );
 });
 
-test("default candidate budget reserves one complete eight-core plus twenty-advisory run", async () => {
+test("real authorized eight-core and twenty-advisory execution completes within the default provider budget", async () => {
   let sequence = 0;
   const artifacts = createMemoryUnderwritingArtifactsRepository();
   const evidencePacks = createMemoryEvidencePacksRepository();
-  const observedUsage: Array<{
-    costUnits: number;
-    tokenUnits: number;
-    remainingCostUnits: number;
-    remainingTokenUnits: number;
-  }> = [];
+  let activeProviderCalls = 0;
+  let maximumProviderCalls = 0;
+  let providerCalls = 0;
+  let repairedCoreCardId: string | undefined;
+  const callsByCard = new Map<string, number>();
+  const client: ClaudeClient = {
+    async complete(request) {
+      const card = frameworkPromptCard(request);
+      const cardCalls = (callsByCard.get(card.id) ?? 0) + 1;
+      callsByCard.set(card.id, cardCalls);
+      providerCalls += 1;
+      activeProviderCalls += 1;
+      maximumProviderCalls = Math.max(
+        maximumProviderCalls,
+        activeProviderCalls,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      activeProviderCalls -= 1;
+      if (!("experimentalAdvisory" in card) && !repairedCoreCardId) {
+        repairedCoreCardId = card.id;
+        return "{}";
+      }
+      return JSON.stringify(frameworkPromptOutput(request));
+    },
+  };
+  const frameworkResolver = createContextAwareFrameworkLensResolver({
+    client,
+    execution: {
+      provider: "anthropic",
+      model: "synthetic-test-lens",
+      promptVersion: "framework-lens-v1",
+      schemaVersion: "framework-judgment-v1",
+      settingsFingerprint: `sha256:${"b".repeat(64)}`,
+      applicationCommit: "task13-test",
+    },
+  });
   const runs = createMemoryUnderwritingRunsRepository({
     now: () => NOW,
     idGenerator: (kind) => `${kind}_${++sequence}`,
@@ -1374,34 +1414,8 @@ test("default candidate budget reserves one complete eight-core plus twenty-advi
     referenceCatalog: TEST_REFERENCE_CATALOG,
     candidateExecutor: createSourceGroundedCandidateExecutor({
       grounding,
-      resolveFrameworkLenses: async () => ({
-        catalogVersion: "research-framework-catalog-v1",
-        catalogFingerprint: `sha256:${"7".repeat(64)}`,
-        corpusDigest: `sha256:${"8".repeat(64)}`,
-        service: {
-          async runAll(request) {
-            assert.ok(request.providerAttempt);
-            for (let index = 0; index < 28; index += 1) {
-              await request.providerAttempt.execute({
-                attemptFingerprint:
-                  `sha256:${index.toString(16).padStart(64, "0")}`,
-                outputTokenUnits: 4_000,
-                operation: async () => ({
-                  text: "{}",
-                  stopReason: "end_turn",
-                  usage: {
-                    inputTokens: 10,
-                    outputTokens: 20,
-                    cacheCreationInputTokens: 0,
-                    cacheReadInputTokens: 0,
-                  },
-                }),
-              });
-            }
-            return { judgments: [], disagreements: [] };
-          },
-        },
-      }),
+      resolveFrameworkLenses: (context, signal) =>
+        frameworkResolver.resolve(context, signal),
       now: () => NOW,
       execution: {
         providerModel: "synthetic-test-lens",
@@ -1429,32 +1443,112 @@ test("default candidate budget reserves one complete eight-core plus twenty-advi
     (total, attempt) => total + attempt.reservedTokenUnits,
     0,
   );
-  observedUsage.push({
-    costUnits: frameworkCheckpoint.costUnits,
-    tokenUnits: reservedTokenUnits,
-    remainingCostUnits: 28 - frameworkCheckpoint.costUnits,
-    remainingTokenUnits: 112_000 - reservedTokenUnits,
-  });
-
-  assert.equal(
-    batch.status,
-    "completed",
-    JSON.stringify(runs.inspect().checkpoints.map((checkpoint) => ({
-      stage: checkpoint.stage,
-      status: checkpoint.status,
-      reasonCode: checkpoint.reasonCode,
-      costUnits: checkpoint.costUnits,
-      tokenUnits: checkpoint.tokenUnits,
-      providerAttempts: checkpoint.providerAttempts.length,
-    }))),
+  const bundle = artifacts.inspect().bundles[0];
+  assert.ok(bundle);
+  const advisoryJudgments = bundle.judgments.filter(
+    ({ frameworkMetadata }) => frameworkMetadata !== undefined,
   );
-  assert.deepEqual(observedUsage, [{
-    costUnits: 28,
-    tokenUnits: 112_000,
-    remainingCostUnits: 0,
-    remainingTokenUnits: 0,
-  }]);
+  const coreJudgments = bundle.judgments.filter(
+    ({ frameworkMetadata }) => frameworkMetadata === undefined,
+  );
+
+  assert.equal(batch.status, "completed");
+  assert.equal(coreJudgments.length, 8);
+  assert.equal(advisoryJudgments.length, 20);
+  assert.equal(
+    advisoryJudgments.every(
+      ({ frameworkMetadata }) =>
+        frameworkMetadata?.formalDecisionWeight === "0",
+    ),
+    true,
+  );
+  assert.equal(providerCalls, 28);
+  assert.equal(maximumProviderCalls, 4);
+  assert.ok(repairedCoreCardId);
+  assert.equal(callsByCard.get(repairedCoreCardId), 2);
+  assert.equal(frameworkCheckpoint.providerAttempts.length, 28);
+  assert.equal(frameworkCheckpoint.costUnits, 28);
+  assert.equal(reservedTokenUnits, 112_000);
 });
+
+function frameworkPromptPayload(
+  request: ClaudeCompleteInput,
+): {
+  card: FrameworkCard;
+  evidencePack: {
+    facts: Array<{ id: string }>;
+    assumptions: Array<{ id: string }>;
+  };
+  valuationInputs?: {
+    calculations: Array<{ id: string }>;
+  };
+} {
+  const content = request.messages[0]?.content;
+  if (typeof content !== "string") {
+    throw new Error("Framework prompt must be text-only.");
+  }
+  const parsed = JSON.parse(content) as {
+    card?: FrameworkCard;
+    evidencePack?: {
+      facts: Array<{ id: string }>;
+      assumptions: Array<{ id: string }>;
+    };
+    valuationInputs?: {
+      calculations: Array<{ id: string }>;
+    };
+    originalRequest?: ReturnType<typeof frameworkPromptPayload>;
+  };
+  const payload = parsed.originalRequest ?? parsed;
+  if (!payload.card || !payload.evidencePack) {
+    throw new Error("Framework prompt is missing its immutable inputs.");
+  }
+  return {
+    card: payload.card,
+    evidencePack: payload.evidencePack,
+    ...(payload.valuationInputs
+      ? { valuationInputs: payload.valuationInputs }
+      : {}),
+  };
+}
+
+function frameworkPromptCard(request: ClaudeCompleteInput): FrameworkCard {
+  return frameworkPromptPayload(request).card;
+}
+
+function frameworkPromptOutput(request: ClaudeCompleteInput) {
+  const payload = frameworkPromptPayload(request);
+  const evidenceIds = [
+    ...payload.evidencePack.facts.map(({ id }) => id),
+    ...payload.evidencePack.assumptions.map(({ id }) => id),
+    ...(payload.valuationInputs?.calculations.map(({ id }) => id) ?? []),
+  ].toSorted((left, right) =>
+    Buffer.compare(Buffer.from(left, "utf8"), Buffer.from(right, "utf8"))
+  );
+  assert.ok(evidenceIds.length >= 2);
+  return {
+    applicability: "applicable",
+    conclusion: "supportive",
+    supportEvidenceItemIds: [evidenceIds[0]],
+    counterEvidenceItemIds: [evidenceIds[1]],
+    unusedEvidenceItemIds: evidenceIds.slice(2),
+    strongestSupport:
+      "The retained source evidence supports this bounded framework view.",
+    strongestCounterargument:
+      "The retained counterevidence limits confidence in this framework view.",
+    unknowns: ["Independent confirmation remains outstanding."],
+    limitations: [
+      "This framework output cannot create a formal investment decision.",
+    ],
+    confidence: {
+      sourceReliability: "medium",
+      evidenceStrength: "medium",
+      evidenceCoverage: "medium",
+      applicability: "high",
+      judgment: "medium",
+    },
+    frameworkRuleRefs: [payload.card.id],
+  };
+}
 
 test("a clock-advanced source-grounded force refresh aliases the canonical artifacts", async () => {
   let sequence = 0;
@@ -2090,6 +2184,153 @@ test("framework timeout is visible unavailability and never generic failure or n
   assert.match(
     runs.inspect().checkpoints.at(-1)?.publicReason ?? "",
     /truncation warning.*timed out.*no negative/i,
+  );
+});
+
+test("framework catalog resolution is aborted by the bounded framework stage timeout", async () => {
+  let sequence = 0;
+  let resolutionSignal: AbortSignal | undefined;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateStagePolicies: {
+      framework_lenses: { timeoutMs: 5 },
+    },
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      resolveFrameworkLenses: async (_context, signal?: AbortSignal) => {
+        resolutionSignal = signal;
+        return await new Promise((resolve, reject) => {
+          const timer = setTimeout(() => {
+            resolve({
+              catalogVersion: "research-framework-catalog-v1",
+              catalogFingerprint: `sha256:${"7".repeat(64)}`,
+              corpusDigest: `sha256:${"8".repeat(64)}`,
+              service: {
+                async runAll() {
+                  return { judgments: [], disagreements: [] };
+                },
+              },
+            });
+          }, 50);
+          signal?.addEventListener("abort", () => {
+            clearTimeout(timer);
+            reject(signal.reason);
+          }, { once: true });
+        });
+      },
+      now: () => NOW,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(resolutionSignal?.aborted, true);
+  assert.equal(runs.inspect().candidates[0]?.status, "unavailable");
+  assert.deepEqual(
+    Object.values(runs.inspect().unavailableReasons),
+    [["CANDIDATE_STAGE_TIMEOUT_FRAMEWORK_LENSES"]],
+  );
+  assert.deepEqual(
+    runs.inspect().checkpoints
+      .filter(({ stage }) => stage === "framework_lenses")
+      .map(({ status, reasonCode, attemptCount, providerAttempts }) => ({
+        status,
+        reasonCode,
+        attemptCount,
+        providerAttemptCount: providerAttempts.length,
+      })),
+    [{
+      status: "failed",
+      reasonCode: "CANDIDATE_STAGE_TIMEOUT_FRAMEWORK_LENSES",
+      attemptCount: 1,
+      providerAttemptCount: 0,
+    }],
+  );
+});
+
+test("rejected framework catalog resolution is visible unavailability with a failed stage checkpoint", async () => {
+  let sequence = 0;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      resolveFrameworkLenses: async () => {
+        throw new Error("audited catalog is temporarily unavailable");
+      },
+      now: () => NOW,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(runs.inspect().candidates[0]?.status, "unavailable");
+  assert.deepEqual(
+    Object.values(runs.inspect().unavailableReasons),
+    [["FRAMEWORK_CATALOG_UNAVAILABLE"]],
+  );
+  assert.deepEqual(
+    runs.inspect().checkpoints
+      .filter(({ stage }) => stage === "framework_lenses")
+      .map(({ status, reasonCode, attemptCount }) => ({
+        status,
+        reasonCode,
+        attemptCount,
+      })),
+    [{
+      status: "failed",
+      reasonCode: "CANDIDATE_STAGE_EXECUTION_FRAMEWORK_LENSES",
+      attemptCount: 1,
+    }],
   );
 });
 

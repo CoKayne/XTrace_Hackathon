@@ -16,8 +16,8 @@ import {
 import { fileURLToPath } from "node:url";
 
 import {
-  ResolvedUnderwritingContextSchema,
-  type ResolvedUnderwritingContext,
+  ResearchFrameworkContextSchema,
+  type ResearchFrameworkContext,
 } from "../../contracts/underwriting";
 import {
   FrameworkCardAuthoringSchema,
@@ -34,7 +34,7 @@ import {
 } from "./schemas";
 
 type ResearchContext = Pick<
-  ResolvedUnderwritingContext,
+  ResearchFrameworkContext,
   "stage" | "businessModel" | "geography" | "securityType"
 >;
 
@@ -57,7 +57,8 @@ export interface ResearchFrameworkCatalog {
 }
 
 type ResearchFrameworkCatalogInput = {
-  context: ResolvedUnderwritingContext;
+  context: ResearchFrameworkContext;
+  signal?: AbortSignal;
 } & (
   | {
     researchRoot?: never;
@@ -110,7 +111,8 @@ const authorizedCatalogs = new WeakMap<
 export async function loadResearchFrameworkCatalog(
   input: ResearchFrameworkCatalogInput,
 ): Promise<ResearchFrameworkCatalog> {
-  const parsedContext = ResolvedUnderwritingContextSchema.parse(input.context);
+  throwIfAborted(input.signal);
+  const parsedContext = ResearchFrameworkContextSchema.parse(input.context);
   const context: ResearchContext = {
     stage: parsedContext.stage,
     businessModel: parsedContext.businessModel,
@@ -129,14 +131,18 @@ export async function loadResearchFrameworkCatalog(
     ? resolve(input.researchRoot)
     : CANONICAL_RESEARCH_ROOT;
   const rootStats = await lstat(researchRoot);
+  throwIfAborted(input.signal);
   if (!rootStats.isDirectory() || rootStats.isSymbolicLink()) {
     throw new Error("Research root must be a real directory, not a symlink.");
   }
   const canonicalRoot = await realpath(researchRoot);
+  throwIfAborted(input.signal);
   const authorsRoot = join(canonicalRoot, "authors");
   await assertRealDirectory(authorsRoot, canonicalRoot, "Authors root");
+  throwIfAborted(input.signal);
 
   const authorEntries = await readdir(authorsRoot, { withFileTypes: true });
+  throwIfAborted(input.signal);
   const authorNames = authorEntries
     .filter((entry) => entry.isDirectory())
     .map(({ name }) => name)
@@ -153,10 +159,14 @@ export async function loadResearchFrameworkCatalog(
 
   const loadedPacks: LoadedPack[] = [];
   for (const authorName of authorNames) {
+    throwIfAborted(input.signal);
     const authorRoot = join(authorsRoot, authorName);
     await assertRealDirectory(authorRoot, authorsRoot, "Author directory");
-    loadedPacks.push(await loadAuthorPack(authorRoot, canonicalRoot));
+    loadedPacks.push(
+      await loadAuthorPack(authorRoot, canonicalRoot, input.signal),
+    );
   }
+  throwIfAborted(input.signal);
   loadedPacks.sort((left, right) =>
     compareUtf8(left.manifest.packId, right.manifest.packId)
   );
@@ -249,8 +259,11 @@ export function isAuthorizedResearchComposite(
 async function loadAuthorPack(
   authorRoot: string,
   canonicalRoot: string,
+  signal?: AbortSignal,
 ): Promise<LoadedPack> {
+  throwIfAborted(signal);
   const authorEntries = await readdir(authorRoot, { withFileTypes: true });
+  throwIfAborted(signal);
   const manifestNames = authorEntries
     .filter((entry) => entry.isFile() && entry.name.endsWith(".pack.json"))
     .map(({ name }) => name)
@@ -281,10 +294,12 @@ async function loadAuthorPack(
 
   const manifestPath = join(authorRoot, manifestNames[0]!);
   await assertRealFile(manifestPath, authorRoot, "Pack manifest");
+  throwIfAborted(signal);
   const manifest = await readParsedJson(
     manifestPath,
     FrameworkPackAuthoringSchema,
     "Pack manifest",
+    signal,
   );
   const sourcePath = safeChildPath(
     authorRoot,
@@ -292,10 +307,12 @@ async function loadAuthorPack(
     "source catalog path",
   );
   await assertRealFile(sourcePath, authorRoot, "Source catalog");
+  throwIfAborted(signal);
   const sourceCatalog = await readParsedJson(
     sourcePath,
     ResearchSourceCatalogSchema,
     "Source catalog",
+    signal,
   );
   assertUnique(
     sourceCatalog.sources.map(({ sourceId }) => sourceId),
@@ -304,7 +321,9 @@ async function loadAuthorPack(
 
   const cardsRoot = join(authorRoot, "cards");
   await assertRealDirectory(cardsRoot, authorRoot, "Cards directory");
+  throwIfAborted(signal);
   const cardEntries = await readdir(cardsRoot, { withFileTypes: true });
+  throwIfAborted(signal);
   if (
     cardEntries.some((entry) =>
       !entry.isFile()
@@ -328,6 +347,7 @@ async function loadAuthorPack(
 
   const cards: FrameworkCardAuthoring[] = [];
   for (const relativeCardPath of manifest.cardFiles) {
+    throwIfAborted(signal);
     const cardPath = safeChildPath(
       authorRoot,
       relativeCardPath,
@@ -338,6 +358,7 @@ async function loadAuthorPack(
       cardPath,
       FrameworkCardAuthoringSchema,
       "Framework Card",
+      signal,
     ));
   }
   assertUnique(
@@ -359,6 +380,7 @@ async function loadAuthorPack(
   }
   await assertResolvedInside(manifestPath, canonicalRoot, "Pack manifest");
   await assertResolvedInside(sourcePath, canonicalRoot, "Source catalog");
+  throwIfAborted(signal);
   return { manifest, sourceCatalog, cards };
 }
 
@@ -530,6 +552,14 @@ function securityTypeMatches(
     || (
       securityType === "preferred"
       && ["preferred", "preferred_equity", "equity"].includes(selector)
+    )
+    || (
+      securityType === "convertible"
+      && [
+        "convertible",
+        "convertible_note",
+        "safe",
+      ].includes(selector)
     );
 }
 
@@ -558,9 +588,14 @@ async function readParsedJson<T>(
   path: string,
   schema: { parse(value: unknown): T },
   label: string,
+  signal?: AbortSignal,
 ): Promise<T> {
   try {
-    const raw = await readFile(path, "utf8");
+    const raw = await readFile(path, {
+      encoding: "utf8",
+      signal,
+    });
+    throwIfAborted(signal);
     return schema.parse(JSON.parse(raw) as unknown);
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
@@ -568,6 +603,13 @@ async function readParsedJson<T>(
       cause: error,
     });
   }
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (!signal?.aborted) return;
+  throw signal.reason instanceof Error
+    ? signal.reason
+    : new Error("Research Framework catalog loading was aborted.");
 }
 
 function safeChildPath(

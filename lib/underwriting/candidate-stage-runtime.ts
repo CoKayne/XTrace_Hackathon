@@ -34,6 +34,11 @@ export interface CandidateExecutionBudget {
 }
 
 export interface CandidateStageRuntime {
+  prepare<T>(input: {
+    stage: "framework_lenses";
+    inputFingerprint: string;
+    operation(signal: AbortSignal): Promise<T> | T;
+  }): Promise<T>;
   run<T>(input: {
     stage: CandidateExecutionStage;
     inputFingerprint: string;
@@ -301,6 +306,66 @@ export async function createCandidateStageRuntime(input: {
 
   return {
     usage,
+    async prepare<T>(request: {
+      stage: "framework_lenses";
+      inputFingerprint: string;
+      operation(signal: AbortSignal): Promise<T> | T;
+    }): Promise<T> {
+      await initialize();
+      const policy = input.budget.stages[request.stage];
+      let attemptCount = 0;
+      while (attemptCount < policy.maxAttempts) {
+        attemptCount += 1;
+        const controller = new AbortController();
+        try {
+          return await withTimeout(
+            Promise.resolve().then(() =>
+              request.operation(controller.signal)
+            ),
+            policy.timeoutMs,
+            controller,
+            request.stage,
+          );
+        } catch (error) {
+          const retryable = error instanceof IntegrationTransportError
+            && error.retryable
+            && attemptCount < policy.maxAttempts;
+          if (retryable) continue;
+
+          const kind = error instanceof CandidateStageTimeoutError
+            ? "timeout"
+            : "execution";
+          const details = failure(request.stage, kind);
+          if (!checkpoints.has(request.stage)) {
+            await save(CandidateCheckpointSchema.parse({
+              candidateRunId: input.candidate.id,
+              stage: request.stage,
+              status: "failed",
+              inputFingerprint: request.inputFingerprint,
+              outputFingerprint: null,
+              outputPayload: null,
+              attemptCount,
+              costUnits: 0,
+              tokenUnits: 0,
+              actualTokenUnits: 0,
+              providerAttempts: [],
+              reasonCode: details.reasonCode,
+              publicReason: details.publicReason,
+              savedAt: input.now().toISOString(),
+            }));
+          }
+          if (kind === "timeout") {
+            input.onWarning?.(
+              `Candidate ${input.candidate.dealId}: ${details.publicReason}`,
+            );
+          }
+          throw error;
+        }
+      }
+      throw new Error(
+        `${request.stage} preparation exhausted its bounded attempts.`,
+      );
+    },
     async run<T>(request: {
       stage: CandidateExecutionStage;
       inputFingerprint: string;

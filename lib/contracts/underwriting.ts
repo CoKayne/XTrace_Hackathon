@@ -62,6 +62,15 @@ export const ResolvedUnderwritingContextSchema = z.strictObject({
   frameworkPackId: IdSchema,
 });
 
+export const ResearchFrameworkContextSchema =
+  ResolvedUnderwritingContextSchema.extend({
+    securityType: z.enum(["preferred", "convertible"]),
+  });
+
+export type ResearchFrameworkContext = z.infer<
+  typeof ResearchFrameworkContextSchema
+>;
+
 export const FrameworkConfidenceSchema = z.strictObject({
   sourceReliability: ConfidenceSchema,
   evidenceStrength: ConfidenceSchema,
@@ -82,7 +91,7 @@ export const FrameworkAdvisoryMetadataSchema = z.strictObject({
     stage: z.enum(["seed", "series_a"]),
     businessModel: z.enum(["b2b_saas", "enterprise_ai"]),
     geography: z.enum(["us", "global"]),
-    securityType: z.literal("preferred"),
+    securityType: ResearchFrameworkContextSchema.shape.securityType,
   }),
   applicable: z.boolean(),
   componentCardIds: z.array(IdSchema),

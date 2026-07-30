@@ -97,3 +97,65 @@ test("caches the exact authorized catalog and service by immutable deal context 
     4,
   );
 });
+
+test("partitions exact catalog and service instances by research security type", async () => {
+  const resolver = createContextAwareFrameworkLensResolver({
+    execution,
+    client: {
+      async complete() {
+        throw new Error("Context resolution must not invoke the provider.");
+      },
+    },
+  });
+  const preferred = await resolver.resolve(context);
+  let convertible:
+    | Awaited<ReturnType<typeof resolver.resolve>>
+    | undefined;
+
+  await assert.doesNotReject(async () => {
+    convertible = await resolver.resolve({
+      ...context,
+      id: "underwriting_context_seed_b2b_saas_convertible_v1",
+      securityType: "convertible",
+    });
+  });
+  assert.ok(convertible);
+  assert.equal(convertible.catalog.context.securityType, "convertible");
+  assert.notStrictEqual(convertible, preferred);
+  assert.notStrictEqual(convertible.catalog, preferred.catalog);
+  assert.notStrictEqual(convertible.service, preferred.service);
+  assert.notEqual(
+    convertible.catalogFingerprint,
+    preferred.catalogFingerprint,
+  );
+  const sameConvertible = await resolver.resolve({
+    ...context,
+    id: "same-convertible-selection-different-context-id",
+    contextVersion: "2",
+    asOfDate: "2026-07-30",
+    securityType: "convertible",
+  });
+  assert.strictEqual(sameConvertible, convertible);
+  assert.strictEqual(sameConvertible.catalog, convertible.catalog);
+  assert.strictEqual(sameConvertible.service, convertible.service);
+});
+
+test("aborts an in-flight real catalog resolution before authorizing a service", async () => {
+  const resolver = createContextAwareFrameworkLensResolver({
+    execution,
+    client: {
+      async complete() {
+        throw new Error("An aborted catalog must not invoke the provider.");
+      },
+    },
+  });
+  const controller = new AbortController();
+  const cancellation = new Error("candidate framework stage timed out");
+  const pending = resolver.resolve(context, controller.signal);
+  controller.abort(cancellation);
+
+  await assert.rejects(
+    pending,
+    (error) => error === cancellation,
+  );
+});

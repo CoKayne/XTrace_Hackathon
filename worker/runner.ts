@@ -227,8 +227,8 @@ export async function runNextQueuedScan(): Promise<boolean> {
       referenceCatalog,
       candidateExecutor: createSourceGroundedCandidateExecutor({
         grounding,
-        resolveFrameworkLenses: (context) =>
-          frameworkLenses.resolve(context),
+        resolveFrameworkLenses: (context, signal) =>
+          frameworkLenses.resolve(context, signal),
         execution: {
           providerModel: model,
           promptVersion: "framework-lens-v1",

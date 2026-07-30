@@ -16,10 +16,12 @@ import {
 import {
   CandidateRunSchema,
   FrameworkJudgmentSchema,
+  ResearchFrameworkContextSchema,
   ResolvedUnderwritingContextSchema,
   type CandidateRun,
   type FrameworkDisagreement,
   type FrameworkJudgment,
+  type ResearchFrameworkContext,
   type ResolvedUnderwritingContext,
 } from "../../contracts/underwriting";
 import { SYNTHETIC_FRAMEWORK_PACK } from "../../../seed/underwriting/framework-pack-v1";
@@ -176,7 +178,8 @@ export interface ContextAwareFrameworkLensSelection {
 
 export interface ContextAwareFrameworkLensResolver {
   resolve(
-    context: ResolvedUnderwritingContext,
+    context: ResearchFrameworkContext,
+    signal?: AbortSignal,
   ): Promise<ContextAwareFrameworkLensSelection>;
 }
 
@@ -223,12 +226,16 @@ export function createContextAwareFrameworkLensResolver(
 ): ContextAwareFrameworkLensResolver {
   const selections = new Map<
     string,
-    Promise<ContextAwareFrameworkLensSelection>
+    {
+      controller: AbortController;
+      promise: Promise<ContextAwareFrameworkLensSelection>;
+    }
   >();
 
   return {
-    resolve(rawContext) {
-      const context = ResolvedUnderwritingContextSchema.parse(rawContext);
+    resolve(rawContext, signal) {
+      throwIfAborted(signal);
+      const context = ResearchFrameworkContextSchema.parse(rawContext);
       const key = canonicalJson({
         catalogVersion: RESEARCH_FRAMEWORK_CATALOG_VERSION,
         stage: context.stage,
@@ -237,9 +244,16 @@ export function createContextAwareFrameworkLensResolver(
         securityType: context.securityType,
       });
       const existing = selections.get(key);
-      if (existing) return existing;
+      if (existing) {
+        forwardAbort(signal, existing.controller, existing.promise);
+        return existing.promise;
+      }
 
-      const pending = loadResearchFrameworkCatalog({ context })
+      const controller = new AbortController();
+      const pending = loadResearchFrameworkCatalog({
+        context,
+        signal: controller.signal,
+      })
         .then((catalog) => Object.freeze({
           catalogVersion: RESEARCH_FRAMEWORK_CATALOG_VERSION,
           catalogFingerprint: catalog.fingerprint,
@@ -250,13 +264,31 @@ export function createContextAwareFrameworkLensResolver(
             advisoryCatalog: catalog,
           }),
         }));
-      selections.set(key, pending);
+      const entry = { controller, promise: pending };
+      selections.set(key, entry);
+      forwardAbort(signal, controller, pending);
       void pending.catch(() => {
-        if (selections.get(key) === pending) selections.delete(key);
+        if (selections.get(key) === entry) selections.delete(key);
       });
       return pending;
     },
   };
+}
+
+function forwardAbort(
+  signal: AbortSignal | undefined,
+  controller: AbortController,
+  pending: Promise<unknown>,
+): void {
+  if (!signal) return;
+  const abort = () => controller.abort(signal.reason);
+  if (signal.aborted) {
+    abort();
+    return;
+  }
+  signal.addEventListener("abort", abort, { once: true });
+  const cleanup = () => signal.removeEventListener("abort", abort);
+  void pending.then(cleanup, cleanup);
 }
 
 export function createFrameworkLensService(options: {

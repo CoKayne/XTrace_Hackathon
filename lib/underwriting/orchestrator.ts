@@ -140,6 +140,13 @@ export interface FrameworkLensExecutionSelection {
   service: FrameworkLensService;
 }
 
+class FrameworkCatalogResolutionError extends Error {
+  constructor(cause: unknown) {
+    super("The audited Framework catalog could not be resolved.", { cause });
+    this.name = "FrameworkCatalogResolutionError";
+  }
+}
+
 export interface UnderwritingOrchestrator {
   createBatchAndSelections(input: {
     scanRun: RunRecord;
@@ -504,6 +511,7 @@ export function createSourceGroundedCandidateExecutor(options: {
   frameworkLenses?: FrameworkLensService;
   resolveFrameworkLenses?: (
     context: ResolvedUnderwritingContext,
+    signal?: AbortSignal,
   ) => Promise<FrameworkLensExecutionSelection>;
   router?: ContextRouter;
   valuation?: ValuationEngine;
@@ -583,16 +591,6 @@ export function createSourceGroundedCandidateExecutor(options: {
       ]);
     }
     const context = resolution.context;
-    const frameworkSelection = options.resolveFrameworkLenses
-      ? validateFrameworkLensSelection(
-        await options.resolveFrameworkLenses(context),
-      )
-      : {
-        catalogVersion: null,
-        catalogFingerprint: null,
-        corpusDigest: null,
-        service: options.frameworkLenses!,
-      };
     let pack: EvidencePack;
     let evidencePackBuildInputFingerprint: string;
     let criticalEvidenceProfile: ReferenceDefinitionRef;
@@ -701,6 +699,54 @@ export function createSourceGroundedCandidateExecutor(options: {
       id: `scenario-model:${input.candidate.id}`,
       candidateRunId: input.candidate.id,
     };
+    let frameworkSelection: FrameworkLensExecutionSelection | {
+      catalogVersion: null;
+      catalogFingerprint: null;
+      corpusDigest: null;
+      service: FrameworkLensService;
+    };
+    try {
+      frameworkSelection = options.resolveFrameworkLenses
+        ? await input.stages.prepare({
+          stage: "framework_lenses",
+          inputFingerprint: fingerprint({
+            stage: "framework_lenses",
+            phase: "catalog_resolution",
+            candidateId: input.candidate.id,
+            context,
+            execution,
+          }),
+          operation: async (signal) => {
+            try {
+              return validateFrameworkLensSelection(
+                await options.resolveFrameworkLenses!(context, signal),
+              );
+            } catch (error) {
+              if (
+                signal.aborted
+                && signal.reason instanceof CandidateStageTimeoutError
+              ) {
+                throw signal.reason;
+              }
+              throw new FrameworkCatalogResolutionError(error);
+            }
+          },
+        })
+        : {
+          catalogVersion: null,
+          catalogFingerprint: null,
+          corpusDigest: null,
+          service: options.frameworkLenses!,
+        };
+    } catch (error) {
+      if (error instanceof CandidateStageTimeoutError) {
+        return timeoutUnavailableExecution(error.stage);
+      }
+      if (error instanceof FrameworkCatalogResolutionError) {
+        return unavailableExecution(["FRAMEWORK_CATALOG_UNAVAILABLE"]);
+      }
+      throw error;
+    }
     let lensResult;
     try {
       const frameworkInputFingerprint = fingerprint({
