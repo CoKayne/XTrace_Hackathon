@@ -790,7 +790,8 @@ test("finalization rejects a foreign lease and stores exact immutable snapshots 
 });
 
 test("Task8 finalization preserves advisory specialist judgments without requiring formal decision edges", async () => {
-  const { artifacts, runs, first } = await twoClaimedCandidates();
+  const { artifacts, evidencePacks, runs, first } =
+    await twoClaimedCandidates();
   const payload = finalization({
     candidateRunId: first.candidate.id,
     dealId: first.candidate.dealId,
@@ -807,6 +808,7 @@ test("Task8 finalization preserves advisory specialist judgments without requiri
     "framework_card_synthetic_5_v1: unavailable",
   ].join("\n");
 
+  await saveFinalizationBuild(evidencePacks, payload);
   await runs.finalizeCandidate(payload);
   const stored = await artifacts.getByCandidateRunId({
     workspaceId: "workspace_1",
