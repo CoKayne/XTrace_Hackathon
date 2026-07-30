@@ -34,6 +34,7 @@ function uploadFixture() {
     objectKey: "private/workspaces/workspace_demo/uploads/upload_1/acme.txt",
     status: "extracting" as const,
     workerId: "worker-a",
+    leaseToken: "lease-a",
     failureReason: null,
     extractionPreview: null,
     createdAt: "2026-07-25T12:00:00.000Z",

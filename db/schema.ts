@@ -610,6 +610,8 @@ export const xtraceIngestJobs = pgTable("xtrace_ingest_jobs", {
     { onDelete: "cascade" },
   ),
   dealId: text("deal_id").notNull(),
+  sourceRevisionIds: jsonb("source_revision_ids").$type<string[]>().notNull()
+    .default([]),
   sourceIds: jsonb("source_ids").$type<string[]>().notNull().default([]),
   fixtureIds: jsonb("fixture_ids").$type<string[]>().notNull().default([]),
   bundleFingerprint: text("bundle_fingerprint").notNull(),
@@ -635,6 +637,8 @@ export const xtraceMemoryLinks = pgTable("xtrace_memory_links", {
     { onDelete: "cascade" },
   ),
   dealId: text("deal_id").notNull(),
+  sourceRevisionIds: jsonb("source_revision_ids").$type<string[]>().notNull()
+    .default([]),
   sourceIds: jsonb("source_ids").$type<string[]>().notNull().default([]),
   fixtureIds: jsonb("fixture_ids").$type<string[]>().notNull().default([]),
   provenance: text("provenance").notNull(),
@@ -664,6 +668,11 @@ export const uploadedDocuments = pgTable("uploaded_documents", {
   extractionPreview: jsonb("extraction_preview").$type<ExtractionPreview>(),
   leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
   workerId: text("worker_id"),
+  leaseToken: uuid("lease_token"),
+  dealId: text("deal_id"),
+  sourceId: text("source_id"),
+  sourceRevisionId: text("source_revision_id"),
+  confirmationFingerprint: text("confirmation_fingerprint"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
@@ -672,6 +681,24 @@ export const uploadedDocuments = pgTable("uploaded_documents", {
     table.workspaceId,
     table.checksum,
   ),
+  foreignKey({
+    columns: [table.workspaceId, table.dealId],
+    foreignColumns: [deals.workspaceId, deals.id],
+    name: "uploaded_documents_workspace_deal_fkey",
+  }),
+  foreignKey({
+    columns: [
+      table.workspaceId,
+      table.sourceId,
+      table.sourceRevisionId,
+    ],
+    foreignColumns: [
+      sourceRevisions.workspaceId,
+      sourceRevisions.sourceId,
+      sourceRevisions.id,
+    ],
+    name: "uploaded_documents_exact_revision_fkey",
+  }),
 ]);
 
 export const benchmarkPacks = pgTable("benchmark_packs", {

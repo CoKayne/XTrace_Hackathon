@@ -33,6 +33,7 @@ export type MemoryContext = {
   text: string;
   score: number;
   provenance: Provenance;
+  sourceRevisionIds?: string[];
   sourceIds: string[];
   fixtureIds: string[];
 };
@@ -54,6 +55,7 @@ export type XTraceServiceDependencies = {
     candidateDealIds: string[];
   }) => Promise<{
     dealId: string;
+    sourceRevisionIds?: string[];
     sourceIds: string[];
     fixtureIds?: string[];
     provenance: Provenance;
@@ -115,18 +117,35 @@ export function createXTraceService(
   };
 
   return {
-    async ingestDealMemory(bundle: DealMemoryBundle): Promise<PersistedIngest> {
-      const serializedBundle = serializeBundle(bundle);
+    async ingestDealMemory(
+      bundle: DealMemoryBundle,
+      exactLineage?: {
+        sourceRevisionIds: string[];
+        sourceIds: string[];
+        fixtureIds: string[];
+      },
+    ): Promise<PersistedIngest> {
+      const sourceRevisionIds = exactLineage?.sourceRevisionIds ?? [];
+      const sourceIds = exactLineage?.sourceIds ?? [...new Set(
+        bundle.facts.flatMap((fact) =>
+          fact.sources.map((source) => source.id)
+        ),
+      )];
+      const fixtureIds = exactLineage?.fixtureIds ?? [...new Set(
+        bundle.interactions.map((interaction) => interaction.id),
+      )];
+      const serializedBundle = serializeBundle(bundle, {
+        sourceRevisionIds,
+        sourceIds,
+        fixtureIds,
+      });
       const bundleFingerprint = createHash("sha256")
         .update(serializedBundle, "utf8")
         .digest("hex");
-      const sourceIds = [...new Set(bundle.facts.flatMap((fact) =>
-        fact.sources.map((source) => source.id)
-      ))];
-      const fixtureIds = [...new Set(bundle.interactions.map((interaction) => interaction.id))];
       const reusable = await lineage.findReusableIngest({
         workspaceId,
         dealId: bundle.dealId,
+        sourceRevisionIds,
         sourceIds,
         fixtureIds,
         bundleFingerprint,
@@ -158,6 +177,7 @@ export function createXTraceService(
         jobId: record.jobId,
         workspaceId,
         dealId: bundle.dealId,
+        sourceRevisionIds,
         sourceIds,
         fixtureIds,
         bundleFingerprint,
@@ -259,6 +279,7 @@ export function createXTraceService(
           text: memory.text,
           score: memory.score,
           provenance: resolved.provenance,
+          sourceRevisionIds: resolved.sourceRevisionIds ?? [],
           sourceIds: resolved.sourceIds,
           fixtureIds,
         });
@@ -350,7 +371,14 @@ function toPersistedIngest(
   };
 }
 
-function serializeBundle(bundle: DealMemoryBundle): string {
+function serializeBundle(
+  bundle: DealMemoryBundle,
+  lineage: {
+    sourceRevisionIds: string[];
+    sourceIds: string[];
+    fixtureIds: string[];
+  },
+): string {
   const facts = bundle.facts.flatMap((fact) => fact.sources.map((source) =>
     `[${source.provenance}] source_id=${source.id}; title=${source.title}; excerpt=${source.excerpt}; fact=${fact.text}`,
   ));
@@ -359,6 +387,7 @@ function serializeBundle(bundle: DealMemoryBundle): string {
   );
   return [
     `Deal ${bundle.companyName} (deal_id=${bundle.dealId}; status=${bundle.status})`,
+    `Exact lineage: source_revision_ids=${lineage.sourceRevisionIds.join(",")}; source_ids=${lineage.sourceIds.join(",")}; fixture_ids=${lineage.fixtureIds.join(",")}`,
     ...facts,
     ...interactions,
   ].join("\n");

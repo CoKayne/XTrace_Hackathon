@@ -11,6 +11,10 @@ import { GET as document } from "../../app/api/documents/[id]/route";
 import { GET as documents } from "../../app/api/documents/route";
 import { POST as uploadDocument } from "../../app/api/documents/upload/route";
 import { GET as uploadedDocuments } from "../../app/api/documents/uploaded/route";
+import { POST as createUpload } from "../../app/api/uploads/route";
+import { GET as getUpload } from "../../app/api/uploads/[id]/route";
+import { POST as confirmUpload } from "../../app/api/uploads/[id]/confirm/route";
+import { GET as accessSourceRevision } from "../../app/api/source-revisions/[id]/access/route";
 import {
   POST as confirmImport,
   toPublicXTraceErrors,
@@ -100,6 +104,35 @@ const allCurrentRouteHandlers: Array<{
   },
   {
     method: "POST",
+    path: "/api/uploads",
+    invoke: () => createUpload(request("/api/uploads", { method: "POST" })),
+  },
+  {
+    method: "GET",
+    path: "/api/uploads/[id]",
+    invoke: () => getUpload(
+      request("/api/uploads/upload_missing"),
+      params({ id: "upload_missing" }),
+    ),
+  },
+  {
+    method: "POST",
+    path: "/api/uploads/[id]/confirm",
+    invoke: () => confirmUpload(
+      jsonRequest("/api/uploads/upload_missing/confirm", {}),
+      params({ id: "upload_missing" }),
+    ),
+  },
+  {
+    method: "GET",
+    path: "/api/source-revisions/[id]/access",
+    invoke: () => accessSourceRevision(
+      request("/api/source-revisions/revision_missing/access"),
+      params({ id: "revision_missing" }),
+    ),
+  },
+  {
+    method: "POST",
     path: "/api/imports/confirm",
     invoke: () => confirmImport(jsonRequest("/api/imports/confirm", {})),
   },
@@ -178,6 +211,17 @@ for (const route of [
   {
     path: "/api/documents/upload",
     invoke: () => uploadDocument(request("/api/documents/upload", { method: "POST" })),
+  },
+  {
+    path: "/api/uploads",
+    invoke: () => createUpload(request("/api/uploads", { method: "POST" })),
+  },
+  {
+    path: "/api/uploads/[id]/confirm",
+    invoke: () => confirmUpload(
+      jsonRequest("/api/uploads/upload_missing/confirm", {}),
+      params({ id: "upload_missing" }),
+    ),
   },
   {
     path: "/api/imports/confirm",

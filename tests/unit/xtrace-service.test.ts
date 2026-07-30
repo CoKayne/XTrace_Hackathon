@@ -246,6 +246,7 @@ test("resolves recalled memory to local Deal and evidence IDs", async () => {
     text: "Passed until regulation changes",
     score: 0.91,
     provenance: "demo_fixture",
+    sourceRevisionIds: [],
     sourceIds: ["source_1"],
     fixtureIds: [],
   });

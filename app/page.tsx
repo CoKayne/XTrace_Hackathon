@@ -15,9 +15,9 @@ import {
 import { decisionReasonLabel } from "../lib/demo/decision-label";
 import { SAMPLE_DEAL_PROFILES } from "./deal-profiles";
 import type { ChatMemoryStatus } from "../lib/chat/service";
-import type { UploadedDocumentRecord } from "../db/repositories/uploaded-documents";
+import type { UploadPreviewDto } from "../lib/uploads/confirmation";
 
-type UploadedDocument = UploadedDocumentRecord;
+type UploadedDocument = UploadPreviewDto;
 
 type View =
   | "overview"
@@ -442,14 +442,26 @@ export default function Home() {
     try {
       const body = new FormData();
       body.append("file", file);
-      const record = await api<UploadedDocument>("/api/documents/upload", {
+      const created = await api<{
+        uploadId: string;
+        status: UploadedDocument["status"];
+      }>("/api/uploads", {
         method: "POST",
         headers: {},
         body,
       });
+      const record: UploadedDocument = {
+        uploadId: created.uploadId,
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+        status: created.status,
+        failure: null,
+        preview: null,
+        candidateDeals: [],
+      };
       setUploads((current) => [
         record,
-        ...current.filter((item) => item.id !== record.id),
+        ...current.filter((item) => item.uploadId !== record.uploadId),
       ]);
       setNotice(
         `${record.filename} uploaded. We will show an extraction preview before any Deal or memory action.`,
@@ -859,7 +871,7 @@ function UploadedDealCards({ uploads }: { uploads: UploadedDocument[] }) {
     <section className="vsee-uploaded-deals" aria-label="Upload extraction previews">
       <span className="vsee-eyebrow">EXTRACTION PREVIEWS</span>
       {pending.map((upload) => (
-        <article className="vsee-uploaded-deal pending" key={upload.id}>
+        <article className="vsee-uploaded-deal pending" key={upload.uploadId}>
           <div>
             <strong>{upload.filename}</strong>
             <small>{uploadStatusCopy[upload.status]}…</small>
@@ -867,19 +879,19 @@ function UploadedDealCards({ uploads }: { uploads: UploadedDocument[] }) {
         </article>
       ))}
       {ready.map((upload) => (
-        <article className="vsee-uploaded-deal" key={upload.id}>
+        <article className="vsee-uploaded-deal" key={upload.uploadId}>
           <header>
             <div>
-              <strong>{upload.extractionPreview?.candidateCompanyName ?? upload.filename}</strong>
+              <strong>{upload.preview?.candidateCompanyName ?? upload.filename}</strong>
               <small>{upload.filename}</small>
             </div>
             <span className="vsee-status screening">awaiting confirmation</span>
           </header>
-          <p className="vsee-uploaded-headline">{upload.extractionPreview?.candidateHeadline}</p>
-          {(upload.extractionPreview?.facts.length ?? 0) > 0 && (
+          <p className="vsee-uploaded-headline">{upload.preview?.candidateHeadline}</p>
+          {(upload.preview?.facts.length ?? 0) > 0 && (
             <dl className="vsee-context-grid">
-              {upload.extractionPreview?.facts.map((fact, index) => (
-                <div key={`${upload.id}-${index}`}>
+              {upload.preview?.facts.map((fact, index) => (
+                <div key={`${upload.uploadId}-${index}`}>
                   <dt>{fact.text}</dt>
                   <dd>{fact.excerpt ? `“${fact.excerpt}”` : "Located in uploaded image"}</dd>
                 </div>
@@ -1040,11 +1052,11 @@ function UploadPanel({
       {uploads.length > 0 && (
         <div className="vsee-upload-list">
           {uploads.map((upload) => (
-            <article key={upload.id}>
+            <article key={upload.uploadId}>
               <div>
-                <strong>{upload.extractionPreview?.candidateCompanyName ?? upload.filename}</strong>
+                <strong>{upload.preview?.candidateCompanyName ?? upload.filename}</strong>
                 <small>
-                  {upload.filename} · {formatBytes(upload.byteSize)}
+                  {upload.filename} · {upload.contentType}
                 </small>
               </div>
               <span className={`vsee-upload-status ${upload.status}`}>
@@ -1052,9 +1064,9 @@ function UploadPanel({
               </span>
               <p>
                 {upload.status === "awaiting_confirmation"
-                  ? `${upload.extractionPreview?.facts.length ?? 0} extracted facts. Awaiting your confirmation before Deal or memory actions.`
+                  ? `${upload.preview?.facts.length ?? 0} extracted facts. Awaiting your confirmation before Deal or memory actions.`
                   : upload.status === "failed"
-                  ? upload.failureReason ?? "The document could not be extracted."
+                  ? upload.failure ?? "The document could not be extracted."
                   : "The background agent is reading this document."}
               </p>
             </article>

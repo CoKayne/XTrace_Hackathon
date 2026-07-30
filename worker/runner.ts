@@ -64,12 +64,14 @@ import {
   writeWorkerHealthMarker,
 } from "./health";
 import { processClaimedRun } from "./process-run";
+import { processConfirmedSource } from "./ingest-confirmed-source";
 
 const WORKER_ID = process.env.WORKER_ID?.trim()
   || `worker-${hostname()}-${process.pid}`;
 const WORKER_HEALTH_FILE = workerHealthFilePath();
 const POLL_INTERVAL_MS = 2_000;
 const HEARTBEAT_INTERVAL_MS = 15_000;
+let queueCursor = 0;
 
 interface WorkerIterationDependencies {
   runNext?: () => Promise<boolean>;
@@ -313,6 +315,7 @@ export async function runNextQueuedUpload(): Promise<boolean> {
       workspaceId: claimed.workspaceId,
       id: claimed.id,
       workerId: claimed.workerId,
+      leaseToken: claimed.leaseToken,
     }).catch((error) => {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[${WORKER_ID}] upload lease renewal failed: ${message}`);
@@ -343,6 +346,7 @@ export async function runNextQueuedUpload(): Promise<boolean> {
       workspaceId: claimed.workspaceId,
       id: claimed.id,
       workerId: claimed.workerId,
+      leaseToken: claimed.leaseToken,
       reason: message,
     });
     if (!transitioned) console.error(`[${WORKER_ID}] upload ${claimed.id} claim was lost before failure transition`);
@@ -353,11 +357,89 @@ export async function runNextQueuedUpload(): Promise<boolean> {
   return true;
 }
 
+export async function runNextConfirmedUpload(): Promise<boolean> {
+  const uploads = getUploadedDocumentsRepository();
+  const claimed = await uploads.claimNextConfirmed(WORKER_ID);
+  if (!claimed) return false;
+  const leaseHeartbeat = setInterval(() => {
+    void uploads.renewLease({
+      workspaceId: claimed.workspaceId,
+      id: claimed.id,
+      workerId: claimed.workerId,
+      leaseToken: claimed.leaseToken,
+    }).then((renewed) => {
+      if (!renewed) {
+        throw new Error(
+          `Worker no longer owns confirmed upload ${claimed.id}`,
+        );
+      }
+    }).catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(
+        `[${WORKER_ID}] confirmed upload lease renewal failed: ${message}`,
+      );
+    });
+  }, 60_000);
+  leaseHeartbeat.unref();
+  try {
+    if (!isXTraceConfigured()) {
+      throw new Error("XTrace is not configured for confirmed source ingest.");
+    }
+    const deals = getDealRegistry();
+    const xtrace = createXTraceService(getXTraceClient(), {
+      workspaceId: claimed.workspaceId,
+      lineageRepository: getXTraceLineageRepository(),
+    });
+    await processConfirmedSource(claimed, {
+      loadBundle: async (upload) => {
+        const bundle = (await deals.listAnalysisEligibleBundles(
+          upload.workspaceId,
+        )).find((candidate) => candidate.dealId === upload.dealId);
+        if (!bundle) {
+          throw new Error(
+            "Confirmed upload Deal is not analysis eligible.",
+          );
+        }
+        return bundle;
+      },
+      ingest: (bundle, lineage) =>
+        xtrace.ingestDealMemory(bundle, lineage),
+      poll: (jobId, options) => xtrace.pollIngestJob(jobId, options),
+      complete: (input) => uploads.completeConfirmed(input),
+      fail: (input) => uploads.failConfirmed(input),
+    });
+    console.log(
+      `[${WORKER_ID}] ingested confirmed upload ${claimed.id}`,
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const current = await uploads.get({
+      workspaceId: claimed.workspaceId,
+      id: claimed.id,
+    });
+    if (current?.status === "ingesting_memory") {
+      await uploads.failConfirmed({
+        workspaceId: claimed.workspaceId,
+        id: claimed.id,
+        workerId: claimed.workerId,
+        leaseToken: claimed.leaseToken,
+        reason: "Memory ingestion failed. Retry is available.",
+      });
+    }
+    console.error(
+      `[${WORKER_ID}] confirmed upload ${claimed.id} failed: ${message}`,
+    );
+  } finally {
+    clearInterval(leaseHeartbeat);
+  }
+  return true;
+}
+
 export async function runWorkerIteration(
   dependencies: WorkerIterationDependencies = {},
 ): Promise<void> {
   const runNext = dependencies.runNext
-    ?? (async () => (await runNextQueuedUpload()) || runNextQueuedScan());
+    ?? runNextFairQueue;
   const sleepImpl = dependencies.sleepImpl ?? sleep;
   try {
     const handled = await runNext();
@@ -370,6 +452,24 @@ export async function runWorkerIteration(
     onError(message);
     await sleepImpl(POLL_INTERVAL_MS);
   }
+}
+
+export async function runNextFairQueue(
+  handlers: Array<() => Promise<boolean>> = [
+    runNextQueuedUpload,
+    runNextConfirmedUpload,
+    runNextQueuedScan,
+  ],
+): Promise<boolean> {
+  for (let offset = 0; offset < handlers.length; offset += 1) {
+    const index = (queueCursor + offset) % handlers.length;
+    if (await handlers[index]()) {
+      queueCursor = (index + 1) % handlers.length;
+      return true;
+    }
+  }
+  queueCursor = (queueCursor + 1) % handlers.length;
+  return false;
 }
 
 async function main(): Promise<void> {

@@ -11,6 +11,10 @@ import { GET as document } from "../../app/api/documents/[id]/route";
 import { GET as documents } from "../../app/api/documents/route";
 import { POST as uploadDocument } from "../../app/api/documents/upload/route";
 import { GET as uploadedDocuments } from "../../app/api/documents/uploaded/route";
+import { POST as createUpload } from "../../app/api/uploads/route";
+import { GET as getUpload } from "../../app/api/uploads/[id]/route";
+import { POST as confirmUpload } from "../../app/api/uploads/[id]/confirm/route";
+import { GET as accessSourceRevision } from "../../app/api/source-revisions/[id]/access/route";
 import { POST as confirmImport } from "../../app/api/imports/confirm/route";
 import { POST as previewImport } from "../../app/api/imports/preview/route";
 import { GET as marketEvents } from "../../app/api/market/events/route";
@@ -140,6 +144,42 @@ const authenticatedProductHandlers: Array<{
   },
   {
     method: "POST",
+    path: "/api/uploads",
+    invoke: (dependencies) => createUpload(
+      emptyUploadRequest("/api/uploads"),
+      undefined,
+      dependencies,
+    ),
+  },
+  {
+    method: "GET",
+    path: "/api/uploads/[id]",
+    invoke: (dependencies) => getUpload(
+      request("/api/uploads/upload_missing"),
+      params({ id: "upload_missing" }),
+      dependencies,
+    ),
+  },
+  {
+    method: "POST",
+    path: "/api/uploads/[id]/confirm",
+    invoke: (dependencies) => confirmUpload(
+      jsonRequest("/api/uploads/upload_missing/confirm", {}),
+      params({ id: "upload_missing" }),
+      dependencies,
+    ),
+  },
+  {
+    method: "GET",
+    path: "/api/source-revisions/[id]/access",
+    invoke: (dependencies) => accessSourceRevision(
+      request("/api/source-revisions/revision_missing/access"),
+      params({ id: "revision_missing" }),
+      dependencies,
+    ),
+  },
+  {
+    method: "POST",
     path: "/api/imports/confirm",
     invoke: (dependencies) => confirmImport(
       jsonRequest("/api/imports/confirm", {}),
@@ -241,6 +281,8 @@ for (const route of authenticatedProductHandlers) {
 
 const sourceMutationPaths = new Set([
   "/api/documents/upload",
+  "/api/uploads",
+  "/api/uploads/[id]/confirm",
   "/api/imports/confirm",
   "/api/demo/reset",
 ]);
@@ -262,6 +304,22 @@ for (const route of [
     invoke: (dependencies: RouteDependencies) => uploadDocument(
       emptyUploadRequest(),
       undefined,
+      dependencies,
+    ),
+  },
+  {
+    path: "/api/uploads",
+    invoke: (dependencies: RouteDependencies) => createUpload(
+      emptyUploadRequest("/api/uploads"),
+      undefined,
+      dependencies,
+    ),
+  },
+  {
+    path: "/api/uploads/[id]/confirm",
+    invoke: (dependencies: RouteDependencies) => confirmUpload(
+      jsonRequest("/api/uploads/upload_missing/confirm", {}),
+      params({ id: "upload_missing" }),
       dependencies,
     ),
   },
@@ -408,8 +466,10 @@ test("forged workspace selectors cannot change product read scope or cross-tenan
     { ...dependencies, uploadedDocuments: uploads },
   );
   assert.deepEqual(
-    (await uploadList.json() as { data: Array<{ id: string }> }).data.map(
-      ({ id }) => id,
+    (await uploadList.json() as {
+      data: Array<{ uploadId: string }>;
+    }).data.map(
+      ({ uploadId }) => uploadId,
     ),
     ["upload_route_trusted"],
   );
@@ -732,6 +792,7 @@ test("uploaded route projects a non-null preview without extraction internals", 
     workspaceId,
     id: claimed.id,
     workerId: claimed.workerId,
+    leaseToken: claimed.leaseToken,
     preview,
   }), true);
 
@@ -745,9 +806,9 @@ test("uploaded route projects a non-null preview without extraction internals", 
   );
   assert.equal(response.status, 200);
   const payload = await response.json() as {
-    data: Array<{ extractionPreview: Record<string, unknown> | null }>;
+    data: Array<{ preview: Record<string, unknown> | null }>;
   };
-  assert.deepEqual(payload.data[0].extractionPreview, {
+  assert.deepEqual(payload.data[0].preview, {
     candidateCompanyName: "Preview Company",
     candidateHeadline: "Preview headline",
     facts: preview.facts,
@@ -852,10 +913,10 @@ function jsonRequest(path: string, body: unknown): Request {
   });
 }
 
-function emptyUploadRequest(): Request {
+function emptyUploadRequest(path = "/api/documents/upload"): Request {
   const form = new FormData();
   form.set("workspaceId", FORGED_SELECTOR_WORKSPACE);
-  return request("/api/documents/upload", {
+  return request(path, {
     method: "POST",
     body: form,
   });

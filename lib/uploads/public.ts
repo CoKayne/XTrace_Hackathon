@@ -3,11 +3,16 @@ import type {
   UploadedDocumentRecord,
 } from "../../db/repositories/uploaded-documents";
 
-export type PublicUploadedDocumentRecord = Omit<
-  UploadedDocumentRecord,
-  "objectKey" | "extractionPreview"
-> & {
+export type PublicUploadedDocumentRecord = {
+  id: string;
+  filename: string;
+  contentType: string;
+  byteSize: number;
+  status: UploadedDocumentRecord["status"];
+  failureReason: string | null;
   extractionPreview: PublicExtractionPreview | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export interface PublicExtractionPreview {
@@ -21,11 +26,9 @@ export function toPublicUploadedDocument(
 ): PublicUploadedDocumentRecord {
   return {
     id: record.id,
-    workspaceId: record.workspaceId,
     filename: record.filename,
     contentType: record.contentType,
     byteSize: record.byteSize,
-    checksum: record.checksum,
     status: record.status,
     failureReason: record.failureReason ? "Document processing failed." : null,
     extractionPreview: record.extractionPreview

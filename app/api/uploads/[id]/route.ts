@@ -1,7 +1,6 @@
-import { getUploadedDocumentsRepository } from "../../../../db/repositories/uploaded-documents";
 import { getDealRegistry } from "../../../../db/repositories/deal-registry";
-import { getSourceRegistry } from "../../../../db/repositories/source-registry";
-import { errorResponse, jsonOk } from "../../../../lib/api/response";
+import { getUploadedDocumentsRepository } from "../../../../db/repositories/uploaded-documents";
+import { errorResponse, jsonError, jsonOk } from "../../../../lib/api/response";
 import {
   resolveRouteRequestContext,
   type RouteDependencies,
@@ -11,30 +10,39 @@ import {
   createUploadConfirmationService,
   toUploadPreviewDto,
 } from "../../../../lib/uploads/confirmation";
+import { getSourceRegistry } from "../../../../db/repositories/source-registry";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  _routeContext?: unknown,
+  context: { params: Promise<{ id: string }> },
   dependencies: RouteDependencies = {},
 ) {
   try {
-    const context = await resolveRouteRequestContext(request, dependencies);
-    requirePermission(context, "readPrivateSources");
+    const requestContext = await resolveRouteRequestContext(
+      request,
+      dependencies,
+    );
+    requirePermission(requestContext, "readPrivateSources");
+    const { id } = await context.params;
     const uploads = dependencies.uploadedDocuments
       ?? getUploadedDocumentsRepository();
-    const records = await uploads.list(context.workspaceId);
+    const upload = await uploads.get({
+      workspaceId: requestContext.workspaceId,
+      id,
+    });
+    if (!upload) {
+      return jsonError("NOT_FOUND", "Upload was not found", 404);
+    }
     const service = createUploadConfirmationService({
       uploads,
       sources: dependencies.sourceRegistry ?? getSourceRegistry(),
       deals: dependencies.dealRegistry ?? getDealRegistry(),
     });
-    const candidateDeals = await service.listCandidateDeals(
-      context.workspaceId,
-    );
-    return jsonOk(records.map((record) =>
-      toUploadPreviewDto(record, candidateDeals)
+    return jsonOk(toUploadPreviewDto(
+      upload,
+      await service.listCandidateDeals(requestContext.workspaceId),
     ));
   } catch (error) {
     return errorResponse(error);

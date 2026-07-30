@@ -28,3 +28,33 @@ test("a transient worker error backs off instead of terminating the loop", async
   assert.equal(backoffMs, 2_000);
   assert.match(loggedMessage, /fetch failed/);
 });
+
+test("the worker rotates successful queue classes so confirmed ingest cannot starve", async () => {
+  const calls: string[] = [];
+  const fairQueue = (
+    workerRunner as typeof workerRunner & {
+      runNextFairQueue?: (
+        handlers: Array<() => Promise<boolean>>,
+      ) => Promise<boolean>;
+    }
+  ).runNextFairQueue;
+  assert.equal(typeof fairQueue, "function");
+  const handlers = [
+    async () => {
+      calls.push("queued");
+      return true;
+    },
+    async () => {
+      calls.push("confirmed");
+      return true;
+    },
+    async () => {
+      calls.push("scan");
+      return true;
+    },
+  ];
+
+  assert.equal(await fairQueue!(handlers), true);
+  assert.equal(await fairQueue!(handlers), true);
+  assert.deepEqual(calls, ["queued", "confirmed"]);
+});

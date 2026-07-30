@@ -8,6 +8,7 @@ export interface XTraceIngestLineage {
   jobId: string;
   workspaceId: string;
   dealId: string;
+  sourceRevisionIds: string[];
   sourceIds: string[];
   fixtureIds: string[];
   bundleFingerprint: string;
@@ -21,13 +22,17 @@ export interface XTraceMemoryLineage {
   memoryId: string;
   workspaceId: string;
   dealId: string;
+  sourceRevisionIds: string[];
   sourceIds: string[];
   fixtureIds: string[];
   provenance: Provenance;
 }
 
 export interface XTraceLineageRepository {
-  recordSubmission(input: Omit<XTraceIngestLineage, "memoryIds">): Promise<void>;
+  recordSubmission(input: Omit<
+    XTraceIngestLineage,
+    "memoryIds" | "sourceRevisionIds"
+  > & { sourceRevisionIds?: string[] }): Promise<void>;
   recordCompletion(input: {
     workspaceId: string;
     jobId: string;
@@ -38,6 +43,7 @@ export interface XTraceLineageRepository {
   findReusableIngest(input: {
     workspaceId: string;
     dealId: string;
+    sourceRevisionIds?: string[];
     sourceIds: string[];
     fixtureIds: string[];
     bundleFingerprint: string;
@@ -59,6 +65,7 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
       const existing = jobs.get(key);
       jobs.set(key, {
         ...structuredClone(input),
+        sourceRevisionIds: structuredClone(input.sourceRevisionIds ?? []),
         memoryIds: existing?.memoryIds ?? [],
       });
     },
@@ -77,6 +84,7 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
           memoryId,
           workspaceId: next.workspaceId,
           dealId: next.dealId,
+          sourceRevisionIds: structuredClone(next.sourceRevisionIds),
           sourceIds: structuredClone(next.sourceIds),
           fixtureIds: structuredClone(next.fixtureIds),
           provenance: next.provenance,
@@ -96,6 +104,10 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
         candidate.workspaceId === input.workspaceId
         && candidate.dealId === input.dealId
         && candidate.status !== "failed"
+        && sameStringSet(
+          candidate.sourceRevisionIds,
+          input.sourceRevisionIds ?? [],
+        )
         && sameStringSet(candidate.sourceIds, input.sourceIds)
         && sameStringSet(candidate.fixtureIds, input.fixtureIds)
         && candidate.bundleFingerprint === input.bundleFingerprint
@@ -113,11 +125,19 @@ export function createMemoryXTraceLineageRepository(): XTraceLineageRepository {
       const job = [...jobs.values()].find((candidate) =>
         candidate.workspaceId === input.workspaceId && candidate.dealId === dealId
       );
-      if (!job || (!job.sourceIds.length && !job.fixtureIds.length)) return null;
+      if (
+        !job
+        || (
+          !job.sourceRevisionIds.length
+          && !job.sourceIds.length
+          && !job.fixtureIds.length
+        )
+      ) return null;
       return {
         memoryId: input.memoryId,
         workspaceId: input.workspaceId,
         dealId,
+        sourceRevisionIds: structuredClone(job.sourceRevisionIds),
         sourceIds: structuredClone(job.sourceIds),
         fixtureIds: structuredClone(job.fixtureIds),
         provenance: job.provenance,
@@ -163,6 +183,9 @@ export function createSupabaseXTraceLineageRepository(options: {
       memoryId: String(row.memory_id),
       workspaceId: String(row.workspace_id),
       dealId: String(row.deal_id),
+      sourceRevisionIds: Array.isArray(row.source_revision_ids)
+        ? row.source_revision_ids.map(String)
+        : [],
       sourceIds: Array.isArray(row.source_ids) ? row.source_ids.map(String) : [],
       fixtureIds: Array.isArray(row.fixture_ids) ? row.fixture_ids.map(String) : [],
       provenance: row.provenance as Provenance,
@@ -173,6 +196,9 @@ export function createSupabaseXTraceLineageRepository(options: {
       jobId: String(row.job_id),
       workspaceId: String(row.workspace_id),
       dealId: String(row.deal_id),
+      sourceRevisionIds: Array.isArray(row.source_revision_ids)
+        ? row.source_revision_ids.map(String)
+        : [],
       sourceIds: Array.isArray(row.source_ids) ? row.source_ids.map(String) : [],
       fixtureIds: Array.isArray(row.fixture_ids) ? row.fixture_ids.map(String) : [],
       bundleFingerprint: String(row.bundle_fingerprint),
@@ -191,6 +217,7 @@ export function createSupabaseXTraceLineageRepository(options: {
           job_id: input.jobId,
           workspace_id: input.workspaceId,
           deal_id: input.dealId,
+          source_revision_ids: input.sourceRevisionIds ?? [],
           source_ids: input.sourceIds,
           fixture_ids: input.fixtureIds,
           bundle_fingerprint: input.bundleFingerprint,
@@ -229,6 +256,7 @@ export function createSupabaseXTraceLineageRepository(options: {
           memory_id: memoryId,
           workspace_id: job.workspace_id,
           deal_id: job.deal_id,
+          source_revision_ids: job.source_revision_ids,
           source_ids: job.source_ids,
           fixture_ids: job.fixture_ids,
           provenance: job.provenance,
@@ -247,6 +275,12 @@ export function createSupabaseXTraceLineageRepository(options: {
       ) as Record<string, unknown>[];
       const row = rows.find((candidate) =>
         sameStringSet(
+          Array.isArray(candidate.source_revision_ids)
+            ? candidate.source_revision_ids.map(String)
+            : [],
+          input.sourceRevisionIds ?? [],
+        )
+        && sameStringSet(
           Array.isArray(candidate.source_ids) ? candidate.source_ids.map(String) : [],
           input.sourceIds,
         )
@@ -274,12 +308,18 @@ export function createSupabaseXTraceLineageRepository(options: {
       const job = jobs[0];
       if (!job) return null;
       const sourceIds = Array.isArray(job.source_ids) ? job.source_ids.map(String) : [];
+      const sourceRevisionIds = Array.isArray(job.source_revision_ids)
+        ? job.source_revision_ids.map(String)
+        : [];
       const fixtureIds = Array.isArray(job.fixture_ids) ? job.fixture_ids.map(String) : [];
-      if (!sourceIds.length && !fixtureIds.length) return null;
+      if (!sourceRevisionIds.length && !sourceIds.length && !fixtureIds.length) {
+        return null;
+      }
       return {
         memoryId: input.memoryId,
         workspaceId: input.workspaceId,
         dealId,
+        sourceRevisionIds,
         sourceIds,
         fixtureIds,
         provenance: job.provenance as Provenance,

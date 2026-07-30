@@ -190,8 +190,9 @@ test("claiming an upload is exclusive until its lease expires and saves a previe
   assert.equal(await repository.claimNext("worker-b"), null);
 
   clock += 6 * 60_000;
+  const reclaimed = await repository.claimNext("worker-b");
   assert.equal(
-    (await repository.claimNext("worker-b"))?.id,
+    reclaimed?.id,
     "upload_1",
     "an expired lease must be reclaimable after a worker crash",
   );
@@ -201,6 +202,7 @@ test("claiming an upload is exclusive until its lease expires and saves a previe
     workspaceId: "workspace_demo",
     id: "upload_1",
     workerId: "worker-b",
+    leaseToken: reclaimed!.leaseToken,
     preview,
   }), true);
   const [record] = await repository.list("workspace_demo");
@@ -245,18 +247,21 @@ test("same upload bytes coexist across workspaces and mutations require the curr
     workspaceId: "workspace_a",
     id: firstClaim!.id,
     workerId: "worker-a",
+    leaseToken: firstClaim!.leaseToken,
     preview: previewFixture(),
   }), false);
   assert.equal(await repository.fail({
     workspaceId: "workspace_a",
     id: firstClaim!.id,
     workerId: "worker-a",
+    leaseToken: firstClaim!.leaseToken,
     reason: "late failure",
   }), false);
   assert.equal(await repository.savePreview({
     workspaceId: "workspace_a",
     id: firstClaim!.id,
     workerId: "worker-b",
+    leaseToken: secondClaim!.leaseToken,
     preview: previewFixture(),
   }), true);
   await repository.deleteAll("workspace_a");
@@ -264,6 +269,7 @@ test("same upload bytes coexist across workspaces and mutations require the curr
     workspaceId: "workspace_a",
     id: firstClaim!.id,
     workerId: "worker-b",
+    leaseToken: secondClaim!.leaseToken,
     preview: previewFixture(),
   }), false);
 });
@@ -282,6 +288,8 @@ test("Supabase claims an expired upload immediately after expiry but not before"
     failure_reason: null,
     extraction_preview: null,
     lease_expires_at: expiredAt,
+    lease_token: "00000000-0000-4000-8000-000000000001",
+    worker_id: "worker-a",
     created_at: expiredAt,
     updated_at: expiredAt,
   };
@@ -292,12 +300,12 @@ test("Supabase claims an expired upload immediately after expiry but not before"
     now: () => new Date("2026-07-25T12:00:01.000Z"),
     fetchImpl: async (url, init) => {
       seen.push(String(url));
-      if (init?.method === "PATCH") return Response.json([record]);
+      assert.equal(init?.method, "POST");
       return Response.json([record]);
     },
   });
   assert.equal((await repository.claimNext("worker-a"))?.id, "upload_1");
-  assert.match(seen[0]!, /lease_expires_at\.lt\.2026-07-25T12%3A00%3A01\.000Z/);
+  assert.match(seen[0]!, /rpc\/claim_next_uploaded_document/);
 
   const before = createSupabaseUploadedDocumentsRepository({
     url: "https://db.test",

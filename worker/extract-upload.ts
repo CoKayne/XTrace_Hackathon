@@ -99,13 +99,19 @@ export async function processClaimedUpload(
   upload: ClaimedUploadedDocument,
   dependencies: {
     extract: (upload: ClaimedUploadedDocument) => Promise<ExtractionPreview>;
-    savePreview: (input: { workspaceId: string; id: string; workerId: string; preview: ExtractionPreview }) => Promise<boolean>;
+    savePreview: (input: { workspaceId: string; id: string; workerId: string; leaseToken: string; preview: ExtractionPreview }) => Promise<boolean>;
     createDeal?: () => Promise<void>;
     ingestXTrace?: () => Promise<void>;
   },
 ): Promise<UploadedDocumentRecord & { status: "awaiting_confirmation" }> {
   const preview = await dependencies.extract(upload);
-  if (!await dependencies.savePreview({ workspaceId: upload.workspaceId, id: upload.id, workerId: upload.workerId, preview })) {
+  if (!await dependencies.savePreview({
+    workspaceId: upload.workspaceId,
+    id: upload.id,
+    workerId: upload.workerId,
+    leaseToken: upload.leaseToken,
+    preview,
+  })) {
     throw new Error("Upload claim was lost before its preview could be saved.");
   }
   return { ...upload, status: "awaiting_confirmation", extractionPreview: preview };

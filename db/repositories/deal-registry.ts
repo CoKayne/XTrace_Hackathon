@@ -12,7 +12,10 @@ import type {
   SourceRegistry,
   SourceRevision,
 } from "./source-registry";
-import { createMemorySourceRegistry } from "./source-registry";
+import {
+  createMemorySourceRegistry,
+  getSourceRegistry,
+} from "./source-registry";
 
 export interface RegisteredDeal {
   id: string;
@@ -75,6 +78,7 @@ export interface DealRegistry {
     workspaceId: string;
     dealId: string;
   }): Promise<RegisteredDeal | null>;
+  listForWorkspace(workspaceId: string): Promise<RegisteredDeal[]>;
   confirmSourceAssignment(
     input: ConfirmSourceAssignmentInput,
   ): Promise<{
@@ -317,6 +321,17 @@ export function createMemoryDealRegistry(options: {
     },
 
     findForWorkspace,
+
+    async listForWorkspace(workspaceId) {
+      workspaceId = requiredWorkspaceId(workspaceId);
+      return [...deals.values()]
+        .filter((deal) => deal.workspaceId === workspaceId)
+        .sort((left, right) =>
+          compareUtf8(left.companyName, right.companyName)
+          || compareUtf8(left.id, right.id)
+        )
+        .map(cloneDeal);
+    },
 
     async confirmSourceAssignment(rawInput) {
       const input = validateConfirmation(rawInput);
@@ -863,6 +878,23 @@ export function createSupabaseDealRegistry(options: {
 
     findForWorkspace,
 
+    async listForWorkspace(workspaceId) {
+      workspaceId = requiredWorkspaceId(workspaceId);
+      const query = new URLSearchParams({
+        workspace_id: `eq.${workspaceId}`,
+        order: "company_name.asc,id.asc",
+      });
+      const rows = await request(`/deals?${query}`) as Record<string, unknown>[];
+      const revisions = await activeRevisionIds(
+        workspaceId,
+        rows.map((row) => String(row.id)),
+      );
+      return rows.map((row) => dealFromRow(
+        row,
+        (revisions.get(String(row.id)) ?? []).map((value) => value.revisionId),
+      ));
+    },
+
     async confirmSourceAssignment(rawInput) {
       const input = validateConfirmation(rawInput);
       const response = await request("/rpc/confirm_source_assignment", {
@@ -900,7 +932,7 @@ export function getDealRegistry(): DealRegistry {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   singleton = url && serviceRoleKey
     ? createSupabaseDealRegistry({ url, serviceRoleKey })
-    : createMemoryDealRegistry();
+    : createMemoryDealRegistry({ sourceRegistry: getSourceRegistry() });
   return singleton;
 }
 import { createHash } from "node:crypto";

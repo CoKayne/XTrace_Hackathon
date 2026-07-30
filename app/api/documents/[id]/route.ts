@@ -1,4 +1,5 @@
 import { getUploadedDocumentsRepository } from "../../../../db/repositories/uploaded-documents";
+import { getSourceRegistry } from "../../../../db/repositories/source-registry";
 import { errorResponse, jsonError } from "../../../../lib/api/response";
 import {
   resolveRouteRequestContext,
@@ -59,15 +60,32 @@ export async function GET(
           workspaceId: requestContext.workspaceId,
           id,
         });
-    const objectVersion = preloaded?.checksum ?? uploaded?.checksum;
+    const revision = preloaded || uploaded
+      ? null
+      : await (
+          dependencies.sourceRegistry ?? getSourceRegistry()
+        ).getRevision({
+          workspaceId: requestContext.workspaceId,
+          revisionId: id,
+        });
+    const objectVersion = preloaded?.checksum
+      ?? uploaded?.checksum
+      ?? revision?.objectVersion;
     if (!objectVersion || capability.objectVersion !== objectVersion) {
       return jsonError("NOT_FOUND", `Document ${id} was not found`, 404);
     }
     return readDocumentObject({
       id,
-      filename: preloaded?.filename ?? uploaded!.filename,
-      objectKey: preloaded ? privateObjectKey(preloaded) : uploaded!.objectKey,
-      contentType: preloaded ? "application/pdf" : uploaded!.contentType,
+      filename: preloaded?.filename
+        ?? uploaded?.filename
+        ?? revision!.objectKey.split("/").at(-1)
+        ?? "source",
+      objectKey: preloaded
+        ? privateObjectKey(preloaded)
+        : uploaded?.objectKey ?? revision!.objectKey,
+      contentType: preloaded
+        ? "application/pdf"
+        : uploaded?.contentType ?? revision!.contentType,
     }, dependencies.privateObjectStorage);
   } catch (error) {
     if (

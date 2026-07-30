@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import {
   IntegrationTransportError,
   isRetryableTransportStatus,
@@ -44,12 +46,17 @@ export interface UploadedDocumentRecord {
   status: UploadedDocumentStatus;
   failureReason: string | null;
   extractionPreview: ExtractionPreview | null;
+  dealId?: string | null;
+  sourceId?: string | null;
+  sourceRevisionId?: string | null;
+  confirmationFingerprint?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ClaimedUploadedDocument extends UploadedDocumentRecord {
   workerId: string;
+  leaseToken: string;
 }
 
 export interface CreateUploadedDocumentInput {
@@ -68,9 +75,50 @@ export interface UploadedDocumentsRepository {
   get(input: { workspaceId: string; id: string }): Promise<UploadedDocumentRecord | null>;
   findByChecksum(workspaceId: string, checksum: string): Promise<UploadedDocumentRecord | null>;
   claimNext(workerId: string): Promise<ClaimedUploadedDocument | null>;
-  renewLease(input: { workspaceId: string; id: string; workerId: string }): Promise<boolean>;
-  savePreview(input: { workspaceId: string; id: string; workerId: string; preview: ExtractionPreview }): Promise<boolean>;
-  fail(input: { workspaceId: string; id: string; workerId: string; reason: string }): Promise<boolean>;
+  claimNextConfirmed(workerId: string): Promise<ClaimedUploadedDocument | null>;
+  renewLease(input: { workspaceId: string; id: string; workerId: string; leaseToken: string }): Promise<boolean>;
+  savePreview(input: { workspaceId: string; id: string; workerId: string; leaseToken: string; preview: ExtractionPreview }): Promise<boolean>;
+  fail(input: { workspaceId: string; id: string; workerId: string; leaseToken: string; reason: string }): Promise<boolean>;
+  markConfirmed(input: {
+    workspaceId: string;
+    id: string;
+    confirmationFingerprint: string;
+    dealId: string;
+    sourceId: string;
+    sourceRevisionId: string;
+  }): Promise<UploadedDocumentRecord>;
+  promoteAtomically?(input: {
+    workspaceId: string;
+    uploadId: string;
+    confirmationFingerprint: string;
+    dealId: string;
+    companyId: string;
+    companyName: string;
+    dealStatus: string;
+    sourceId: string;
+    sourceRevisionId: string;
+    assignedByUserId: string;
+    confirmedAt: string;
+    evidence: Array<{
+      id: string;
+      fact: string;
+      excerpt: string;
+      page: number;
+    }>;
+  }): Promise<UploadedDocumentRecord>;
+  completeConfirmed(input: {
+    workspaceId: string;
+    id: string;
+    workerId: string;
+    leaseToken: string;
+  }): Promise<boolean>;
+  failConfirmed(input: {
+    workspaceId: string;
+    id: string;
+    workerId: string;
+    leaseToken: string;
+    reason: string;
+  }): Promise<boolean>;
   deleteAll(workspaceId: string): Promise<void>;
 }
 
@@ -79,7 +127,11 @@ const LEASE_MS = 5 * 60_000;
 export function createMemoryUploadedDocumentsRepository(options: {
   now?: () => Date;
 } = {}): UploadedDocumentsRepository {
-  const rows = new Map<string, UploadedDocumentRecord & { leaseExpiresAt: number | null; workerId: string | null }>();
+  const rows = new Map<string, UploadedDocumentRecord & {
+    leaseExpiresAt: number | null;
+    workerId: string | null;
+    leaseToken: string | null;
+  }>();
   const now = options.now ?? (() => new Date());
   return {
     async create(input) {
@@ -89,10 +141,15 @@ export function createMemoryUploadedDocumentsRepository(options: {
         status: "queued" as const,
         failureReason: null,
         extractionPreview: null,
+        dealId: null,
+        sourceId: null,
+        sourceRevisionId: null,
+        confirmationFingerprint: null,
         createdAt: timestamp,
         updatedAt: timestamp,
         leaseExpiresAt: null,
         workerId: null,
+        leaseToken: null,
       };
       rows.set(uploadIdentity(input.workspaceId, input.id), record);
       return strip(record);
@@ -114,47 +171,125 @@ export function createMemoryUploadedDocumentsRepository(options: {
       return row ? strip(row) : null;
     },
     async claimNext(workerId) {
-      const current = now().getTime();
-      const row = [...rows.values()]
-        .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
-        .find((candidate) =>
-          candidate.status === "queued"
-          || (candidate.status === "extracting"
-            && (candidate.leaseExpiresAt ?? 0) <= current)
-        );
-      if (!row) return null;
-      row.status = "extracting";
-      row.leaseExpiresAt = current + LEASE_MS;
-      row.updatedAt = now().toISOString();
-      row.workerId = workerId;
-      return { ...strip(row), workerId };
+      return claimMemoryRow(rows, {
+        workerId,
+        targetStatus: "queued",
+        claimedStatus: "extracting",
+        now,
+      });
+    },
+    async claimNextConfirmed(workerId) {
+      return claimMemoryRow(rows, {
+        workerId,
+        targetStatus: "confirmed",
+        claimedStatus: "ingesting_memory",
+        now,
+      });
     },
     async renewLease(input) {
       const row = rows.get(uploadIdentity(input.workspaceId, input.id));
-      if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
+      if (
+        !row
+        || !["extracting", "ingesting_memory"].includes(row.status)
+        || row.workerId !== input.workerId
+        || row.leaseToken !== input.leaseToken
+      ) return false;
       row.leaseExpiresAt = now().getTime() + LEASE_MS;
       row.updatedAt = now().toISOString();
       return true;
     },
     async savePreview(input) {
       const row = rows.get(uploadIdentity(input.workspaceId, input.id));
-      if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
+      if (
+        !row
+        || row.status !== "extracting"
+        || row.workerId !== input.workerId
+        || row.leaseToken !== input.leaseToken
+      ) return false;
       Object.assign(row, {
         status: "awaiting_confirmation" as const,
         failureReason: null,
         extractionPreview: input.preview,
         leaseExpiresAt: null,
+        workerId: null,
+        leaseToken: null,
         updatedAt: now().toISOString(),
       });
       return true;
     },
     async fail(input) {
       const row = rows.get(uploadIdentity(input.workspaceId, input.id));
-      if (!row || row.status !== "extracting" || row.workerId !== input.workerId) return false;
+      if (
+        !row
+        || row.status !== "extracting"
+        || row.workerId !== input.workerId
+        || row.leaseToken !== input.leaseToken
+      ) return false;
       row.status = "failed";
       row.failureReason = input.reason;
       row.leaseExpiresAt = null;
+      row.workerId = null;
+      row.leaseToken = null;
       row.updatedAt = now().toISOString();
+      return true;
+    },
+    async markConfirmed(input) {
+      const row = rows.get(uploadIdentity(input.workspaceId, input.id));
+      if (!row) throw new Error("Upload was not found.");
+      if (row.confirmationFingerprint) {
+        if (row.confirmationFingerprint !== input.confirmationFingerprint) {
+          throw new Error("The upload was already confirmed with a different confirmation.");
+        }
+        return strip(row);
+      }
+      if (row.status !== "awaiting_confirmation" || !row.extractionPreview) {
+        throw new Error("The upload is not awaiting confirmation.");
+      }
+      Object.assign(row, {
+        status: "confirmed" as const,
+        failureReason: null,
+        dealId: input.dealId,
+        sourceId: input.sourceId,
+        sourceRevisionId: input.sourceRevisionId,
+        confirmationFingerprint: input.confirmationFingerprint,
+        updatedAt: now().toISOString(),
+      });
+      return strip(row);
+    },
+    async completeConfirmed(input) {
+      const row = rows.get(uploadIdentity(input.workspaceId, input.id));
+      if (
+        !row
+        || row.status !== "ingesting_memory"
+        || row.workerId !== input.workerId
+        || row.leaseToken !== input.leaseToken
+      ) return false;
+      Object.assign(row, {
+        status: "ready" as const,
+        failureReason: null,
+        leaseExpiresAt: null,
+        workerId: null,
+        leaseToken: null,
+        updatedAt: now().toISOString(),
+      });
+      return true;
+    },
+    async failConfirmed(input) {
+      const row = rows.get(uploadIdentity(input.workspaceId, input.id));
+      if (
+        !row
+        || row.status !== "ingesting_memory"
+        || row.workerId !== input.workerId
+        || row.leaseToken !== input.leaseToken
+      ) return false;
+      Object.assign(row, {
+        status: "confirmed" as const,
+        failureReason: input.reason.slice(0, 400),
+        leaseExpiresAt: null,
+        workerId: null,
+        leaseToken: null,
+        updatedAt: now().toISOString(),
+      });
       return true;
     },
     async deleteAll(workspaceId) {
@@ -166,12 +301,50 @@ export function createMemoryUploadedDocumentsRepository(options: {
 }
 
 function strip(
-  row: UploadedDocumentRecord & { leaseExpiresAt: number | null; workerId: string | null },
+  row: UploadedDocumentRecord & {
+    leaseExpiresAt: number | null;
+    workerId: string | null;
+    leaseToken: string | null;
+  },
 ): UploadedDocumentRecord {
   const record = { ...row } as Partial<typeof row>;
   delete record.leaseExpiresAt;
   delete record.workerId;
+  delete record.leaseToken;
   return structuredClone(record as UploadedDocumentRecord);
+}
+
+function claimMemoryRow(
+  rows: Map<string, UploadedDocumentRecord & {
+    leaseExpiresAt: number | null;
+    workerId: string | null;
+    leaseToken: string | null;
+  }>,
+  input: {
+    workerId: string;
+    targetStatus: "queued" | "confirmed";
+    claimedStatus: "extracting" | "ingesting_memory";
+    now: () => Date;
+  },
+): ClaimedUploadedDocument | null {
+  const current = input.now().getTime();
+  const row = [...rows.values()]
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+    .find((candidate) =>
+      candidate.status === input.targetStatus
+      || (
+        candidate.status === input.claimedStatus
+        && (candidate.leaseExpiresAt ?? 0) <= current
+      )
+    );
+  if (!row) return null;
+  const leaseToken = randomUUID();
+  row.status = input.claimedStatus;
+  row.leaseExpiresAt = current + LEASE_MS;
+  row.updatedAt = input.now().toISOString();
+  row.workerId = input.workerId;
+  row.leaseToken = leaseToken;
+  return { ...strip(row), workerId: input.workerId, leaseToken };
 }
 
 function uploadIdentity(workspaceId: string, externalId: string): string {
@@ -226,6 +399,14 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       extractionPreview: row.extraction_preview
         ? row.extraction_preview as ExtractionPreview
         : null,
+      dealId: row.deal_id ? String(row.deal_id) : null,
+      sourceId: row.source_id ? String(row.source_id) : null,
+      sourceRevisionId: row.source_revision_id
+        ? String(row.source_revision_id)
+        : null,
+      confirmationFingerprint: row.confirmation_fingerprint
+        ? String(row.confirmation_fingerprint)
+        : null,
       createdAt: String(row.created_at),
       updatedAt: String(row.updated_at),
     };
@@ -269,53 +450,32 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       return rows[0] ? toRecord(rows[0]) : null;
     },
     async claimNext(workerId) {
-      const stale = now().toISOString();
-      const candidates = await request(
-        "/uploaded_documents?or=(status.eq.queued,"
-        + `and(status.eq.extracting,lease_expires_at.lt.${encodeURIComponent(stale)}))`
-        + "&order=created_at.asc&limit=1",
-      ) as Record<string, unknown>[];
-      const candidate = candidates[0];
-      if (!candidate) return null;
-      const leaseExpiresAt = new Date(now().getTime() + LEASE_MS).toISOString();
-      const observedLease = candidate.lease_expires_at
-        ? `&lease_expires_at=eq.${encodeURIComponent(String(candidate.lease_expires_at))}`
-        : "&lease_expires_at=is.null";
-      const claimed = await request(
-        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(String(candidate.workspace_id))}`
-        + `&id=eq.${encodeURIComponent(String(candidate.id))}`
-        + `&status=eq.${encodeURIComponent(String(candidate.status))}`
-        + observedLease,
-        {
-          method: "PATCH",
-          headers: { Prefer: "return=representation" },
-          body: JSON.stringify({
-            status: "extracting",
-            worker_id: workerId,
-            lease_expires_at: leaseExpiresAt,
-            updated_at: now().toISOString(),
-          }),
-        },
-      ) as Record<string, unknown>[];
-      return claimed[0] ? { ...toRecord(claimed[0]), workerId } : null;
+      return claimViaRpc("queued", workerId);
+    },
+    async claimNextConfirmed(workerId) {
+      return claimViaRpc("confirmed", workerId);
     },
     async renewLease(input) {
-      const rows = await request(
-        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
-        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.extracting`
-        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`,
-        {
-          method: "PATCH",
-          headers: { Prefer: "return=representation" },
-          body: JSON.stringify({ lease_expires_at: new Date(now().getTime() + LEASE_MS).toISOString() }),
-        },
-      ) as Record<string, unknown>[];
-      return rows.length === 1;
+      const rows = await request("/rpc/renew_uploaded_document_lease", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({
+          p_workspace_id: input.workspaceId,
+          p_upload_id: input.id,
+          p_worker_id: input.workerId,
+          p_lease_token: input.leaseToken,
+          p_lease_seconds: Math.floor(LEASE_MS / 1_000),
+        }),
+      }) as boolean | Array<{ renew_uploaded_document_lease: boolean }>;
+      return typeof rows === "boolean"
+        ? rows
+        : Boolean(rows[0]?.renew_uploaded_document_lease);
     },
     async savePreview(input) {
       const rows = await request(`/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
         + `&id=eq.${encodeURIComponent(input.id)}&status=eq.extracting`
-        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`, {
+        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`
+        + `&lease_token=eq.${encodeURIComponent(input.leaseToken)}`, {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
         body: JSON.stringify({
@@ -323,6 +483,8 @@ export function createSupabaseUploadedDocumentsRepository(options: {
           failure_reason: null,
           extraction_preview: input.preview,
           lease_expires_at: null,
+          worker_id: null,
+          lease_token: null,
           updated_at: now().toISOString(),
         }),
       }) as Record<string, unknown>[];
@@ -331,16 +493,108 @@ export function createSupabaseUploadedDocumentsRepository(options: {
     async fail(input) {
       const rows = await request(`/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
         + `&id=eq.${encodeURIComponent(input.id)}&status=eq.extracting`
-        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`, {
+        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`
+        + `&lease_token=eq.${encodeURIComponent(input.leaseToken)}`, {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
         body: JSON.stringify({
           status: "failed",
           failure_reason: input.reason.slice(0, 400),
           lease_expires_at: null,
+          worker_id: null,
+          lease_token: null,
           updated_at: now().toISOString(),
         }),
       }) as Record<string, unknown>[];
+      return rows.length === 1;
+    },
+    async markConfirmed(input) {
+      const rows = await request(
+        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&id=eq.${encodeURIComponent(input.id)}`
+        + "&status=eq.awaiting_confirmation",
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            status: "confirmed",
+            failure_reason: null,
+            deal_id: input.dealId,
+            source_id: input.sourceId,
+            source_revision_id: input.sourceRevisionId,
+            confirmation_fingerprint: input.confirmationFingerprint,
+            updated_at: now().toISOString(),
+          }),
+        },
+      ) as Record<string, unknown>[];
+      if (rows[0]) return toRecord(rows[0]);
+      const existing = await this.get({
+        workspaceId: input.workspaceId,
+        id: input.id,
+      });
+      if (
+        existing
+        && existing.confirmationFingerprint === input.confirmationFingerprint
+      ) return existing;
+      throw new Error(
+        existing?.confirmationFingerprint
+          ? "The upload was already confirmed with a different confirmation."
+          : "The upload is not awaiting confirmation.",
+      );
+    },
+    async promoteAtomically(input) {
+      const value = await request("/rpc/confirm_uploaded_document", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({
+          p_confirmation: input,
+        }),
+      }) as Record<string, unknown>;
+      if (!value?.upload) {
+        throw new Error("Upload confirmation RPC returned no upload.");
+      }
+      return toRecord(value.upload as Record<string, unknown>);
+    },
+    async completeConfirmed(input) {
+      const rows = await request(
+        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.ingesting_memory`
+        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`
+        + `&lease_token=eq.${encodeURIComponent(input.leaseToken)}`,
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            status: "ready",
+            failure_reason: null,
+            worker_id: null,
+            lease_token: null,
+            lease_expires_at: null,
+            updated_at: now().toISOString(),
+          }),
+        },
+      ) as Record<string, unknown>[];
+      return rows.length === 1;
+    },
+    async failConfirmed(input) {
+      const rows = await request(
+        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
+        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.ingesting_memory`
+        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`
+        + `&lease_token=eq.${encodeURIComponent(input.leaseToken)}`,
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            status: "confirmed",
+            failure_reason: input.reason.slice(0, 400),
+            worker_id: null,
+            lease_token: null,
+            lease_expires_at: null,
+            updated_at: now().toISOString(),
+          }),
+        },
+      ) as Record<string, unknown>[];
       return rows.length === 1;
     },
     async deleteAll(workspaceId) {
@@ -350,6 +604,32 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       );
     },
   };
+
+  async function claimViaRpc(
+    targetStatus: "queued" | "confirmed",
+    workerId: string,
+  ): Promise<ClaimedUploadedDocument | null> {
+    const value = await request("/rpc/claim_next_uploaded_document", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        p_target_status: targetStatus,
+        p_worker_id: workerId,
+        p_lease_seconds: Math.floor(LEASE_MS / 1_000),
+      }),
+    }) as Record<string, unknown> | Record<string, unknown>[] | null;
+    const row = Array.isArray(value) ? value[0] : value;
+    if (!row) return null;
+    const leaseToken = String(row.lease_token ?? "");
+    if (!leaseToken) {
+      throw new Error("Upload claim RPC returned no lease token.");
+    }
+    return {
+      ...toRecord(row),
+      workerId,
+      leaseToken,
+    };
+  }
 }
 
 let singleton: UploadedDocumentsRepository | undefined;

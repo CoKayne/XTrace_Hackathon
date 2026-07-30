@@ -1,4 +1,6 @@
 import type { UploadedDocumentsRepository } from "../../db/repositories/uploaded-documents";
+import type { SourceRegistry } from "../../db/repositories/source-registry";
+import type { DealRegistry } from "../../db/repositories/deal-registry";
 import type {
   UnderwritingReferencesRepository,
 } from "../../db/repositories/underwriting-references";
@@ -16,6 +18,8 @@ export interface RouteDependencies {
     request: Request,
   ) => Promise<AuthorizedRequestContext>;
   uploadedDocuments?: UploadedDocumentsRepository;
+  sourceRegistry?: SourceRegistry;
+  dealRegistry?: DealRegistry;
   documentAccess?: PrivateDocumentAccess;
   privateObjectStorage?: PrivateObjectStorage;
   underwritingReferences?: UnderwritingReferencesRepository;
