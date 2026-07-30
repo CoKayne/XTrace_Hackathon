@@ -262,6 +262,7 @@ export default function Home() {
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [activeRun, setActiveRun] = useState<Run | null>(null);
   const [scanProgressOpen, setScanProgressOpen] = useState(false);
+  const [resetTestViewOpen, setResetTestViewOpen] = useState(false);
 
   const load = useCallback(async () => {
     const [model, runRows, marketRows, reportRows, healthState, uploadRows] =
@@ -516,6 +517,38 @@ export default function Home() {
     }
   }
 
+  async function resetTestView() {
+    if (!uiSession.capabilities.resetDemo) {
+      setError("The server did not grant test-view reset.");
+      return;
+    }
+    setBusy("reset");
+    setError("");
+    try {
+      await api<{ reset: true; resetAt: string }>("/api/demo/reset", {
+        method: "POST",
+      });
+      setFocusedReportId(null);
+      setActiveRunId(null);
+      setActiveRun(null);
+      setScanProgressOpen(false);
+      setReportDraft(null);
+      setError("");
+      window.history.replaceState({}, "", window.location.pathname);
+      await load();
+      setNotice("Current test view reset. Durable evidence and analysis history were preserved.");
+      setResetTestViewOpen(false);
+    } catch (resetError) {
+      setError(
+        resetError instanceof Error
+          ? resetError.message
+          : "Could not reset the current test view.",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function uploadDocument(file: File) {
     setBusy("upload");
     setError("");
@@ -757,14 +790,19 @@ export default function Home() {
             <strong>{nav.find((item) => item.view === view)?.label}</strong>
           </div>
           <div className="vsee-top-actions">
-            <button
-              className="vsee-memory-toggle"
-              disabled
-              aria-label="Reset is disabled"
-              title="Durable analysis products are never deleted from this UI."
-            >
-              RESET DISABLED
-            </button>
+            {uiSession.capabilities.resetDemo && (
+              <button
+                className="vsee-memory-toggle"
+                onClick={() => {
+                  setError("");
+                  setResetTestViewOpen(true);
+                }}
+                disabled={busy !== null}
+                aria-label="Reset current test view"
+              >
+                RESET TEST VIEW
+              </button>
+            )}
             <button
               className={`vsee-memory-toggle ${xtraceEnabled ? "on" : ""}`}
               onClick={() => setXtraceEnabled((enabled) => !enabled)}
@@ -798,6 +836,11 @@ export default function Home() {
 
         {error && <div className="vsee-banner error" role="alert">{error}<button onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
         {notice && <div className="vsee-banner" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notice">×</button></div>}
+        {uiSession.deploymentMode === "public_sandbox" && (
+          <div className="vsee-sandbox-warning" role="status">
+            PUBLIC TEST SANDBOX — Do not upload confidential or real customer data.
+          </div>
+        )}
 
         {!overview || !health ? (
           <section className="vsee-loading">Loading workspace evidence…</section>
@@ -885,6 +928,13 @@ export default function Home() {
         draft={reportDraft}
         onClose={() => setReportDraft(null)}
       />
+      <ResetTestViewDialog
+        open={resetTestViewOpen}
+        busy={busy !== null}
+        error={error}
+        onCancel={() => setResetTestViewOpen(false)}
+        onReset={() => void resetTestView()}
+      />
       {scanProgressOpen && activeRun && (
         <ScanProgress
           run={activeRun}
@@ -892,6 +942,67 @@ export default function Home() {
         />
       )}
     </main>
+  );
+}
+
+function ResetTestViewDialog({
+  open,
+  busy,
+  error,
+  onCancel,
+  onReset,
+}: {
+  open: boolean;
+  busy: boolean;
+  error: string;
+  onCancel(): void;
+  onReset(): void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    else if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="vsee-reset-test-view-dialog"
+      aria-labelledby="reset-test-view-title"
+      aria-describedby="reset-test-view-copy"
+      onCancel={(event) => {
+        event.preventDefault();
+        if (!busy) onCancel();
+      }}
+      onClose={() => {
+        if (!busy) onCancel();
+      }}
+    >
+      <div className="vsee-reset-test-view-card">
+        <header>
+          <div>
+            <span className="vsee-eyebrow">PUBLIC TEST SANDBOX</span>
+            <h2 id="reset-test-view-title">Reset current test view?</h2>
+          </div>
+        </header>
+        <div className="vsee-reset-test-view-copy">
+          <p id="reset-test-view-copy">
+            This only starts a fresh current test view. It does not delete Deals, Sources, XTrace memory, Fund Policy, underwriting artifacts, or action drafts.
+          </p>
+          <p>Active scans must finish before the current test view can be reset.</p>
+          {error && <p className="vsee-reset-test-view-error" role="alert">{error}</p>}
+        </div>
+        <footer>
+          <button type="button" onClick={onCancel} disabled={busy}>Cancel</button>
+          <button type="button" className="primary" onClick={onReset} disabled={busy}>
+            {busy ? "RESETTING…" : "RESET CURRENT VIEW"}
+          </button>
+        </footer>
+      </div>
+    </dialog>
   );
 }
 

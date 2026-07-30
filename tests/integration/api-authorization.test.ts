@@ -34,6 +34,7 @@ import { GET as runs, POST as createRun } from "../../app/api/runs/route";
 import { GET as health } from "../../app/api/settings/health/route";
 import { getDataClient } from "../../db/client";
 import { getIntelligenceRepository } from "../../db/repositories/intelligence";
+import { getTestGenerationRepository } from "../../db/repositories/test-generations";
 import { getUploadedDocumentsRepository } from "../../db/repositories/uploaded-documents";
 import { toPublicUploadedDocument } from "../../lib/uploads/public";
 
@@ -564,6 +565,54 @@ test("public demo reset is forbidden and cannot delete another workspace report"
     "workspace_other",
     "report_reset_other_workspace",
   ));
+});
+
+test("public sandbox reset rejects an active run without advancing its test-view marker", async () => {
+  const workspaceId = `workspace_reset_active_${crypto.randomUUID()}`;
+  const client = getDataClient();
+  const activeRun = await client.insertRun({
+    workspaceId,
+    mode: "structured",
+    windowDays: 14,
+  });
+  const generations = getTestGenerationRepository();
+  assert.equal(await generations.currentResetAt(workspaceId), null);
+
+  const response = await resetDemo(
+    request("/api/demo/reset", { method: "POST" }),
+    undefined,
+    {
+      async resolveRequestContext() {
+        return {
+          mode: "public_sandbox",
+          principal: {
+            userId: "system:public-sandbox",
+            email: "public-sandbox@invalid.local",
+          },
+          workspaceId,
+          role: "sandbox",
+          permissions: {
+            readWorkspace: true,
+            readPrivateSources: true,
+            mutateSources: true,
+            managePolicy: true,
+            administerFrameworks: false,
+          },
+        };
+      },
+    },
+  );
+
+  assert.equal(response.status, 409);
+  assert.deepEqual(await response.json(), {
+    error: {
+      code: "CONFLICT",
+      message: "The current test view cannot be reset while a scan is active.",
+      retryable: false,
+    },
+  });
+  assert.equal(await generations.currentResetAt(workspaceId), null);
+  assert.equal((await client.getRun(workspaceId, activeRun.id))?.status, "queued");
 });
 
 function request(path: string, init?: RequestInit): Request {

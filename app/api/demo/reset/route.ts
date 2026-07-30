@@ -1,4 +1,8 @@
-import { getIntelligenceRepository } from "../../../../db/repositories/intelligence";
+import { getDataClient } from "../../../../db/client";
+import {
+  ActiveScanResetError,
+  getTestGenerationRepository,
+} from "../../../../db/repositories/test-generations";
 import { errorResponse, jsonError, jsonOk } from "../../../../lib/api/response";
 import {
   resolveRouteRequestContext,
@@ -8,11 +12,9 @@ import { rateLimitRequest, requirePermission } from "../../../../lib/api/safety"
 
 export const dynamic = "force-dynamic";
 
-// Demo choreography: the RESET DEMO control wipes prior scan products
-// (reports, analyses, finished runs, market events) so the next scan is a
-// clean-slate reveal. The corpus, XTrace lineage, and stored judgments are
-// untouched, and queued or running scans survive. Reset is always an
-// explicit human action; page loads never trigger it.
+const ACTIVE_SCAN_RESET_MESSAGE =
+  "The current test view cannot be reset while a scan is active.";
+
 export async function POST(
   request: Request,
   _routeContext?: unknown,
@@ -21,6 +23,7 @@ export async function POST(
   try {
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "mutateSources");
+    if (context.mode !== "public_sandbox") throw new Error("FORBIDDEN");
     const rate = await rateLimitRequest(
       request,
       "demo-reset",
@@ -36,9 +39,21 @@ export async function POST(
         true,
       );
     }
-    await getIntelligenceRepository().resetScanProducts(context.workspaceId);
-    return jsonOk({ reset: true });
+    const activeRun = (await getDataClient().listRuns(context.workspaceId)).some(
+      ({ status }) => status === "queued" || status === "running",
+    );
+    if (activeRun) {
+      return jsonError("CONFLICT", ACTIVE_SCAN_RESET_MESSAGE, 409);
+    }
+    const { resetAt } = await getTestGenerationRepository().advance({
+      workspaceId: context.workspaceId,
+      actorId: context.principal!.userId,
+    });
+    return jsonOk({ reset: true, resetAt });
   } catch (error) {
+    if (error instanceof ActiveScanResetError) {
+      return jsonError("CONFLICT", ACTIVE_SCAN_RESET_MESSAGE, 409);
+    }
     return errorResponse(error);
   }
 }

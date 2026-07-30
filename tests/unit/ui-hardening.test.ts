@@ -257,6 +257,29 @@ test("dashboard keeps scans honest and requires explicit import review", async (
   assert.match(page, /role="status"/);
 });
 
+test("public sandbox reset states its safety contract and reload behavior", async () => {
+  const [page, css] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(cssPath, "utf8"),
+  ]);
+
+  assert.match(page, /RESET TEST VIEW/);
+  assert.match(
+    page,
+    /does not delete Deals, Sources, XTrace memory, Fund Policy, underwriting artifacts, or action drafts/,
+  );
+  assert.match(page, /PUBLIC TEST SANDBOX/);
+  assert.match(page, /Do not upload confidential or real customer data/);
+  assert.match(page, /setFocusedReportId\(null\)/);
+  assert.match(page, /setActiveRunId\(null\)/);
+  assert.match(page, /setActiveRun\(null\)/);
+  assert.match(page, /setScanProgressOpen\(false\)/);
+  assert.match(page, /setReportDraft\(null\)/);
+  assert.match(page, /window\.history\.replaceState\(\{\}, "", window\.location\.pathname\)/);
+  assert.match(page, /Current test view reset\. Durable evidence and analysis history were preserved\./);
+  assert.match(css, /vsee-sandbox-warning/);
+});
+
 test("uploaded-source UI accepts only staged runtime formats and renders confirmation previews", () => {
   const html = renderToStaticMarkup(createElement(SourceUploadFlow, {
     uploads: [upload("awaiting_confirmation", {
