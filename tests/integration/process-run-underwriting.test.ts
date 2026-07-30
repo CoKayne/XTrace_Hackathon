@@ -43,6 +43,7 @@ import {
 import {
   createEvidencePackBuilder,
 } from "../../lib/underwriting/evidence/builder";
+import { IntegrationTransportError } from "../../lib/api/errors";
 import {
   createContextRouter,
   type CriticalEvidenceProfile,
@@ -211,10 +212,15 @@ function deal(id: string): RegisteredDeal {
 
 async function candidateGroundingFor(
   dealId: string,
-  options: { includeContext: boolean; now?: () => Date },
+  options: {
+    includeContext: boolean;
+    now?: () => Date;
+    repository?: ReturnType<typeof createMemoryEvidencePacksRepository>;
+  },
 ) {
   const sourceRegistry = createMemorySourceRegistry();
-  const repository = createMemoryEvidencePacksRepository();
+  const repository =
+    options.repository ?? createMemoryEvidencePacksRepository();
   const registeredDeal = deal(dealId);
   await sourceRegistry.createInitialRevision({
     id: registeredDeal.activeSourceRevisionIds[0]!,
@@ -400,6 +406,7 @@ function finalization(input: {
     candidateRunId: input.candidateRunId,
     candidateAnalysisFingerprint:
       `sha256:${input.dealId.padEnd(64, "a").slice(0, 64)}`,
+    evidencePackBuildInputFingerprint: `sha256:${"e".repeat(64)}`,
     evidencePack: {
       id: `evidence_pack_${input.dealId}`,
       version: 1,
@@ -520,6 +527,32 @@ function finalization(input: {
       applicationCommit: "task13-test",
     },
   };
+}
+
+async function saveFinalizationBuild(
+  evidencePacks: ReturnType<typeof createMemoryEvidencePacksRepository>,
+  payload: CandidateFinalization,
+): Promise<void> {
+  const revisionId = payload.evidencePack.sourceRevisionIds[0]!;
+  await evidencePacks.saveExact({
+    pack: payload.evidencePack,
+    inputFingerprint: payload.evidencePackBuildInputFingerprint,
+    sourceRevisionSnapshots: [{
+      id: revisionId,
+      workspaceId: payload.evidencePack.workspaceId,
+      sourceId: `source_${payload.evidencePack.dealId}`,
+      revision: 1,
+      contentHash: `sha256:${"d".repeat(64)}`,
+      objectKey: `private/${payload.evidencePack.dealId}.md`,
+      objectVersion: "object:v1",
+      contentType: "text/markdown",
+      extractorId: "plain_text_v1",
+      extractorVersion: "1",
+      extractedAt: "2026-07-29T10:00:00.000Z",
+      supersedesRevisionId: null,
+      createdAt: "2026-07-29T10:05:00.000Z",
+    }],
+  });
 }
 
 async function uploadedDealRegistry() {
@@ -867,10 +900,12 @@ test("batch identity changes when an effective reference definition changes", as
 
 test("processing a named candidate cannot lease an older queued candidate", async () => {
   let sequence = 0;
+  const evidencePacks = createMemoryEvidencePacksRepository();
   const runs = createMemoryUnderwritingRunsRepository({
     now: () => NOW,
     idGenerator: (kind) => `${kind}_${++sequence}`,
     leaseTokenGenerator: () => `lease_${++sequence}`,
+    evidencePacks,
   });
   const olderOrchestrator = createUnderwritingOrchestrator({
     runs,
@@ -881,13 +916,16 @@ test("processing a named candidate cannot lease an older queued candidate", asyn
     runs,
     activeFundPolicy: async () => policy,
     autoProcessCandidates: false,
-    candidateExecutor: async ({ candidate, workerId, leaseToken }) =>
-      finalization({
+    candidateExecutor: async ({ candidate, workerId, leaseToken }) => {
+      const payload = finalization({
         candidateRunId: candidate.id,
         dealId: candidate.dealId,
         workerId,
         leaseToken,
-      }),
+      });
+      await saveFinalizationBuild(evidencePacks, payload);
+      return payload;
+    },
   });
   const olderAnalysis = analysis("deal_older", 0.99);
   const targetAnalysis = analysis("deal_target", 0.98);
@@ -927,23 +965,28 @@ test("processing a named candidate cannot lease an older queued candidate", asyn
 test("byte-identical force refresh completes as an immutable artifact alias", async () => {
   let sequence = 0;
   const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = createMemoryEvidencePacksRepository();
   const runs = createMemoryUnderwritingRunsRepository({
     now: () => NOW,
     idGenerator: (kind) => `${kind}_${++sequence}`,
     leaseTokenGenerator: () => `lease_${++sequence}`,
     artifacts,
+    evidencePacks,
   });
   const orchestrator = createUnderwritingOrchestrator({
     runs,
     activeFundPolicy: async () => policy,
     refreshNonce: () => `refresh_${++sequence}`,
-    candidateExecutor: async ({ candidate, workerId, leaseToken }) =>
-      finalization({
+    candidateExecutor: async ({ candidate, workerId, leaseToken }) => {
+      const payload = finalization({
         candidateRunId: candidate.id,
         dealId: candidate.dealId,
         workerId,
         leaseToken,
-      }),
+      });
+      await saveFinalizationBuild(evidencePacks, payload);
+      return payload;
+    },
     now: () => NOW,
   });
   const analyses = [analysis("deal_a", 0.99)];
@@ -1037,10 +1080,12 @@ test("a persistence failure during finalization terminates the candidate and bat
 
 test("a candidate failure preserves a completed predecessor and leaves the batch partial", async () => {
   let sequence = 0;
+  const evidencePacks = createMemoryEvidencePacksRepository();
   const runs = createMemoryUnderwritingRunsRepository({
     now: () => NOW,
     idGenerator: (kind) => `${kind}_${++sequence}`,
     leaseTokenGenerator: () => `lease_${++sequence}`,
+    evidencePacks,
   });
   const orchestrator = createUnderwritingOrchestrator({
     runs,
@@ -1049,12 +1094,14 @@ test("a candidate failure preserves a completed predecessor and leaves the batch
       if (candidate.dealId === "deal_b") {
         throw new Error("provider returned private diagnostic detail");
       }
-      return finalization({
+      const payload = finalization({
         candidateRunId: candidate.id,
         dealId: candidate.dealId,
         workerId,
         leaseToken,
       });
+      await saveFinalizationBuild(evidencePacks, payload);
+      return payload;
     },
     candidateMaxAttempts: 1,
   });
@@ -1153,14 +1200,17 @@ test("runs the source-grounded candidate chain once and persists communication c
   let sequence = 0;
   let lensExecutions = 0;
   const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = createMemoryEvidencePacksRepository();
   const runs = createMemoryUnderwritingRunsRepository({
     now: () => NOW,
     idGenerator: (kind) => `${kind}_${++sequence}`,
     leaseTokenGenerator: () => `lease_${++sequence}`,
     artifacts,
+    evidencePacks,
   });
   const grounding = await candidateGroundingFor("deal_a", {
     includeContext: true,
+    repository: evidencePacks,
   });
   const orchestrator = createUnderwritingOrchestrator({
     runs,
@@ -1245,14 +1295,17 @@ test("a clock-advanced source-grounded force refresh aliases the canonical artif
   let sequence = 0;
   let groundingNow = new Date("2026-07-29T12:00:00.000Z");
   const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = createMemoryEvidencePacksRepository();
   const runs = createMemoryUnderwritingRunsRepository({
     now: () => NOW,
     idGenerator: (kind) => `${kind}_${++sequence}`,
     leaseTokenGenerator: () => `lease_${++sequence}`,
     artifacts,
+    evidencePacks,
   });
   const grounding = await candidateGroundingFor("deal_a", {
     includeContext: true,
+    repository: evidencePacks,
   });
   const orchestrator = createUnderwritingOrchestrator({
     runs,
@@ -1402,6 +1455,265 @@ test("exhausted provider capacity is a visible truncation without starting the p
   assert.equal(artifacts.inspect().bundles.length, 0);
 });
 
+test("settled provider overage blocks the next physical request before dispatch", async () => {
+  let sequence = 0;
+  let providerExecutions = 0;
+  const evidencePacks = createMemoryEvidencePacksRepository();
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+    evidencePacks,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+    repository: evidencePacks,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateTokenUnits: 8_000,
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      frameworkLenses: {
+        async runAll(request) {
+          assert.ok(request.providerAttempt);
+          await request.providerAttempt.execute({
+            attemptFingerprint: `sha256:${"7".repeat(64)}`,
+            outputTokenUnits: 4_000,
+            operation: async () => {
+              providerExecutions += 1;
+              return {
+                text: "{\"first\":true}",
+                stopReason: "end_turn",
+                usage: {
+                  inputTokens: 4_001,
+                  outputTokens: 2_000,
+                  cacheCreationInputTokens: 0,
+                  cacheReadInputTokens: 0,
+                },
+              };
+            },
+          });
+          await request.providerAttempt.execute({
+            attemptFingerprint: `sha256:${"8".repeat(64)}`,
+            outputTokenUnits: 4_000,
+            operation: async () => {
+              providerExecutions += 1;
+              return {
+                text: "{\"second\":true}",
+                stopReason: "end_turn",
+                usage: {
+                  inputTokens: 1,
+                  outputTokens: 1,
+                  cacheCreationInputTokens: 0,
+                  cacheReadInputTokens: 0,
+                },
+              };
+            },
+          });
+          return { judgments: [], disagreements: [] };
+        },
+      },
+      now: () => NOW,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(providerExecutions, 1);
+  assert.equal(runs.inspect().candidates[0]?.status, "unavailable");
+  const checkpoint = runs.inspect().checkpoints.find(
+    ({ stage }) => stage === "framework_lenses",
+  );
+  assert.equal(checkpoint?.tokenUnits, 6_001);
+  assert.equal(checkpoint?.actualTokenUnits, 6_001);
+  assert.equal(checkpoint?.providerAttempts.length, 1);
+});
+
+test("unknown provider usage conservatively retains the full reservation", async () => {
+  let sequence = 0;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateExecutor: async ({ stages }) => {
+      const inputFingerprint = `sha256:${"1".repeat(64)}`;
+      await stages.run({
+        stage: "framework_lenses",
+        inputFingerprint,
+        parseOutput(value) {
+          return value;
+        },
+        operation: async () => {
+          await stages.runProviderAttempt({
+            stage: "framework_lenses",
+            inputFingerprint,
+            attemptFingerprint: `sha256:${"2".repeat(64)}`,
+            costUnits: 3,
+            tokenUnits: 4_000,
+            operation: async () => {
+              throw new IntegrationTransportError({ retryable: true });
+            },
+          });
+          return {};
+        },
+      });
+      throw new Error("The provider failure must escape candidate execution.");
+    },
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  const checkpoint = runs.inspect().checkpoints.find(
+    ({ stage }) => stage === "framework_lenses",
+  );
+  assert.equal(checkpoint?.status, "failed");
+  assert.equal(checkpoint?.costUnits, 3);
+  assert.equal(checkpoint?.tokenUnits, 4_000);
+  assert.equal(checkpoint?.actualTokenUnits, 0);
+  assert.deepEqual(checkpoint?.providerAttempts, [{
+    attemptFingerprint: `sha256:${"2".repeat(64)}`,
+    status: "failed",
+    reservedCostUnits: 3,
+    reservedTokenUnits: 4_000,
+    actualCostUnits: 0,
+    actualTokenUnits: 0,
+    usageKnown: false,
+  }]);
+});
+
+test("concurrent provider settlements preserve every ledger entry without serializing provider work", async () => {
+  let sequence = 0;
+  let activeProviders = 0;
+  let maximumProviderConcurrency = 0;
+  let releaseProviders!: () => void;
+  const allProvidersStarted = new Promise<void>((resolve) => {
+    releaseProviders = resolve;
+  });
+  const storage = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const runs: typeof storage = {
+    ...storage,
+    async saveCheckpoint(input) {
+      if (
+        input.stage === "framework_lenses"
+        && input.providerAttempts.length > 0
+      ) {
+        await Promise.resolve();
+      }
+      await storage.saveCheckpoint(input);
+    },
+  };
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateExecutor: async ({ stages }) => {
+      const inputFingerprint = `sha256:${"1".repeat(64)}`;
+      await stages.run({
+        stage: "framework_lenses",
+        inputFingerprint,
+        parseOutput(value) {
+          assert.deepEqual(value, { completed: 4 });
+          return value as { completed: number };
+        },
+        operation: async () => {
+          await Promise.all(
+            Array.from({ length: 4 }, async (_, index) =>
+              stages.runProviderAttempt({
+                stage: "framework_lenses",
+                inputFingerprint,
+                attemptFingerprint:
+                  `sha256:${String(index + 2).repeat(64)}`,
+                costUnits: 1,
+                tokenUnits: 4_000,
+                operation: async () => {
+                  activeProviders += 1;
+                  maximumProviderConcurrency = Math.max(
+                    maximumProviderConcurrency,
+                    activeProviders,
+                  );
+                  if (activeProviders === 4) releaseProviders();
+                  await allProvidersStarted;
+                  activeProviders -= 1;
+                  return {
+                    text: `provider-${index}`,
+                    stopReason: "end_turn",
+                    usage: {
+                      inputTokens: 6,
+                      outputTokens: 4,
+                      cacheCreationInputTokens: 0,
+                      cacheReadInputTokens: 0,
+                    },
+                  };
+                },
+              })
+            ),
+          );
+          return { completed: 4 };
+        },
+      });
+      return {
+        kind: "unavailable",
+        reasonCodes: ["TEST_EXECUTION_COMPLETE"],
+      };
+    },
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(maximumProviderConcurrency, 4);
+  const checkpoint = storage.inspect().checkpoints.find(
+    ({ stage }) => stage === "framework_lenses",
+  );
+  assert.equal(checkpoint?.status, "completed");
+  assert.equal(checkpoint?.providerAttempts.length, 4);
+  assert.equal(checkpoint?.costUnits, 4);
+  assert.equal(checkpoint?.tokenUnits, 40);
+  assert.equal(checkpoint?.actualTokenUnits, 40);
+});
+
 test("a reclaimed lease replays completed stages and restores provider usage without repeated work", async () => {
   let sequence = 0;
   let currentTime = NOW;
@@ -1409,6 +1721,7 @@ test("a reclaimed lease replays completed stages and restores provider usage wit
   let executorRuns = 0;
   let groundingExecutions = 0;
   let providerExecutions = 0;
+  const evidencePacks = createMemoryEvidencePacksRepository();
   const usages: Array<ReturnType<
     Parameters<
       NonNullable<
@@ -1422,6 +1735,7 @@ test("a reclaimed lease replays completed stages and restores provider usage wit
     now: () => currentTime,
     idGenerator: (kind) => `${kind}_${++sequence}`,
     leaseTokenGenerator: () => `lease_${++sequence}`,
+    evidencePacks,
   });
   const runs = {
     ...storage,
@@ -1491,12 +1805,14 @@ test("a reclaimed lease replays completed stages and restores provider usage wit
     if (executorRuns === 1) {
       throw new Error("simulated worker loss after durable stage completion");
     }
-    return finalization({
+    const payload = finalization({
       candidateRunId: candidate.id,
       dealId: candidate.dealId,
       workerId,
       leaseToken,
     });
+    await saveFinalizationBuild(evidencePacks, payload);
+    return payload;
   };
   const createOrchestrator = () => createUnderwritingOrchestrator({
     runs,
@@ -1531,17 +1847,17 @@ test("a reclaimed lease replays completed stages and restores provider usage wit
   assert.deepEqual(usages, [
     {
       costUnits: 1,
-      tokenUnits: 4_000,
+      tokenUnits: 26,
       actualTokenUnits: 26,
       remainingCostUnits: 15,
-      remainingTokenUnits: 60_000,
+      remainingTokenUnits: 63_974,
     },
     {
       costUnits: 1,
-      tokenUnits: 4_000,
+      tokenUnits: 26,
       actualTokenUnits: 26,
       remainingCostUnits: 15,
-      remainingTokenUnits: 60_000,
+      remainingTokenUnits: 63_974,
     },
   ]);
 });

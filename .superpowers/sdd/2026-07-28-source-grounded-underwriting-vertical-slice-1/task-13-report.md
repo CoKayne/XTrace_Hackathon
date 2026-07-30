@@ -310,3 +310,89 @@ Each behavior received a focused GREEN run before the next slice.
   creation was denied. The live exact-snapshot and Critical Evidence
   immutability probes remain present and environment-skipped; static
   migration assertions are green.
+
+---
+
+## Fix round 3 — exact build authorization, settled budgets, and concurrent SQL idempotency
+
+This round resolves the remaining Task 13 fix-2 review findings without
+changing Task11b research context, Task12 decision behavior, or Task14/15
+scope. The approved reference fingerprints, immutable rerun aliases, and
+workspace/candidate-scoped C3 claim path remain intact.
+
+### Behavior fixed
+
+1. **C1 — exact Evidence Pack build authorization**
+   - Every non-reuse finalization now carries the Evidence Pack builder's
+     canonical input fingerprint.
+   - Memory and PostgreSQL finalization require one exact immutable build row
+     matching workspace, Deal, pack ID, input fingerprint, and full pack
+     payload. Missing, altered, foreign, or wrong-key packs are rejected
+     before any artifact row is written.
+   - Runtime roles can execute only the guarded alias-aware finalizer. Direct
+     execution of the legacy artifact-writing function is revoked, while the
+     migration owner can still exercise it in isolated atomicity tests.
+   - The linked identical-rerun alias path remains build-free and produces no
+     duplicate artifacts.
+
+2. **I1 — settled provider budgets and concurrent ledger safety**
+   - Provider attempts now persist explicit `actualCostUnits` and
+     `usageKnown`.
+   - Known provider usage replaces its reservation for enforcement;
+     unknown/network usage conservatively retains the full reservation.
+   - Reclaimed leases restore the settled enforced usage exactly.
+   - A per-runtime mutation queue serializes reservation and settlement
+     checkpoint writes only. Provider I/O remains concurrent; a four-request
+     probe reached concurrency four while retaining all four ledger entries.
+
+3. **I2/I3 — upgrade-safe constraint replacement and Drizzle parity**
+   - Reapplying `0012` explicitly drops and adds all tightened named source
+     evidence, Evidence Pack, fingerprint, and Critical Evidence constraints.
+   - Critical Evidence accepted-status/freshness fields must be nonempty JSON
+     arrays containing only nonblank strings.
+   - Drizzle uses the same constraint names and semantics, including
+     `evidence_pack_builds_input_fingerprint_check`.
+
+4. **I4 — concurrent immutable save idempotency**
+   - Source evidence and Evidence Pack build RPCs now insert with
+     `ON CONFLICT DO NOTHING`, then lock and compare the exact stored row.
+   - Identical concurrent callers converge on one row; conflicting callers
+     fail closed without overwriting immutable data.
+   - The Evidence Pack snapshot validator retains a key-share lock on every
+     append-only Source Revision. A lock-only RLS policy permits that lock but
+     has `WITH CHECK (false)`, so actual Source Revision updates remain
+     forbidden in addition to the append-only trigger.
+
+### RED → GREEN evidence
+
+- An unsaved pack originally finalized successfully; the exact-build
+  adversarial test now rejects no-build, wrong-fingerprint, altered-payload,
+  wrong-key, foreign-workspace, and foreign-Deal inputs, then accepts the
+  exact saved build.
+- After a 6,001-token settlement inside an 8,000-token budget, a second
+  4,000-token request originally reached the provider. It is now refused
+  before dispatch.
+- Four overlapping provider settlements originally overwrote checkpoint
+  state and left the framework stage failed. They now preserve all four
+  attempts and exact 40-token settled usage while provider concurrency
+  remains four.
+- The first live PostgreSQL pass exposed that `FOR KEY SHARE` also needs an
+  UPDATE row policy. The lock-only policy closed that execution gap, after
+  which every live migration/finalization/concurrency probe passed.
+
+### Fix-round verification
+
+- Focused contracts/orchestrator/finalization/repository suite:
+  **59 total, 50 passed, 9 environment-skipped, 0 failed**.
+- Live PostgreSQL migration/finalization suite:
+  **17/17 passed**, including exact-build authorization, legacy runtime
+  denial, immutable alias reuse, migration reapplication, and two-session
+  immutable-save races.
+- Full repository suite in the managed sandbox:
+  **635 total, 612 passed, 21 skipped, 2 failed only because loopback
+  `listen(127.0.0.1)` was denied with `EPERM`**.
+- The affected Chat integration file passed **7/7** outside that network
+  sandbox.
+- `npm run typecheck`: passed.
+- `npm run lint -- --quiet`: passed.
+- `git diff --check`: passed.

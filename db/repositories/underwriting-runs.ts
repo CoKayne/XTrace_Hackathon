@@ -20,6 +20,10 @@ import {
   type CandidateFinalization,
   type MemoryUnderwritingArtifactsRepository,
 } from "./underwriting-artifacts";
+import {
+  createMemoryEvidencePacksRepository,
+  type EvidencePacksRepository,
+} from "./evidence-packs";
 
 export type { CandidateFinalization } from "./underwriting-artifacts";
 
@@ -117,6 +121,7 @@ export interface MemoryUnderwritingRunsOptions {
   idGenerator?: (kind: "batch" | "candidate") => string;
   leaseTokenGenerator?: () => string;
   artifacts?: MemoryUnderwritingArtifactsRepository;
+  evidencePacks?: EvidencePacksRepository;
 }
 
 export function createMemoryUnderwritingRunsRepository(
@@ -128,6 +133,8 @@ export function createMemoryUnderwritingRunsRepository(
   const leaseTokenGenerator = options.leaseTokenGenerator ?? randomUUID;
   const artifacts = options.artifacts
     ?? createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = options.evidencePacks
+    ?? createMemoryEvidencePacksRepository();
   const batches = new Map<string, StoredBatch>();
   const selections = new Map<string, UnderwritingSelection>();
   const candidates = new Map<string, CandidateRun>();
@@ -591,6 +598,25 @@ export function createMemoryUnderwritingRunsRepository(
         recomputeBatch(candidate.batchId);
         return structuredClone(completed);
       }
+      const buildInputFingerprint = requiredFingerprint(
+        input.evidencePackBuildInputFingerprint,
+        "An Evidence Pack build input fingerprint",
+      );
+      const build = await evidencePacks.findByInputFingerprint({
+        workspaceId: candidate.workspaceId,
+        inputFingerprint: buildInputFingerprint,
+      });
+      if (
+        !build
+        || build.pack.id !== input.evidencePack.id
+        || build.pack.workspaceId !== candidate.workspaceId
+        || build.pack.dealId !== candidate.dealId
+        || !isDeepStrictEqual(build.pack, input.evidencePack)
+      ) {
+        throw new Error(
+          "Non-reuse finalization requires the exact immutable Evidence Pack build.",
+        );
+      }
       const prepared = artifacts.prepareFinalization({
         candidate: {
           ...candidate,
@@ -977,4 +1003,12 @@ function requiredText(value: string, label: string): string {
     throw new Error(`${label} is required without surrounding whitespace.`);
   }
   return value;
+}
+
+function requiredFingerprint(value: string, label: string): string {
+  const normalized = requiredText(value, label);
+  if (!/^sha256:[0-9a-f]{64}$/.test(normalized)) {
+    throw new Error(`${label} must be a canonical SHA-256 digest.`);
+  }
+  return normalized;
 }

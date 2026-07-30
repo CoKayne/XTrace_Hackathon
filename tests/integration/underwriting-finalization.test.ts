@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -8,6 +8,10 @@ import test from "node:test";
 import {
   createMemoryUnderwritingArtifactsRepository,
 } from "../../db/repositories/underwriting-artifacts";
+import {
+  createMemoryEvidencePacksRepository,
+  type EvidencePacksRepository,
+} from "../../db/repositories/evidence-packs";
 import {
   createMemoryUnderwritingRunsRepository,
   type CandidateFinalization,
@@ -77,12 +81,17 @@ function deterministicOptions() {
   };
 }
 
-async function twoClaimedCandidates() {
+async function twoClaimedCandidates(options: {
+  evidencePacks?: EvidencePacksRepository;
+} = {}) {
   const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = options.evidencePacks
+    ?? createMemoryEvidencePacksRepository();
   const runs = createMemoryUnderwritingRunsRepository({
     ...deterministicOptions(),
     artifacts,
-  });
+    evidencePacks,
+  } as Parameters<typeof createMemoryUnderwritingRunsRepository>[0]);
   const batch = await runs.createOrReuseBatch({
     workspaceId: "workspace_1",
     scanRunId: "scan_1",
@@ -118,7 +127,49 @@ async function twoClaimedCandidates() {
     leaseSeconds: 60,
   });
   assert.ok(first);
-  return { artifacts, runs, batch, first };
+  return { artifacts, evidencePacks, runs, batch, first };
+}
+
+const BUILD_INPUT_FINGERPRINT = `sha256:${"e".repeat(64)}`;
+
+function guardedFinalization(input: {
+  candidateRunId: string;
+  dealId: string;
+  workerId: string;
+  leaseToken: string;
+}): CandidateFinalization & {
+  evidencePackBuildInputFingerprint: string;
+} {
+  return {
+    ...finalization(input),
+    evidencePackBuildInputFingerprint: BUILD_INPUT_FINGERPRINT,
+  };
+}
+
+async function saveFinalizationBuild(
+  evidencePacks: EvidencePacksRepository,
+  payload: CandidateFinalization,
+): Promise<void> {
+  const revisionId = payload.evidencePack.sourceRevisionIds[0]!;
+  await evidencePacks.saveExact({
+    pack: payload.evidencePack,
+    inputFingerprint: payload.evidencePackBuildInputFingerprint,
+    sourceRevisionSnapshots: [{
+      id: revisionId,
+      workspaceId: payload.evidencePack.workspaceId,
+      sourceId: `source_${payload.evidencePack.dealId}`,
+      revision: 1,
+      contentHash: `sha256:${"d".repeat(64)}`,
+      objectKey: `private/${payload.evidencePack.dealId}.md`,
+      objectVersion: "object:v1",
+      contentType: "text/markdown",
+      extractorId: "plain_text_v1",
+      extractorVersion: "1",
+      extractedAt: "2026-07-29T10:00:00.000Z",
+      supersedesRevisionId: null,
+      createdAt: "2026-07-29T10:05:00.000Z",
+    }],
+  });
 }
 
 function finalization(input: {
@@ -144,6 +195,7 @@ function finalization(input: {
     leaseToken: input.leaseToken,
     candidateRunId: input.candidateRunId,
     candidateAnalysisFingerprint: `sha256:${"a".repeat(64)}`,
+    evidencePackBuildInputFingerprint: BUILD_INPUT_FINGERPRINT,
     evidencePack: {
       id: `evidence_pack_${input.dealId}`,
       version: 1,
@@ -518,14 +570,93 @@ function realValuationFinalization(input: {
   } as CandidateFinalization;
 }
 
+test("non-reuse finalization requires the exact immutable Evidence Pack build", async () => {
+  const evidencePacks = createMemoryEvidencePacksRepository();
+  const { artifacts, runs, first } = await twoClaimedCandidates({
+    evidencePacks,
+  });
+  const payload = guardedFinalization({
+    candidateRunId: first.candidate.id,
+    dealId: first.candidate.dealId,
+    workerId: "worker_1",
+    leaseToken: first.leaseToken,
+  });
+
+  await assert.rejects(
+    runs.finalizeCandidate(payload),
+    /immutable Evidence Pack build/i,
+  );
+  assert.equal(artifacts.inspect().rowCounts.evidencePacks, 0);
+  assert.equal(
+    runs.inspect().candidates.find(({ id }) => id === first.candidate.id)
+      ?.status,
+    "running",
+  );
+
+  await saveFinalizationBuild(evidencePacks, payload);
+  await assert.rejects(
+    runs.finalizeCandidate({
+      ...payload,
+      evidencePackBuildInputFingerprint: `sha256:${"f".repeat(64)}`,
+    }),
+    /immutable Evidence Pack build/i,
+  );
+  await assert.rejects(
+    runs.finalizeCandidate({
+      ...payload,
+      evidencePack: {
+        ...payload.evidencePack,
+        createdAt: "2026-07-29T12:00:01.000Z",
+      },
+    }),
+    /immutable Evidence Pack build/i,
+  );
+  await assert.rejects(
+    runs.finalizeCandidate({
+      ...payload,
+      evidencePack: {
+        ...payload.evidencePack,
+        id: "evidence_pack_wrong_key",
+      },
+    }),
+    /immutable Evidence Pack build/i,
+  );
+  await assert.rejects(
+    runs.finalizeCandidate({
+      ...payload,
+      evidencePack: {
+        ...payload.evidencePack,
+        workspaceId: "workspace_foreign",
+      },
+    }),
+    /immutable Evidence Pack build/i,
+  );
+  await assert.rejects(
+    runs.finalizeCandidate({
+      ...payload,
+      evidencePack: {
+        ...payload.evidencePack,
+        dealId: "deal_foreign",
+      },
+    }),
+    /immutable Evidence Pack build/i,
+  );
+
+  const completed = await runs.finalizeCandidate(payload);
+  assert.equal(completed.status, "completed");
+  assert.equal(artifacts.inspect().rowCounts.evidencePacks, 1);
+});
+
 test("failed finalization leaves no partial artifacts and retains the active lease", async () => {
-  const { artifacts, runs, first } = await twoClaimedCandidates();
+  const { artifacts, evidencePacks, runs, first } =
+    await twoClaimedCandidates();
   const invalid = finalization({
     candidateRunId: first.candidate.id,
     dealId: first.candidate.dealId,
     workerId: "worker_1",
     leaseToken: first.leaseToken,
   });
+  await saveFinalizationBuild(evidencePacks, invalid);
   invalid.actionDrafts[0].workspaceId = "workspace_foreign";
 
   await assert.rejects(runs.finalizeCandidate(invalid), /workspace|artifact/i);
@@ -551,13 +682,15 @@ test("failed finalization leaves no partial artifacts and retains the active lea
 });
 
 test("finalization rejects claim edges whose typed dependency is not persisted", async () => {
-  const { artifacts, runs, first } = await twoClaimedCandidates();
+  const { artifacts, evidencePacks, runs, first } =
+    await twoClaimedCandidates();
   const invalid = finalization({
     candidateRunId: first.candidate.id,
     dealId: first.candidate.dealId,
     workerId: "worker_1",
     leaseToken: first.leaseToken,
   });
+  await saveFinalizationBuild(evidencePacks, invalid);
   invalid.decision.claimEdges.push({
     claimItemId: invalid.decision.id,
     dependencyItemId: "foreign_fact",
@@ -577,13 +710,16 @@ test("finalization rejects claim edges whose typed dependency is not persisted",
 });
 
 test("one completed candidate and one failed candidate leave the batch partial", async () => {
-  const { artifacts, runs, batch, first } = await twoClaimedCandidates();
-  const completed = await runs.finalizeCandidate(finalization({
+  const { artifacts, evidencePacks, runs, batch, first } =
+    await twoClaimedCandidates();
+  const payload = finalization({
     candidateRunId: first.candidate.id,
     dealId: first.candidate.dealId,
     workerId: "worker_1",
     leaseToken: first.leaseToken,
-  }));
+  });
+  await saveFinalizationBuild(evidencePacks, payload);
+  const completed = await runs.finalizeCandidate(payload);
   const second = await runs.claimNextCandidate({
     workerId: "worker_2",
     leaseSeconds: 60,
@@ -623,13 +759,15 @@ test("one completed candidate and one failed candidate leave the batch partial",
 });
 
 test("finalization rejects a foreign lease and stores exact immutable snapshots once", async () => {
-  const { artifacts, runs, first } = await twoClaimedCandidates();
+  const { artifacts, evidencePacks, runs, first } =
+    await twoClaimedCandidates();
   const payload = finalization({
     candidateRunId: first.candidate.id,
     dealId: first.candidate.dealId,
     workerId: "worker_1",
     leaseToken: first.leaseToken,
   });
+  await saveFinalizationBuild(evidencePacks, payload);
   await assert.rejects(
     runs.finalizeCandidate({ ...payload, leaseToken: "foreign" }),
     /lease/i,
@@ -689,12 +827,14 @@ test("Task8 finalization preserves advisory specialist judgments without requiri
 
 test("finalization persists the real valuation artifact graph without losing Task10 references", async () => {
   const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = createMemoryEvidencePacksRepository();
   const runs = createMemoryUnderwritingRunsRepository({
     now: () => new Date("2026-07-29T12:00:00.000Z"),
     idGenerator: (kind) =>
       kind === "batch" ? "batch_real" : "valuation:pack_1",
     leaseTokenGenerator: () => "lease_real",
     artifacts,
+    evidencePacks,
   });
   const batch = await runs.createOrReuseBatch({
     workspaceId: "workspace_1",
@@ -728,6 +868,7 @@ test("finalization persists the real valuation artifact graph without losing Tas
     leaseToken: claimed.leaseToken,
   });
 
+  await saveFinalizationBuild(evidencePacks, payload);
   await runs.finalizeCandidate(payload);
   const stored = await artifacts.getByCandidateRunId({
     workspaceId: "workspace_1",
@@ -791,12 +932,196 @@ test("0012 declares target claims, immutable rerun aliases, and grounded evidenc
     migration,
     /Evidence Pack revision IDs and snapshots must be duplicate-free exact sets/i,
   );
+  assert.match(
+    migration,
+    /build\.workspace_id = target\.workspace_id[\s\S]*build\.input_fingerprint = build_input_fingerprint[\s\S]*build\.pack_id = evidence_pack ->> 'id'[\s\S]*build\.pack_payload = evidence_pack/i,
+  );
+  assert.match(
+    migration,
+    /revoke all on function public\.finalize_candidate_underwriting\(jsonb\)[\s\S]*from service_role/i,
+  );
+  assert.match(
+    migration,
+    /insert into public\.source_evidence_items[\s\S]*on conflict \(workspace_id, evidence_id\) do nothing[\s\S]*for key share/i,
+  );
+  assert.match(
+    migration,
+    /insert into public\.evidence_pack_builds[\s\S]*on conflict do nothing[\s\S]*for key share/i,
+  );
   assert.match(schema, /source_evidence_items_payload_shape_check/i);
   assert.match(schema, /source_evidence_items_payload_identity_check/i);
+  assert.match(schema, /evidence_pack_builds_input_fingerprint_check/i);
   assert.match(schema, /evidence_pack_builds_payload_shape_check/i);
   assert.match(schema, /evidence_pack_builds_snapshots_shape_check/i);
   assert.match(schema, /evidence_pack_builds_payload_identity_check/i);
+  assert.match(
+    schema,
+    /critical_evidence_profile_fields_assertion_statuses_shape_check/i,
+  );
+  assert.match(
+    schema,
+    /critical_evidence_profile_fields_freshness_shape_check/i,
+  );
+  for (
+    const constraint of [
+      "source_evidence_items_payload_shape_check",
+      "source_evidence_items_payload_identity_check",
+      "evidence_pack_builds_input_fingerprint_check",
+      "evidence_pack_builds_payload_shape_check",
+      "evidence_pack_builds_snapshots_shape_check",
+      "evidence_pack_builds_payload_identity_check",
+      "critical_evidence_profile_fields_assertion_statuses_shape_check",
+      "critical_evidence_profile_fields_freshness_shape_check",
+    ]
+  ) {
+    assert.match(
+      migration,
+      new RegExp(
+        `drop constraint if exists\\s+${constraint}[\\s\\S]*`
+          + `add constraint\\s+${constraint}`,
+        "i",
+      ),
+    );
+  }
 });
+
+test(
+  "0012 guarded finalization rejects every unbound pack and denies the legacy runtime RPC",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      setupSqlUnderwritingWorkspace(database);
+      executeSql(database, `
+        insert into public.underwriting_batches (
+          id, workspace_id, scan_run_id, status,
+          batch_input_fingerprint, fund_policy_snapshot_id,
+          force_refresh, refresh_nonce, rerun_of_id
+        ) values (
+          'batch_guarded',
+          'workspace_1',
+          '00000000-0000-4000-8000-000000000801',
+          'running',
+          'sha256:${"9".repeat(64)}',
+          'fund_policy:workspace_1:v1',
+          false,
+          null,
+          null
+        );
+        insert into public.candidate_runs (
+          id, batch_id, workspace_id, deal_id, status,
+          candidate_analysis_fingerprint, worker_id, lease_token,
+          lease_expires_at
+        ) values (
+          'candidate_guarded',
+          'batch_guarded',
+          'workspace_1',
+          'deal_1',
+          'running',
+          'pending:candidate_guarded',
+          'worker_guarded',
+          'lease_guarded',
+          now() + interval '5 minutes'
+        );
+      `);
+      const payload = finalization({
+        candidateRunId: "candidate_guarded",
+        dealId: "deal_1",
+        workerId: "worker_guarded",
+        leaseToken: "lease_guarded",
+        fundPolicyId: "fund_policy:workspace_1:v1",
+      });
+
+      assert.throws(
+        () => executeSql(database, `
+          set role service_role;
+          select public.finalize_candidate_underwriting(
+            ${sqlJson(payload)}
+          );
+        `),
+        /permission denied for function finalize_candidate_underwriting/i,
+      );
+      assert.throws(
+        () => executeSql(database, `
+          set role service_role;
+          select public.finalize_or_reuse_candidate_underwriting(
+            ${sqlJson(payload)}
+          );
+        `),
+        /immutable Evidence Pack build/i,
+      );
+
+      seedSqlSourceRevision(database);
+      saveSqlFinalizationBuild(database, payload);
+      for (
+        const invalid of [
+          {
+            ...payload,
+            evidencePackBuildInputFingerprint:
+              `sha256:${"f".repeat(64)}`,
+          },
+          {
+            ...payload,
+            evidencePack: {
+              ...payload.evidencePack,
+              createdAt: "2026-07-29T12:00:01.000Z",
+            },
+          },
+          {
+            ...payload,
+            evidencePack: {
+              ...payload.evidencePack,
+              id: "evidence_pack_wrong_key",
+            },
+          },
+          {
+            ...payload,
+            evidencePack: {
+              ...payload.evidencePack,
+              workspaceId: "workspace_foreign",
+            },
+          },
+          {
+            ...payload,
+            evidencePack: {
+              ...payload.evidencePack,
+              dealId: "deal_foreign",
+            },
+          },
+        ]
+      ) {
+        assert.throws(
+          () => executeSql(database, `
+            set role service_role;
+            select public.finalize_or_reuse_candidate_underwriting(
+              ${sqlJson(invalid)}
+            );
+          `),
+          /immutable Evidence Pack build/i,
+        );
+      }
+
+      executeSql(database, `
+        set role service_role;
+        select public.finalize_or_reuse_candidate_underwriting(
+          ${sqlJson(payload)}
+        );
+      `);
+      assert.equal(
+        executeSql(database, `
+          select status || '|' || candidate_analysis_fingerprint
+          from public.candidate_runs
+          where id = 'candidate_guarded';
+        `),
+        `completed|sha256:${"a".repeat(64)}`,
+      );
+    });
+  },
+);
 
 test(
   "0012 target claim leaves older work untouched and atomically aliases a linked identical rerun",
@@ -873,6 +1198,8 @@ test(
         leaseToken: originalClaim.leaseToken,
         fundPolicyId: "fund_policy:workspace_1:v1",
       });
+      seedSqlSourceRevision(database);
+      saveSqlFinalizationBuild(database, originalPayload);
       executeSql(database, `
         set role service_role;
         select public.finalize_or_reuse_candidate_underwriting(
@@ -914,9 +1241,11 @@ test(
           select
             (select count(*) from public.evidence_packs)
             || '|' ||
-            (select count(*) from public.candidate_version_snapshots);
+            (select count(*) from public.candidate_version_snapshots)
+            || '|' ||
+            (select count(*) from public.evidence_pack_builds);
         `),
-        "1|1",
+        "1|1|1",
       );
       assert.equal(
         executeSql(database, `
@@ -1100,6 +1429,102 @@ test(
 );
 
 test(
+  "0012 immutable evidence saves converge under simultaneous identical calls",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  async () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    await withTemporaryDatabaseAsync(async (database) => {
+      setupSqlUnderwritingWorkspace(database);
+      seedSqlSourceRevision(database, "revision_concurrent");
+      executeSql(database, `
+        create or replace function public.delay_immutable_insert()
+        returns trigger
+        language plpgsql
+        as $$
+        begin
+          perform pg_sleep(0.2);
+          return new;
+        end;
+        $$;
+        create trigger delay_source_evidence_insert
+        before insert on public.source_evidence_items
+        for each row execute function public.delay_immutable_insert();
+        create trigger delay_evidence_pack_build_insert
+        before insert on public.evidence_pack_builds
+        for each row execute function public.delay_immutable_insert();
+      `);
+      const sourceEvidence = {
+        id: "fact_concurrent",
+        workspaceId: "workspace_1",
+        dealId: "deal_1",
+        sourceRevisionId: "revision_concurrent",
+        field: "stage",
+        value: "seed",
+      };
+      const saveEvidenceSql = `
+        set role service_role;
+        select public.save_source_evidence_items(
+          ${sqlJson([sourceEvidence])}
+        );
+      `;
+      await Promise.all([
+        executeSqlAsync(database, saveEvidenceSql),
+        executeSqlAsync(database, saveEvidenceSql),
+      ]);
+
+      const pack = {
+        id: "pack_concurrent",
+        workspaceId: "workspace_1",
+        dealId: "deal_1",
+        sourceRevisionIds: ["revision_concurrent"],
+      };
+      const build = {
+        pack,
+        inputFingerprint: `sha256:${"8".repeat(64)}`,
+        sourceRevisionSnapshots: [{
+          id: "revision_concurrent",
+          workspaceId: "workspace_1",
+          sourceId: "source_deal_1",
+          revision: 1,
+          contentHash: `sha256:${"d".repeat(64)}`,
+          objectKey: "private/deal_1.md",
+          objectVersion: "object:v1",
+          contentType: "text/markdown",
+          extractorId: "plain_text_v1",
+          extractorVersion: "1",
+          extractedAt: "2026-07-29T10:00:00.000Z",
+          supersedesRevisionId: null,
+          createdAt: "2026-07-29T10:05:00.000Z",
+        }],
+      };
+      const saveBuildSql = `
+        set role service_role;
+        select public.save_evidence_pack_build(${sqlJson(build)});
+      `;
+      const buildResults = await Promise.all([
+        executeSqlAsync(database, saveBuildSql),
+        executeSqlAsync(database, saveBuildSql),
+      ]);
+
+      assert.equal(buildResults[0], buildResults[1]);
+      assert.equal(
+        executeSql(database, `
+          select
+            (select count(*) from public.source_evidence_items)
+            || '|' ||
+            (select count(*) from public.evidence_pack_builds);
+        `),
+        "1|1",
+      );
+    });
+  },
+);
+
+test(
   "0012 keeps published Critical Evidence child definitions immutable",
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   () => {
@@ -1119,6 +1544,150 @@ test(
             and field_id = 'company_identity';
         `),
         /critical_evidence_profile_fields is immutable/i,
+      );
+    });
+  },
+);
+
+test(
+  "0012 reapplication replaces legacy checks with every tightened named constraint",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      setupSqlUnderwritingWorkspace(database);
+      executeSql(database, `
+        alter table public.source_evidence_items
+          drop constraint source_evidence_items_payload_shape_check;
+        alter table public.source_evidence_items
+          add constraint source_evidence_items_payload_shape_check
+          check (true);
+        alter table public.source_evidence_items
+          drop constraint source_evidence_items_payload_identity_check;
+        alter table public.source_evidence_items
+          add constraint source_evidence_items_payload_identity_check
+          check (true);
+        alter table public.evidence_pack_builds
+          drop constraint evidence_pack_builds_input_fingerprint_check;
+        alter table public.evidence_pack_builds
+          add constraint evidence_pack_builds_input_fingerprint_check
+          check (true);
+        alter table public.evidence_pack_builds
+          drop constraint evidence_pack_builds_payload_shape_check;
+        alter table public.evidence_pack_builds
+          add constraint evidence_pack_builds_payload_shape_check
+          check (true);
+        alter table public.evidence_pack_builds
+          drop constraint evidence_pack_builds_snapshots_shape_check;
+        alter table public.evidence_pack_builds
+          add constraint evidence_pack_builds_snapshots_shape_check
+          check (true);
+        alter table public.evidence_pack_builds
+          drop constraint evidence_pack_builds_payload_identity_check;
+        alter table public.evidence_pack_builds
+          add constraint evidence_pack_builds_payload_identity_check
+          check (true);
+        alter table public.critical_evidence_profile_fields
+          drop constraint
+            critical_evidence_profile_fields_assertion_statuses_shape_check;
+        alter table public.critical_evidence_profile_fields
+          add constraint
+            critical_evidence_profile_fields_assertion_statuses_shape_check
+          check (true);
+        alter table public.critical_evidence_profile_fields
+          drop constraint
+            critical_evidence_profile_fields_freshness_shape_check;
+        alter table public.critical_evidence_profile_fields
+          add constraint
+            critical_evidence_profile_fields_freshness_shape_check
+          check (true);
+      `);
+
+      applySql(database, groundingMigrationPath);
+      assert.equal(
+        executeSql(database, `
+          select count(*)::text
+          from pg_constraint
+          where conname in (
+            'source_evidence_items_payload_shape_check',
+            'source_evidence_items_payload_identity_check',
+            'evidence_pack_builds_input_fingerprint_check',
+            'evidence_pack_builds_payload_shape_check',
+            'evidence_pack_builds_snapshots_shape_check',
+            'evidence_pack_builds_payload_identity_check',
+            'critical_evidence_profile_fields_assertion_statuses_shape_check',
+            'critical_evidence_profile_fields_freshness_shape_check'
+          );
+        `),
+        "8",
+      );
+      assert.match(
+        executeSql(database, `
+          select pg_get_constraintdef(oid)
+          from pg_constraint
+          where conname =
+            'critical_evidence_profile_fields_assertion_statuses_shape_check';
+        `),
+        /jsonb_array_length[\s\S]*jsonb_path_exists/i,
+      );
+
+      seedSqlSourceRevision(database);
+      assert.throws(() =>
+        executeSql(database, `
+          insert into public.source_evidence_items (
+            workspace_id, evidence_id, deal_id, source_revision_id, payload
+          ) values (
+            'workspace_1', 'bad_evidence', 'deal_1', 'revision_1', '{}'::jsonb
+          );
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          insert into public.evidence_pack_builds (
+            workspace_id, input_fingerprint, pack_id, pack_payload,
+            source_revision_snapshots
+          ) values (
+            'workspace_1', 'not-a-fingerprint', 'bad_pack',
+            '{"workspaceId":"workspace_1","id":"bad_pack"}'::jsonb,
+            '[]'::jsonb
+          );
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          insert into public.critical_evidence_profile_fields (
+            critical_evidence_profile_id, field_id, critical,
+            minimum_model_input, accepted_assertion_statuses,
+            accepted_freshness
+          ) values (
+            'critical_evidence_seed_b2b_saas_v1',
+            'bad_empty_array',
+            true,
+            false,
+            '[]'::jsonb,
+            '["current"]'::jsonb
+          );
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          insert into public.critical_evidence_profile_fields (
+            critical_evidence_profile_id, field_id, critical,
+            minimum_model_input, accepted_assertion_statuses,
+            accepted_freshness
+          ) values (
+            'critical_evidence_seed_b2b_saas_v1',
+            'bad_blank_array_value',
+            true,
+            false,
+            '["reported"]'::jsonb,
+            '["   "]'::jsonb
+          );
+        `)
       );
     });
   },
@@ -1208,7 +1777,6 @@ test(
       payload.actionDrafts.push({ ...payload.actionDrafts[0] });
       assert.throws(() =>
         executeSql(database, `
-          set role service_role;
           select public.finalize_candidate_underwriting(
             ${sqlJson(payload)}
           );
@@ -1246,7 +1814,6 @@ test(
       });
       assert.throws(() =>
         executeSql(database, `
-          set role service_role;
           select public.finalize_candidate_underwriting(${sqlJson(payload)});
         `)
       );
@@ -1264,7 +1831,6 @@ test(
       );
       payload.decision.claimEdges.pop();
       executeSql(database, `
-        set role service_role;
         select public.finalize_candidate_underwriting(${sqlJson(payload)});
       `);
       assert.equal(
@@ -1339,7 +1905,6 @@ test(
       });
 
       executeSql(database, `
-        set role service_role;
         select public.finalize_candidate_underwriting(${sqlJson(payload)});
       `);
       assert.equal(
@@ -1423,6 +1988,63 @@ test(
   },
 );
 
+function seedSqlSourceRevision(
+  database: string,
+  revisionId = "revision_1",
+): void {
+  executeSql(database, `
+    insert into public.source_revisions (
+      id, workspace_id, source_id, revision, content_hash,
+      object_key, object_version, content_type,
+      extractor_id, extractor_version, extracted_at,
+      supersedes_revision_id, created_at
+    ) values (
+      '${revisionId}',
+      'workspace_1',
+      'source_deal_1',
+      1,
+      'sha256:${"d".repeat(64)}',
+      'private/deal_1.md',
+      'object:v1',
+      'text/markdown',
+      'plain_text_v1',
+      '1',
+      '2026-07-29T10:00:00.000Z',
+      null,
+      '2026-07-29T10:05:00.000Z'
+    );
+  `);
+}
+
+function saveSqlFinalizationBuild(
+  database: string,
+  payload: CandidateFinalization,
+): void {
+  const revisionId = payload.evidencePack.sourceRevisionIds[0]!;
+  executeSql(database, `
+    set role service_role;
+    select public.save_evidence_pack_build(${sqlJson({
+      pack: payload.evidencePack,
+      inputFingerprint: payload.evidencePackBuildInputFingerprint,
+      sourceRevisionSnapshots: [{
+        id: revisionId,
+        workspaceId: payload.evidencePack.workspaceId,
+        sourceId: "source_deal_1",
+        revision: 1,
+        contentHash: `sha256:${"d".repeat(64)}`,
+        objectKey: "private/deal_1.md",
+        objectVersion: "object:v1",
+        contentType: "text/markdown",
+        extractorId: "plain_text_v1",
+        extractorVersion: "1",
+        extractedAt: "2026-07-29T10:00:00.000Z",
+        supersedesRevisionId: null,
+        createdAt: "2026-07-29T10:05:00.000Z",
+      }],
+    })});
+  `);
+}
+
 function setupSqlUnderwritingWorkspace(database: string): void {
   executeSql(database, `
     do $$
@@ -1473,6 +2095,21 @@ function withTemporaryDatabase(run: (database: string) => void): void {
   }
 }
 
+async function withTemporaryDatabaseAsync(
+  run: (database: string) => Promise<void>,
+): Promise<void> {
+  const database =
+    `vsee_underwriting_runs_${process.pid}_${
+      randomUUID().replaceAll("-", "")
+    }`;
+  execFileSync("createdb", [database], { stdio: "pipe" });
+  try {
+    await run(database);
+  } finally {
+    execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });
+  }
+}
+
 function applySql(database: string, path: string): void {
   execFileSync(
     "psql",
@@ -1487,6 +2124,34 @@ function executeSql(database: string, sql: string): string {
     ["-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
   ).trim();
+}
+
+function executeSqlAsync(database: string, sql: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      "psql",
+      ["-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
+      { stdio: ["ignore", "pipe", "pipe"] },
+    );
+    let stdout = "";
+    let stderr = "";
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk: string) => {
+      stdout += chunk;
+    });
+    child.stderr.on("data", (chunk: string) => {
+      stderr += chunk;
+    });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve(stdout.trim());
+        return;
+      }
+      reject(new Error(stderr.trim() || `psql exited with status ${code}.`));
+    });
+  });
 }
 
 function sqlJson(value: unknown): string {

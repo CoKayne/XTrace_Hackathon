@@ -70,6 +70,7 @@ const CandidateGroundingSnapshotSchema = z.strictObject({
 });
 const GroundedEvidencePackSchema = z.strictObject({
   pack: EvidencePackSchema,
+  buildInputFingerprint: FingerprintSchema,
   criticalEvidenceProfile: ReferenceDefinitionSchema,
   benchmark: SelectedBenchmarkSchema.nullable(),
 });

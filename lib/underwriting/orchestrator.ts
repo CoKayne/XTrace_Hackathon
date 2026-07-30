@@ -565,6 +565,7 @@ export function createSourceGroundedCandidateExecutor(options: {
     }
     const context = resolution.context;
     let pack: EvidencePack;
+    let evidencePackBuildInputFingerprint: string;
     let criticalEvidenceProfile: ReferenceDefinitionRef;
     let benchmark: ReferenceDefinitionRef | null;
     let valuationMethodPolicy: ReferenceDefinitionRef;
@@ -593,6 +594,7 @@ export function createSourceGroundedCandidateExecutor(options: {
         }),
       });
       pack = grounded.pack;
+      evidencePackBuildInputFingerprint = grounded.buildInputFingerprint;
       criticalEvidenceProfile = requireReferenceDefinition({
         catalog: input.referenceCatalog,
         expected: grounded.criticalEvidenceProfile,
@@ -833,6 +835,7 @@ export function createSourceGroundedCandidateExecutor(options: {
 
     return {
       candidateAnalysisFingerprint,
+      evidencePackBuildInputFingerprint,
       evidencePack: pack,
       context,
       scenarioModel,

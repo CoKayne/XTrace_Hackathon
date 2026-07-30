@@ -175,6 +175,23 @@ export async function createCandidateStageRuntime(input: {
     CandidateCheckpoint
   >();
   let initialization: Promise<void> | undefined;
+  let ledgerMutationTail = Promise.resolve();
+
+  const mutateProviderLedger = async <T>(
+    mutation: () => Promise<T>,
+  ): Promise<T> => {
+    const prior = ledgerMutationTail;
+    let release!: () => void;
+    ledgerMutationTail = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await prior;
+    try {
+      return await mutation();
+    } finally {
+      release();
+    }
+  };
 
   const initialize = async (): Promise<void> => {
     initialization ??= (async () => {
@@ -446,108 +463,131 @@ export async function createCandidateStageRuntime(input: {
         request.tokenUnits,
         "Provider attempt token units",
       );
-      let stageState = stateFor(
-        request.stage,
-        request.inputFingerprint,
-      );
-      if (stageState.status !== "running") {
-        throw new CandidateCheckpointReplayError(
-          request.stage,
-          "A provider attempt requires an active framework stage checkpoint.",
-        );
-      }
-      if (
-        stageState.providerAttempts.some(
-          ({ attemptFingerprint }) =>
-            attemptFingerprint === request.attemptFingerprint,
-        )
-      ) {
-        throw new CandidateProviderAttemptReplayError(
-          request.attemptFingerprint,
-        );
-      }
-      if (
-        consumedCostUnits + requestedCostUnits
-          > input.budget.maxCostUnits
-        || consumedTokenUnits + requestedTokenUnits
-          > input.budget.maxTokenUnits
-      ) {
-        const details = failure(request.stage, "budget");
-        await save({
-          ...stageState,
-          status: "failed",
-          reasonCode: details.reasonCode,
-          publicReason: details.publicReason,
-          savedAt: input.now().toISOString(),
-        });
-        input.onWarning?.(
-          `Candidate ${input.candidate.dealId}: ${details.publicReason}`,
-        );
-        throw new CandidateBudgetExhaustedError(request.stage);
-      }
-
-      consumedCostUnits += requestedCostUnits;
-      consumedTokenUnits += requestedTokenUnits;
-      stageState = await save({
-        ...stageState,
-        costUnits: stageState.costUnits + requestedCostUnits,
-        tokenUnits: stageState.tokenUnits + requestedTokenUnits,
-        providerAttempts: [
-          ...stageState.providerAttempts,
-          {
-            attemptFingerprint: request.attemptFingerprint,
-            status: "reserved",
-            reservedCostUnits: requestedCostUnits,
-            reservedTokenUnits: requestedTokenUnits,
-            actualTokenUnits: 0,
-          },
-        ],
-        savedAt: input.now().toISOString(),
-      });
-
-      try {
-        const completion = await request.operation();
-        const actualTokenUnits = measuredTokenUnits(completion.usage);
-        consumedActualTokenUnits += actualTokenUnits;
-        const current = stateFor(
+      await mutateProviderLedger(async () => {
+        const stageState = stateFor(
           request.stage,
           request.inputFingerprint,
         );
-        await save(updateProviderAttempt({
-          checkpoint: current,
-          attemptFingerprint: request.attemptFingerprint,
-          status: "completed",
-          actualTokenUnits,
+        if (stageState.status !== "running") {
+          throw new CandidateCheckpointReplayError(
+            request.stage,
+            "A provider attempt requires an active framework stage checkpoint.",
+          );
+        }
+        if (
+          stageState.providerAttempts.some(
+            ({ attemptFingerprint }) =>
+              attemptFingerprint === request.attemptFingerprint,
+          )
+        ) {
+          throw new CandidateProviderAttemptReplayError(
+            request.attemptFingerprint,
+          );
+        }
+        if (
+          consumedCostUnits + requestedCostUnits
+            > input.budget.maxCostUnits
+          || consumedTokenUnits + requestedTokenUnits
+            > input.budget.maxTokenUnits
+        ) {
+          const details = failure(request.stage, "budget");
+          await save({
+            ...stageState,
+            status: "failed",
+            reasonCode: details.reasonCode,
+            publicReason: details.publicReason,
+            savedAt: input.now().toISOString(),
+          });
+          input.onWarning?.(
+            `Candidate ${input.candidate.dealId}: ${details.publicReason}`,
+          );
+          throw new CandidateBudgetExhaustedError(request.stage);
+        }
+
+        await save({
+          ...stageState,
+          costUnits: stageState.costUnits + requestedCostUnits,
+          tokenUnits: stageState.tokenUnits + requestedTokenUnits,
+          providerAttempts: [
+            ...stageState.providerAttempts,
+            {
+              attemptFingerprint: request.attemptFingerprint,
+              status: "reserved",
+              reservedCostUnits: requestedCostUnits,
+              reservedTokenUnits: requestedTokenUnits,
+              actualCostUnits: 0,
+              actualTokenUnits: 0,
+              usageKnown: false,
+            },
+          ],
           savedAt: input.now().toISOString(),
-        }));
-        return completion;
+        });
+        consumedCostUnits += requestedCostUnits;
+        consumedTokenUnits += requestedTokenUnits;
+      });
+
+      let completion: MeasuredClaudeCompletion;
+      try {
+        completion = await request.operation();
       } catch (error) {
         const actualTokenUnits = error instanceof ClaudeCompletionTruncatedError
           ? measuredTokenUnits(error.usage)
           : 0;
-        consumedActualTokenUnits += actualTokenUnits;
+        const usageKnown = error instanceof ClaudeCompletionTruncatedError;
+        await mutateProviderLedger(async () => {
+          const current = stateFor(
+            request.stage,
+            request.inputFingerprint,
+          );
+          const timedOut = error instanceof CandidateStageTimeoutError;
+          const details = timedOut
+            ? failure(request.stage, "timeout")
+            : null;
+          const settled = updateProviderAttempt({
+            checkpoint: {
+              ...current,
+              status: timedOut ? "failed" : current.status,
+              reasonCode: details?.reasonCode ?? current.reasonCode,
+              publicReason: details?.publicReason ?? current.publicReason,
+            },
+            attemptFingerprint: request.attemptFingerprint,
+            status: timedOut ? "aborted" : "failed",
+            actualCostUnits: usageKnown ? requestedCostUnits : 0,
+            actualTokenUnits,
+            usageKnown,
+            savedAt: input.now().toISOString(),
+          });
+          await save(settled);
+          consumedCostUnits += settled.costUnits - current.costUnits;
+          consumedTokenUnits += settled.tokenUnits - current.tokenUnits;
+          consumedActualTokenUnits +=
+            settled.actualTokenUnits - current.actualTokenUnits;
+        });
+        throw error;
+      }
+
+      const actualTokenUnits = measuredTokenUnits(completion.usage);
+      await mutateProviderLedger(async () => {
         const current = stateFor(
           request.stage,
           request.inputFingerprint,
         );
-        const timedOut = error instanceof CandidateStageTimeoutError;
-        const details = timedOut
-          ? failure(request.stage, "timeout")
-          : null;
-        await save(updateProviderAttempt({
-          checkpoint: {
-            ...current,
-            status: timedOut ? "failed" : current.status,
-            reasonCode: details?.reasonCode ?? current.reasonCode,
-            publicReason: details?.publicReason ?? current.publicReason,
-          },
+        const settled = updateProviderAttempt({
+          checkpoint: current,
           attemptFingerprint: request.attemptFingerprint,
-          status: timedOut ? "aborted" : "failed",
+          status: "completed",
+          actualCostUnits: requestedCostUnits,
           actualTokenUnits,
+          usageKnown: true,
           savedAt: input.now().toISOString(),
-        }));
-        throw error;
-      }
+        });
+        await save(settled);
+        consumedCostUnits += settled.costUnits - current.costUnits;
+        consumedTokenUnits += settled.tokenUnits - current.tokenUnits;
+        consumedActualTokenUnits +=
+          settled.actualTokenUnits - current.actualTokenUnits;
+      });
+      return completion;
     },
   };
 }
@@ -578,21 +618,32 @@ function updateProviderAttempt(input: {
   checkpoint: CandidateCheckpoint;
   attemptFingerprint: string;
   status: "completed" | "failed" | "aborted";
+  actualCostUnits: number;
   actualTokenUnits: number;
+  usageKnown: boolean;
   savedAt: string;
 }): CandidateCheckpoint {
   let found = false;
+  let costUnits = input.checkpoint.costUnits;
+  let tokenUnits = input.checkpoint.tokenUnits;
   const providerAttempts = input.checkpoint.providerAttempts.map(
     (attempt) => {
       if (attempt.attemptFingerprint !== input.attemptFingerprint) {
         return attempt;
       }
       found = true;
-      return {
+      const settledAttempt = {
         ...attempt,
         status: input.status,
+        actualCostUnits: input.actualCostUnits,
         actualTokenUnits: input.actualTokenUnits,
+        usageKnown: input.usageKnown,
       };
+      costUnits += enforcedCostUnits(settledAttempt)
+        - enforcedCostUnits(attempt);
+      tokenUnits += enforcedTokenUnits(settledAttempt)
+        - enforcedTokenUnits(attempt);
+      return settledAttempt;
     },
   );
   if (!found) {
@@ -601,10 +652,28 @@ function updateProviderAttempt(input: {
   return CandidateCheckpointSchema.parse({
     ...input.checkpoint,
     providerAttempts,
+    costUnits,
+    tokenUnits,
     actualTokenUnits:
       input.checkpoint.actualTokenUnits + input.actualTokenUnits,
     savedAt: input.savedAt,
   });
+}
+
+function enforcedCostUnits(
+  attempt: CandidateCheckpoint["providerAttempts"][number],
+): number {
+  return attempt.usageKnown
+    ? attempt.actualCostUnits
+    : attempt.reservedCostUnits;
+}
+
+function enforcedTokenUnits(
+  attempt: CandidateCheckpoint["providerAttempts"][number],
+): number {
+  return attempt.usageKnown
+    ? attempt.actualTokenUnits
+    : attempt.reservedTokenUnits;
 }
 
 function measuredTokenUnits(usage: ClaudeTokenUsage): number {

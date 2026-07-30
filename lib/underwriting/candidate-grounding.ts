@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from "node:util";
+
 import type {
   EvidencePacksRepository,
   SourceEvidenceInput,
@@ -47,6 +49,7 @@ export interface CandidateGroundingSnapshot {
 
 export interface GroundedEvidencePack {
   pack: EvidencePack;
+  buildInputFingerprint: string;
   criticalEvidenceProfile: ReferenceDefinitionRef;
   benchmark: SelectedBenchmarkInput | null;
 }
@@ -174,8 +177,21 @@ export function createEvidencePackCandidateGrounding(options: {
         fundPolicy: input.fundPolicy,
         benchmark,
       });
+      const savedBuild = await options.repository.findByPackId({
+        workspaceId: input.candidate.workspaceId,
+        packId: pack.id,
+      });
+      if (
+        !savedBuild
+        || !isDeepStrictEqual(savedBuild.pack, pack)
+      ) {
+        throw new CandidateGroundingUnavailableError([
+          "EVIDENCE_PACK_BUILD_UNAVAILABLE",
+        ]);
+      }
       return {
         pack,
+        buildInputFingerprint: savedBuild.inputFingerprint,
         criticalEvidenceProfile: {
           kind: "critical_evidence_profile",
           id: criticalEvidenceProfile.id,

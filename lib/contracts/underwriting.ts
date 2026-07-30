@@ -416,7 +416,9 @@ export const CandidateProviderAttemptSchema = z.strictObject({
   status: z.enum(["reserved", "completed", "failed", "aborted"]),
   reservedCostUnits: z.number().int().nonnegative(),
   reservedTokenUnits: z.number().int().nonnegative(),
+  actualCostUnits: z.number().int().nonnegative().default(0),
   actualTokenUnits: z.number().int().nonnegative(),
+  usageKnown: z.boolean().default(false),
 });
 
 export const CandidateCheckpointSchema = z.strictObject({

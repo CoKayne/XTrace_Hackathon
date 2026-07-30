@@ -83,6 +83,7 @@ export interface CandidateFinalization {
   leaseToken: string;
   candidateRunId: string;
   candidateAnalysisFingerprint: string;
+  evidencePackBuildInputFingerprint: string;
   evidencePack: EvidencePack;
   context: ResolvedUnderwritingContext;
   scenarioModel: ScenarioModel;
@@ -100,7 +101,10 @@ export interface CandidateFinalization {
 export interface CandidateArtifactBundle
   extends Omit<
     CandidateFinalization,
-    "workerId" | "leaseToken" | "candidateRunId"
+    | "workerId"
+    | "leaseToken"
+    | "candidateRunId"
+    | "evidencePackBuildInputFingerprint"
   > {
   candidateRunId: string;
   workspaceId: string;
@@ -576,7 +580,7 @@ function validateFinalization(
     dealId: string;
     fundPolicySnapshotId: string;
   },
-  input: CandidateFinalization,
+  input: Omit<CandidateFinalization, "evidencePackBuildInputFingerprint">,
 ): CandidateArtifactBundle {
   const candidateRunId = requiredText(input.candidateRunId, "A candidate run");
   const workspaceId = requiredText(candidate.workspaceId, "A workspace");

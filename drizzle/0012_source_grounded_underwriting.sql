@@ -124,8 +124,27 @@ create table if not exists public.source_evidence_items (
         and payload ->> 'sourceRevisionId' = source_revision_id,
         false
       )
-    )
+  )
 );
+
+alter table public.source_evidence_items
+  drop constraint if exists source_evidence_items_payload_shape_check;
+alter table public.source_evidence_items
+  add constraint source_evidence_items_payload_shape_check
+  check (jsonb_typeof(payload) = 'object');
+alter table public.source_evidence_items
+  drop constraint if exists source_evidence_items_payload_identity_check;
+alter table public.source_evidence_items
+  add constraint source_evidence_items_payload_identity_check
+  check (
+    coalesce(
+      payload ->> 'id' = evidence_id
+      and payload ->> 'workspaceId' = workspace_id
+      and payload ->> 'dealId' = deal_id
+      and payload ->> 'sourceRevisionId' = source_revision_id,
+      false
+    )
+  );
 
 create index if not exists source_evidence_items_grounding_idx
 on public.source_evidence_items(
@@ -134,9 +153,7 @@ on public.source_evidence_items(
 
 create table if not exists public.evidence_pack_builds (
   workspace_id text not null,
-  input_fingerprint text not null check (
-    input_fingerprint ~ '^sha256:[0-9a-f]{64}$'
-  ),
+  input_fingerprint text not null,
   pack_id text not null,
   pack_payload jsonb not null,
   source_revision_snapshots jsonb not null,
@@ -155,8 +172,37 @@ create table if not exists public.evidence_pack_builds (
         and pack_payload ->> 'id' = pack_id,
         false
       )
-    )
+  )
 );
+
+alter table public.evidence_pack_builds
+  drop constraint if exists evidence_pack_builds_fingerprint_check;
+alter table public.evidence_pack_builds
+  drop constraint if exists evidence_pack_builds_input_fingerprint_check;
+alter table public.evidence_pack_builds
+  add constraint evidence_pack_builds_input_fingerprint_check
+  check (input_fingerprint ~ '^sha256:[0-9a-f]{64}$');
+alter table public.evidence_pack_builds
+  drop constraint if exists evidence_pack_builds_payload_shape_check;
+alter table public.evidence_pack_builds
+  add constraint evidence_pack_builds_payload_shape_check
+  check (jsonb_typeof(pack_payload) = 'object');
+alter table public.evidence_pack_builds
+  drop constraint if exists evidence_pack_builds_snapshots_shape_check;
+alter table public.evidence_pack_builds
+  add constraint evidence_pack_builds_snapshots_shape_check
+  check (jsonb_typeof(source_revision_snapshots) = 'array');
+alter table public.evidence_pack_builds
+  drop constraint if exists evidence_pack_builds_payload_identity_check;
+alter table public.evidence_pack_builds
+  add constraint evidence_pack_builds_payload_identity_check
+  check (
+    coalesce(
+      pack_payload ->> 'workspaceId' = workspace_id
+      and pack_payload ->> 'id' = pack_id,
+      false
+    )
+  );
 
 create or replace function public.claim_underwriting_candidate(
   p_workspace_id text,
@@ -242,6 +288,10 @@ declare
   target_fingerprint text := btrim(
     p_payload ->> 'candidateAnalysisFingerprint'
   );
+  build_input_fingerprint text := btrim(
+    p_payload ->> 'evidencePackBuildInputFingerprint'
+  );
+  evidence_pack jsonb := p_payload -> 'evidencePack';
 begin
   select * into target
   from public.candidate_runs
@@ -296,6 +346,27 @@ begin
       'finalizedAt',
         public.canonical_utc_iso_milliseconds(target.finalized_at)
     );
+  end if;
+
+  if build_input_fingerprint !~ '^sha256:[0-9a-f]{64}$'
+    or jsonb_typeof(evidence_pack) <> 'object'
+    or btrim(coalesce(evidence_pack ->> 'id', '')) = ''
+    or evidence_pack ->> 'workspaceId' <> target.workspace_id
+    or evidence_pack ->> 'dealId' <> target.deal_id
+  then
+    raise exception
+      'Non-reuse finalization requires an immutable Evidence Pack build';
+  end if;
+  perform 1
+  from public.evidence_pack_builds as build
+  where build.workspace_id = target.workspace_id
+    and build.input_fingerprint = build_input_fingerprint
+    and build.pack_id = evidence_pack ->> 'id'
+    and build.pack_payload = evidence_pack
+  for key share;
+  if not found then
+    raise exception
+      'Non-reuse finalization requires the exact immutable Evidence Pack build';
   end if;
 
   return public.finalize_candidate_underwriting(p_payload);
@@ -443,24 +514,23 @@ begin
       raise exception 'Source evidence identity is required';
     end if;
 
+    insert into public.source_evidence_items (
+      workspace_id, evidence_id, deal_id, source_revision_id, payload
+    ) values (
+      v_workspace_id, v_evidence_id, v_deal_id, v_revision_id, item
+    )
+    on conflict (workspace_id, evidence_id) do nothing;
+
     prior := null;
-    select payload into prior
+    select payload into strict prior
     from public.source_evidence_items
     where source_evidence_items.workspace_id = v_workspace_id
       and source_evidence_items.evidence_id = v_evidence_id
-    for update;
-    if found then
-      if prior <> item then
-        raise exception
-          'Source evidence % is immutable and already differs',
-          v_evidence_id;
-      end if;
-    else
-      insert into public.source_evidence_items (
-        workspace_id, evidence_id, deal_id, source_revision_id, payload
-      ) values (
-        v_workspace_id, v_evidence_id, v_deal_id, v_revision_id, item
-      );
+    for key share;
+    if prior <> item then
+      raise exception
+        'Source evidence % is immutable and already differs',
+        v_evidence_id;
     end if;
   end loop;
 end;
@@ -569,26 +639,6 @@ begin
     end if;
   end loop;
 
-  select * into target
-  from public.evidence_pack_builds
-  where evidence_pack_builds.workspace_id = v_workspace_id
-    and (
-      evidence_pack_builds.input_fingerprint =
-        v_input_fingerprint
-      or evidence_pack_builds.pack_id = v_pack_id
-    )
-  for update;
-  if found then
-    if target.input_fingerprint <> v_input_fingerprint
-      or target.pack_id <> v_pack_id
-      or target.pack_payload <> p_payload -> 'pack'
-      or target.source_revision_snapshots <> snapshots
-    then
-      raise exception 'Evidence Pack build is immutable and already differs';
-    end if;
-    return to_jsonb(target);
-  end if;
-
   insert into public.evidence_pack_builds (
     workspace_id, input_fingerprint, pack_id, pack_payload,
     source_revision_snapshots
@@ -596,7 +646,24 @@ begin
     v_workspace_id, v_input_fingerprint, v_pack_id,
     p_payload -> 'pack', snapshots
   )
-  returning * into target;
+  on conflict do nothing;
+
+  select * into strict target
+  from public.evidence_pack_builds
+  where evidence_pack_builds.workspace_id = v_workspace_id
+    and (
+      evidence_pack_builds.input_fingerprint =
+        v_input_fingerprint
+      or evidence_pack_builds.pack_id = v_pack_id
+    )
+  for key share;
+  if target.input_fingerprint <> v_input_fingerprint
+    or target.pack_id <> v_pack_id
+    or target.pack_payload <> p_payload -> 'pack'
+    or target.source_revision_snapshots <> snapshots
+  then
+    raise exception 'Evidence Pack build is immutable and already differs';
+  end if;
   return to_jsonb(target);
 end;
 $$;
@@ -607,15 +674,48 @@ create table if not exists public.critical_evidence_profile_fields (
   field_id text not null,
   critical boolean not null,
   minimum_model_input boolean not null,
-  accepted_assertion_statuses jsonb not null check (
-    jsonb_typeof(accepted_assertion_statuses) = 'array'
-  ),
-  accepted_freshness jsonb not null check (
-    jsonb_typeof(accepted_freshness) = 'array'
-  ),
+  accepted_assertion_statuses jsonb not null,
+  accepted_freshness jsonb not null,
   created_at timestamptz not null default now(),
   primary key (critical_evidence_profile_id, field_id)
 );
+
+alter table public.critical_evidence_profile_fields
+  drop constraint if exists
+    critical_evidence_profile_fields_accepted_assertion_statuses_check;
+alter table public.critical_evidence_profile_fields
+  drop constraint if exists
+    critical_evidence_profile_fields_accepted_freshness_check;
+alter table public.critical_evidence_profile_fields
+  drop constraint if exists
+    critical_evidence_profile_fields_assertion_statuses_shape_check;
+alter table public.critical_evidence_profile_fields
+  add constraint
+    critical_evidence_profile_fields_assertion_statuses_shape_check
+  check (
+    case when jsonb_typeof(accepted_assertion_statuses) = 'array' then
+      jsonb_array_length(accepted_assertion_statuses) > 0
+      and not jsonb_path_exists(
+        accepted_assertion_statuses,
+        '$[*] ? (@.type() != "string" || @ like_regex "^\\s*$")'
+      )
+    else false end
+  );
+alter table public.critical_evidence_profile_fields
+  drop constraint if exists
+    critical_evidence_profile_fields_freshness_shape_check;
+alter table public.critical_evidence_profile_fields
+  add constraint
+    critical_evidence_profile_fields_freshness_shape_check
+  check (
+    case when jsonb_typeof(accepted_freshness) = 'array' then
+      jsonb_array_length(accepted_freshness) > 0
+      and not jsonb_path_exists(
+        accepted_freshness,
+        '$[*] ? (@.type() != "string" || @ like_regex "^\\s*$")'
+      )
+    else false end
+  );
 
 drop trigger if exists critical_evidence_profile_fields_immutable
   on public.critical_evidence_profile_fields;
@@ -670,12 +770,22 @@ grant select, insert, update, delete on table public.evidence_pack_builds
   to vsee_underwriting_owner;
 grant select on table public.critical_evidence_profile_fields
   to vsee_underwriting_owner;
-grant select on table public.source_revisions to vsee_underwriting_owner;
+-- PostgreSQL row-locking SELECTs require UPDATE privilege; the append-only
+-- trigger still rejects every actual source revision mutation.
+grant select, update on table public.source_revisions
+  to vsee_underwriting_owner;
 drop policy if exists source_revisions_underwriting_owner
   on public.source_revisions;
 create policy source_revisions_underwriting_owner
   on public.source_revisions
   for select to vsee_underwriting_owner using (true);
+drop policy if exists source_revisions_underwriting_lock
+  on public.source_revisions;
+create policy source_revisions_underwriting_lock
+  on public.source_revisions
+  for update to vsee_underwriting_owner
+  using (true)
+  with check (false);
 
 drop policy if exists source_evidence_items_underwriting_owner
   on public.source_evidence_items;
@@ -706,6 +816,8 @@ revoke all on function
   public.claim_underwriting_candidate(text, text, text, integer) from public;
 revoke all on function
   public.finalize_or_reuse_candidate_underwriting(jsonb) from public;
+revoke all on function public.finalize_candidate_underwriting(jsonb)
+  from public;
 revoke all on function public.save_source_evidence_items(jsonb) from public;
 revoke all on function public.save_evidence_pack_build(jsonb) from public;
 
@@ -738,6 +850,10 @@ begin
       restricted_role
     );
     execute format(
+      'revoke all on function public.finalize_candidate_underwriting(jsonb) from %I',
+      restricted_role
+    );
+    execute format(
       'revoke all on function public.save_source_evidence_items(jsonb) from %I',
       restricted_role
     );
@@ -758,6 +874,8 @@ begin
     grant execute on function
       public.finalize_or_reuse_candidate_underwriting(jsonb)
       to service_role;
+    revoke all on function public.finalize_candidate_underwriting(jsonb)
+      from service_role;
     grant execute on function
       public.save_source_evidence_items(jsonb)
       to service_role;

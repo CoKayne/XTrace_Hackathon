@@ -109,10 +109,11 @@ export async function runNextQueuedScan(): Promise<boolean> {
     const intelligence = getIntelligenceRepository();
     const dealRegistry = getDealRegistry();
     const claude = createClaudeClient();
-    const underwritingRuns = createDefaultUnderwritingRunsRepository();
     const references = getUnderwritingReferencesRepository();
     const lineage = getXTraceLineageRepository();
     const evidenceRepository = getEvidencePacksRepository();
+    const underwritingRuns =
+      createDefaultUnderwritingRunsRepository(evidenceRepository);
     const sourceRegistry = getSourceRegistry();
     const router = createContextRouter();
     const criticalEvidenceProfiles = (
@@ -291,12 +292,14 @@ export async function runNextQueuedScan(): Promise<boolean> {
   return true;
 }
 
-function createDefaultUnderwritingRunsRepository() {
+function createDefaultUnderwritingRunsRepository(
+  evidencePacks: ReturnType<typeof getEvidencePacksRepository>,
+) {
   const url = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   return url && serviceRoleKey
     ? createSupabaseUnderwritingRunsRepository({ url, serviceRoleKey })
-    : createMemoryUnderwritingRunsRepository();
+    : createMemoryUnderwritingRunsRepository({ evidencePacks });
 }
 
 // Uploaded documents are staged here for explicit confirmation. They never

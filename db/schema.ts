@@ -292,7 +292,7 @@ export const evidencePackBuilds = pgTable("evidence_pack_builds", {
     table.packId,
   ),
   check(
-    "evidence_pack_builds_fingerprint_check",
+    "evidence_pack_builds_input_fingerprint_check",
     sql`${table.inputFingerprint} ~ '^sha256:[0-9a-f]{64}$'`,
   ),
   check(
@@ -745,6 +745,14 @@ export const criticalEvidenceProfileFields = pgTable(
     primaryKey({
       columns: [table.criticalEvidenceProfileId, table.fieldId],
     }),
+    check(
+      "critical_evidence_profile_fields_assertion_statuses_shape_check",
+      sql`case when jsonb_typeof(${table.acceptedAssertionStatuses}) = 'array' then jsonb_array_length(${table.acceptedAssertionStatuses}) > 0 and not jsonb_path_exists(${table.acceptedAssertionStatuses}, '$[*] ? (@.type() != "string" || @ like_regex "^\\\\s*$")') else false end`,
+    ),
+    check(
+      "critical_evidence_profile_fields_freshness_shape_check",
+      sql`case when jsonb_typeof(${table.acceptedFreshness}) = 'array' then jsonb_array_length(${table.acceptedFreshness}) > 0 and not jsonb_path_exists(${table.acceptedFreshness}, '$[*] ? (@.type() != "string" || @ like_regex "^\\\\s*$")') else false end`,
+    ),
   ],
 );
 
