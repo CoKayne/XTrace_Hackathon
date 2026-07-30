@@ -26,8 +26,8 @@ export function createRunsRepository(client: DataClient) {
     async get(workspaceId: string, runId: string) {
       return client.getRun(workspaceId, runId);
     },
-    list(workspaceId: string) {
-      return client.listRuns(workspaceId);
+    list(workspaceId: string, resetAt: string | null = null) {
+      return client.listRuns(workspaceId, resetAt);
     },
     async updateStage(input: {
       workspaceId: string;

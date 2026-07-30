@@ -5,6 +5,7 @@ import {
   type RouteDependencies,
 } from "../../../../lib/api/route-dependencies";
 import { requirePermission } from "../../../../lib/api/safety";
+import { getTestGenerationRepository } from "../../../../db/repositories/test-generations";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,14 @@ export async function GET(
   try {
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
+    const resetAt = await getTestGenerationRepository().currentResetAt(
+      context.workspaceId,
+    );
     return jsonOk(
-      await getIntelligenceRepository().listMarketEvents(context.workspaceId),
+      await getIntelligenceRepository().listMarketEvents(
+        context.workspaceId,
+        resetAt,
+      ),
     );
   } catch (error) {
     return errorResponse(error);

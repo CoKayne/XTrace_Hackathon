@@ -62,7 +62,10 @@ export interface DataClient {
     patch: RunUpdatePatch,
   ): Promise<RunRecord>;
   getRun(workspaceId: string, runId: string): Promise<RunRecord | null>;
-  listRuns(workspaceId: string): Promise<RunRecord[]>;
+  listRuns(
+    workspaceId: string,
+    resetAt?: string | null,
+  ): Promise<RunRecord[]>;
   insertRunStage(input: Omit<RunStageRecord, "id">): Promise<RunStageRecord>;
   touchWorkerHeartbeat(workerId: string): Promise<void>;
   isWorkerHealthy(maxAgeMs: number): Promise<boolean>;
@@ -170,9 +173,15 @@ export function createMemoryDataClient(options: {
         ? structuredClone(run)
         : null;
     },
-    async listRuns(workspaceId) {
+    async listRuns(workspaceId, resetAt = null) {
       return [...runs.values()]
-        .filter((run) => run.workspaceId === workspaceId)
+        .filter((run) =>
+          run.workspaceId === workspaceId
+          && (
+            resetAt === null
+            || new Date(run.createdAt).getTime() > new Date(resetAt).getTime()
+          )
+        )
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
         .map((run) => structuredClone(run));
     },
@@ -328,8 +337,14 @@ export function createSupabaseDataClient(options: SupabaseOptions): DataClient {
       ) as Record<string, unknown>[];
       return rows[0] ? toRunRecord(rows[0]) : null;
     },
-    async listRuns(workspaceId) {
-      const rows = await request(`/scan_runs?workspace_id=eq.${encodeURIComponent(workspaceId)}&order=created_at.desc`) as Record<string, unknown>[];
+    async listRuns(workspaceId, resetAt = null) {
+      const resetFilter = resetAt === null
+        ? ""
+        : `&created_at=gt.${encodeURIComponent(resetAt)}`;
+      const rows = await request(
+        `/scan_runs?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+        + `${resetFilter}&order=created_at.desc`,
+      ) as Record<string, unknown>[];
       return rows.map(toRunRecord);
     },
     async insertRunStage(input) {

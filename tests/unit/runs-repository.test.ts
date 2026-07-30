@@ -236,6 +236,73 @@ test("Supabase run reads scope the database query by workspace and run id", asyn
   assert.equal(url.searchParams.get("id"), "eq.run_one");
 });
 
+test("default run lists hide rows at or before reset without hiding direct lookups", async () => {
+  let current = new Date("2026-07-30T11:59:59.999Z");
+  const runs = createRunsRepository(createMemoryDataClient({
+    now: () => current,
+  }));
+  const old = await runs.create({
+    workspaceId: "workspace_one",
+    mode: "structured",
+    windowDays: 14,
+  });
+  await runs.finish({
+    workspaceId: old.workspaceId,
+    runId: old.id,
+    status: "completed",
+  });
+  current = new Date("2026-07-30T12:00:00.000Z");
+  const boundary = await runs.create({
+    workspaceId: "workspace_one",
+    mode: "structured",
+    windowDays: 14,
+  });
+  await runs.finish({
+    workspaceId: boundary.workspaceId,
+    runId: boundary.id,
+    status: "completed",
+  });
+  current = new Date("2026-07-30T12:00:00.001Z");
+  const fresh = await runs.create({
+    workspaceId: "workspace_one",
+    mode: "structured",
+    windowDays: 14,
+  });
+
+  assert.deepEqual(
+    (await runs.list(
+      "workspace_one",
+      "2026-07-30T12:00:00.000Z",
+    )).map(({ id }) => id),
+    [fresh.id],
+  );
+  assert.equal((await runs.get("workspace_one", old.id))?.id, old.id);
+  assert.equal(
+    (await runs.get("workspace_one", boundary.id))?.id,
+    boundary.id,
+  );
+});
+
+test("Supabase run list filtering is workspace-scoped and strictly after reset", async () => {
+  let requestedUrl = "";
+  const runs = createRunsRepository(createSupabaseDataClient({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    async fetchImpl(input) {
+      requestedUrl = String(input);
+      return Response.json([]);
+    },
+  }));
+
+  await runs.list("workspace_one", "2026-07-30T12:00:00.000Z");
+
+  const url = new URL(requestedUrl);
+  assert.equal(url.searchParams.get("workspace_id"), "eq.workspace_one");
+  assert.deepEqual(url.searchParams.getAll("created_at"), [
+    "gt.2026-07-30T12:00:00.000Z",
+  ]);
+});
+
 test("Supabase run writes and stage inserts always carry the trusted workspace", async () => {
   const calls: Array<{ url: URL; method: string; body: unknown }> = [];
   const row = {

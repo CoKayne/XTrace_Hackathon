@@ -164,6 +164,51 @@ test("market event upserts are idempotent", async () => {
   );
 });
 
+test("re-observing a market event after reset returns it to the default list", async () => {
+  let current = new Date("2026-07-30T11:59:59.999Z");
+  const repository = createMemoryIntelligenceRepository({
+    now: () => current,
+  });
+  await repository.saveMarketEvents([event("observed-again")], "workspace_demo");
+
+  const resetAt = "2026-07-30T12:00:00.000Z";
+  assert.deepEqual(
+    await repository.listMarketEvents("workspace_demo", resetAt),
+    [],
+  );
+
+  current = new Date("2026-07-30T12:00:00.001Z");
+  await repository.saveMarketEvents([event("observed-again")], "workspace_demo");
+  assert.deepEqual(
+    (await repository.listMarketEvents("workspace_demo", resetAt))
+      .map(({ id }) => id),
+    ["observed-again"],
+  );
+});
+
+test("Supabase market event writes refresh observation time on every scan", async () => {
+  const writes: unknown[] = [];
+  const repository = createSupabaseIntelligenceRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    now: () => new Date("2026-07-30T12:00:00.123Z"),
+    async fetchImpl(_input, init) {
+      writes.push(JSON.parse(String(init?.body)));
+      return new Response(null, { status: 201 });
+    },
+  });
+
+  await repository.saveMarketEvents([event("observed")], "workspace_demo");
+
+  assert.deepEqual(writes, [[{
+    workspace_id: "workspace_demo",
+    id: "observed",
+    published_at: "2026-07-22T12:00:00.000Z",
+    observed_at: "2026-07-30T12:00:00.123Z",
+    payload: event("observed"),
+  }]]);
+});
+
 test("Supabase market event upserts accept successful empty responses", async () => {
   const createSupabaseRepository = (
     intelligenceRepositoryModule as typeof intelligenceRepositoryModule & {
@@ -254,6 +299,73 @@ test("reports are stored newest first", async () => {
     (await repository.listReports("workspace_demo")).map((item) => item.id),
     ["report_new", "report_old"],
   );
+});
+
+test("default report lists hide rows at or before reset while direct permalinks remain readable", async () => {
+  const repository = createMemoryIntelligenceRepository();
+  for (const [id, createdAt] of [
+    ["report_old", "2026-07-30T11:59:59.999Z"],
+    ["report_boundary", "2026-07-30T12:00:00.000Z"],
+    ["report_new", "2026-07-30T12:00:00.001Z"],
+  ]) {
+    await repository.saveReport({
+      id,
+      workspaceId: "workspace_demo",
+      runId: `run_${id}`,
+      createdAt,
+      marketSummary: id,
+      opportunities: [],
+    });
+  }
+
+  assert.deepEqual(
+    (await repository.listReports(
+      "workspace_demo",
+      "2026-07-30T12:00:00.000Z",
+    )).map(({ id }) => id),
+    ["report_new"],
+  );
+  assert.equal(
+    (await repository.getReport("workspace_demo", "report_old"))?.id,
+    "report_old",
+  );
+  assert.equal(
+    (await repository.getReportByRunId(
+      "workspace_demo",
+      "run_report_boundary",
+    ))?.id,
+    "report_boundary",
+  );
+});
+
+test("Supabase default intelligence lists use strict reset boundaries", async () => {
+  const requestedUrls: URL[] = [];
+  const repository = createSupabaseIntelligenceRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    now: () => new Date("2026-07-30T12:00:00.000Z"),
+    async fetchImpl(input) {
+      requestedUrls.push(new URL(String(input)));
+      return Response.json([]);
+    },
+  });
+
+  const resetAt = "2026-07-30T11:00:00.000Z";
+  await repository.listMarketEvents("workspace_demo", resetAt);
+  await repository.listReports("workspace_demo", resetAt);
+
+  const eventsUrl = requestedUrls.find(({ pathname }) =>
+    pathname.endsWith("/market_events")
+  );
+  const reportsUrl = requestedUrls.find(({ pathname }) =>
+    pathname.endsWith("/intelligence_reports")
+  );
+  assert.deepEqual(eventsUrl?.searchParams.getAll("observed_at"), [
+    `gt.${resetAt}`,
+  ]);
+  assert.deepEqual(reportsUrl?.searchParams.getAll("created_at"), [
+    `gt.${resetAt}`,
+  ]);
 });
 
 test("report identity includes workspace and cannot be overwritten cross-tenant", async () => {

@@ -57,6 +57,20 @@ export const workspaces = pgTable("workspaces", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const workspaceTestGenerations = pgTable("workspace_test_generations", {
+  workspaceId: text("workspace_id").primaryKey().references(
+    () => workspaces.id,
+    { onDelete: "cascade" },
+  ),
+  resetAt: timestamp("reset_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedBy: text("updated_by").notNull(),
+}, (table) => [
+  check(
+    "workspace_test_generations_updated_by_check",
+    sql`btrim(${table.updatedBy}) <> ''`,
+  ),
+]);
+
 export const scanRuns = pgTable("scan_runs", {
   id: uuid("id").defaultRandom().primaryKey(),
   workspaceId: text("workspace_id").notNull().references(
@@ -512,6 +526,7 @@ export const marketEvents = pgTable("market_events", {
   ),
   id: text("id").notNull(),
   publishedAt: timestamp("published_at", { withTimezone: true }).notNull(),
+  observedAt: timestamp("observed_at", { withTimezone: true }).defaultNow().notNull(),
   payload: jsonb("payload").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [

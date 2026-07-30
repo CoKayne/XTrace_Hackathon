@@ -15,6 +15,7 @@ import {
 import { withinPublicationWindow } from "../../lib/market/dedupe";
 import type { NormalizedMarketEvent } from "../../lib/market/types";
 import { sanitizeReportOpportunities } from "../../lib/reports/next-step-policy";
+import { afterReset, filterAfterReset } from "./test-generations";
 
 const MARKET_EVENT_WINDOW_DAYS = 14;
 
@@ -58,7 +59,10 @@ export interface IntelligenceRepository {
     events: NormalizedMarketEvent[],
     workspaceId: string,
   ): Promise<void>;
-  listMarketEvents(workspaceId: string): Promise<NormalizedMarketEvent[]>;
+  listMarketEvents(
+    workspaceId: string,
+    resetAt?: string | null,
+  ): Promise<NormalizedMarketEvent[]>;
   saveReport(report: IntelligenceReportWrite): Promise<IntelligenceReportRecord>;
   getReport(
     workspaceId: string,
@@ -68,7 +72,10 @@ export interface IntelligenceRepository {
     workspaceId: string,
     runId: string,
   ): Promise<IntelligenceReportRecord | null>;
-  listReports(workspaceId: string): Promise<IntelligenceReportRecord[]>;
+  listReports(
+    workspaceId: string,
+    resetAt?: string | null,
+  ): Promise<IntelligenceReportRecord[]>;
   listDealAnalyses(
     workspaceId: string,
     dealId: string,
@@ -98,11 +105,16 @@ function currentMarketWindow(now: () => Date) {
 export function buildMarketEventsReadPath(input: {
   workspaceId: string;
   now: Date;
+  resetAt?: string | null;
 }): string {
   const window = marketWindowAt(input.now);
+  const resetFilter = input.resetAt == null
+    ? ""
+    : `&observed_at=gt.${encodeURIComponent(input.resetAt)}`;
   return `/market_events?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
     + `&published_at=gte.${encodeURIComponent(window.from.toISOString())}`
     + `&published_at=lte.${encodeURIComponent(window.to.toISOString())}`
+    + resetFilter
     + "&select=payload&order=published_at.desc";
 }
 
@@ -317,7 +329,11 @@ function workspaceIdentity(workspaceId: string, externalId: string): string {
 export function createMemoryIntelligenceRepository(
   options: IntelligenceRepositoryClockOptions = {},
 ): IntelligenceRepository {
-  const events = new Map<string, { workspaceId: string; event: NormalizedMarketEvent }>();
+  const events = new Map<string, {
+    workspaceId: string;
+    observedAt: string;
+    event: NormalizedMarketEvent;
+  }>();
   const reports = new Map<string, IntelligenceReportRecord>();
   const snapshots = new Map<string, {
     runId: string;
@@ -328,18 +344,21 @@ export function createMemoryIntelligenceRepository(
   return {
     async saveMarketEvents(items, workspaceId) {
       workspaceId = requiredWorkspaceId(workspaceId);
+      const observedAt = now().toISOString();
       for (const event of items) {
         events.set(workspaceIdentity(workspaceId, event.id), {
           workspaceId,
+          observedAt,
           event: structuredClone(event),
         });
       }
     },
-    async listMarketEvents(workspaceId) {
+    async listMarketEvents(workspaceId, resetAt = null) {
       const { to } = currentMarketWindow(now);
       return [...events.values()]
         .filter((row) =>
           row.workspaceId === workspaceId
+          && afterReset(row.observedAt, resetAt)
           && withinPublicationWindow(
             row.event.publishedAt,
             to,
@@ -391,9 +410,12 @@ export function createMemoryIntelligenceRepository(
       );
       return report ? structuredClone(report) : null;
     },
-    async listReports(workspaceId) {
-      return [...reports.values()]
-        .filter((report) => report.workspaceId === workspaceId)
+    async listReports(workspaceId, resetAt = null) {
+      return filterAfterReset(
+        [...reports.values()]
+          .filter((report) => report.workspaceId === workspaceId),
+        resetAt,
+      )
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
         .map((report) => structuredClone(report));
     },
@@ -542,6 +564,7 @@ export function createSupabaseIntelligenceRepository(options: {
     async saveMarketEvents(items, workspaceId) {
       workspaceId = requiredWorkspaceId(workspaceId);
       if (!items.length) return;
+      const observedAt = now().toISOString();
       await request("/market_events?on_conflict=workspace_id,id", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
@@ -549,13 +572,14 @@ export function createSupabaseIntelligenceRepository(options: {
           workspace_id: workspaceId,
           id: event.id,
           published_at: event.publishedAt,
+          observed_at: observedAt,
           payload: event,
         }))),
       });
     },
-    async listMarketEvents(workspaceId) {
+    async listMarketEvents(workspaceId, resetAt = null) {
       const rows = await request(
-        buildMarketEventsReadPath({ workspaceId, now: now() }),
+        buildMarketEventsReadPath({ workspaceId, now: now(), resetAt }),
       ) as Array<{ payload: NormalizedMarketEvent }>;
       return rows.map((row) => row.payload);
     },
@@ -616,9 +640,13 @@ export function createSupabaseIntelligenceRepository(options: {
       const analyses = await analysesForReportIds(workspaceId, [reportId]);
       return toReport(rows[0], analyses.get(reportId) ?? []);
     },
-    async listReports(workspaceId) {
+    async listReports(workspaceId, resetAt = null) {
+      const resetFilter = resetAt === null
+        ? ""
+        : `&created_at=gt.${encodeURIComponent(resetAt)}`;
       const rows = await request(
-        `/intelligence_reports?workspace_id=eq.${encodeURIComponent(workspaceId)}&order=created_at.desc`,
+        `/intelligence_reports?workspace_id=eq.${encodeURIComponent(workspaceId)}`
+        + `${resetFilter}&order=created_at.desc`,
       ) as Record<string, unknown>[];
       const reportIds = rows.map((row) => String(row.id));
       const analyses = await analysesForReportIds(workspaceId, reportIds);

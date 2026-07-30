@@ -17,6 +17,7 @@ import { createDefaultDemoDataStore } from "../../../lib/storage/service";
 import { isXTraceConfigured } from "../../../lib/xtrace/client";
 import { toPublicRun } from "../../../lib/runs/public";
 import { isDurableWorkspaceMode } from "../../../lib/auth/request-context";
+import { getTestGenerationRepository } from "../../../db/repositories/test-generations";
 
 export const dynamic = "force-dynamic";
 
@@ -28,8 +29,12 @@ export async function GET(
   try {
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
+    const resetAt = await getTestGenerationRepository().currentResetAt(
+      context.workspaceId,
+    );
     const runs = await createRunsRepository(getDataClient()).list(
       context.workspaceId,
+      resetAt,
     );
     return jsonOk(runs.map(toPublicRun));
   } catch (error) {
