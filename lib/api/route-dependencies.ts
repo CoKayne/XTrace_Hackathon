@@ -2,6 +2,9 @@ import type { UploadedDocumentsRepository } from "../../db/repositories/uploaded
 import type { SourceRegistry } from "../../db/repositories/source-registry";
 import type { DealRegistry } from "../../db/repositories/deal-registry";
 import type {
+  EvidencePacksRepository,
+} from "../../db/repositories/evidence-packs";
+import type {
   UnderwritingReferencesRepository,
 } from "../../db/repositories/underwriting-references";
 import type {
@@ -29,6 +32,7 @@ export interface RouteDependencies {
   uploadedDocuments?: UploadedDocumentsRepository;
   sourceRegistry?: SourceRegistry;
   dealRegistry?: DealRegistry;
+  evidencePacks?: EvidencePacksRepository;
   documentAccess?: PrivateDocumentAccess;
   privateObjectStorage?: PrivateObjectStorage;
   underwritingReferences?: UnderwritingReferencesRepository;

@@ -127,6 +127,7 @@ async function setup() {
     {
       ...common,
       id: "fact_company",
+      sourceId: "source_management",
       sourceRevisionId: "revision_1",
       field: "Company Identity",
       value: "company_1",
@@ -140,6 +141,7 @@ async function setup() {
     {
       ...common,
       id: "fact_valuation",
+      sourceId: "source_management",
       sourceRevisionId: "revision_1",
       field: "Pre-money valuation",
       value: "$20,000,000",
@@ -155,6 +157,7 @@ async function setup() {
     {
       ...common,
       id: "fact_valuation_basis",
+      sourceId: "source_management",
       sourceRevisionId: "revision_1",
       field: "Valuation basis",
       value: "pre-money",
@@ -168,6 +171,7 @@ async function setup() {
     {
       ...common,
       id: "fact_arr_reported",
+      sourceId: "source_management",
       sourceRevisionId: "revision_1",
       field: "ARR",
       value: "$2,000,000",
@@ -185,6 +189,7 @@ async function setup() {
     {
       ...common,
       id: "fact_arr_verified",
+      sourceId: "source_verified",
       sourceRevisionId: "revision_2",
       provenanceOrigin: "public_source",
       sourceRole: "independent_third_party",
@@ -261,6 +266,54 @@ test("builds one immutable pack without resolving a material ARR conflict in fav
     "an unresolved ARR conflict must not become a scenario input",
   );
   assert.equal(repository.inspect().savedPacks.length, 1);
+});
+
+test("rejects canonical evidence whose document ID does not own its revision", async () => {
+  const { repository, builder } = await setup();
+  await repository.putSourceEvidence([{
+    id: "fact_foreign_source_tuple",
+    workspaceId: "workspace_1",
+    dealId: "deal_1",
+    sourceId: "source_foreign",
+    sourceRevisionId: "revision_1",
+    provenanceOrigin: "uploaded_document",
+    field: "unstructured_source_fact",
+    value: "Generic prose must not cross source identity boundaries.",
+    unit: null,
+    currency: null,
+    periodStart: null,
+    periodEnd: null,
+    publishedAt: null,
+    eventAt: null,
+    retrievedAt: "2026-07-29T10:05:00.000Z",
+    locator: {
+      kind: "text_range",
+      start: 51,
+      end: 102,
+      excerpt: "Generic prose must not cross source identity boundaries.",
+    },
+    sourceRole: "management",
+    assertionStatus: "reported",
+    verificationMethod: null,
+    freshness: "current",
+    acceptedForGate: false,
+  }]);
+
+  await assert.rejects(builder.build({
+    workspaceId: "workspace_1",
+    dealId: "deal_1",
+    asOfDate: "2026-07-29",
+    sourceRevisionIds: ["revision_1"],
+    xtraceLineage: {
+      memoryIds: [],
+      sourceRevisionIds: [],
+      sourceIds: [],
+      fixtureIds: [],
+      capturedAt: "2026-07-29T10:09:00.000Z",
+    },
+    context,
+    ...referenceInputs,
+  }), /document.*revision|source.*revision/i);
 });
 
 test("emits valuation-compatible benchmark, policy multiplier, and currency-bearing ARR assumptions", async () => {

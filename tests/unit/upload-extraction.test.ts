@@ -135,6 +135,47 @@ test("preview facts retain locators and complete extraction metadata", async () 
   });
 });
 
+test("preview preserves only explicitly extracted structured underwriting fields", async () => {
+  const documentText = "ARR was $2,000,000 for calendar 2025.";
+  const preview = await extractUploadPreview({
+    record: RECORD,
+    bytes: new TextEncoder().encode(documentText),
+    client: {
+      async complete() {
+        return JSON.stringify({
+          companyName: "Acme",
+          headline: null,
+          facts: [{
+            text: "ARR was $2,000,000 for calendar 2025.",
+            excerpt: "ARR was $2,000,000 for calendar 2025.",
+            structured: {
+              field: "ARR",
+              value: "$2,000,000",
+              unit: "currency",
+              currency: "USD",
+              periodStart: "2025-01-01",
+              periodEnd: "2025-12-31",
+              publishedAt: null,
+              eventAt: null,
+            },
+          }],
+        });
+      },
+    },
+  });
+
+  assert.deepEqual(preview.facts[0]?.structured, {
+    field: "ARR",
+    value: "$2,000,000",
+    unit: "currency",
+    currency: "USD",
+    periodStart: "2025-01-01",
+    periodEnd: "2025-12-31",
+    publishedAt: null,
+    eventAt: null,
+  });
+});
+
 test("image preview facts never persist a model quote as a verbatim excerpt", async () => {
   let calls = 0;
   const preview = await extractUploadPreview({

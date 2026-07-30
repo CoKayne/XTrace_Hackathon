@@ -9,6 +9,12 @@ import type {
   DealRegistry,
   RegisteredDeal,
 } from "../../db/repositories/deal-registry";
+import {
+  createMemoryEvidencePacksRepository,
+  getEvidencePacksRepository,
+  type EvidencePacksRepository,
+  type SourceEvidenceInput,
+} from "../../db/repositories/evidence-packs";
 import type { SourceRegistry } from "../../db/repositories/source-registry";
 import type { ConfirmUpload } from "../contracts/http";
 import type { DealMemoryBundle, DealStatus } from "../contracts/domain";
@@ -130,9 +136,16 @@ export function createUploadConfirmationService(dependencies: {
   uploads: UploadedDocumentsRepository;
   sources: SourceRegistry;
   deals: DealRegistry;
+  evidencePacks?: EvidencePacksRepository;
   now?: () => Date;
 }) {
   const now = dependencies.now ?? (() => new Date());
+  const evidencePacks = dependencies.evidencePacks
+    ?? (
+      dependencies.uploads.promoteAtomically
+        ? getEvidencePacksRepository()
+        : createMemoryEvidencePacksRepository()
+    );
 
   return {
     async listCandidateDeals(workspaceId: string) {
@@ -222,7 +235,20 @@ export function createUploadConfirmationService(dependencies: {
           fact: fact.text,
           excerpt: fact.excerpt ?? fact.text,
           page: 1,
+          locator: evidenceLocator(fact),
+          structured: completeStructuredFact(fact),
         }));
+        const canonicalEvidence = evidence.map((item) =>
+          canonicalSourceEvidence({
+            item,
+            workspaceId: input.workspaceId,
+            dealId: identity.dealId,
+            sourceId,
+            sourceRevisionId,
+            retrievedAt:
+              upload.extractionPreview!.extractionMetadata.extractedAt,
+          })
+        );
         const bundle = memoryBundle({
           upload,
           dealId: identity.dealId,
@@ -311,7 +337,7 @@ export function createUploadConfirmationService(dependencies: {
           });
         } else {
           await promoteMemoryAtomically(
-            dependencies,
+            { ...dependencies, evidencePacks },
             {
               upload: {
                 workspaceId: input.workspaceId,
@@ -330,10 +356,16 @@ export function createUploadConfirmationService(dependencies: {
                 sourceRevisionId,
                 requestId: assignmentRequestId,
               },
+              evidence: {
+                workspaceId: input.workspaceId,
+                evidenceIds: canonicalEvidence.map(({ id }) => id),
+              },
             },
             {
               createRevision,
               confirmAssignment,
+              putSourceEvidence: () =>
+                evidencePacks.putSourceEvidence(canonicalEvidence),
               markUploadConfirmed,
             },
           );
@@ -346,6 +378,130 @@ export function createUploadConfirmationService(dependencies: {
         };
       });
     },
+  };
+}
+
+function evidenceLocator(
+  fact: ExtractionPreview["facts"][number],
+): SourceEvidenceInput["locator"] {
+  if (fact.locator.kind === "image") {
+    return {
+      kind: "image",
+      imageIndex: fact.locator.imageIndex,
+      region: null,
+    };
+  }
+  return {
+    ...fact.locator,
+    excerpt: fact.excerpt ?? fact.text,
+  };
+}
+
+function completeStructuredFact(
+  fact: ExtractionPreview["facts"][number],
+): NonNullable<typeof fact.structured> | null {
+  const structured = fact.structured;
+  if (!structured?.field.trim() || !structured.value.trim()) return null;
+  const excerpt = fact.excerpt?.trim();
+  if (!excerpt || !excerpt.toLowerCase().includes(
+    structured.value.trim().toLowerCase(),
+  )) {
+    return null;
+  }
+  const normalizedField = structured.field.toLowerCase()
+    .replace(/[_/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (
+    ["pmf", "product market fit", "product-market fit"].includes(
+      normalizedField,
+    )
+  ) {
+    return null;
+  }
+  const financialField = [
+    "annual recurring revenue",
+    "arr",
+    "sales pipeline",
+    "pipeline",
+    "gross merchandise value",
+    "gmv",
+    "total revenue",
+    "revenue",
+    "recurring revenue",
+    "subscription revenue",
+    "professional services revenue",
+    "services revenue",
+    "pass through revenue",
+    "pass-through revenue",
+    "pre money valuation",
+    "pre-money valuation",
+    "post money valuation",
+    "post-money valuation",
+    "reported valuation",
+    "round price",
+  ].includes(normalizedField);
+  if (
+    (financialField || structured.unit?.toLowerCase() === "currency")
+    && !/^[A-Z]{3}$/.test(structured.currency ?? "")
+  ) {
+    return null;
+  }
+  if (
+    [structured.periodStart, structured.periodEnd]
+      .some((value) => value !== null && !/^\d{4}-\d{2}-\d{2}$/.test(value))
+    || (
+      structured.periodStart
+      && structured.periodEnd
+      && structured.periodEnd < structured.periodStart
+    )
+    || [structured.publishedAt, structured.eventAt].some((value) =>
+      value !== null && !Number.isFinite(Date.parse(value))
+    )
+  ) {
+    return null;
+  }
+  return structuredClone(structured);
+}
+
+function canonicalSourceEvidence(input: {
+  item: {
+    id: string;
+    fact: string;
+    locator: SourceEvidenceInput["locator"];
+    structured: NonNullable<
+      ExtractionPreview["facts"][number]["structured"]
+    > | null;
+  };
+  workspaceId: string;
+  dealId: string;
+  sourceId: string;
+  sourceRevisionId: string;
+  retrievedAt: string;
+}): SourceEvidenceInput {
+  const structured = input.item.structured;
+  return {
+    id: input.item.id,
+    workspaceId: input.workspaceId,
+    dealId: input.dealId,
+    sourceId: input.sourceId,
+    sourceRevisionId: input.sourceRevisionId,
+    provenanceOrigin: "uploaded_document",
+    field: structured?.field ?? "unstructured_source_fact",
+    value: structured?.value ?? input.item.fact,
+    unit: structured?.unit ?? null,
+    currency: structured?.currency ?? null,
+    periodStart: structured?.periodStart ?? null,
+    periodEnd: structured?.periodEnd ?? null,
+    publishedAt: structured?.publishedAt ?? null,
+    eventAt: structured?.eventAt ?? null,
+    retrievedAt: input.retrievedAt,
+    locator: input.item.locator,
+    sourceRole: "management",
+    assertionStatus: "reported",
+    verificationMethod: null,
+    freshness: "current",
+    acceptedForGate: structured !== null,
   };
 }
 
@@ -485,6 +641,7 @@ async function promoteMemoryAtomically(
     uploads: UploadedDocumentsRepository;
     sources: SourceRegistry;
     deals: DealRegistry;
+    evidencePacks: EvidencePacksRepository;
   },
   scopes: {
     upload: { workspaceId: string; uploadId: string };
@@ -501,6 +658,7 @@ async function promoteMemoryAtomically(
       sourceRevisionId: string;
       requestId: string;
     };
+    evidence: { workspaceId: string; evidenceIds: string[] };
   },
   steps: {
     createRevision: (
@@ -510,6 +668,7 @@ async function promoteMemoryAtomically(
       revisionId: string,
       confirmSourceAssignment: DealRegistry["confirmSourceAssignment"],
     ) => Promise<unknown>;
+    putSourceEvidence: () => Promise<void>;
     markUploadConfirmed: () => Promise<unknown>;
   },
 ): Promise<void> {
@@ -517,6 +676,7 @@ async function promoteMemoryAtomically(
     !isAtomicMemoryAdapter(dependencies.uploads)
     || !isAtomicMemorySourceAdapter(dependencies.sources)
     || !isAtomicMemoryDealAdapter(dependencies.deals)
+    || !isAtomicMemoryAdapter(dependencies.evidencePacks)
     || !dependencies.deals.usesSourceRegistry(dependencies.sources)
   ) {
     throw new Error(
@@ -529,6 +689,8 @@ async function promoteMemoryAtomically(
     & AtomicMemorySourceAdapter<typeof scopes.source>;
   const deals = dependencies.deals as DealRegistry
     & AtomicMemoryDealAdapter<typeof scopes.deal>;
+  const evidencePacks = dependencies.evidencePacks as EvidencePacksRepository
+    & AtomicMemoryAdapter<typeof scopes.evidence>;
   // Every promotion acquires Source before Deal; ordinary mutators acquire
   // at most their owning repository's lock.
   return sources.withPromotionLock(
@@ -538,9 +700,12 @@ async function promoteMemoryAtomically(
         const beforeUpload = uploads.capturePromotionState(scopes.upload);
         const beforeSource = sources.capturePromotionState(scopes.source);
         const beforeDeal = deals.capturePromotionState(scopes.deal);
+        const beforeEvidence =
+          evidencePacks.capturePromotionState(scopes.evidence);
         let expectedUpload = beforeUpload;
         let expectedSource = beforeSource;
         let expectedDeal = beforeDeal;
+        let expectedEvidence = beforeEvidence;
         try {
           let revision: { id: string };
           try {
@@ -557,12 +722,22 @@ async function promoteMemoryAtomically(
             expectedDeal = deals.capturePromotionState(scopes.deal);
           }
           try {
+            await steps.putSourceEvidence();
+          } finally {
+            expectedEvidence =
+              evidencePacks.capturePromotionState(scopes.evidence);
+          }
+          try {
             await steps.markUploadConfirmed();
           } finally {
             expectedUpload = uploads.capturePromotionState(scopes.upload);
           }
         } catch (error) {
           uploads.restorePromotionState(beforeUpload, expectedUpload);
+          evidencePacks.restorePromotionState(
+            beforeEvidence,
+            expectedEvidence,
+          );
           deals.restorePromotionState(beforeDeal, expectedDeal);
           sources.restorePromotionState(beforeSource, expectedSource);
           throw error;

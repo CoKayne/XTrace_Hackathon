@@ -14,6 +14,16 @@ const ExtractionSchema = z.object({
   facts: z.array(z.object({
     text: z.string().min(1).max(400),
     excerpt: z.string().min(1).max(600).nullable(),
+    structured: z.object({
+      field: z.string().min(1).max(120),
+      value: z.string().min(1).max(200),
+      unit: z.string().min(1).max(40).nullable(),
+      currency: z.string().regex(/^[A-Z]{3}$/).nullable(),
+      periodStart: z.iso.date().nullable(),
+      periodEnd: z.iso.date().nullable(),
+      publishedAt: z.iso.datetime({ offset: true }).nullable(),
+      eventAt: z.iso.datetime({ offset: true }).nullable(),
+    }).nullable().optional(),
   })),
 });
 
@@ -67,6 +77,7 @@ export async function extractUploadPreview(input: {
         text: fact.text,
         excerpt: null,
         locator: { kind: "image", imageIndex: 0 },
+        ...(fact.structured ? { structured: fact.structured } : {}),
       });
       continue;
     }
@@ -77,6 +88,7 @@ export async function extractUploadPreview(input: {
       text: fact.text,
       excerpt: fact.excerpt,
       locator: { kind: "text_range", start, end: start + fact.excerpt.length },
+      ...(fact.structured ? { structured: fact.structured } : {}),
     });
   }
   return {
@@ -169,12 +181,16 @@ async function extractDealProfile(input: {
 }): Promise<{
   companyName: string | null;
   headline: string | null;
-  facts: Array<{ text: string; excerpt: string | null }>;
+  facts: Array<Pick<
+    ExtractionPreview["facts"][number],
+    "text" | "excerpt" | "structured"
+  >>;
 }> {
   const response = await input.client.complete({
     system: [
       "You read a single venture pitch or company document and report what it says.",
       "Do not infer, estimate, or add anything the document does not state.",
+      "Set structured to null for generic prose, PMF conclusions, or incomplete financial data; never infer product-market fit or calculate a financial value.",
       "Every excerpt must be an exact, character-for-character contiguous quote copied from the document text.",
       "Return JSON only, matching the requested schema.",
     ].join(" "),
@@ -188,6 +204,18 @@ async function extractDealProfile(input: {
           facts: [{
             text: "one-sentence summary of the excerpt",
             excerpt: "exact quote copied from documentText, or null",
+            structured: "null unless every field below is explicit in the excerpt; otherwise: " + JSON.stringify({
+              field:
+                "the explicit underwriting field named or unambiguously labeled by the excerpt",
+              value:
+                "the exact value text copied from the excerpt; never calculate, expand abbreviations, or infer",
+              unit: "the explicit unit, or null",
+              currency: "the explicit ISO currency code, or null",
+              periodStart: "explicit YYYY-MM-DD period start, or null",
+              periodEnd: "explicit YYYY-MM-DD period end, or null",
+              publishedAt: "explicit ISO date-time with offset, or null",
+              eventAt: "explicit ISO date-time with offset, or null",
+            }),
           }],
         },
         filename: input.filename,
@@ -203,6 +231,14 @@ async function extractDealProfile(input: {
     facts: parsed.facts.map((fact) => ({
       text: fact.text.trim(),
       excerpt: fact.excerpt?.trim() || null,
+      structured: fact.structured
+        ? {
+            ...fact.structured,
+            field: fact.structured.field.trim(),
+            value: fact.structured.value.trim(),
+            unit: fact.structured.unit?.trim() || null,
+          }
+        : null,
     })),
   };
 }

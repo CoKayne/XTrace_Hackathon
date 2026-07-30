@@ -15,6 +15,7 @@ export interface SourceEvidenceInput {
   id: string;
   workspaceId: string;
   dealId: string;
+  sourceId: string;
   sourceRevisionId: string;
   provenanceOrigin: Fact["provenanceOrigin"];
   field: string;
@@ -65,6 +66,11 @@ export interface EvidencePacksRepository {
 
 export interface MemoryEvidencePacksRepository
   extends EvidencePacksRepository {
+  capturePromotionState(input: {
+    workspaceId: string;
+    evidenceIds: string[];
+  }): unknown;
+  restorePromotionState(before: unknown, expected: unknown): void;
   removeSourceEvidence(input: {
     workspaceId: string;
     evidenceId: string;
@@ -82,6 +88,43 @@ export function createMemoryEvidencePacksRepository():
   const fingerprintsByPack = new Map<string, string>();
 
   return {
+    capturePromotionState(input) {
+      const keys = input.evidenceIds.map((evidenceId) =>
+        identity(
+          requiredText(input.workspaceId, "A workspace"),
+          requiredText(evidenceId, "An evidence item"),
+        )
+      );
+      return {
+        keys,
+        items: Object.fromEntries(keys.map((key) => [
+          key,
+          evidence.has(key) ? structuredClone(evidence.get(key)) : null,
+        ])),
+      };
+    },
+
+    restorePromotionState(rawBefore, rawExpected) {
+      type PromotionState = {
+        keys: string[];
+        items: Record<string, SourceEvidenceInput | null>;
+      };
+      const before = rawBefore as PromotionState;
+      const expected = rawExpected as PromotionState;
+      if (canonicalJson(before.keys) !== canonicalJson(expected.keys)) {
+        throw new Error("Evidence promotion states do not share an identity.");
+      }
+      for (const key of before.keys) {
+        const current = evidence.get(key) ?? null;
+        if (canonicalJson(current) !== canonicalJson(expected.items[key])) {
+          continue;
+        }
+        const prior = before.items[key];
+        if (prior) evidence.set(key, structuredClone(prior));
+        else evidence.delete(key);
+      }
+    },
+
     async putSourceEvidence(inputs) {
       for (const rawInput of inputs) {
         const input = validateSourceEvidenceInput(rawInput);
@@ -328,6 +371,7 @@ function validateSourceEvidenceInput(
     ["An evidence id", candidate.id],
     ["A workspace", candidate.workspaceId],
     ["A Deal", candidate.dealId],
+    ["A source", candidate.sourceId],
     ["A source revision", candidate.sourceRevisionId],
     ["An evidence field", candidate.field],
     ["An evidence value", candidate.value],

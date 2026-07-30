@@ -252,6 +252,7 @@ async function candidateGroundingFor(
   const common = {
     workspaceId: registeredDeal.workspaceId,
     dealId,
+    sourceId: `source_revision_${dealId}`,
     sourceRevisionId: registeredDeal.activeSourceRevisionIds[0]!,
     provenanceOrigin: "uploaded_document" as const,
     unit: null,

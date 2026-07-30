@@ -24,6 +24,16 @@ export interface ExtractionPreview {
     locator:
       | { kind: "text_range"; start: number; end: number }
       | { kind: "image"; imageIndex: 0 };
+    structured?: {
+      field: string;
+      value: string;
+      unit: string | null;
+      currency: string | null;
+      periodStart: string | null;
+      periodEnd: string | null;
+      publishedAt: string | null;
+      eventAt: string | null;
+    } | null;
   }>;
   extractionMetadata: {
     extractorId: "plain_text_v1" | "claude_vision_v1";

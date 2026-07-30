@@ -1,6 +1,7 @@
 import { getDealRegistry } from "../../../../../db/repositories/deal-registry";
 import { getSourceRegistry } from "../../../../../db/repositories/source-registry";
 import { getUploadedDocumentsRepository } from "../../../../../db/repositories/uploaded-documents";
+import { getEvidencePacksRepository } from "../../../../../db/repositories/evidence-packs";
 import { errorResponse, jsonError, jsonOk } from "../../../../../lib/api/response";
 import {
   resolveRouteRequestContext,
@@ -35,6 +36,8 @@ export async function POST(
         ?? getUploadedDocumentsRepository(),
       sources: dependencies.sourceRegistry ?? getSourceRegistry(),
       deals: dependencies.dealRegistry ?? getDealRegistry(),
+      evidencePacks:
+        dependencies.evidencePacks ?? getEvidencePacksRepository(),
     });
     return jsonOk(await service.confirm({
       workspaceId: requestContext.workspaceId,

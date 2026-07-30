@@ -103,6 +103,7 @@ export function createEvidencePackBuilder(options: {
         workspaceId: input.workspaceId,
         dealId: input.dealId,
         sourceRevisionIds,
+        sourceRevisionSnapshots,
       });
       const facts = sourceEvidence
         .map(normalizeSourceEvidence)
@@ -292,16 +293,22 @@ function validateEvidenceOwnership(input: {
   workspaceId: string;
   dealId: string;
   sourceRevisionIds: string[];
+  sourceRevisionSnapshots: SourceRevision[];
 }): void {
   const revisionIds = new Set(input.sourceRevisionIds);
+  const sourceIdsByRevision = new Map(
+    input.sourceRevisionSnapshots.map(({ id, sourceId }) => [id, sourceId]),
+  );
   for (const evidence of input.sourceEvidence) {
     if (
       evidence.workspaceId !== input.workspaceId
       || evidence.dealId !== input.dealId
       || !revisionIds.has(evidence.sourceRevisionId)
+      || sourceIdsByRevision.get(evidence.sourceRevisionId)
+        !== evidence.sourceId
     ) {
       throw new Error(
-        `Evidence ${evidence.id} is outside the requested Deal source lineage.`,
+        `Evidence ${evidence.id} has a document/source and revision tuple outside the requested Deal lineage.`,
       );
     }
   }

@@ -271,6 +271,67 @@ test(
           "-f",
           fileURLToPath(new URL(`../../drizzle/${migration}`, import.meta.url)),
         ], { stdio: "pipe" });
+        if (migration === task13MigrationName) {
+          execFileSync("psql", [
+            "-v",
+            "ON_ERROR_STOP=1",
+            "-d",
+            database,
+            "-c",
+            `
+              insert into public.workspaces (id, name)
+              values ('workspace_backfill', 'Backfill');
+              insert into public.companies (
+                id, workspace_id, name
+              ) values (
+                'company_backfill', 'workspace_backfill', 'Backfill Co'
+              );
+              insert into public.deals (
+                id, workspace_id, company_id, company_name, status
+              ) values (
+                'deal_backfill', 'workspace_backfill', 'company_backfill',
+                'Backfill Co', 'evaluating'
+              );
+              insert into public.source_revisions (
+                id, workspace_id, source_id, revision, content_hash,
+                object_key, object_version, content_type, extractor_id,
+                extractor_version, extracted_at, supersedes_revision_id
+              ) values (
+                'revision_backfill', 'workspace_backfill', 'source_backfill',
+                1, 'hash-backfill', 'private/backfill.md', 'object:v1',
+                'text/markdown', 'plain_text_v1', '1',
+                '2026-07-29T11:00:00.000Z', null
+              );
+              select public.save_source_evidence_items(jsonb_build_array(
+                jsonb_build_object(
+                  'id', 'evidence_backfill',
+                  'workspaceId', 'workspace_backfill',
+                  'dealId', 'deal_backfill',
+                  'sourceRevisionId', 'revision_backfill',
+                  'provenanceOrigin', 'uploaded_document',
+                  'field', 'unstructured_source_fact',
+                  'value', 'Legacy canonical row.',
+                  'unit', null,
+                  'currency', null,
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null,
+                  'retrievedAt', '2026-07-29T11:00:00.000Z',
+                  'locator', jsonb_build_object(
+                    'kind', 'text_range', 'start', 0, 'end', 21,
+                    'excerpt', 'Legacy canonical row.'
+                  ),
+                  'sourceRole', 'management',
+                  'assertionStatus', 'reported',
+                  'verificationMethod', null,
+                  'freshness', 'current',
+                  'acceptedForGate', false
+                )
+              ));
+            `,
+          ], { stdio: "pipe" });
+        }
       }
       const output = execFileSync("psql", [
         "-v",
@@ -306,9 +367,25 @@ test(
             'confirmedAt', '2026-07-29T12:05:00.000Z',
             'evidence', jsonb_build_array(jsonb_build_object(
               'id', 'evidence_1',
-              'fact', 'Acme serves carriers.',
-              'excerpt', 'Acme serves carriers.',
-              'page', 1
+              'fact', 'ARR was $2,000,000.',
+              'excerpt', 'ARR was $2,000,000.',
+              'page', 1,
+              'locator', jsonb_build_object(
+                'kind', 'text_range',
+                'start', 0,
+                'end', 21,
+                'excerpt', 'ARR was $2,000,000.'
+              ),
+              'structured', jsonb_build_object(
+                'field', 'ARR',
+                'value', '$2,000,000',
+                'unit', 'currency',
+                'currency', 'USD',
+                'periodStart', '2025-01-01',
+                'periodEnd', '2025-12-31',
+                'publishedAt', null,
+                'eventAt', null
+              )
             ))
           ));
           select count(*)
@@ -494,7 +571,20 @@ test(
             (select count(*) from public.deal_source_assignments
              where workspace_id = 'workspace_upload') || '|' ||
             (select count(*) from public.source_evidence
-             where workspace_id = 'workspace_upload')
+             where workspace_id = 'workspace_upload') || '|' ||
+            (select count(*) from public.source_evidence_items
+             where workspace_id = 'workspace_upload') || '|' ||
+            (select item.source_id || ':' || item.source_revision_id || ':' ||
+                    (item.payload ->> 'field') || ':' ||
+                    (item.payload ->> 'acceptedForGate')
+             from public.source_evidence_items as item
+             where item.workspace_id = 'workspace_upload'
+               and item.evidence_id = 'evidence_1') || '|' ||
+            (select item.source_id || ':' ||
+                    (item.payload ->> 'sourceId')
+             from public.source_evidence_items as item
+             where item.workspace_id = 'workspace_backfill'
+               and item.evidence_id = 'evidence_backfill')
           from public.uploaded_documents as confirmed
           cross join public.uploaded_documents as extraction
           where confirmed.workspace_id = 'workspace_upload'
@@ -505,7 +595,7 @@ test(
       ], { encoding: "utf8" }).trim();
       assert.equal(
         output,
-        "confirmed|failed|deal_1|revision_1|1|1|1",
+        "confirmed|failed|deal_1|revision_1|1|1|1|1|source_1:revision_1:ARR:true|source_backfill:source_backfill",
       );
     } finally {
       execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });

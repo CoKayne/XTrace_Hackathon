@@ -79,6 +79,104 @@ alter table public.xtrace_memory_links
   not null default '[]'::jsonb
   check (jsonb_typeof(source_revision_ids) = 'array');
 
+alter table public.source_evidence_items
+  add column if not exists source_id text;
+
+update public.source_evidence_items as evidence
+set source_id = revision.source_id,
+    payload = jsonb_set(
+      evidence.payload,
+      '{sourceId}',
+      to_jsonb(revision.source_id),
+      true
+    )
+from public.source_revisions as revision
+where revision.workspace_id = evidence.workspace_id
+  and revision.id = evidence.source_revision_id
+  and (
+    evidence.source_id is null
+    or evidence.payload ->> 'sourceId' is distinct from revision.source_id
+  );
+
+alter table public.source_evidence_items
+  alter column source_id set not null,
+  drop constraint if exists source_evidence_items_payload_identity_check;
+alter table public.source_evidence_items
+  add constraint source_evidence_items_payload_identity_check
+  check (
+    coalesce(
+      payload ->> 'id' = evidence_id
+      and payload ->> 'workspaceId' = workspace_id
+      and payload ->> 'dealId' = deal_id
+      and payload ->> 'sourceId' = source_id
+      and payload ->> 'sourceRevisionId' = source_revision_id,
+      false
+    )
+  ),
+  add constraint source_evidence_items_exact_revision_fkey
+  foreign key (workspace_id, source_id, source_revision_id)
+  references public.source_revisions (workspace_id, source_id, id);
+
+create or replace function public.save_source_evidence_items(
+  p_items jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  item jsonb;
+  prior jsonb;
+  v_workspace_id text;
+  v_evidence_id text;
+  v_deal_id text;
+  v_source_id text;
+  v_revision_id text;
+begin
+  if jsonb_typeof(p_items) <> 'array' then
+    raise exception 'Source evidence items must be an array';
+  end if;
+  for item in select value from jsonb_array_elements(p_items)
+  loop
+    v_workspace_id := btrim(item ->> 'workspaceId');
+    v_evidence_id := btrim(item ->> 'id');
+    v_deal_id := btrim(item ->> 'dealId');
+    v_source_id := btrim(item ->> 'sourceId');
+    v_revision_id := btrim(item ->> 'sourceRevisionId');
+    if coalesce(v_workspace_id, '') = ''
+      or coalesce(v_evidence_id, '') = ''
+      or coalesce(v_deal_id, '') = ''
+      or coalesce(v_source_id, '') = ''
+      or coalesce(v_revision_id, '') = ''
+    then
+      raise exception 'Source evidence identity is required';
+    end if;
+
+    insert into public.source_evidence_items (
+      workspace_id, evidence_id, deal_id, source_id, source_revision_id,
+      payload
+    ) values (
+      v_workspace_id, v_evidence_id, v_deal_id, v_source_id, v_revision_id,
+      item
+    )
+    on conflict (workspace_id, evidence_id) do nothing;
+
+    prior := null;
+    select payload into strict prior
+    from public.source_evidence_items
+    where source_evidence_items.workspace_id = v_workspace_id
+      and source_evidence_items.evidence_id = v_evidence_id
+    for key share;
+    if prior <> item then
+      raise exception
+        'Source evidence % is immutable and already differs',
+        v_evidence_id;
+    end if;
+  end loop;
+end;
+$$;
+
 create or replace function public.claim_next_uploaded_document(
   p_target_status text,
   p_worker_id text,
@@ -281,6 +379,9 @@ declare
   updated_upload public.uploaded_documents%rowtype;
   preview_metadata jsonb;
   evidence_item jsonb;
+  structured_item jsonb;
+  canonical_item jsonb;
+  structured_complete boolean;
 begin
   if jsonb_typeof(p_confirmation) <> 'object' then
     raise exception 'p_confirmation must be a JSON object';
@@ -397,6 +498,92 @@ begin
       coalesce(p_confirmation -> 'evidence', '[]'::jsonb)
     )
   loop
+    structured_item := evidence_item -> 'structured';
+    structured_complete :=
+      jsonb_typeof(structured_item) = 'object'
+      and btrim(coalesce(structured_item ->> 'field', '')) <> ''
+      and btrim(coalesce(structured_item ->> 'value', '')) <> ''
+      and lower(btrim(structured_item ->> 'field')) not in (
+        'pmf', 'product market fit', 'product-market fit'
+      )
+      and position(
+        lower(btrim(structured_item ->> 'value'))
+        in lower(btrim(evidence_item ->> 'excerpt'))
+      ) > 0
+      and (
+        lower(btrim(coalesce(structured_item ->> 'unit', '')))
+          <> 'currency'
+        or btrim(coalesce(structured_item ->> 'currency', ''))
+          ~ '^[A-Z]{3}$'
+      )
+      and (
+        lower(btrim(structured_item ->> 'field')) not in (
+          'annual recurring revenue', 'arr', 'sales pipeline', 'pipeline',
+          'gross merchandise value', 'gmv', 'total revenue', 'revenue',
+          'recurring revenue', 'subscription revenue',
+          'professional services revenue', 'services revenue',
+          'pass through revenue', 'pass-through revenue',
+          'pre money valuation', 'pre-money valuation',
+          'post money valuation', 'post-money valuation',
+          'reported valuation', 'round price'
+        )
+        or btrim(coalesce(structured_item ->> 'currency', ''))
+          ~ '^[A-Z]{3}$'
+      );
+    canonical_item := jsonb_build_object(
+      'id', btrim(evidence_item ->> 'id'),
+      'workspaceId', target_workspace_id,
+      'dealId', target_deal_id,
+      'sourceId', target_source_id,
+      'sourceRevisionId', target_revision_id,
+      'provenanceOrigin', 'uploaded_document',
+      'field', case
+        when structured_complete then btrim(structured_item ->> 'field')
+        else 'unstructured_source_fact'
+      end,
+      'value', case
+        when structured_complete then btrim(structured_item ->> 'value')
+        else btrim(evidence_item ->> 'fact')
+      end,
+      'unit', case
+        when structured_complete then structured_item -> 'unit'
+        else 'null'::jsonb
+      end,
+      'currency', case
+        when structured_complete then structured_item -> 'currency'
+        else 'null'::jsonb
+      end,
+      'periodStart', case
+        when structured_complete then structured_item -> 'periodStart'
+        else 'null'::jsonb
+      end,
+      'periodEnd', case
+        when structured_complete then structured_item -> 'periodEnd'
+        else 'null'::jsonb
+      end,
+      'publishedAt', case
+        when structured_complete then structured_item -> 'publishedAt'
+        else 'null'::jsonb
+      end,
+      'eventAt', case
+        when structured_complete then structured_item -> 'eventAt'
+        else 'null'::jsonb
+      end,
+      'retrievedAt', preview_metadata ->> 'extractedAt',
+      'locator', coalesce(
+        evidence_item -> 'locator',
+        jsonb_build_object(
+          'kind', 'pdf_page',
+          'page', (evidence_item ->> 'page')::integer,
+          'excerpt', btrim(evidence_item ->> 'excerpt')
+        )
+      ),
+      'sourceRole', 'management',
+      'assertionStatus', 'reported',
+      'verificationMethod', null,
+      'freshness', 'current',
+      'acceptedForGate', structured_complete
+    );
     insert into public.source_evidence (
       id, workspace_id, document_id, source_revision_id, deal_id,
       company_name, provenance, page, fact, excerpt, created_at
@@ -411,6 +598,18 @@ begin
       (evidence_item ->> 'page')::integer,
       btrim(evidence_item ->> 'fact'),
       btrim(evidence_item ->> 'excerpt'),
+      target_confirmed_at
+    );
+    insert into public.source_evidence_items (
+      workspace_id, evidence_id, deal_id, source_id, source_revision_id,
+      payload, created_at
+    ) values (
+      target_workspace_id,
+      btrim(evidence_item ->> 'id'),
+      target_deal_id,
+      target_source_id,
+      target_revision_id,
+      canonical_item,
       target_confirmed_at
     );
   end loop;
@@ -449,6 +648,7 @@ grant select, update on public.uploaded_documents to vsee_registry_owner;
 grant select, insert on public.source_documents to vsee_registry_owner;
 grant select, insert on public.workspace_documents to vsee_registry_owner;
 grant select, insert on public.source_evidence to vsee_registry_owner;
+grant select, insert on public.source_evidence_items to vsee_registry_owner;
 
 create policy uploaded_documents_registry_owner
   on public.uploaded_documents for all to vsee_registry_owner
@@ -461,6 +661,9 @@ create policy workspace_documents_upload_registry_owner
   using (true) with check (true);
 create policy source_evidence_upload_registry_owner
   on public.source_evidence for all to vsee_registry_owner
+  using (true) with check (true);
+create policy source_evidence_items_upload_registry_owner
+  on public.source_evidence_items for all to vsee_registry_owner
   using (true) with check (true);
 
 revoke all on function

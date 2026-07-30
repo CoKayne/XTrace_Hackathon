@@ -88,6 +88,7 @@ async function fixture() {
     id: "fact_company",
     workspaceId: "workspace_1",
     dealId: "deal_1",
+    sourceId: "source_1",
     sourceRevisionId: "revision_1",
     provenanceOrigin: "uploaded_document",
     field: "Company identity",

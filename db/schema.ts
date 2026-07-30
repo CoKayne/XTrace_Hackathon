@@ -243,6 +243,7 @@ export const sourceEvidenceItems = pgTable("source_evidence_items", {
   workspaceId: text("workspace_id").notNull(),
   evidenceId: text("evidence_id").notNull(),
   dealId: text("deal_id").notNull(),
+  sourceId: text("source_id").notNull(),
   sourceRevisionId: text("source_revision_id").notNull(),
   payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow()
@@ -259,6 +260,19 @@ export const sourceEvidenceItems = pgTable("source_evidence_items", {
     foreignColumns: [sourceRevisions.workspaceId, sourceRevisions.id],
     name: "source_evidence_items_workspace_revision_fkey",
   }),
+  foreignKey({
+    columns: [
+      table.workspaceId,
+      table.sourceId,
+      table.sourceRevisionId,
+    ],
+    foreignColumns: [
+      sourceRevisions.workspaceId,
+      sourceRevisions.sourceId,
+      sourceRevisions.id,
+    ],
+    name: "source_evidence_items_exact_revision_fkey",
+  }),
   index("source_evidence_items_grounding_idx").on(
     table.workspaceId,
     table.dealId,
@@ -271,7 +285,7 @@ export const sourceEvidenceItems = pgTable("source_evidence_items", {
   ),
   check(
     "source_evidence_items_payload_identity_check",
-    sql`coalesce(${table.payload} ->> 'id' = ${table.evidenceId} and ${table.payload} ->> 'workspaceId' = ${table.workspaceId} and ${table.payload} ->> 'dealId' = ${table.dealId} and ${table.payload} ->> 'sourceRevisionId' = ${table.sourceRevisionId}, false)`,
+    sql`coalesce(${table.payload} ->> 'id' = ${table.evidenceId} and ${table.payload} ->> 'workspaceId' = ${table.workspaceId} and ${table.payload} ->> 'dealId' = ${table.dealId} and ${table.payload} ->> 'sourceId' = ${table.sourceId} and ${table.payload} ->> 'sourceRevisionId' = ${table.sourceRevisionId}, false)`,
   ),
 ]);
 

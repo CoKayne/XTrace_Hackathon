@@ -11,6 +11,9 @@ import {
   sourceRevisionFingerprint,
 } from "../../db/repositories/deal-registry";
 import {
+  createMemoryEvidencePacksRepository,
+} from "../../db/repositories/evidence-packs";
+import {
   createUploadConfirmationService,
   toUploadPreviewDto,
 } from "../../lib/uploads/confirmation";
@@ -36,6 +39,7 @@ const preview: ExtractionPreview = {
 
 async function awaitingUpload(
   repository = createMemoryUploadedDocumentsRepository(),
+  extractionPreview = preview,
 ) {
   await repository.create({
     id: "upload_1",
@@ -53,7 +57,7 @@ async function awaitingUpload(
     id: claimed.id,
     workerId: claimed.workerId,
     leaseToken: claimed.leaseToken,
-    preview,
+    preview: extractionPreview,
   }), true);
   return repository;
 }
@@ -142,6 +146,104 @@ test("confirmation promotes an upload to a new Deal once and replays idempotentl
   }))?.contentHash, "content-hash");
   assert.equal((await deals.getAnalysisEligibleSnapshot("workspace_1")).count, 1);
   assert.equal(deals.inspect().assignments.length, 1);
+});
+
+test("memory confirmation bridges exact source tuples into canonical underwriting evidence", async () => {
+  const structuredPreview: ExtractionPreview = {
+    ...preview,
+    facts: [
+      {
+        text: "ARR was $2,000,000 for calendar 2025.",
+        excerpt: "ARR was $2,000,000 for calendar 2025.",
+        locator: { kind: "text_range", start: 0, end: 41 },
+        structured: {
+          field: "ARR",
+          value: "$2,000,000",
+          unit: "currency",
+          currency: "USD",
+          periodStart: "2025-01-01",
+          periodEnd: "2025-12-31",
+          publishedAt: null,
+          eventAt: null,
+        },
+      },
+      {
+        text: "Acme has strong product-market fit.",
+        excerpt: "Acme has strong product-market fit.",
+        locator: { kind: "text_range", start: 42, end: 77 },
+        structured: {
+          field: "PMF",
+          value: "strong product-market fit",
+          unit: null,
+          currency: null,
+          periodStart: null,
+          periodEnd: null,
+          publishedAt: null,
+          eventAt: null,
+        },
+      },
+    ],
+  };
+  const uploads = await awaitingUpload(
+    createMemoryUploadedDocumentsRepository(),
+    structuredPreview,
+  );
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const evidencePacks = createMemoryEvidencePacksRepository();
+  const service = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+    evidencePacks,
+    now: () => new Date("2026-07-29T12:05:00.000Z"),
+  });
+
+  const result = await service.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  });
+  const confirmed = await uploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_1",
+  });
+  assert.ok(confirmed?.sourceId);
+
+  const evidence = await evidencePacks.listSourceEvidence({
+    workspaceId: "workspace_1",
+    dealId: result.dealId,
+    sourceRevisionIds: [result.sourceRevisionId],
+  });
+  assert.deepEqual(
+    evidence.map((item) => ({
+      sourceId: item.sourceId,
+      sourceRevisionId: item.sourceRevisionId,
+      field: item.field,
+      value: item.value,
+      acceptedForGate: item.acceptedForGate,
+    })),
+    [
+      {
+        sourceId: confirmed.sourceId,
+        sourceRevisionId: result.sourceRevisionId,
+        field: "ARR",
+        value: "$2,000,000",
+        acceptedForGate: true,
+      },
+      {
+        sourceId: confirmed.sourceId,
+        sourceRevisionId: result.sourceRevisionId,
+        field: "unstructured_source_fact",
+        value: "Acme has strong product-market fit.",
+        acceptedForGate: false,
+      },
+    ],
+  );
 });
 
 test("memory confirmation remains one atomic idempotent receipt across service instances", async () => {

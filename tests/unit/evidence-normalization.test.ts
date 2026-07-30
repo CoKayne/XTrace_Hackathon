@@ -18,6 +18,7 @@ function input(overrides: Partial<SourceEvidenceInput> = {}): SourceEvidenceInpu
     id: "fact_1",
     workspaceId: "workspace_1",
     dealId: "deal_1",
+    sourceId: "source_1",
     sourceRevisionId: "revision_1",
     provenanceOrigin: "management",
     field: "Annual Recurring Revenue",

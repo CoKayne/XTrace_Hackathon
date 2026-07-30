@@ -118,6 +118,19 @@ export function createEvidencePackCandidateGrounding(options: {
         dealId: candidate.dealId,
         sourceRevisionIds,
       });
+      const sourceIdsByRevision = new Map(
+        sourceRevisionSnapshots.map(({ id, sourceId }) => [id, sourceId]),
+      );
+      if (sourceEvidence.some((evidence) =>
+        evidence.workspaceId !== candidate.workspaceId
+        || evidence.dealId !== candidate.dealId
+        || sourceIdsByRevision.get(evidence.sourceRevisionId)
+          !== evidence.sourceId
+      )) {
+        throw new CandidateGroundingUnavailableError([
+          "SOURCE_EVIDENCE_LINEAGE_MISMATCH",
+        ]);
+      }
       throwIfAborted(signal);
       const identityEvidence = candidateIdentityEvidence({
         analysis,
@@ -312,18 +325,45 @@ async function resolveXTraceLineage(input: {
         "XTRACE_LINEAGE_UNRESOLVED",
       ]);
     }
-    for (const evidenceId of lineage.sourceIds) {
-      const evidence = evidenceById.get(evidenceId);
-      const revision = evidence
-        ? revisionsById.get(evidence.sourceRevisionId)
-        : undefined;
-      if (!evidence || !revision) {
+    if (lineage.sourceRevisionIds.length > 0) {
+      const exactRevisions = lineage.sourceRevisionIds.map((revisionId) =>
+        revisionsById.get(revisionId)
+      );
+      if (exactRevisions.some((revision) => !revision)) {
         throw new CandidateGroundingUnavailableError([
           "XTRACE_SOURCE_LINEAGE_MISMATCH",
         ]);
       }
-      sourceRevisionIds.add(revision.id);
-      sourceIds.add(revision.sourceId);
+      const exactSourceIds = uniqueSorted(
+        exactRevisions.map((revision) => revision!.sourceId),
+      );
+      if (!sameStringSet(exactSourceIds, lineage.sourceIds)) {
+        throw new CandidateGroundingUnavailableError([
+          "XTRACE_SOURCE_LINEAGE_MISMATCH",
+        ]);
+      }
+      for (const revision of exactRevisions) {
+        sourceRevisionIds.add(revision!.id);
+        sourceIds.add(revision!.sourceId);
+      }
+    } else {
+      for (const evidenceId of lineage.sourceIds) {
+        const evidence = evidenceById.get(evidenceId);
+        const revision = evidence
+          ? revisionsById.get(evidence.sourceRevisionId)
+          : undefined;
+        if (
+          !evidence
+          || !revision
+          || evidence.sourceId !== revision.sourceId
+        ) {
+          throw new CandidateGroundingUnavailableError([
+            "XTRACE_SOURCE_LINEAGE_MISMATCH",
+          ]);
+        }
+        sourceRevisionIds.add(revision.id);
+        sourceIds.add(revision.sourceId);
+      }
     }
     for (const fixtureId of lineage.fixtureIds) fixtureIds.add(fixtureId);
   }
@@ -385,6 +425,18 @@ function canonicalSourceRevision(
 
 function uniqueSorted(values: readonly string[]): string[] {
   return [...new Set(values)].sort(compareUtf8);
+}
+
+function sameStringSet(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  const normalizedLeft = uniqueSorted(left);
+  const normalizedRight = uniqueSorted(right);
+  return normalizedLeft.length === normalizedRight.length
+    && normalizedLeft.every((value, index) =>
+      value === normalizedRight[index]
+    );
 }
 
 function compareUtf8(left: string, right: string): number {
