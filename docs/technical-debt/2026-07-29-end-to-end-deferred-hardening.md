@@ -50,6 +50,7 @@
 | TD-COV-003 | P2 | Backlog | 同時含文字與圖片的 Deal 尚未在歷史匹配階段合併兩類 evidence |
 | TD-OPS-001 | P2 | Backlog | 自動排程、訊息實際發送與 LinkedIn 發佈仍刻意停用 |
 | TD-OPS-002 | P1 | Production gate | 舊版 hosted report rows 可能無法投影成目前 read DTO |
+| TD-OPS-003 | P1 | Production gate | 舊 Cloudflare Worker 網址仍在線，可能讓使用者誤入過期介面 |
 | TD-UI-001 | P2 | Test hardening | Action Draft Save 尚缺實際按鈕到 PATCH 的互動測試 |
 | TD-UI-002 | P3 | Test hardening | Product source link 尚缺實際 click 到 signed URL navigation 的互動測試 |
 | TD-RUN-001 | P0 | Production gate | Underwriting SECURITY DEFINER owner 尚未完全隔離既有 membership |
@@ -399,6 +400,31 @@
     失敗，且沒有 fabricated fallback。
   - 未完成：既有 hosted rows 全部能通過目前 DTO validation，或有可查詢、
     可稽核的持久化 quarantine/backfill 紀錄。
+
+### TD-OPS-003：舊 Cloudflare Worker 網址仍在線
+
+- **證據**
+  - `https://vsee-vc.j6m3c041008.workers.dev` 仍回傳過期介面，包含
+    `RESET DEMO`、舊版 `verified sources` 文案，且缺少 Fund Policy。
+  - 正式 Sites 網址已穩定回傳目前版本與版本化資產 namespace；兩者是
+    彼此獨立的部署，不是同一網站的瀏覽器快取。
+- **影響**
+  - 持有舊連結的使用者可能誤以為過期介面是目前產品。
+  - 舊版產生的草稿會引用舊 Worker origin。
+- **目前防護**
+  - 公開 demo 的新版草稿與來源絕對連結使用經驗證的
+    `PUBLIC_APP_URL`；不再只信任瀏覽器 origin。
+  - 正式 build 使用 commit／顯式版本的獨立資產 namespace，缺少版本時
+    fail closed。
+- **完整修正**
+  - 在 Cloudflare 控制面停用舊 Worker，或將它改成到目前 Sites URL 的
+    永久重新導向，並保留 path 與 query。
+  - 此操作需要舊 Cloudflare 帳號／deployment authority，不由目前 Sites
+    部署自動推定或代替。
+- **完成條件**
+  - 舊 Worker 不再呈現應用程式內容；任何舊連結皆會導向正式 Sites 網址。
+- **重啟時機**
+  - 取得舊 Cloudflare Worker 的部署權限後立即處理。
 
 ### TD-UI-001：Action Draft Save 缺少真正的 UI 互動覆蓋
 

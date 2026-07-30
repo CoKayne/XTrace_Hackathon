@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 interface AssetDirectoryOptions {
   explicitVersion?: string;
   readGitRevision?: () => string;
+  requireVersion?: boolean;
 }
 
 function readCurrentGitRevision(): string {
@@ -33,8 +34,14 @@ export function resolveAssetDirectory(
     );
     if (gitRevision) return `assets-${gitRevision}`;
   } catch {
-    // Source archives outside a Git checkout still need one stable local path.
+    // Local development outside a Git checkout still needs one stable path.
   }
 
+  if (options.requireVersion) {
+    throw new Error(
+      "Production asset version is unavailable. "
+      + "Set VSEE_ASSET_VERSION or build from a Git checkout.",
+    );
+  }
   return "assets-local";
 }

@@ -40,3 +40,15 @@ test("asset version resolution has a stable local fallback", () => {
     "assets-local",
   );
 });
+
+test("production asset version resolution fails closed outside a versioned source tree", () => {
+  assert.throws(
+    () => resolveAssetDirectory({
+      requireVersion: true,
+      readGitRevision: () => {
+        throw new Error("not a git checkout");
+      },
+    }),
+    /production asset version/i,
+  );
+});

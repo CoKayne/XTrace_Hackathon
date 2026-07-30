@@ -10,7 +10,10 @@ import { getProductInputReadiness } from "../../../../lib/corpus/import-readines
 import { readMarketProviderConfiguration } from "../../../../lib/market/config";
 import { createDefaultDemoDataStore } from "../../../../lib/storage/service";
 import { isXTraceConfigured } from "../../../../lib/xtrace/client";
-import { uiSessionForContext } from "../../../ui-capabilities";
+import {
+  canonicalPublicAppOrigin,
+  uiSessionForContext,
+} from "../../../ui-capabilities";
 
 export const dynamic = "force-dynamic";
 
@@ -38,9 +41,13 @@ export async function GET(
         worker = false;
       }
     }
+    const canonicalAppOrigin = context.mode === "public_demo"
+      ? canonicalPublicAppOrigin(process.env.PUBLIC_APP_URL)
+      : undefined;
 
     return jsonOk({
       ...uiSessionForContext(context),
+      ...(canonicalAppOrigin ? { canonicalAppOrigin } : {}),
       postgres,
       worker,
       xtrace: isXTraceConfigured(),

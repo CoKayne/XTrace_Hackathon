@@ -30,6 +30,7 @@ import type {
 } from "../lib/underwriting/read-model";
 import { toProductSearchMessage } from "./product-search-view-model";
 import {
+  resolveReportAppOrigin,
   SAFE_UI_SESSION,
   type UiCapabilities,
   type UiSession,
@@ -147,6 +148,7 @@ type Report = IntelligenceReportView;
 
 interface Health {
   deploymentMode: UiSession["deploymentMode"];
+  canonicalAppOrigin?: string;
   capabilities: UiCapabilities;
   postgres: boolean;
   worker: boolean;
@@ -660,7 +662,11 @@ export default function Home() {
       companyNames: Object.fromEntries(
         overview.deals.map((deal) => [deal.id, deal.companyName]),
       ),
-      appOrigin: window.location.origin,
+      appOrigin: resolveReportAppOrigin({
+        deploymentMode: uiSession.deploymentMode,
+        canonicalAppOrigin: health?.canonicalAppOrigin,
+        browserOrigin: window.location.origin,
+      }),
     }));
   }
 
