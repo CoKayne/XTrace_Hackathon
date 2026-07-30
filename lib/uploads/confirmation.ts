@@ -531,8 +531,10 @@ const STRUCTURED_FIELD_CATEGORIES: Readonly<
 const DECIMAL_SOURCE_VALUE =
   "(?:(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d*)?|\\.\\d+)";
 const SUPPORTED_CURRENCY_VALUE = new RegExp(
-  `^(?:[+-]?\\$?${DECIMAL_SOURCE_VALUE}(?:\\s*USD)?`
-    + `|\\(\\$?${DECIMAL_SOURCE_VALUE}(?:\\s*USD)?\\))$`,
+  `^(?:[+-]?\\$?${DECIMAL_SOURCE_VALUE}`
+    + `(?:[\\u0009-\\u000d\\u0020]*USD)?`
+    + `|\\(\\$?${DECIMAL_SOURCE_VALUE}`
+    + `(?:[\\u0009-\\u000d\\u0020]*USD)?\\))$`,
 );
 const SUPPORTED_RATE_VALUE = new RegExp(
   `^[+-]?${DECIMAL_SOURCE_VALUE}%?$`,

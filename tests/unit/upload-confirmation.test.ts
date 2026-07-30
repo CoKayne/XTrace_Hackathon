@@ -584,6 +584,51 @@ test("confirmation accepts a later standalone field or currency occurrence", asy
   );
 });
 
+test("currency suffix separators use only the explicit ASCII whitespace set", async () => {
+  const cases = [
+    { value: "$2,000,000 USD", acceptedForGate: true },
+    {
+      value: "$2,000,000\t\n\v\f\r USD",
+      acceptedForGate: true,
+    },
+    { value: "$2,000,000\u00a0USD", acceptedForGate: false },
+    { value: "$2,000,000\u2003USD", acceptedForGate: false },
+  ] as const;
+  const evidence = await confirmEvidence(cases.map((item, index) => {
+    const excerpt = `ARR was ${item.value}.`;
+    return {
+      text: excerpt,
+      excerpt,
+      locator: {
+        kind: "text_range" as const,
+        start: index * 100,
+        end: index * 100 + excerpt.length,
+      },
+      structured: {
+        field: "ARR",
+        value: item.value,
+        unit: "currency",
+        currency: "USD",
+        periodStart: null,
+        periodEnd: null,
+        publishedAt: null,
+        eventAt: null,
+      },
+    };
+  }));
+
+  assert.deepEqual(
+    evidence.map(({ field, acceptedForGate }) => ({
+      field,
+      acceptedForGate,
+    })),
+    cases.map(({ acceptedForGate }) => ({
+      field: acceptedForGate ? "ARR" : "unstructured_source_fact",
+      acceptedForGate,
+    })),
+  );
+});
+
 test("atomic upload adapters receive exact locator and structured evidence", async () => {
   const baseUploads = await awaitingUpload(
     createMemoryUploadedDocumentsRepository(),

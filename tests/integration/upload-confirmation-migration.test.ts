@@ -639,6 +639,105 @@ test(
                   'publishedAt', '2026-01-15T10:30:00.000Z',
                   'eventAt', '2025-12-31T23:59:59.000Z'
                 )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_17',
+                'fact', 'ARR was $2,000,000 USD.',
+                'excerpt', 'ARR was $2,000,000 USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000 USD',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_18',
+                'fact',
+                  'ARR was $2,000,000'
+                    || pg_catalog.chr(9)
+                    || pg_catalog.chr(10)
+                    || pg_catalog.chr(11)
+                    || pg_catalog.chr(12)
+                    || pg_catalog.chr(13)
+                    || ' USD.',
+                'excerpt',
+                  'ARR was $2,000,000'
+                    || pg_catalog.chr(9)
+                    || pg_catalog.chr(10)
+                    || pg_catalog.chr(11)
+                    || pg_catalog.chr(12)
+                    || pg_catalog.chr(13)
+                    || ' USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value',
+                    '$2,000,000'
+                      || pg_catalog.chr(9)
+                      || pg_catalog.chr(10)
+                      || pg_catalog.chr(11)
+                      || pg_catalog.chr(12)
+                      || pg_catalog.chr(13)
+                      || ' USD',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_19',
+                'fact',
+                  'ARR was $2,000,000'
+                    || pg_catalog.chr(160)
+                    || 'USD.',
+                'excerpt',
+                  'ARR was $2,000,000'
+                    || pg_catalog.chr(160)
+                    || 'USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value',
+                    '$2,000,000' || pg_catalog.chr(160) || 'USD',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_20',
+                'fact',
+                  'ARR was $2,000,000'
+                    || pg_catalog.chr(8195)
+                    || 'USD.',
+                'excerpt',
+                  'ARR was $2,000,000'
+                    || pg_catalog.chr(8195)
+                    || 'USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value',
+                    '$2,000,000' || pg_catalog.chr(8195) || 'USD',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
               )
             )
           ));
@@ -866,7 +965,7 @@ test(
       ], { encoding: "utf8" }).trim();
       assert.equal(
         output,
-        "confirmed|failed|deal_1|revision_1|1|1|16|16|"
+        "confirmed|failed|deal_1|revision_1|1|1|20|20|"
           + "evidence_1:ARR:true,"
           + "evidence_2:unstructured_source_fact:false,"
           + "evidence_3:unstructured_source_fact:false,"
@@ -883,6 +982,10 @@ test(
           + ",evidence_14:ARR:true"
           + ",evidence_15:ARR:true"
           + ",evidence_16:unstructured_source_fact:false"
+          + ",evidence_17:ARR:true"
+          + ",evidence_18:ARR:true"
+          + ",evidence_19:unstructured_source_fact:false"
+          + ",evidence_20:unstructured_source_fact:false"
           + "|ARR:$2,000,000:currency:USD:2025-01-01:2025-12-31:"
           + "2026-01-15T10:30:00.000Z:2025-12-31T23:59:59.000Z"
           + "|source_backfill:source_backfill",
