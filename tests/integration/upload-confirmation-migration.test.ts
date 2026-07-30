@@ -8,9 +8,17 @@ import test from "node:test";
 const migrationPath = fileURLToPath(
   new URL("../../drizzle/0013_confirmed_upload_ingest.sql", import.meta.url),
 );
+const task13MigrationName = "0012_source_grounded_underwriting.sql";
+const task13MigrationPath = fileURLToPath(
+  new URL(`../../drizzle/${task13MigrationName}`, import.meta.url),
+);
 const journalPath = fileURLToPath(
   new URL("../../drizzle/meta/_journal.json", import.meta.url),
 );
+const reservedTask13JournalEntry = {
+  idx: 12,
+  when: 1785369431000,
+};
 const postgresAvailable = spawnSync(
   "psql",
   [
@@ -31,15 +39,41 @@ const requirePostgres = process.env.REQUIRE_POSTGRES_MIGRATION_TESTS === "1";
 test("Task 6 migration is additive and journaled after the reserved Task 13 migration number", () => {
   assert.equal(existsSync(migrationPath), true);
   const journal = JSON.parse(readFileSync(journalPath, "utf8")) as {
-    entries: Array<{ idx: number; tag: string }>;
+    entries: Array<{
+      idx: number;
+      version: string;
+      when: number;
+      tag: string;
+      breakpoints: boolean;
+    }>;
   };
-  assert.deepEqual(journal.entries.at(-1), {
-    idx: 13,
-    version: "7",
-    when: 1785373200000,
-    tag: "0013_confirmed_upload_ingest",
-    breakpoints: true,
-  });
+  const task13MigrationExists = existsSync(task13MigrationPath);
+  const task13Entry = journal.entries.find((entry) =>
+    entry.tag === "0012_source_grounded_underwriting"
+  );
+  const task6Entry = journal.entries.find((entry) =>
+    entry.tag === "0013_confirmed_upload_ingest"
+  );
+  if (task13MigrationExists) {
+    assert.ok(
+      task13Entry,
+      "Task 13 migration file requires its exact journal entry.",
+    );
+    assert.equal(task13Entry.idx, reservedTask13JournalEntry.idx);
+    assert.equal(task13Entry.when, reservedTask13JournalEntry.when);
+  }
+  assert.ok(task6Entry);
+  const task13OrderEntry = task13MigrationExists
+    ? task13Entry!
+    : reservedTask13JournalEntry;
+  assert.deepEqual(
+    [task13OrderEntry.idx, task6Entry.idx],
+    [12, 13],
+  );
+  assert.ok(
+    task13OrderEntry.when < task6Entry.when,
+    "Task 6 migration timestamp must follow Task 13.",
+  );
 });
 
 test(
@@ -69,6 +103,7 @@ test(
         "0009_source_revision_deal_registry.sql",
         "0010_underwriting_references.sql",
         "0011_underwriting_runs.sql",
+        ...(existsSync(task13MigrationPath) ? [task13MigrationName] : []),
         "0013_confirmed_upload_ingest.sql",
       ]) {
         execFileSync("psql", [

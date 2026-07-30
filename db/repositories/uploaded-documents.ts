@@ -71,6 +71,10 @@ export interface CreateUploadedDocumentInput {
 }
 
 export interface UploadedDocumentsRepository {
+  withConfirmationLock<T>(
+    scope: { workspaceId: string; uploadId: string },
+    operation: () => Promise<T>,
+  ): Promise<T>;
   create(input: CreateUploadedDocumentInput): Promise<UploadedDocumentRecord>;
   list(workspaceId: string): Promise<UploadedDocumentRecord[]>;
   get(input: { workspaceId: string; id: string }): Promise<UploadedDocumentRecord | null>;
@@ -143,7 +147,16 @@ export function createMemoryUploadedDocumentsRepository(options: {
     leaseToken: string | null;
   }>();
   const now = options.now ?? (() => new Date());
+  const confirmationLocks = new Map<string, Promise<void>>();
   return {
+    withConfirmationLock(scope, operation) {
+      return withUploadedDocumentKeyLock(
+        confirmationLocks,
+        uploadIdentity(scope.workspaceId, scope.uploadId),
+        operation,
+      );
+    },
+
     capturePromotionState(scope) {
       const key = uploadIdentity(scope.workspaceId, scope.uploadId);
       return {
@@ -397,6 +410,27 @@ function uploadIdentity(workspaceId: string, externalId: string): string {
   return JSON.stringify([workspaceId, externalId]);
 }
 
+async function withUploadedDocumentKeyLock<T>(
+  locks: Map<string, Promise<void>>,
+  key: string,
+  operation: () => Promise<T>,
+): Promise<T> {
+  const previous = locks.get(key) ?? Promise.resolve();
+  let release!: () => void;
+  const current = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const queued = previous.then(() => current);
+  locks.set(key, queued);
+  await previous;
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (locks.get(key) === queued) locks.delete(key);
+  }
+}
+
 export function createSupabaseUploadedDocumentsRepository(options: {
   url: string;
   serviceRoleKey: string;
@@ -406,6 +440,7 @@ export function createSupabaseUploadedDocumentsRepository(options: {
   const base = `${options.url.replace(/\/$/, "")}/rest/v1`;
   const fetchImpl = options.fetchImpl ?? fetch;
   const now = options.now ?? (() => new Date());
+  const confirmationLocks = new Map<string, Promise<void>>();
   const headers = {
     apikey: options.serviceRoleKey,
     authorization: `Bearer ${options.serviceRoleKey}`,
@@ -458,6 +493,14 @@ export function createSupabaseUploadedDocumentsRepository(options: {
     };
   }
   return {
+    withConfirmationLock(scope, operation) {
+      return withUploadedDocumentKeyLock(
+        confirmationLocks,
+        uploadIdentity(scope.workspaceId, scope.uploadId),
+        operation,
+      );
+    },
+
     async create(input) {
       const rows = await request("/uploaded_documents", {
         method: "POST",

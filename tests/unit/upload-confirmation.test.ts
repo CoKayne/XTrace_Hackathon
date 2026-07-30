@@ -6,7 +6,10 @@ import {
   type ExtractionPreview,
 } from "../../db/repositories/uploaded-documents";
 import { createMemorySourceRegistry } from "../../db/repositories/source-registry";
-import { createMemoryDealRegistry } from "../../db/repositories/deal-registry";
+import {
+  createMemoryDealRegistry,
+  sourceRevisionFingerprint,
+} from "../../db/repositories/deal-registry";
 import {
   createUploadConfirmationService,
   toUploadPreviewDto,
@@ -174,6 +177,48 @@ test("memory confirmation remains one atomic idempotent receipt across service i
     firstService.confirm(input),
     secondService.confirm(input),
   ]);
+  assert.deepEqual(second, first);
+  assert.equal(sources.inspect().revisions.length, 1);
+  assert.equal(deals.inspect().assignments.length, 1);
+});
+
+test("distinct upload wrappers share one same-upload confirmation receipt", async () => {
+  const uploads = await awaitingUpload();
+  const firstWrapper = { ...uploads };
+  const secondWrapper = { ...uploads };
+  assert.notEqual(firstWrapper, secondWrapper);
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const firstService = createUploadConfirmationService({
+    uploads: firstWrapper,
+    sources,
+    deals,
+    now: () => new Date("2026-07-29T12:05:00.000Z"),
+  });
+  const secondService = createUploadConfirmationService({
+    uploads: secondWrapper,
+    sources,
+    deals,
+    now: () => new Date("2026-07-29T12:06:00.000Z"),
+  });
+  const input = {
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: {
+        kind: "new_deal" as const,
+        dealStatus: "evaluating" as const,
+      },
+    },
+  };
+
+  const [first, second] = await Promise.all([
+    firstService.confirm(input),
+    secondService.confirm(input),
+  ]);
+
   assert.deepEqual(second, first);
   assert.equal(sources.inspect().revisions.length, 1);
   assert.equal(deals.inspect().assignments.length, 1);
@@ -442,6 +487,180 @@ test("failed promotion cannot erase a concurrent upload targeting the same Deal"
       dealId: "deal_existing",
     }))?.activeSourceRevisionIds,
     ["revision_seed", successful.sourceRevisionId].sort(),
+  );
+});
+
+test("failed promotion serializes an ordinary same-Deal assignment before rollback", async () => {
+  const uploads = await awaitingUpload();
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  await sources.createInitialRevision({
+    id: "revision_seed",
+    workspaceId: "workspace_1",
+    sourceId: "source_seed",
+    contentHash: "seed-hash",
+    objectKey: "private/seed.txt",
+    objectVersion: "seed-hash",
+    contentType: "text/plain",
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T10:00:00.000Z",
+    createdAt: "2026-07-29T10:00:00.000Z",
+  });
+  await deals.confirmSourceAssignment({
+    requestId: "seed-request",
+    workspaceId: "workspace_1",
+    dealId: "deal_existing",
+    companyId: "company_existing",
+    companyName: "Existing Co",
+    status: "watchlist",
+    sourceRevisionId: "revision_seed",
+    assignedByUserId: "seed",
+    reason: "seed",
+    confirmedAt: "2026-07-29T10:00:01.000Z",
+  });
+  let reachedUploadMutation!: () => void;
+  const uploadMutationReached = new Promise<void>((resolve) => {
+    reachedUploadMutation = resolve;
+  });
+  let releaseUploadMutation!: () => void;
+  const uploadMutationReleased = new Promise<void>((resolve) => {
+    releaseUploadMutation = resolve;
+  });
+  const failingService = createUploadConfirmationService({
+    uploads: {
+      ...uploads,
+      async markConfirmed() {
+        reachedUploadMutation();
+        await uploadMutationReleased;
+        throw new Error("injected ordinary same-Deal transition failure");
+      },
+    },
+    sources,
+    deals,
+    now: () => new Date("2026-07-29T12:05:00.000Z"),
+  });
+  const failingConfirmation = failingService.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Existing Co",
+      assignment: {
+        kind: "existing_deal",
+        dealId: "deal_existing",
+      },
+    },
+  });
+  await Promise.race([
+    uploadMutationReached,
+    failingConfirmation.then(
+      () => {
+        throw new Error("The failing promotion unexpectedly succeeded.");
+      },
+      (error: unknown) => {
+        throw error;
+      },
+    ),
+  ]);
+  const failedRevision = sources.inspect().revisions.find((revision) =>
+    revision.id !== "revision_seed"
+  );
+  assert.ok(failedRevision);
+  await sources.createInitialRevision({
+    id: "revision_live",
+    workspaceId: "workspace_1",
+    sourceId: "source_live",
+    contentHash: "live-hash",
+    objectKey: "private/live.txt",
+    objectVersion: "live-hash",
+    contentType: "text/plain",
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T12:06:00.000Z",
+    createdAt: "2026-07-29T12:06:00.000Z",
+  });
+  let ordinaryAssignmentSettled = false;
+  const ordinaryAssignment = deals.confirmSourceAssignment({
+    requestId: "request_live",
+    workspaceId: "workspace_1",
+    dealId: "deal_existing",
+    companyId: "company_existing",
+    companyName: "Existing Co",
+    status: "watchlist",
+    sourceRevisionId: "revision_live",
+    assignedByUserId: "user_live",
+    reason: "Concurrent ordinary assignment.",
+    confirmedAt: "2026-07-29T12:06:01.000Z",
+  });
+  void ordinaryAssignment.then(
+    () => {
+      ordinaryAssignmentSettled = true;
+    },
+    () => {
+      ordinaryAssignmentSettled = true;
+    },
+  );
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  const assignmentSettledBeforeRollback = ordinaryAssignmentSettled;
+  releaseUploadMutation();
+
+  await Promise.race([
+    Promise.allSettled([failingConfirmation, ordinaryAssignment]),
+    new Promise<never>((_resolve, reject) => {
+      setTimeout(
+        () => reject(new Error("ordinary same-Deal assignment deadlocked")),
+        1_000,
+      );
+    }),
+  ]);
+  assert.equal(assignmentSettledBeforeRollback, false);
+  await assert.rejects(
+    failingConfirmation,
+    /injected ordinary same-Deal transition failure/,
+  );
+  await ordinaryAssignment;
+
+  const liveRevisionIds = ["revision_live", "revision_seed"].sort();
+  const finalDeal = await deals.findForWorkspace({
+    workspaceId: "workspace_1",
+    dealId: "deal_existing",
+  });
+  assert.ok(finalDeal);
+  assert.deepEqual(finalDeal.activeSourceRevisionIds, liveRevisionIds);
+  assert.equal(
+    finalDeal.activeSourceRevisionFingerprint,
+    sourceRevisionFingerprint(liveRevisionIds),
+  );
+  assert.deepEqual(
+    sources.inspect().revisions.map((revision) => revision.id).sort(),
+    liveRevisionIds,
+  );
+  assert.equal(
+    sources.inspect().revisions.some((revision) =>
+      revision.id === failedRevision.id
+    ),
+    false,
+  );
+  const finalAssignments = deals.inspect().assignments;
+  assert.deepEqual(
+    finalAssignments.map((assignment) => assignment.sourceRevisionId).sort(),
+    liveRevisionIds,
+  );
+  assert.equal(
+    finalAssignments.some((assignment) =>
+      assignment.sourceRevisionId === failedRevision.id
+    ),
+    false,
+  );
+  const existingRevisionIds = new Set(
+    sources.inspect().revisions.map((revision) => revision.id),
+  );
+  assert.equal(
+    finalAssignments.every((assignment) =>
+      existingRevisionIds.has(assignment.sourceRevisionId)
+    ),
+    true,
   );
 });
 
@@ -765,15 +984,20 @@ test("memory confirmation rolls back the revision when Deal confirmation fails",
   const uploads = await awaitingUpload();
   const sources = createMemorySourceRegistry();
   const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const failingDeals: typeof deals = {
+    ...deals,
+    withPromotionLock(scope, operation) {
+      return deals.withPromotionLock(scope, () =>
+        operation(async () => {
+          throw new Error("injected Deal confirmation failure");
+        })
+      );
+    },
+  };
   const service = createUploadConfirmationService({
     uploads,
     sources,
-    deals: {
-      ...deals,
-      async confirmSourceAssignment() {
-        throw new Error("injected Deal confirmation failure");
-      },
-    },
+    deals: failingDeals,
   });
 
   await assert.rejects(service.confirm({

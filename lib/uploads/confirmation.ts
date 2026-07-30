@@ -53,11 +53,6 @@ export class UploadConfirmationConflictError extends Error {
   }
 }
 
-const confirmationLockSets = new WeakMap<
-  object,
-  Map<string, Promise<void>>
->();
-
 export function toUploadPreviewDto(
   record: UploadedDocumentRecord,
   candidateDeals: UploadPreviewDto["candidateDeals"],
@@ -87,7 +82,6 @@ export function createUploadConfirmationService(dependencies: {
   now?: () => Date;
 }) {
   const now = dependencies.now ?? (() => new Date());
-  const locks = confirmationLocksFor(dependencies.uploads);
 
   return {
     async listCandidateDeals(workspaceId: string) {
@@ -102,8 +96,10 @@ export function createUploadConfirmationService(dependencies: {
       assignedByUserId: string;
       choice: ConfirmUpload;
     }): Promise<ConfirmedUpload> {
-      const key = JSON.stringify([input.workspaceId, input.uploadId]);
-      return withKeyLock(locks, key, async () => {
+      return dependencies.uploads.withConfirmationLock({
+        workspaceId: input.workspaceId,
+        uploadId: input.uploadId,
+      }, async () => {
         const upload = await dependencies.uploads.get({
           workspaceId: input.workspaceId,
           id: input.uploadId,
@@ -219,8 +215,11 @@ export function createUploadConfirmationService(dependencies: {
               dependencies.sources,
             ),
         ) => createInitialRevision(revisionInput);
-        const confirmAssignment = (revisionId: string) =>
-          dependencies.deals.confirmSourceAssignment({
+        const confirmAssignment = (
+          revisionId: string,
+          confirmSourceAssignment: DealRegistry["confirmSourceAssignment"],
+        ) =>
+          confirmSourceAssignment({
             requestId: assignmentRequestId,
             workspaceId: input.workspaceId,
             dealId: identity.dealId,
@@ -400,16 +399,6 @@ function publicFailure(status: UploadedDocumentRecord["status"]): string {
     : "Document processing failed.";
 }
 
-function confirmationLocksFor(
-  repository: UploadedDocumentsRepository,
-): Map<string, Promise<void>> {
-  const existing = confirmationLockSets.get(repository);
-  if (existing) return existing;
-  const created = new Map<string, Promise<void>>();
-  confirmationLockSets.set(repository, created);
-  return created;
-}
-
 interface AtomicMemoryAdapter<Scope> {
   capturePromotionState(scope: Scope): unknown;
   restorePromotionState(before: unknown, expected: unknown): void;
@@ -420,7 +409,9 @@ interface AtomicMemoryDealAdapter<Scope>
   usesSourceRegistry(registry: SourceRegistry): boolean;
   withPromotionLock<T>(
     scope: { workspaceId: string; dealId: string },
-    operation: () => Promise<T>,
+    operation: (
+      confirmSourceAssignment: DealRegistry["confirmSourceAssignment"],
+    ) => Promise<T>,
   ): Promise<T>;
 }
 
@@ -464,7 +455,10 @@ async function promoteMemoryAtomically(
     createRevision: (
       createInitialRevision: SourceRegistry["createInitialRevision"],
     ) => Promise<{ id: string }>;
-    confirmAssignment: (revisionId: string) => Promise<unknown>;
+    confirmAssignment: (
+      revisionId: string,
+      confirmSourceAssignment: DealRegistry["confirmSourceAssignment"],
+    ) => Promise<unknown>;
     markUploadConfirmed: () => Promise<unknown>;
   },
 ): Promise<void> {
@@ -489,7 +483,7 @@ async function promoteMemoryAtomically(
   return sources.withPromotionLock(
     scopes.source,
     (createInitialRevision) =>
-      deals.withPromotionLock(scopes.deal, async () => {
+      deals.withPromotionLock(scopes.deal, async (confirmSourceAssignment) => {
         const beforeUpload = uploads.capturePromotionState(scopes.upload);
         const beforeSource = sources.capturePromotionState(scopes.source);
         const beforeDeal = deals.capturePromotionState(scopes.deal);
@@ -504,7 +498,10 @@ async function promoteMemoryAtomically(
             expectedSource = sources.capturePromotionState(scopes.source);
           }
           try {
-            await steps.confirmAssignment(revision.id);
+            await steps.confirmAssignment(
+              revision.id,
+              confirmSourceAssignment,
+            );
           } finally {
             expectedDeal = deals.capturePromotionState(scopes.deal);
           }
@@ -552,25 +549,4 @@ function isAtomicMemorySourceAdapter(
   return isAtomicMemoryAdapter(value)
     && "withPromotionLock" in value
     && typeof value.withPromotionLock === "function";
-}
-
-async function withKeyLock<T>(
-  locks: Map<string, Promise<void>>,
-  key: string,
-  operation: () => Promise<T>,
-): Promise<T> {
-  const previous = locks.get(key) ?? Promise.resolve();
-  let release!: () => void;
-  const current = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  const queued = previous.then(() => current);
-  locks.set(key, queued);
-  await previous;
-  try {
-    return await operation();
-  } finally {
-    release();
-    if (locks.get(key) === queued) locks.delete(key);
-  }
 }

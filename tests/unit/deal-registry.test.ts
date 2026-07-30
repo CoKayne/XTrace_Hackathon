@@ -225,6 +225,88 @@ test("confirmation is retry-idempotent and does not change upload or XTrace stat
   assert.deepEqual(registry.inspect().externalEffects, []);
 });
 
+test("the Deal lock awaits a started internal confirmation even when its caller does not", async () => {
+  const storedSources = createMemorySourceRegistry();
+  const firstInput = await assignment(storedSources, {
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    sourceId: "source_one",
+    requestId: "request_one",
+  });
+  const secondInput = await assignment(storedSources, {
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    sourceId: "source_two",
+    requestId: "request_two",
+  });
+  let reachedPausedRead!: () => void;
+  const pausedReadReached = new Promise<void>((resolve) => {
+    reachedPausedRead = resolve;
+  });
+  let releasePausedRead!: () => void;
+  const pausedReadReleased = new Promise<void>((resolve) => {
+    releasePausedRead = resolve;
+  });
+  const pausableSources: SourceRegistry = {
+    ...storedSources,
+    async getRevision(input) {
+      if (input.revisionId === firstInput.sourceRevisionId) {
+        reachedPausedRead();
+        await pausedReadReleased;
+      }
+      return storedSources.getRevision(input);
+    },
+  };
+  const registry = createMemoryDealRegistry({
+    sourceRegistry: pausableSources,
+  });
+  let startedConfirmation!:
+    ReturnType<typeof registry.confirmSourceAssignment>;
+  const lockedOperation = registry.withPromotionLock({
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+  }, async (confirmWithinLock) => {
+    startedConfirmation = confirmWithinLock(firstInput);
+  });
+  await pausedReadReached;
+
+  let ordinaryAssignmentSettled = false;
+  const ordinaryAssignment = registry.confirmSourceAssignment(secondInput);
+  void ordinaryAssignment.then(
+    () => {
+      ordinaryAssignmentSettled = true;
+    },
+    () => {
+      ordinaryAssignmentSettled = true;
+    },
+  );
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  const settledBeforeRelease = ordinaryAssignmentSettled;
+  releasePausedRead();
+
+  await Promise.race([
+    Promise.all([
+      lockedOperation,
+      startedConfirmation,
+      ordinaryAssignment,
+    ]),
+    new Promise<never>((_resolve, reject) => {
+      setTimeout(
+        () => reject(new Error("unawaited Deal confirmation deadlocked")),
+        1_000,
+      );
+    }),
+  ]);
+  assert.equal(settledBeforeRelease, false);
+  assert.deepEqual(
+    (await registry.findForWorkspace({
+      workspaceId: "workspace_one",
+      dealId: "deal_one",
+    }))?.activeSourceRevisionIds,
+    [firstInput.sourceRevisionId, secondInput.sourceRevisionId].sort(),
+  );
+});
+
 test("confirmation request ids bind every immutable semantic field", async () => {
   const changes: Array<[string, (input: ConfirmSourceAssignmentInput) => ConfirmSourceAssignmentInput]> = [
     ["actor", (input) => ({ ...input, assignedByUserId: "user_other" })],

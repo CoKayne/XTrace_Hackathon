@@ -109,7 +109,9 @@ export interface MemoryDealRegistry extends DealRegistry {
   restorePromotionState(before: unknown, expected: unknown): void;
   withPromotionLock<T>(
     scope: { workspaceId: string; dealId: string },
-    operation: () => Promise<T>,
+    operation: (
+      confirmSourceAssignment: DealRegistry["confirmSourceAssignment"],
+    ) => Promise<T>,
   ): Promise<T>;
   usesSourceRegistry(registry: SourceRegistry): boolean;
   inspect(): {
@@ -123,6 +125,13 @@ export interface MemoryDealPromotionScope extends DealMemoryOwnership {
   companyId: string;
   requestId: string;
 }
+
+type InternalMemoryDealRegistry =
+  & Omit<MemoryDealRegistry, "confirmSourceAssignment">
+  & {
+    confirmSourceAssignmentUnlocked:
+      DealRegistry["confirmSourceAssignment"];
+  };
 
 function requiredText(value: string, label: string): string {
   const normalized = value?.trim();
@@ -505,7 +514,7 @@ export function createMemoryDealRegistry(options: {
     return deal ? cloneDeal(deal) : null;
   }
 
-  return {
+  const repository: InternalMemoryDealRegistry = {
     capturePromotionState,
 
     restorePromotionState(rawBefore, rawExpected) {
@@ -516,11 +525,39 @@ export function createMemoryDealRegistry(options: {
     },
 
     withPromotionLock(scope, operation) {
-      const key = identity(
-        requiredWorkspaceId(scope.workspaceId),
-        requiredText(scope.dealId, "A Deal id"),
-      );
-      return withMemoryKeyLock(promotionLocks, key, operation);
+      const workspaceId = requiredWorkspaceId(scope.workspaceId);
+      const dealId = requiredText(scope.dealId, "A Deal id");
+      const key = identity(workspaceId, dealId);
+      return withMemoryKeyLock(promotionLocks, key, async () => {
+        let active = true;
+        const startedConfirmations: Array<
+          ReturnType<DealRegistry["confirmSourceAssignment"]>
+        > = [];
+        const confirmWithinLock: DealRegistry["confirmSourceAssignment"] =
+          (rawInput) => {
+            if (!active) {
+              throw new Error("The Deal promotion lock is no longer active.");
+            }
+            const input = validateConfirmation(rawInput);
+            if (
+              input.workspaceId !== workspaceId
+              || input.dealId !== dealId
+            ) {
+              throw new Error(
+                "The locked Deal promotion cannot mutate another Deal.",
+              );
+            }
+            const confirmation = confirmSourceAssignmentUnlocked(input);
+            startedConfirmations.push(confirmation);
+            return confirmation;
+          };
+        try {
+          return await operation(confirmWithinLock);
+        } finally {
+          active = false;
+          await Promise.allSettled(startedConfirmations);
+        }
+      });
     },
 
     usesSourceRegistry(registry) {
@@ -622,7 +659,7 @@ export function createMemoryDealRegistry(options: {
         .map(cloneDeal);
     },
 
-    async confirmSourceAssignment(rawInput) {
+    async confirmSourceAssignmentUnlocked(rawInput) {
       const input = validateConfirmation(rawInput);
       const sourceRevision = await sourceRegistry.getRevision({
         workspaceId: input.workspaceId,
@@ -847,6 +884,22 @@ export function createMemoryDealRegistry(options: {
         ),
         externalEffects: [...externalEffects],
       };
+    },
+  };
+  const {
+    confirmSourceAssignmentUnlocked,
+    ...publicRepository
+  } = repository;
+  return {
+    ...publicRepository,
+    async confirmSourceAssignment(rawInput) {
+      const input = validateConfirmation(rawInput);
+      const key = identity(input.workspaceId, input.dealId);
+      return withMemoryKeyLock(
+        promotionLocks,
+        key,
+        () => confirmSourceAssignmentUnlocked(input),
+      );
     },
   };
 }
