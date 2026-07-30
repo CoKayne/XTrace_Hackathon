@@ -130,9 +130,16 @@ test(
         "ON_ERROR_STOP=1",
         "-d",
         database,
-        "-At",
-        "-c",
-        `
+        "-A",
+        "-t",
+        "-q",
+        "-F",
+        "|",
+        "-f",
+        "-",
+      ], {
+        encoding: "utf8",
+        input: `
           insert into public.workspaces (id, name)
           values ('workspace_draft', 'Draft');
           insert into public.scan_runs (
@@ -188,9 +195,16 @@ test(
               'workspace_draft', 'draft_1', 'Revised'
             ) ->> 'body'
           );
+          select count(*)
+          from public.action_drafts
+          where workspace_id = 'workspace_draft' and artifact_id = 'draft_1';
           select payload->>'id', payload->>'candidateRunId',
                  payload->>'channel', payload->>'audienceType',
-                 payload->>'body'
+                 payload->>'body', payload->>'createdAt',
+                 (
+                   (payload->>'updatedAt')::timestamptz
+                     > (payload->>'createdAt')::timestamptz
+                 )
           from public.action_drafts
           where workspace_id = 'workspace_draft' and artifact_id = 'draft_1';
           set role service_role;
@@ -204,10 +218,11 @@ test(
           );
           reset role;
         `,
-      ], { encoding: "utf8" });
+      });
       assert.deepEqual(output.trim().split("\n"), [
         "Revised",
-        "draft_1|candidate_draft|email|founder|Revised",
+        "1",
+        "draft_1|candidate_draft|email|founder|Revised|2026-07-29T12:00:00.000Z|t",
         "f",
         "t",
       ]);
