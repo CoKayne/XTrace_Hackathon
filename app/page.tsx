@@ -790,7 +790,7 @@ export default function Home() {
             <strong>{nav.find((item) => item.view === view)?.label}</strong>
           </div>
           <div className="vsee-top-actions">
-            {uiSession.capabilities.resetDemo && (
+            {uiSession.capabilities.resetDemo ? (
               <button
                 className="vsee-memory-toggle"
                 onClick={() => {
@@ -801,6 +801,15 @@ export default function Home() {
                 aria-label="Reset current test view"
               >
                 RESET TEST VIEW
+              </button>
+            ) : (
+              <button
+                className="vsee-memory-toggle"
+                disabled
+                aria-label="Reset is disabled"
+                title="Durable analysis products are never deleted from this UI."
+              >
+                RESET DISABLED
               </button>
             )}
             <button

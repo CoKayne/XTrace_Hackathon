@@ -280,6 +280,16 @@ test("public sandbox reset states its safety contract and reload behavior", asyn
   assert.match(css, /vsee-sandbox-warning/);
 });
 
+test("reset control stays disabled outside the public sandbox", async () => {
+  const page = await readFile(pagePath, "utf8");
+
+  assert.match(page, /uiSession\.capabilities\.resetDemo\s*\?\s*\(/);
+  assert.match(page, /RESET TEST VIEW/);
+  assert.match(page, /RESET DISABLED/);
+  assert.match(page, /aria-label="Reset is disabled"/);
+  assert.match(page, /title="Durable analysis products are never deleted from this UI\."/);
+});
+
 test("uploaded-source UI accepts only staged runtime formats and renders confirmation previews", () => {
   const html = renderToStaticMarkup(createElement(SourceUploadFlow, {
     uploads: [upload("awaiting_confirmation", {

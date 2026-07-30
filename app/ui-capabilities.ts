@@ -80,8 +80,8 @@ export function uiSessionForContext(
     deploymentMode: context.mode,
     capabilities: {
       runScans: durableWorkspace,
-      // Reset deletes durable analysis products and is intentionally not
-      // presented as an authenticated-product capability.
+      // Reset advances a non-destructive test-view marker and is intentionally
+      // not presented as an authenticated-product capability.
       resetDemo: sandbox,
       uploadSources: durableWorkspace && context.permissions.mutateSources,
       confirmUploads: durableWorkspace && context.permissions.mutateSources,
