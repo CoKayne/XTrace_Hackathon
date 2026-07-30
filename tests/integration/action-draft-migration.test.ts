@@ -130,6 +130,7 @@ test(
         "ON_ERROR_STOP=1",
         "-d",
         database,
+        "-X",
         "-A",
         "-t",
         "-q",
@@ -196,11 +197,13 @@ test(
             ) ->> 'body'
           );
           select count(*)
-          from public.action_drafts
-          where workspace_id = 'workspace_draft' and artifact_id = 'draft_1';
-          select payload->>'id', payload->>'candidateRunId',
-                 payload->>'channel', payload->>'audienceType',
-                 payload->>'body', payload->>'createdAt',
+          from public.action_drafts;
+          select artifact_id, workspace_id, candidate_run_id,
+                 created_at = '2026-07-29T12:00:00.000Z'::timestamptz,
+                 payload->>'id', payload->>'workspaceId',
+                 payload->>'candidateRunId', payload->>'channel',
+                 payload->>'audienceType', payload->>'body',
+                 payload->>'createdAt',
                  (
                    (payload->>'updatedAt')::timestamptz
                      > (payload->>'createdAt')::timestamptz
@@ -222,7 +225,7 @@ test(
       assert.deepEqual(output.trim().split("\n"), [
         "Revised",
         "1",
-        "draft_1|candidate_draft|email|founder|Revised|2026-07-29T12:00:00.000Z|t",
+        "draft_1|workspace_draft|candidate_draft|t|draft_1|workspace_draft|candidate_draft|email|founder|Revised|2026-07-29T12:00:00.000Z|t",
         "f",
         "t",
       ]);
