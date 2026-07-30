@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { openSourceRevision } from "../../app/source-revision-link";
 import { POST as createUpload } from "../../app/api/uploads/route";
 import { GET as getUpload } from "../../app/api/uploads/[id]/route";
 import { POST as confirmUpload } from "../../app/api/uploads/[id]/confirm/route";
@@ -284,6 +285,41 @@ test("source revision access is workspace scoped and returns only URL plus expir
   );
   assert.equal(content.status, 200);
   assert.equal(await content.text(), "private source bytes");
+
+  let routeIssuedUrl = "";
+  let navigatedUrl = "";
+  await openSourceRevision({
+    revisionId: "revision_private",
+    request: async (accessPath) => {
+      assert.equal(
+        accessPath,
+        "/api/source-revisions/revision_private/access",
+      );
+      const response = await accessRevision(
+        new Request(`https://vsee.test${accessPath}`),
+        params("revision_private"),
+        owner,
+      );
+      assert.equal(response.status, 200);
+      const payload = await response.json() as {
+        data: { url: string; expiresAt: string };
+      };
+      routeIssuedUrl = payload.data.url;
+      return payload.data;
+    },
+    navigate(url) {
+      navigatedUrl = url;
+    },
+  });
+  assert.equal(navigatedUrl, routeIssuedUrl);
+  assert.match(navigatedUrl, /^\/api\/documents\/revision_private\?/);
+  const openedContent = await readDocument(
+    new Request(new URL(navigatedUrl, "https://vsee.test")),
+    params("revision_private"),
+    owner,
+  );
+  assert.equal(openedContent.status, 200);
+  assert.equal(await openedContent.text(), "private source bytes");
 
   const denied = await accessRevision(
     new Request("https://vsee.test/api/source-revisions/revision_private/access"),

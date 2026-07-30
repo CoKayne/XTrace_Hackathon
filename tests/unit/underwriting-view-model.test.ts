@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   describeUploadState,
+  financialCalculationLineage,
   lineageForClaim,
   orderUnderwritingSelections,
   versionRows,
@@ -102,7 +103,124 @@ test("formal-claim lineage resolves the upstream calculation chain to exact sour
   });
 });
 
-test("version rows expose every public pin and mark intentionally private pins unavailable", () => {
+test("financial fields resolve only to their exact valuation calculation identities", () => {
+  type FinancialField =
+    | "maximumAcceptablePreMoney"
+    | "initialOwnership"
+    | "postDilutionOwnership"
+    | "grossMoic"
+    | "grossIrr";
+  const calculations = [
+    {
+      id: "calculation:candidate_1:venture_return_method_v1:maximum_acceptable_pre_money",
+      formulaId: "venture_return_method_v1",
+      output: "24000000",
+    },
+    {
+      id: "calculation:candidate_1:simple_pre_post_ownership_v1:initial_ownership",
+      formulaId: "simple_pre_post_ownership_v1",
+      output: "0.10",
+    },
+    {
+      id: "calculation:candidate_1:future_dilution_v1:post_dilution_ownership",
+      formulaId: "future_dilution_v1",
+      output: "0.075",
+    },
+    {
+      id: "calculation:candidate_1:gross_deal_moic_v1:gross_moic",
+      formulaId: "gross_deal_moic_v1",
+      output: "4",
+    },
+    {
+      id: "calculation:candidate_1:annualized_gross_irr_v1:gross_irr",
+      formulaId: "annualized_gross_irr_v1",
+      output: "0.219",
+    },
+  ];
+  const valuationCalculationIds = calculations.map(({ id }) => id);
+  const cases: Array<[FinancialField, string, string]> = [
+    [
+      "maximumAcceptablePreMoney",
+      "24000000",
+      "calculation:candidate_1:venture_return_method_v1:maximum_acceptable_pre_money",
+    ],
+    [
+      "initialOwnership",
+      "0.10",
+      "calculation:candidate_1:simple_pre_post_ownership_v1:initial_ownership",
+    ],
+    [
+      "postDilutionOwnership",
+      "0.075",
+      "calculation:candidate_1:future_dilution_v1:post_dilution_ownership",
+    ],
+    [
+      "grossMoic",
+      "4",
+      "calculation:candidate_1:gross_deal_moic_v1:gross_moic",
+    ],
+    [
+      "grossIrr",
+      "0.219",
+      "calculation:candidate_1:annualized_gross_irr_v1:gross_irr",
+    ],
+  ];
+
+  for (const [field, value, itemId] of cases) {
+    assert.deepEqual(financialCalculationLineage({
+      field,
+      value,
+      calculations,
+      valuationCalculationIds,
+    }), { kind: "Calculation", itemId });
+  }
+});
+
+test("financial fields render unsupported when exact calculation identity is absent or ambiguous", () => {
+  const exact = {
+    id: "calculation:candidate_1:annualized_gross_irr_v1:gross_irr",
+    formulaId: "annualized_gross_irr_v1",
+    output: "0.219",
+  };
+  const base = {
+    field: "grossIrr" as const,
+    value: "0.219",
+    calculations: [exact],
+    valuationCalculationIds: [exact.id],
+  };
+  assert.equal(financialCalculationLineage({
+    ...base,
+    value: null,
+  }), null);
+  assert.equal(financialCalculationLineage({
+    ...base,
+    calculations: [{ ...exact, output: "0.220" }],
+  }), null);
+  assert.equal(financialCalculationLineage({
+    ...base,
+    valuationCalculationIds: [],
+  }), null);
+  assert.equal(financialCalculationLineage({
+    ...base,
+    calculations: [],
+  }), null);
+  assert.equal(financialCalculationLineage({
+    ...base,
+    calculations: [
+      exact,
+      {
+        ...exact,
+        id: "calculation:candidate_retry:annualized_gross_irr_v1:gross_irr",
+      },
+    ],
+    valuationCalculationIds: [
+      exact.id,
+      "calculation:candidate_retry:annualized_gross_irr_v1:gross_irr",
+    ],
+  }), null);
+});
+
+test("version rows expose every persisted replay pin exactly", () => {
   const rows = versionRows({
     fundPolicyId: "policy_v3",
     benchmarkPackId: null,
@@ -119,7 +237,11 @@ test("version rows expose every public pin and mark intentionally private pins u
     decisionPolicyDefinitionFingerprint: "sha256:decision",
     referenceCatalogFingerprint: "sha256:catalog",
     formulaVersions: ["returns@1", "ownership@2"],
+    providerModel: "claude-opus-4-8",
+    promptVersion: "underwriting-v3",
     schemaVersion: "schema-v4",
+    settingsFingerprint: "sha256:settings",
+    applicationCommit: "commit-123",
   });
 
   assert.deepEqual(
@@ -153,12 +275,22 @@ test("version rows expose every public pin and mark intentionally private pins u
     rows.find(({ label }) => label === "Decision")?.value,
     "decision_v1 · sha256:decision",
   );
-  for (const label of ["Model", "Prompt", "Settings", "Application commit"]) {
-    assert.equal(
-      rows.find((row) => row.label === label)?.value,
-      "Not exposed by server",
-    );
-  }
+  assert.equal(
+    rows.find(({ label }) => label === "Model")?.value,
+    "claude-opus-4-8",
+  );
+  assert.equal(
+    rows.find(({ label }) => label === "Prompt")?.value,
+    "underwriting-v3",
+  );
+  assert.equal(
+    rows.find(({ label }) => label === "Settings")?.value,
+    "sha256:settings",
+  );
+  assert.equal(
+    rows.find(({ label }) => label === "Application commit")?.value,
+    "commit-123",
+  );
 });
 
 test("product search presents only finalized artifact results with exact Source Revision citations", () => {

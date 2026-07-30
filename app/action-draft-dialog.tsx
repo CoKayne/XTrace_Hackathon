@@ -5,6 +5,26 @@ import { useEffect, useRef, useState } from "react";
 import type { PublicActionDraft } from "../lib/underwriting/read-model";
 import { apiRequest } from "./api-client";
 
+export async function saveActionDraftBody(input: {
+  draftId: string;
+  body: string;
+  request?: (
+    url: string,
+    init: RequestInit,
+  ) => Promise<PublicActionDraft>;
+}): Promise<PublicActionDraft> {
+  const request = input.request
+    ?? ((url: string, init: RequestInit) =>
+      apiRequest<PublicActionDraft>(url, init));
+  return request(
+    `/api/action-drafts/${encodeURIComponent(input.draftId)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ body: input.body }),
+    },
+  );
+}
+
 export function ActionDraftDialog({
   draft,
   canSave,
@@ -76,13 +96,10 @@ function ActionDraftSession({
     setSaving(true);
     setStatusMessage("");
     try {
-      const updated = await apiRequest<PublicActionDraft>(
-        `/api/action-drafts/${encodeURIComponent(draft.id)}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ body }),
-        },
-      );
+      const updated = await saveActionDraftBody({
+        draftId: draft.id,
+        body,
+      });
       setBody(updated.body);
       onSaved(updated);
       setStatusMessage("Current body saved.");

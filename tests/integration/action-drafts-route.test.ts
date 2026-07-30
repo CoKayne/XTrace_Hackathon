@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { saveActionDraftBody } from "../../app/action-draft-dialog";
 import { GET as listDrafts } from "../../app/api/action-drafts/route";
 import { PATCH as updateDraft } from "../../app/api/action-drafts/[id]/route";
 import {
@@ -9,6 +10,7 @@ import {
   type CandidateArtifactBundle,
 } from "../../db/repositories/underwriting-artifacts";
 import type { RouteDependencies } from "../../lib/api/route-dependencies";
+import type { PublicActionDraft } from "../../lib/underwriting/read-model";
 
 const WORKSPACE_ID = "workspace_drafts";
 const CANDIDATE_RUN_ID = "candidate_drafts";
@@ -137,6 +139,53 @@ test("PATCH replaces only the current draft body on the same identity", async ()
     })).length,
     1,
   );
+});
+
+test("the draft Save interaction PATCHes the current identity and persists only its body", async () => {
+  const artifacts = seedDraftRepository();
+  let requestedUrl = "";
+  let requestedInit: RequestInit | undefined;
+  const updated = await saveActionDraftBody({
+    draftId: DRAFT_ID,
+    body: "Saved through the editor interaction.",
+    request: async (url, init) => {
+      requestedUrl = url;
+      requestedInit = init;
+      const response = await updateDraft(
+        new Request(`https://vsee.test${url}`, {
+          ...init,
+          headers: { "content-type": "application/json" },
+        }),
+        { params: Promise.resolve({ id: DRAFT_ID }) },
+        productDependencies(artifacts),
+      );
+      assert.equal(response.status, 200);
+      return (await response.json() as { data: PublicActionDraft }).data;
+    },
+  });
+
+  assert.equal(requestedUrl, `/api/action-drafts/${DRAFT_ID}`);
+  assert.equal(requestedInit?.method, "PATCH");
+  assert.deepEqual(JSON.parse(String(requestedInit?.body)), {
+    body: "Saved through the editor interaction.",
+  });
+  assert.deepEqual(updated, {
+    id: DRAFT_ID,
+    candidateRunId: CANDIDATE_RUN_ID,
+    channel: "email",
+    audienceType: "founder",
+    body: "Saved through the editor interaction.",
+    createdAt: "2026-07-29T12:00:00.000Z",
+    updatedAt: "2026-07-29T13:00:00.000Z",
+  });
+  const [persisted] = await artifacts.listActionDrafts({
+    workspaceId: WORKSPACE_ID,
+    candidateRunId: CANDIDATE_RUN_ID,
+  });
+  assert.equal(persisted.id, DRAFT_ID);
+  assert.equal(persisted.channel, "email");
+  assert.equal(persisted.audienceType, "founder");
+  assert.equal(persisted.body, "Saved through the editor interaction.");
 });
 
 test("PATCH rejects attempts to replace audience, channel, association, or lineage", async () => {

@@ -418,7 +418,7 @@ test("public demo report detail never reads persisted underwriting state", async
   assert.equal("underwritingBatch" in payload.data, false);
 });
 
-test("candidate detail returns persisted artifacts and hides internal provider metadata", async () => {
+test("candidate detail returns exact persisted replay lineage", async () => {
   const repositories = await readRepositories();
   const response = await getUnderwriting(
     new Request(
@@ -443,11 +443,21 @@ test("candidate detail returns persisted artifacts and hides internal provider m
   };
   assert.deepEqual(payload.data.sourceRevisionIds, ["revision_searchable"]);
   assert.equal(payload.data.dealId, "deal_selected");
-  assert.equal("providerModel" in payload.data.versionSnapshot, false);
-  assert.equal("promptVersion" in payload.data.versionSnapshot, false);
-  assert.doesNotMatch(
-    JSON.stringify(payload),
-    /private-provider|private-prompt|private-settings|private-application/,
+  assert.equal(
+    payload.data.versionSnapshot.providerModel,
+    "private-provider-model",
+  );
+  assert.equal(
+    payload.data.versionSnapshot.promptVersion,
+    "private-prompt-version",
+  );
+  assert.equal(
+    payload.data.versionSnapshot.settingsFingerprint,
+    "private-settings-fingerprint",
+  );
+  assert.equal(
+    payload.data.versionSnapshot.applicationCommit,
+    "private-application-commit",
   );
 });
 

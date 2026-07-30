@@ -1,7 +1,8 @@
-import type {
-  CandidateArtifactBundle,
-  CandidateVersionSnapshot,
-  UnderwritingArtifactsRepository,
+import {
+  CandidateVersionSnapshotSchema,
+  type CandidateArtifactBundle,
+  type CandidateVersionSnapshot,
+  type UnderwritingArtifactsRepository,
 } from "../../db/repositories/underwriting-artifacts";
 import type {
   UnderwritingRunsRepository,
@@ -44,6 +45,10 @@ export interface PublicActionDraft {
   createdAt: string;
   updatedAt: string;
 }
+
+export const PublicCandidateVersionSnapshotSchema =
+  CandidateVersionSnapshotSchema;
+export type PublicCandidateVersionSnapshot = CandidateVersionSnapshot;
 
 export interface UnderwritingSearchResult {
   itemId: string;
@@ -314,28 +319,8 @@ function sourceRevisionIdsForClaim(input: {
   return [...revisionIds].sort();
 }
 
-function toPublicVersionSnapshot(snapshot: CandidateVersionSnapshot) {
-  return structuredClone({
-    fundPolicyId: snapshot.fundPolicyId,
-    benchmarkPackId: snapshot.benchmarkPackId,
-    benchmarkEntryId: snapshot.benchmarkEntryId,
-    benchmarkDefinitionFingerprint:
-      snapshot.benchmarkDefinitionFingerprint,
-    frameworkPackId: snapshot.frameworkPackId,
-    frameworkPackDefinitionFingerprint:
-      snapshot.frameworkPackDefinitionFingerprint,
-    routerVersion: snapshot.routerVersion,
-    criticalEvidenceProfileId: snapshot.criticalEvidenceProfileId,
-    criticalEvidenceProfileDefinitionFingerprint:
-      snapshot.criticalEvidenceProfileDefinitionFingerprint,
-    valuationMethodPolicyId: snapshot.valuationMethodPolicyId,
-    valuationMethodPolicyDefinitionFingerprint:
-      snapshot.valuationMethodPolicyDefinitionFingerprint,
-    decisionPolicyId: snapshot.decisionPolicyId,
-    decisionPolicyDefinitionFingerprint:
-      snapshot.decisionPolicyDefinitionFingerprint,
-    referenceCatalogFingerprint: snapshot.referenceCatalogFingerprint,
-    formulaVersions: snapshot.formulaVersions,
-    schemaVersion: snapshot.schemaVersion,
-  });
+function toPublicVersionSnapshot(
+  snapshot: CandidateVersionSnapshot,
+): PublicCandidateVersionSnapshot {
+  return PublicCandidateVersionSnapshotSchema.parse(structuredClone(snapshot));
 }

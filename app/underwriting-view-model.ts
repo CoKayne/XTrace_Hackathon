@@ -1,25 +1,40 @@
-import type { ClaimEdge } from "../lib/contracts/evidence";
+import type { Calculation, ClaimEdge } from "../lib/contracts/evidence";
 import type {
   DealUnderwritingSelectionView,
+  PublicCandidateVersionSnapshot,
 } from "../lib/underwriting/read-model";
 
-export type PublicCandidateVersionSnapshot = {
-  fundPolicyId: string;
-  benchmarkPackId: string | null;
-  benchmarkEntryId: string | null;
-  benchmarkDefinitionFingerprint: string | null;
-  frameworkPackId: string;
-  frameworkPackDefinitionFingerprint: string;
-  routerVersion: string;
-  criticalEvidenceProfileId: string;
-  criticalEvidenceProfileDefinitionFingerprint: string;
-  valuationMethodPolicyId: string;
-  valuationMethodPolicyDefinitionFingerprint: string;
-  decisionPolicyId: string;
-  decisionPolicyDefinitionFingerprint: string;
-  referenceCatalogFingerprint: string;
-  formulaVersions: string[];
-  schemaVersion: string;
+export type FinancialValuationField =
+  | "maximumAcceptablePreMoney"
+  | "initialOwnership"
+  | "postDilutionOwnership"
+  | "grossMoic"
+  | "grossIrr";
+
+const FINANCIAL_CALCULATION_IDENTITY: Record<
+  FinancialValuationField,
+  { formulaId: string; outputField: string }
+> = {
+  maximumAcceptablePreMoney: {
+    formulaId: "venture_return_method_v1",
+    outputField: "maximum_acceptable_pre_money",
+  },
+  initialOwnership: {
+    formulaId: "simple_pre_post_ownership_v1",
+    outputField: "initial_ownership",
+  },
+  postDilutionOwnership: {
+    formulaId: "future_dilution_v1",
+    outputField: "post_dilution_ownership",
+  },
+  grossMoic: {
+    formulaId: "gross_deal_moic_v1",
+    outputField: "gross_moic",
+  },
+  grossIrr: {
+    formulaId: "annualized_gross_irr_v1",
+    outputField: "gross_irr",
+  },
 };
 
 export function orderUnderwritingSelections(
@@ -141,6 +156,28 @@ export function lineageForClaim(input: {
   };
 }
 
+export function financialCalculationLineage(input: {
+  field: FinancialValuationField;
+  value: string | null;
+  calculations: Array<Pick<Calculation, "id" | "formulaId" | "output">>;
+  valuationCalculationIds: string[];
+}): { kind: "Calculation"; itemId: string } | null {
+  if (input.value === null) return null;
+  const identity = FINANCIAL_CALCULATION_IDENTITY[input.field];
+  const valuationCalculationIds = new Set(input.valuationCalculationIds);
+  const expectedIdSuffix =
+    `:${identity.formulaId}:${identity.outputField}`;
+  const matches = input.calculations.filter((calculation) =>
+    valuationCalculationIds.has(calculation.id)
+    && calculation.formulaId === identity.formulaId
+    && calculation.id.endsWith(expectedIdSuffix)
+    && calculation.output === input.value
+  );
+  return matches.length === 1
+    ? { kind: "Calculation", itemId: matches[0].id }
+    : null;
+}
+
 export function versionRows(
   snapshot: PublicCandidateVersionSnapshot,
 ): Array<{ label: string; value: string }> {
@@ -194,11 +231,11 @@ export function versionRows(
         ? snapshot.formulaVersions.join(" · ")
         : "Unavailable",
     },
-    { label: "Model", value: "Not exposed by server" },
-    { label: "Prompt", value: "Not exposed by server" },
+    { label: "Model", value: snapshot.providerModel },
+    { label: "Prompt", value: snapshot.promptVersion },
     { label: "Schema", value: snapshot.schemaVersion },
-    { label: "Settings", value: "Not exposed by server" },
-    { label: "Application commit", value: "Not exposed by server" },
+    { label: "Settings", value: snapshot.settingsFingerprint },
+    { label: "Application commit", value: snapshot.applicationCommit },
   ];
 }
 

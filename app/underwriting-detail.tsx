@@ -2,11 +2,14 @@
 
 import { useEffect, useRef } from "react";
 
-import type { PublicActionDraft } from "../lib/underwriting/read-model";
+import type {
+  PublicActionDraft,
+  PublicCandidateVersionSnapshot,
+} from "../lib/underwriting/read-model";
 import { SourceRevisionLink } from "./source-revision-link";
 import {
+  financialCalculationLineage,
   lineageForClaim,
-  type PublicCandidateVersionSnapshot,
   versionRows,
 } from "./underwriting-view-model";
 
@@ -546,21 +549,36 @@ export function UnderwritingDetailPanel({
             label="Maximum acceptable pre-money"
             value={detail.valuation.maximumAcceptablePreMoney}
             display={formatMoney(detail.valuation.maximumAcceptablePreMoney)}
-            lineage={firstCalculation(detail)}
+            lineage={financialCalculationLineage({
+              field: "maximumAcceptablePreMoney",
+              value: detail.valuation.maximumAcceptablePreMoney,
+              calculations: detail.calculations,
+              valuationCalculationIds: detail.valuation.calculationIds,
+            })}
             detail={detail}
           />
           <LineageValue
             label="Initial ownership"
             value={detail.valuation.initialOwnership}
             display={formatPercent(detail.valuation.initialOwnership)}
-            lineage={firstCalculation(detail)}
+            lineage={financialCalculationLineage({
+              field: "initialOwnership",
+              value: detail.valuation.initialOwnership,
+              calculations: detail.calculations,
+              valuationCalculationIds: detail.valuation.calculationIds,
+            })}
             detail={detail}
           />
           <LineageValue
             label="Post-dilution ownership"
             value={detail.valuation.postDilutionOwnership}
             display={formatPercent(detail.valuation.postDilutionOwnership)}
-            lineage={firstCalculation(detail)}
+            lineage={financialCalculationLineage({
+              field: "postDilutionOwnership",
+              value: detail.valuation.postDilutionOwnership,
+              calculations: detail.calculations,
+              valuationCalculationIds: detail.valuation.calculationIds,
+            })}
             detail={detail}
           />
           <LineageValue
@@ -569,14 +587,24 @@ export function UnderwritingDetailPanel({
             display={detail.valuation.grossMoic
               ? `${detail.valuation.grossMoic}×`
               : "Unavailable"}
-            lineage={firstCalculation(detail)}
+            lineage={financialCalculationLineage({
+              field: "grossMoic",
+              value: detail.valuation.grossMoic,
+              calculations: detail.calculations,
+              valuationCalculationIds: detail.valuation.calculationIds,
+            })}
             detail={detail}
           />
           <LineageValue
             label="Gross IRR"
             value={detail.valuation.grossIrr}
             display={formatPercent(detail.valuation.grossIrr)}
-            lineage={firstCalculation(detail)}
+            lineage={financialCalculationLineage({
+              field: "grossIrr",
+              value: detail.valuation.grossIrr,
+              calculations: detail.calculations,
+              valuationCalculationIds: detail.valuation.calculationIds,
+            })}
             detail={detail}
           />
         </div>
@@ -841,11 +869,6 @@ function ListBlock({ title, values }: { title: string; values: string[] }) {
 
 function Unavailable({ copy }: { copy: string }) {
   return <p className="vsee-unavailable">{copy}</p>;
-}
-
-function firstCalculation(detail: CandidateUnderwritingDetailDto) {
-  const id = detail.valuation.calculationIds[0];
-  return id ? { kind: "Calculation" as const, itemId: id } : null;
 }
 
 function formatMoney(value: string | null): string {

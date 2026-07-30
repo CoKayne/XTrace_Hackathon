@@ -4,6 +4,24 @@ import { useState } from "react";
 
 import { apiRequest } from "./api-client";
 
+function sourceRevisionAccessPath(revisionId: string): string {
+  return `/api/source-revisions/${encodeURIComponent(revisionId)}/access`;
+}
+
+export async function openSourceRevision(input: {
+  revisionId: string;
+  request?: (
+    accessPath: string,
+  ) => Promise<{ url: string; expiresAt: string }>;
+  navigate(url: string): void;
+}): Promise<void> {
+  const request = input.request
+    ?? ((accessPath: string) =>
+      apiRequest<{ url: string; expiresAt: string }>(accessPath));
+  const access = await request(sourceRevisionAccessPath(input.revisionId));
+  input.navigate(access.url);
+}
+
 export function SourceRevisionLink({
   revisionId,
   children,
@@ -12,8 +30,7 @@ export function SourceRevisionLink({
   children?: React.ReactNode;
 }) {
   const [error, setError] = useState("");
-  const accessPath =
-    `/api/source-revisions/${encodeURIComponent(revisionId)}/access`;
+  const accessPath = sourceRevisionAccessPath(revisionId);
 
   async function openRevision(
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -23,11 +40,13 @@ export function SourceRevisionLink({
     if (pendingWindow) pendingWindow.opener = null;
     setError("");
     try {
-      const access = await apiRequest<{ url: string; expiresAt: string }>(
-        accessPath,
-      );
-      if (pendingWindow) pendingWindow.location.replace(access.url);
-      else window.location.assign(access.url);
+      await openSourceRevision({
+        revisionId,
+        navigate(url) {
+          if (pendingWindow) pendingWindow.location.replace(url);
+          else window.location.assign(url);
+        },
+      });
     } catch (accessError) {
       pendingWindow?.close();
       setError(

@@ -14,8 +14,10 @@ import { UnderwritingDetailPanel } from "../../app/underwriting-detail";
 import {
   UnderwritingSummaryPanel,
 } from "../../app/underwriting-summary";
+import { GET as getDocumentAccess } from "../../app/api/documents/[id]/access/route";
 import { GET as getHealth } from "../../app/api/settings/health/route";
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
+import { buildDemoViewModel } from "../../lib/demo/view-model";
 import { createDefaultDemoDataStore } from "../../lib/storage/service";
 
 const pagePath = new URL("../../app/page.tsx", import.meta.url);
@@ -650,8 +652,111 @@ test("underwriting detail preserves section order, lineage, public version pins,
     assert.match(html, new RegExp(label));
   }
   assert.match(html, /framework_1 · sha256:framework/);
+  assert.match(html, /private-provider-model/);
+  assert.match(html, /private-prompt-version/);
+  assert.match(html, /private-settings-fingerprint/);
+  assert.match(html, /private-application-commit/);
   assert.match(html, /formal decision weight · 0/i);
   assert.doesNotMatch(html, /\bTo\b|>Send<|>Publish</);
+});
+
+test("each valuation card links only to its exact calculation identity", () => {
+  const detail = underwritingDetailFixture();
+  const calculation = detail.calculations[0];
+  const calculations = [
+    {
+      ...calculation,
+      id: "calculation:candidate_1:venture_return_method_v1:maximum_acceptable_pre_money",
+      formulaId: "venture_return_method_v1",
+      output: "24000000",
+      status: "completed",
+    },
+    {
+      ...calculation,
+      id: "calculation:candidate_1:simple_pre_post_ownership_v1:initial_ownership",
+      formulaId: "simple_pre_post_ownership_v1",
+      output: "0.10",
+      status: "completed",
+    },
+    {
+      ...calculation,
+      id: "calculation:candidate_1:future_dilution_v1:post_dilution_ownership",
+      formulaId: "future_dilution_v1",
+      output: "0.075",
+      status: "completed",
+    },
+    {
+      ...calculation,
+      id: "calculation:candidate_1:gross_deal_moic_v1:gross_moic",
+      formulaId: "gross_deal_moic_v1",
+      output: "4",
+      status: "completed",
+    },
+    {
+      ...calculation,
+      id: "calculation:candidate_1:annualized_gross_irr_v1:gross_irr",
+      formulaId: "annualized_gross_irr_v1",
+      output: "0.219",
+      status: "completed",
+    },
+  ];
+  const renderedDetail = {
+    ...detail,
+    calculations,
+    claimEdges: detail.claimEdges.filter(
+      ({ claimItemId }) => !claimItemId.startsWith("calculation:"),
+    ),
+    valuation: {
+      ...detail.valuation,
+      grossIrr: "0.219",
+      calculationIds: calculations.map(({ id }) => id),
+    },
+  };
+  const html = renderToStaticMarkup(createElement(UnderwritingDetailPanel, {
+    companyName: "Acme",
+    analysis: null,
+    detail: renderedDetail,
+    drafts: [],
+    canSaveDrafts: false,
+    onEditDraft() {},
+  }));
+  const expectedByLabel = new Map([
+    [
+      "Maximum acceptable pre-money",
+      "calculation:candidate_1:venture_return_method_v1:maximum_acceptable_pre_money",
+    ],
+    [
+      "Initial ownership",
+      "calculation:candidate_1:simple_pre_post_ownership_v1:initial_ownership",
+    ],
+    [
+      "Post-dilution ownership",
+      "calculation:candidate_1:future_dilution_v1:post_dilution_ownership",
+    ],
+    [
+      "Gross MOIC",
+      "calculation:candidate_1:gross_deal_moic_v1:gross_moic",
+    ],
+    [
+      "Gross IRR",
+      "calculation:candidate_1:annualized_gross_irr_v1:gross_irr",
+    ],
+  ]);
+
+  for (const [label, calculationId] of expectedByLabel) {
+    const cardStart = html.indexOf(`<span>${label}</span>`);
+    assert.notEqual(cardStart, -1, `${label} card was not rendered`);
+    const cardEnd = html.indexOf("</article>", cardStart);
+    assert.notEqual(cardEnd, -1, `${label} card was not closed`);
+    const card = html.slice(cardStart, cardEnd);
+    assert.match(card, />Calculation</);
+    assert.match(card, new RegExp(calculationId));
+    for (const otherCalculationId of expectedByLabel.values()) {
+      if (otherCalculationId !== calculationId) {
+        assert.doesNotMatch(card, new RegExp(otherCalculationId));
+      }
+    }
+  }
 });
 
 test("action drafts edit only the current body and expose save, copy, and download without delivery controls", () => {
@@ -682,6 +787,47 @@ test("action drafts edit only the current body and expose save, copy, and downlo
   assert.doesNotMatch(
     html,
     /\bTo\b|recipient|delivery state|>Send<|>Publish<|Email provider|LinkedIn provider/i,
+  );
+});
+
+test("public demo Deal links retain document access routes and those routes resolve", async () => {
+  const DealsView = (
+    pageModule as unknown as {
+      DealsView?: ComponentType<{
+        deals: ReturnType<typeof buildDemoViewModel>["deals"];
+        uploads: [];
+        query: string;
+        deploymentMode: "public_demo";
+        onQuery(value: string): void;
+      }>;
+    }
+  ).DealsView;
+  assert.ok(DealsView);
+  const deal = buildDemoViewModel(new Date("2026-07-29T12:00:00.000Z"))
+    .deals.find(({ documentId }) => documentId === "doc_100plus");
+  assert.ok(deal);
+
+  const html = renderToStaticMarkup(createElement(DealsView, {
+    deals: [deal],
+    uploads: [],
+    query: "",
+    deploymentMode: "public_demo",
+    onQuery() {},
+  }));
+  assert.match(
+    html,
+    /href="\/api\/documents\/doc_100plus\/access(?:#page=\d+)?"/,
+  );
+  assert.doesNotMatch(html, /\/api\/source-revisions\/doc_100plus\/access/);
+
+  const response = await getDocumentAccess(
+    new Request("https://vsee.test/api/documents/doc_100plus/access"),
+    { params: Promise.resolve({ id: "doc_100plus" }) },
+  );
+  assert.equal(response.status, 307);
+  assert.equal(
+    response.headers.get("location"),
+    "https://vsee.test/api/documents/doc_100plus",
   );
 });
 
@@ -737,6 +883,14 @@ test("product Deals and report priority never render demo profile fixtures as pe
   }));
   assert.match(dealsHtml, /revision_primary/);
   assert.match(dealsHtml, /revision_second/);
+  assert.match(
+    dealsHtml,
+    /href="\/api\/source-revisions\/revision_primary\/access"/,
+  );
+  assert.match(
+    dealsHtml,
+    /href="\/api\/source-revisions\/revision_second\/access"/,
+  );
   assert.doesNotMatch(dealsHtml, /\$9\.8M|Sample deal profile/);
 
   const priorityHtml = renderToStaticMarkup(createElement(
@@ -1025,7 +1179,11 @@ function underwritingDetailFixture() {
       decisionPolicyDefinitionFingerprint: "sha256:decision",
       referenceCatalogFingerprint: "sha256:catalog",
       formulaVersions: ["venture_method@1"],
+      providerModel: "private-provider-model",
+      promptVersion: "private-prompt-version",
       schemaVersion: "schema-v1",
+      settingsFingerprint: "private-settings-fingerprint",
+      applicationCommit: "private-application-commit",
     },
   };
 }

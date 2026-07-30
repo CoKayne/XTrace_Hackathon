@@ -1097,20 +1097,23 @@ export function DealsView({
             const profile = deploymentMode === "public_demo"
               ? SAMPLE_DEAL_PROFILES[deal.id]
               : undefined;
-            const sourceLinks = deal.sourceLinks?.length
-              ? deal.sourceLinks
-              : deal.sourceUrl
-              ? [{
-                  sourceRevisionId: deal.documentId || deal.sourceTitle,
-                  sourceUrl: deal.sourceUrl,
-                }]
+            const sourceLinks = deploymentMode === "product"
+              ? deal.sourceLinks ?? []
               : [];
             return (
           <article className="vsee-deal" key={deal.id}>
             <div className="vsee-monogram">{deal.companyName.slice(0, 2).toUpperCase()}</div>
             <div className="vsee-deal-name">
               <strong>{deal.companyName}</strong>
-              {sourceLinks.length ? sourceLinks.map((source) => (
+              {deploymentMode === "public_demo" && deal.sourceUrl ? (
+                <a
+                  href={deal.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {deal.sourceTitle} ↗
+                </a>
+              ) : sourceLinks.length ? sourceLinks.map((source) => (
                 <SourceRevisionLink
                   revisionId={source.sourceRevisionId}
                   key={source.sourceRevisionId}
