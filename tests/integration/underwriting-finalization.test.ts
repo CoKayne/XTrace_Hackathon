@@ -30,6 +30,9 @@ const groundingMigrationPath = fileURLToPath(
     import.meta.url,
   ),
 );
+const schemaPath = fileURLToPath(
+  new URL("../../db/schema.ts", import.meta.url),
+);
 const migrations = [
   "0000_vsee_postgres.sql",
   "0001_remove_report_delivery.sql",
@@ -237,11 +240,20 @@ function finalization(input: {
     versionSnapshot: {
       fundPolicyId: input.fundPolicyId ?? "fund_policy_1",
       benchmarkPackId: "benchmark_1",
+      benchmarkEntryId: "benchmark_entry_1",
+      benchmarkDefinitionFingerprint: `sha256:${"1".repeat(64)}`,
       frameworkPackId: "framework_pack_1",
+      frameworkPackDefinitionFingerprint: `sha256:${"2".repeat(64)}`,
       routerVersion: "router-v1",
       criticalEvidenceProfileId: "critical_1",
+      criticalEvidenceProfileDefinitionFingerprint:
+        `sha256:${"3".repeat(64)}`,
       valuationMethodPolicyId: "valuation_policy_1",
+      valuationMethodPolicyDefinitionFingerprint:
+        `sha256:${"4".repeat(64)}`,
       decisionPolicyId: "decision_policy_1",
+      decisionPolicyDefinitionFingerprint: `sha256:${"5".repeat(64)}`,
+      referenceCatalogFingerprint: `sha256:${"6".repeat(64)}`,
       formulaVersions: [],
       providerModel: "claude-sonnet-4-5",
       promptVersion: "underwriting-prompt-v1",
@@ -753,6 +765,7 @@ test("0011 declares an atomic finalization RPC without calling legacy report per
 
 test("0012 declares target claims, immutable rerun aliases, and grounded evidence persistence", () => {
   const migration = readFileSync(groundingMigrationPath, "utf8");
+  const schema = readFileSync(schemaPath, "utf8");
   assert.match(
     migration,
     /create or replace function public\.claim_underwriting_candidate\(/i,
@@ -764,8 +777,25 @@ test("0012 declares target claims, immutable rerun aliases, and grounded evidenc
   );
   assert.match(migration, /create table if not exists public\.source_evidence_items/i);
   assert.match(migration, /create table if not exists public\.evidence_pack_builds/i);
+  assert.match(
+    migration,
+    /create trigger critical_evidence_profile_fields_immutable[\s\S]*reject_immutable_underwriting_reference/i,
+  );
   assert.match(migration, /create or replace function public\.save_source_evidence_items/i);
   assert.match(migration, /create or replace function public\.save_evidence_pack_build/i);
+  assert.match(
+    migration,
+    /Evidence Pack source snapshot differs from its immutable revision/i,
+  );
+  assert.match(
+    migration,
+    /Evidence Pack revision IDs and snapshots must be duplicate-free exact sets/i,
+  );
+  assert.match(schema, /source_evidence_items_payload_shape_check/i);
+  assert.match(schema, /source_evidence_items_payload_identity_check/i);
+  assert.match(schema, /evidence_pack_builds_payload_shape_check/i);
+  assert.match(schema, /evidence_pack_builds_snapshots_shape_check/i);
+  assert.match(schema, /evidence_pack_builds_payload_identity_check/i);
 });
 
 test(
@@ -916,7 +946,8 @@ test(
         insert into public.source_revisions (
           id, workspace_id, source_id, revision, content_hash,
           object_key, object_version, content_type,
-          extractor_id, extractor_version, extracted_at
+          extractor_id, extractor_version, extracted_at,
+          supersedes_revision_id, created_at
         ) values (
           'revision_grounded',
           'workspace_1',
@@ -928,7 +959,9 @@ test(
           'text/markdown',
           'plain_text_v1',
           '1',
-          '2026-07-29T10:00:00.000Z'
+          '2026-07-29T10:00:00.000Z',
+          null,
+          '2026-07-29T10:05:00.000Z'
         );
       `);
       const sourceEvidence = {
@@ -961,10 +994,22 @@ test(
         id: "pack_grounded",
         workspaceId: "workspace_1",
         dealId: "deal_1",
+        sourceRevisionIds: ["revision_grounded"],
       };
       const snapshot = {
         id: "revision_grounded",
         workspaceId: "workspace_1",
+        sourceId: "source_grounded",
+        revision: 1,
+        contentHash: `sha256:${"e".repeat(64)}`,
+        objectKey: "private/source-grounded.md",
+        objectVersion: "object:v1",
+        contentType: "text/markdown",
+        extractorId: "plain_text_v1",
+        extractorVersion: "1",
+        extractedAt: "2026-07-29T10:00:00.000Z",
+        supersedesRevisionId: null,
+        createdAt: "2026-07-29T10:05:00.000Z",
       };
       const build = {
         pack,
@@ -976,6 +1021,66 @@ test(
         select public.save_evidence_pack_build(${sqlJson(build)});
         select public.save_evidence_pack_build(${sqlJson(build)});
       `);
+      assert.throws(() =>
+        executeSql(database, `
+          set role service_role;
+          select public.save_evidence_pack_build(${sqlJson({
+            pack: {
+              ...pack,
+              id: "pack_tampered_snapshot",
+            },
+            inputFingerprint: `sha256:${"1".repeat(64)}`,
+            sourceRevisionSnapshots: [{
+              ...snapshot,
+              contentHash: `sha256:${"0".repeat(64)}`,
+            }],
+          })});
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          set role service_role;
+          select public.save_evidence_pack_build(${sqlJson({
+            pack: {
+              ...pack,
+              id: "pack_duplicate_revisions",
+              sourceRevisionIds: [
+                "revision_grounded",
+                "revision_grounded",
+              ],
+            },
+            inputFingerprint: `sha256:${"2".repeat(64)}`,
+            sourceRevisionSnapshots: [snapshot, snapshot],
+          })});
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          set role service_role;
+          select public.save_evidence_pack_build(${sqlJson({
+            pack: {
+              ...pack,
+              id: "pack_mismatched_revisions",
+              sourceRevisionIds: [],
+            },
+            inputFingerprint: `sha256:${"3".repeat(64)}`,
+            sourceRevisionSnapshots: [snapshot],
+          })});
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          set role service_role;
+          select public.save_evidence_pack_build(${sqlJson({
+            pack: {
+              ...pack,
+              id: "pack_omitted_snapshot",
+            },
+            inputFingerprint: `sha256:${"4".repeat(64)}`,
+            sourceRevisionSnapshots: [],
+          })});
+        `)
+      );
 
       assert.equal(
         executeSql(database, `
@@ -989,6 +1094,31 @@ test(
                 'critical_evidence_seed_b2b_saas_v1');
         `),
         "1|1|9",
+      );
+    });
+  },
+);
+
+test(
+  "0012 keeps published Critical Evidence child definitions immutable",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    withTemporaryDatabase((database) => {
+      setupSqlUnderwritingWorkspace(database);
+      assert.throws(
+        () => executeSql(database, `
+          update public.critical_evidence_profile_fields
+          set critical = false
+          where critical_evidence_profile_id =
+            'critical_evidence_seed_b2b_saas_v1'
+            and field_id = 'company_identity';
+        `),
+        /critical_evidence_profile_fields is immutable/i,
       );
     });
   },

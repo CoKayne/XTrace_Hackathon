@@ -35,6 +35,7 @@ import type {
 } from "../lib/contracts/evidence";
 import type {
   ActionDraft,
+  CandidateProviderAttempt,
   DecisionResult,
   FrameworkDisagreement,
   FrameworkJudgment,
@@ -264,6 +265,14 @@ export const sourceEvidenceItems = pgTable("source_evidence_items", {
     table.sourceRevisionId,
     table.evidenceId,
   ),
+  check(
+    "source_evidence_items_payload_shape_check",
+    sql`jsonb_typeof(${table.payload}) = 'object'`,
+  ),
+  check(
+    "source_evidence_items_payload_identity_check",
+    sql`coalesce(${table.payload} ->> 'id' = ${table.evidenceId} and ${table.payload} ->> 'workspaceId' = ${table.workspaceId} and ${table.payload} ->> 'dealId' = ${table.dealId} and ${table.payload} ->> 'sourceRevisionId' = ${table.sourceRevisionId}, false)`,
+  ),
 ]);
 
 export const evidencePackBuilds = pgTable("evidence_pack_builds", {
@@ -285,6 +294,18 @@ export const evidencePackBuilds = pgTable("evidence_pack_builds", {
   check(
     "evidence_pack_builds_fingerprint_check",
     sql`${table.inputFingerprint} ~ '^sha256:[0-9a-f]{64}$'`,
+  ),
+  check(
+    "evidence_pack_builds_payload_shape_check",
+    sql`jsonb_typeof(${table.packPayload}) = 'object'`,
+  ),
+  check(
+    "evidence_pack_builds_snapshots_shape_check",
+    sql`jsonb_typeof(${table.sourceRevisionSnapshots}) = 'array'`,
+  ),
+  check(
+    "evidence_pack_builds_payload_identity_check",
+    sql`coalesce(${table.packPayload} ->> 'workspaceId' = ${table.workspaceId} and ${table.packPayload} ->> 'id' = ${table.packId}, false)`,
   ),
 ]);
 
@@ -1050,7 +1071,18 @@ export const candidateCheckpoints = pgTable("candidate_checkpoints", {
   workspaceId: text("workspace_id").notNull(),
   stage: text("stage").notNull(),
   status: text("status").notNull(),
-  artifactFingerprint: text("artifact_fingerprint").notNull(),
+  inputFingerprint: text("input_fingerprint").notNull(),
+  outputFingerprint: text("output_fingerprint"),
+  outputPayload: jsonb("output_payload"),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  costUnits: integer("cost_units").notNull().default(0),
+  tokenUnits: integer("token_units").notNull().default(0),
+  actualTokenUnits: integer("actual_token_units").notNull().default(0),
+  providerAttempts: jsonb("provider_attempts")
+    .$type<CandidateProviderAttempt[]>()
+    .notNull()
+    .default([]),
+  reasonCode: text("reason_code"),
   publicReason: text("public_reason"),
   savedAt: timestamp("saved_at", { withTimezone: true }).notNull(),
 }, (table) => [
@@ -1060,6 +1092,18 @@ export const candidateCheckpoints = pgTable("candidate_checkpoints", {
     foreignColumns: [candidateRuns.workspaceId, candidateRuns.id],
     name: "candidate_checkpoints_workspace_candidate_fkey",
   }).onDelete("cascade"),
+  check(
+    "candidate_checkpoints_status_check",
+    sql`${table.status} in ('running', 'completed', 'failed')`,
+  ),
+  check(
+    "candidate_checkpoints_usage_check",
+    sql`${table.attemptCount} >= 0 and ${table.costUnits} >= 0 and ${table.tokenUnits} >= 0 and ${table.actualTokenUnits} >= 0`,
+  ),
+  check(
+    "candidate_checkpoints_provider_attempts_shape_check",
+    sql`jsonb_typeof(${table.providerAttempts}) = 'array'`,
+  ),
 ]);
 
 export const evidencePacks = pgTable("evidence_packs", {

@@ -146,3 +146,58 @@ test("Claude client forwards caller cancellation and never retries an aborted re
   assert.equal(providerSignals[0]?.aborted, true);
   assert.equal(calls, 1);
 });
+
+test("Claude client exposes exact provider token usage in single-attempt metered mode", async () => {
+  let calls = 0;
+  const client = createClaudeClient({
+    apiKey: "test-key",
+    fetchImpl: async () => {
+      calls += 1;
+      return Response.json({
+        stop_reason: "end_turn",
+        content: [{ type: "text", text: "{\"ok\":true}" }],
+        usage: {
+          input_tokens: 321,
+          output_tokens: 45,
+          cache_creation_input_tokens: 6,
+          cache_read_input_tokens: 7,
+        },
+      });
+    },
+  }) as ReturnType<typeof createClaudeClient> & {
+    completeMeasured(input: {
+      system: string;
+      messages: Array<{ role: "user"; content: string }>;
+      maxTokens: number;
+      maxTransportAttempts: 1;
+    }): Promise<{
+      text: string;
+      stopReason: string | null;
+      usage: {
+        inputTokens: number;
+        outputTokens: number;
+        cacheCreationInputTokens: number;
+        cacheReadInputTokens: number;
+      };
+    }>;
+  };
+
+  const completion = await client.completeMeasured({
+    system: "Return JSON.",
+    messages: [{ role: "user", content: "Test" }],
+    maxTokens: 4_000,
+    maxTransportAttempts: 1,
+  });
+
+  assert.equal(calls, 1);
+  assert.deepEqual(completion, {
+    text: "{\"ok\":true}",
+    stopReason: "end_turn",
+    usage: {
+      inputTokens: 321,
+      outputTokens: 45,
+      cacheCreationInputTokens: 6,
+      cacheReadInputTokens: 7,
+    },
+  });
+});

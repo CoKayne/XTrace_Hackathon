@@ -12,6 +12,24 @@ export interface VersionedRef {
   version: string;
 }
 
+export type UnderwritingReferenceKind =
+  | "critical_evidence_profile"
+  | "benchmark_definition"
+  | "valuation_method_policy"
+  | "decision_policy"
+  | "framework_pack";
+
+export interface ReferenceDefinitionRef extends VersionedRef {
+  kind: UnderwritingReferenceKind;
+  parentId?: string;
+  definitionFingerprint: string;
+}
+
+export interface UnderwritingReferenceCatalogSnapshot {
+  definitions: ReferenceDefinitionRef[];
+  definitionFingerprint: string;
+}
+
 export interface BatchFingerprintInput {
   workspaceId: string;
   window: {
@@ -44,6 +62,7 @@ export interface BatchFingerprintInput {
   frameworkPack: VersionedRef;
   routerVersion: string;
   decisionPolicy: VersionedRef;
+  referenceCatalog: UnderwritingReferenceCatalogSnapshot;
 }
 
 export interface CandidateFingerprintInput {
@@ -71,9 +90,12 @@ export interface CandidateFingerprintInput {
     frameworkPackId: string;
     decisionPolicyId: string;
   };
-  criticalEvidenceProfile: VersionedRef;
-  benchmarkPack: VersionedRef | null;
-  valuationMethodPolicy: VersionedRef;
+  criticalEvidenceProfile: ReferenceDefinitionRef;
+  benchmark: ReferenceDefinitionRef | null;
+  valuationMethodPolicy: ReferenceDefinitionRef;
+  frameworkPack: ReferenceDefinitionRef;
+  decisionPolicy: ReferenceDefinitionRef;
+  referenceCatalogFingerprint: string;
   formulaVersions: string[];
   providerModel: string;
   promptVersion: string;
@@ -130,6 +152,7 @@ export function createBatchInputFingerprint(
     frameworkPack: normalizedVersionedRef(input.frameworkPack),
     routerVersion: required(input.routerVersion, "Router version"),
     decisionPolicy: normalizedVersionedRef(input.decisionPolicy),
+    referenceCatalog: normalizedReferenceCatalog(input.referenceCatalog),
   });
 }
 
@@ -167,14 +190,20 @@ export function createCandidateAnalysisFingerprint(
     },
     evidenceSourceIds: sortedUnique(input.evidenceSourceIds),
     context: normalizedRecord(input.context),
-    criticalEvidenceProfile: normalizedVersionedRef(
+    criticalEvidenceProfile: normalizedReferenceDefinitionRef(
       input.criticalEvidenceProfile,
     ),
-    benchmarkPack: input.benchmarkPack
-      ? normalizedVersionedRef(input.benchmarkPack)
+    benchmark: input.benchmark
+      ? normalizedReferenceDefinitionRef(input.benchmark)
       : null,
-    valuationMethodPolicy: normalizedVersionedRef(
+    valuationMethodPolicy: normalizedReferenceDefinitionRef(
       input.valuationMethodPolicy,
+    ),
+    frameworkPack: normalizedReferenceDefinitionRef(input.frameworkPack),
+    decisionPolicy: normalizedReferenceDefinitionRef(input.decisionPolicy),
+    referenceCatalogFingerprint: requiredFingerprint(
+      input.referenceCatalogFingerprint,
+      "Reference catalog fingerprint",
     ),
     formulaVersions: sortedUnique(input.formulaVersions),
     providerModel: required(input.providerModel, "Provider model"),
@@ -216,10 +245,42 @@ export function canonicalJson(value: unknown): string {
   throw new Error(`Unsupported fingerprint input type: ${typeof value}.`);
 }
 
-function fingerprint(value: unknown): string {
+export function createCanonicalFingerprint(value: unknown): string {
   return `sha256:${
     createHash("sha256").update(canonicalJson(value), "utf8").digest("hex")
   }`;
+}
+
+export function createReferenceCatalogSnapshot(
+  definitions: ReferenceDefinitionRef[],
+): UnderwritingReferenceCatalogSnapshot {
+  const normalizedDefinitions = definitions
+    .map(normalizedReferenceDefinitionRef)
+    .sort((left, right) =>
+      compareUtf8(
+        `${left.kind}\u0000${left.id}\u0000${left.parentId ?? ""}`,
+        `${right.kind}\u0000${right.id}\u0000${right.parentId ?? ""}`,
+      )
+    );
+  const identities = normalizedDefinitions.map((definition) =>
+    `${definition.kind}\u0000${definition.id}\u0000${
+      definition.parentId ?? ""
+    }`
+  );
+  if (new Set(identities).size !== identities.length) {
+    throw new Error("Reference catalog definition identities must be unique.");
+  }
+  return {
+    definitions: normalizedDefinitions,
+    definitionFingerprint: createCanonicalFingerprint({
+      kind: "underwriting-reference-catalog-v1",
+      definitions: normalizedDefinitions,
+    }),
+  };
+}
+
+function fingerprint(value: unknown): string {
+  return createCanonicalFingerprint(value);
 }
 
 function normalizedFingerprintRef(
@@ -236,6 +297,41 @@ function normalizedVersionedRef(value: VersionedRef): VersionedRef {
     id: required(value.id, "Versioned reference id"),
     version: required(value.version, "Versioned reference version"),
   };
+}
+
+function normalizedReferenceDefinitionRef(
+  value: ReferenceDefinitionRef,
+): ReferenceDefinitionRef {
+  return {
+    kind: value.kind,
+    id: required(value.id, "Reference definition id"),
+    version: required(value.version, "Reference definition version"),
+    ...(value.parentId === undefined
+      ? {}
+      : { parentId: required(value.parentId, "Reference parent id") }),
+    definitionFingerprint: requiredFingerprint(
+      value.definitionFingerprint,
+      "Reference definition fingerprint",
+    ),
+  };
+}
+
+function normalizedReferenceCatalog(
+  value: UnderwritingReferenceCatalogSnapshot,
+): UnderwritingReferenceCatalogSnapshot {
+  const normalized = createReferenceCatalogSnapshot(value.definitions);
+  if (
+    normalized.definitionFingerprint
+      !== requiredFingerprint(
+        value.definitionFingerprint,
+        "Reference catalog fingerprint",
+      )
+  ) {
+    throw new Error(
+      "Reference catalog fingerprint must match its exact definitions.",
+    );
+  }
+  return normalized;
 }
 
 function normalizedRecord<T extends Record<string, unknown>>(value: T): T {
@@ -259,4 +355,12 @@ function required(value: string, label: string): string {
     throw new Error(`${label} must be non-empty without surrounding whitespace.`);
   }
   return value;
+}
+
+function requiredFingerprint(value: string, label: string): string {
+  const normalized = required(value, label);
+  if (!/^sha256:[0-9a-f]{64}$/.test(normalized)) {
+    throw new Error(`${label} must be a canonical SHA-256 digest.`);
+  }
+  return normalized;
 }

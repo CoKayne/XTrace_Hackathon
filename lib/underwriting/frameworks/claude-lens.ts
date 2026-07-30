@@ -1,4 +1,9 @@
-import type { ClaudeClient } from "../../claude/client";
+import {
+  ClaudeCompletionTruncatedError,
+  type ClaudeClient,
+  type ClaudeCompleteInput,
+  type MeasuredClaudeCompletion,
+} from "../../claude/client";
 import { IntegrationTransportError } from "../../api/errors";
 import { parseClaudeJson } from "../../claude/service";
 import type {
@@ -20,6 +25,10 @@ import {
   isExperimentalAdvisoryFrameworkCard,
   type FrameworkCard,
 } from "./schemas";
+import { createCanonicalFingerprint } from "../fingerprints";
+import type {
+  FrameworkProviderAttemptExecutor,
+} from "./service";
 
 const CORE_SYSTEM_PROMPT = [
   "You are one independent, evidence-grounded venture framework lens.",
@@ -56,6 +65,7 @@ export async function runClaudeFrameworkLens(input: {
   card: FrameworkCard;
   fingerprint: string;
   signal?: AbortSignal;
+  providerAttempt?: FrameworkProviderAttemptExecutor;
 }): Promise<ClaudeFrameworkLensResult> {
   const valuation = isValuationFrameworkCard(input.card);
   const advisory = isExperimentalAdvisoryFrameworkCard(input.card);
@@ -92,13 +102,58 @@ export async function runClaudeFrameworkLens(input: {
         validationError: previousError.slice(0, 1_000),
         previousResponse: previousResponse.slice(0, 12_000),
       });
+    const request: ClaudeCompleteInput & { maxTokens: number } = {
+      system: advisory ? ADVISORY_SYSTEM_PROMPT : CORE_SYSTEM_PROMPT,
+      messages: [{ role: "user", content }],
+      maxTokens: 4_000,
+      signal: input.signal,
+    };
+    let completion: MeasuredClaudeCompletion | undefined;
+    let truncated = false;
+    for (
+      let transportAttempt = 1;
+      transportAttempt <= 2;
+      transportAttempt += 1
+    ) {
+      try {
+        completion = await executeProviderAttempt({
+          client: input.client,
+          providerAttempt: input.providerAttempt,
+          request,
+          attemptFingerprint: createCanonicalFingerprint({
+            kind: "framework-provider-attempt-v1",
+            lensFingerprint: input.fingerprint,
+            outputAttempt: attempt,
+            transportAttempt,
+            system: request.system,
+            messages: request.messages,
+            maxTokens: request.maxTokens,
+          }),
+        });
+        break;
+      } catch (error) {
+        throwIfAborted(input.signal);
+        if (error instanceof ClaudeCompletionTruncatedError) {
+          previousError = error.message;
+          truncated = true;
+          break;
+        }
+        if (
+          error instanceof IntegrationTransportError
+          && error.retryable
+          && transportAttempt < 2
+        ) {
+          continue;
+        }
+        throw error;
+      }
+    }
+    if (!completion) {
+      if (truncated) continue;
+      throw new IntegrationTransportError({ retryable: true });
+    }
+    previousResponse = completion.text;
     try {
-      previousResponse = await input.client.complete({
-        system: advisory ? ADVISORY_SYSTEM_PROMPT : CORE_SYSTEM_PROMPT,
-        messages: [{ role: "user", content }],
-        maxTokens: 4_000,
-        signal: input.signal,
-      });
       const output = ClaudeFrameworkLensOutputSchema.parse(
         parseClaudeJson(previousResponse),
       );
@@ -116,7 +171,6 @@ export async function runClaudeFrameworkLens(input: {
       };
     } catch (error) {
       throwIfAborted(input.signal);
-      if (error instanceof IntegrationTransportError) throw error;
       previousError = error instanceof Error ? error.message : String(error);
     }
   }
@@ -136,6 +190,44 @@ export async function runClaudeFrameworkLens(input: {
     attempts: maximumAttempts,
     repaired: !advisory,
   };
+}
+
+async function executeProviderAttempt(input: {
+  client: ClaudeClient;
+  providerAttempt?: FrameworkProviderAttemptExecutor;
+  request: ClaudeCompleteInput & { maxTokens: number };
+  attemptFingerprint: string;
+}): Promise<MeasuredClaudeCompletion> {
+  const operation = async (): Promise<MeasuredClaudeCompletion> => {
+    if (input.client.completeMeasured) {
+      return input.client.completeMeasured({
+        ...input.request,
+        maxTransportAttempts: 1,
+      });
+    }
+    const text = await input.client.complete(input.request);
+    return {
+      text,
+      stopReason: null,
+      usage: {
+        inputTokens: 0,
+        outputTokens: approximateTokens(text),
+        cacheCreationInputTokens: 0,
+        cacheReadInputTokens: 0,
+      },
+    };
+  };
+  return input.providerAttempt
+    ? input.providerAttempt.execute({
+        attemptFingerprint: input.attemptFingerprint,
+        outputTokenUnits: input.request.maxTokens,
+        operation,
+      })
+    : operation();
+}
+
+function approximateTokens(value: string): number {
+  return Math.max(1, Math.ceil(Buffer.byteLength(value, "utf8") / 4));
 }
 
 function throwIfAborted(signal?: AbortSignal): void {

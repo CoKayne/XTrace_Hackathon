@@ -3,6 +3,38 @@ begin;
 alter table public.candidate_runs
   add column if not exists artifact_source_candidate_run_id text;
 
+alter table public.candidate_checkpoints
+  add column if not exists input_fingerprint text,
+  add column if not exists output_fingerprint text,
+  add column if not exists output_payload jsonb,
+  add column if not exists attempt_count integer not null default 0,
+  add column if not exists cost_units integer not null default 0,
+  add column if not exists token_units integer not null default 0,
+  add column if not exists actual_token_units integer not null default 0,
+  add column if not exists provider_attempts jsonb not null default '[]'::jsonb,
+  add column if not exists reason_code text;
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'candidate_checkpoints'
+      and column_name = 'artifact_fingerprint'
+  ) then
+    execute
+      'update public.candidate_checkpoints
+       set input_fingerprint = artifact_fingerprint
+       where input_fingerprint is null';
+  end if;
+end;
+$$;
+
+alter table public.candidate_checkpoints
+  alter column input_fingerprint set not null,
+  drop column if exists artifact_fingerprint;
+
 do $$
 begin
   if not exists (
@@ -15,6 +47,31 @@ begin
       add constraint candidate_runs_workspace_artifact_source_fkey
       foreign key (workspace_id, artifact_source_candidate_run_id)
       references public.candidate_runs(workspace_id, id);
+  end if;
+  if not exists (
+    select 1
+    from pg_constraint
+    where connamespace = 'public'::regnamespace
+      and conname = 'candidate_checkpoints_usage_check'
+  ) then
+    alter table public.candidate_checkpoints
+      add constraint candidate_checkpoints_usage_check
+      check (
+        attempt_count >= 0
+        and cost_units >= 0
+        and token_units >= 0
+        and actual_token_units >= 0
+      );
+  end if;
+  if not exists (
+    select 1
+    from pg_constraint
+    where connamespace = 'public'::regnamespace
+      and conname = 'candidate_checkpoints_provider_attempts_shape_check'
+  ) then
+    alter table public.candidate_checkpoints
+      add constraint candidate_checkpoints_provider_attempts_shape_check
+      check (jsonb_typeof(provider_attempts) = 'array');
   end if;
   if not exists (
     select 1
@@ -46,7 +103,7 @@ create table if not exists public.source_evidence_items (
   evidence_id text not null,
   deal_id text not null,
   source_revision_id text not null,
-  payload jsonb not null check (jsonb_typeof(payload) = 'object'),
+  payload jsonb not null,
   created_at timestamptz not null default now(),
   primary key (workspace_id, evidence_id),
   constraint source_evidence_items_workspace_deal_fkey
@@ -56,12 +113,17 @@ create table if not exists public.source_evidence_items (
   constraint source_evidence_items_workspace_revision_fkey
     foreign key (workspace_id, source_revision_id)
     references public.source_revisions(workspace_id, id),
+  constraint source_evidence_items_payload_shape_check
+    check (jsonb_typeof(payload) = 'object'),
   constraint source_evidence_items_payload_identity_check
     check (
-      payload ->> 'id' = evidence_id
-      and payload ->> 'workspaceId' = workspace_id
-      and payload ->> 'dealId' = deal_id
-      and payload ->> 'sourceRevisionId' = source_revision_id
+      coalesce(
+        payload ->> 'id' = evidence_id
+        and payload ->> 'workspaceId' = workspace_id
+        and payload ->> 'dealId' = deal_id
+        and payload ->> 'sourceRevisionId' = source_revision_id,
+        false
+      )
     )
 );
 
@@ -76,18 +138,23 @@ create table if not exists public.evidence_pack_builds (
     input_fingerprint ~ '^sha256:[0-9a-f]{64}$'
   ),
   pack_id text not null,
-  pack_payload jsonb not null check (jsonb_typeof(pack_payload) = 'object'),
-  source_revision_snapshots jsonb not null check (
-    jsonb_typeof(source_revision_snapshots) = 'array'
-  ),
+  pack_payload jsonb not null,
+  source_revision_snapshots jsonb not null,
   created_at timestamptz not null default now(),
   primary key (workspace_id, input_fingerprint),
   constraint evidence_pack_builds_workspace_pack_unique
     unique (workspace_id, pack_id),
+  constraint evidence_pack_builds_payload_shape_check
+    check (jsonb_typeof(pack_payload) = 'object'),
+  constraint evidence_pack_builds_snapshots_shape_check
+    check (jsonb_typeof(source_revision_snapshots) = 'array'),
   constraint evidence_pack_builds_payload_identity_check
     check (
-      pack_payload ->> 'workspaceId' = workspace_id
-      and pack_payload ->> 'id' = pack_id
+      coalesce(
+        pack_payload ->> 'workspaceId' = workspace_id
+        and pack_payload ->> 'id' = pack_id,
+        false
+      )
     )
 );
 
@@ -235,6 +302,114 @@ begin
 end;
 $$;
 
+create or replace function public.save_underwriting_checkpoint(
+  p_payload jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  target public.candidate_runs%rowtype;
+  prior public.candidate_checkpoints%rowtype;
+  checkpoint jsonb := p_payload -> 'checkpoint';
+  v_input_fingerprint text := btrim(checkpoint ->> 'inputFingerprint');
+  v_output_fingerprint text := nullif(
+    btrim(checkpoint ->> 'outputFingerprint'),
+    ''
+  );
+  v_output_payload jsonb := case
+    when jsonb_typeof(checkpoint -> 'outputPayload') = 'null' then null
+    else checkpoint -> 'outputPayload'
+  end;
+  v_provider_attempts jsonb := checkpoint -> 'providerAttempts';
+begin
+  select * into target
+  from public.candidate_runs
+  where id = btrim(checkpoint ->> 'candidateRunId')
+  for update;
+  if not found
+    or target.status <> 'running'
+    or target.worker_id <> btrim(p_payload ->> 'workerId')
+    or target.lease_token <> btrim(p_payload ->> 'leaseToken')
+    or target.lease_expires_at <= now()
+  then
+    raise exception 'Candidate checkpoint lease does not match';
+  end if;
+  if coalesce(v_input_fingerprint, '') = ''
+    or jsonb_typeof(v_provider_attempts) <> 'array'
+    or coalesce((checkpoint ->> 'attemptCount')::integer, -1) < 0
+    or coalesce((checkpoint ->> 'costUnits')::integer, -1) < 0
+    or coalesce((checkpoint ->> 'tokenUnits')::integer, -1) < 0
+    or coalesce((checkpoint ->> 'actualTokenUnits')::integer, -1) < 0
+  then
+    raise exception 'Candidate checkpoint execution state is invalid';
+  end if;
+
+  select * into prior
+  from public.candidate_checkpoints
+  where candidate_run_id = target.id
+    and stage = btrim(checkpoint ->> 'stage')
+  for update;
+  if found and prior.status = 'completed' then
+    if prior.input_fingerprint <> v_input_fingerprint
+      or prior.output_fingerprint is distinct from v_output_fingerprint
+      or prior.output_payload is distinct from v_output_payload
+      or prior.attempt_count <> (checkpoint ->> 'attemptCount')::integer
+      or prior.cost_units <> (checkpoint ->> 'costUnits')::integer
+      or prior.token_units <> (checkpoint ->> 'tokenUnits')::integer
+      or prior.actual_token_units
+        <> (checkpoint ->> 'actualTokenUnits')::integer
+      or prior.provider_attempts <> v_provider_attempts
+      or prior.reason_code is distinct from checkpoint ->> 'reasonCode'
+      or prior.public_reason is distinct from checkpoint ->> 'publicReason'
+    then
+      raise exception 'Completed candidate checkpoint is immutable';
+    end if;
+    return;
+  end if;
+  if found and prior.input_fingerprint <> v_input_fingerprint then
+    raise exception 'Candidate checkpoint input fingerprint changed';
+  end if;
+
+  insert into public.candidate_checkpoints (
+    candidate_run_id, workspace_id, stage, status,
+    input_fingerprint, output_fingerprint, output_payload,
+    attempt_count, cost_units, token_units, actual_token_units,
+    provider_attempts, reason_code, public_reason, saved_at
+  ) values (
+    target.id,
+    target.workspace_id,
+    btrim(checkpoint ->> 'stage'),
+    btrim(checkpoint ->> 'status'),
+    v_input_fingerprint,
+    v_output_fingerprint,
+    v_output_payload,
+    (checkpoint ->> 'attemptCount')::integer,
+    (checkpoint ->> 'costUnits')::integer,
+    (checkpoint ->> 'tokenUnits')::integer,
+    (checkpoint ->> 'actualTokenUnits')::integer,
+    v_provider_attempts,
+    checkpoint ->> 'reasonCode',
+    checkpoint ->> 'publicReason',
+    (checkpoint ->> 'savedAt')::timestamptz
+  )
+  on conflict (candidate_run_id, stage) do update set
+    status = excluded.status,
+    output_fingerprint = excluded.output_fingerprint,
+    output_payload = excluded.output_payload,
+    attempt_count = excluded.attempt_count,
+    cost_units = excluded.cost_units,
+    token_units = excluded.token_units,
+    actual_token_units = excluded.actual_token_units,
+    provider_attempts = excluded.provider_attempts,
+    reason_code = excluded.reason_code,
+    public_reason = excluded.public_reason,
+    saved_at = excluded.saved_at;
+end;
+$$;
+
 create or replace function public.save_source_evidence_items(
   p_items jsonb
 )
@@ -305,27 +480,92 @@ declare
   v_pack_id text := btrim(p_payload -> 'pack' ->> 'id');
   v_input_fingerprint text := btrim(p_payload ->> 'inputFingerprint');
   snapshots jsonb := p_payload -> 'sourceRevisionSnapshots';
+  pack_revision_ids jsonb := p_payload -> 'pack' -> 'sourceRevisionIds';
   snapshot jsonb;
+  immutable_revision public.source_revisions%rowtype;
+  immutable_snapshot jsonb;
+  pack_revision_count integer;
+  pack_revision_distinct_count integer;
+  snapshot_count integer;
+  snapshot_distinct_count integer;
 begin
   if coalesce(v_workspace_id, '') = ''
     or coalesce(v_pack_id, '') = ''
     or v_input_fingerprint !~ '^sha256:[0-9a-f]{64}$'
     or jsonb_typeof(p_payload -> 'pack') <> 'object'
     or jsonb_typeof(snapshots) <> 'array'
+    or jsonb_typeof(pack_revision_ids) <> 'array'
   then
     raise exception 'An immutable Evidence Pack build is required';
   end if;
+
+  if exists (
+    select 1
+    from jsonb_array_elements(pack_revision_ids) as item(value)
+    where jsonb_typeof(item.value) <> 'string'
+  ) then
+    raise exception
+      'Evidence Pack revision IDs and snapshots must be duplicate-free exact sets';
+  end if;
+
+  select count(*), count(distinct item.value)
+  into pack_revision_count, pack_revision_distinct_count
+  from jsonb_array_elements_text(pack_revision_ids) as item(value);
+  select count(*), count(distinct item.value ->> 'id')
+  into snapshot_count, snapshot_distinct_count
+  from jsonb_array_elements(snapshots) as item(value);
+  if pack_revision_count <> pack_revision_distinct_count
+    or snapshot_count <> snapshot_distinct_count
+    or pack_revision_count <> snapshot_count
+    or exists (
+      select 1
+      from jsonb_array_elements_text(pack_revision_ids) as pack_id(value)
+      where not exists (
+        select 1
+        from jsonb_array_elements(snapshots) as source_snapshot(value)
+        where source_snapshot.value ->> 'id' = pack_id.value
+      )
+    )
+  then
+    raise exception
+      'Evidence Pack revision IDs and snapshots must be duplicate-free exact sets';
+  end if;
+
   for snapshot in select value from jsonb_array_elements(snapshots)
   loop
-    if snapshot ->> 'workspaceId' <> v_workspace_id
-      or not exists (
-        select 1
-        from public.source_revisions
-        where source_revisions.workspace_id = v_workspace_id
-          and source_revisions.id = snapshot ->> 'id'
-      )
-    then
+    select revision.* into immutable_revision
+    from public.source_revisions as revision
+    where revision.workspace_id = v_workspace_id
+      and revision.id = snapshot ->> 'id'
+    for key share;
+    if not found then
       raise exception 'Evidence Pack source snapshot does not resolve';
+    end if;
+    immutable_snapshot := jsonb_build_object(
+      'id', immutable_revision.id,
+      'workspaceId', immutable_revision.workspace_id,
+      'sourceId', immutable_revision.source_id,
+      'revision', immutable_revision.revision,
+      'contentHash', immutable_revision.content_hash,
+      'objectKey', immutable_revision.object_key,
+      'objectVersion', immutable_revision.object_version,
+      'contentType', immutable_revision.content_type,
+      'extractorId', immutable_revision.extractor_id,
+      'extractorVersion', immutable_revision.extractor_version,
+      'extractedAt',
+        public.canonical_utc_iso_milliseconds(
+          immutable_revision.extracted_at
+        ),
+      'supersedesRevisionId',
+        immutable_revision.supersedes_revision_id,
+      'createdAt',
+        public.canonical_utc_iso_milliseconds(
+          immutable_revision.created_at
+        )
+    );
+    if immutable_snapshot <> snapshot then
+      raise exception
+        'Evidence Pack source snapshot differs from its immutable revision';
     end if;
   end loop;
 
@@ -376,6 +616,13 @@ create table if not exists public.critical_evidence_profile_fields (
   created_at timestamptz not null default now(),
   primary key (critical_evidence_profile_id, field_id)
 );
+
+drop trigger if exists critical_evidence_profile_fields_immutable
+  on public.critical_evidence_profile_fields;
+create trigger critical_evidence_profile_fields_immutable
+before update or delete on public.critical_evidence_profile_fields
+for each row execute function
+  public.reject_immutable_underwriting_reference();
 
 insert into public.critical_evidence_profile_fields (
   critical_evidence_profile_id,

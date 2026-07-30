@@ -15,15 +15,16 @@ import type { CompanyAnalysis } from "../contracts/domain";
 import type { EvidencePack } from "../contracts/evidence";
 import type {
   CandidateRun,
-  CandidateCheckpoint,
   FundPolicySnapshot,
   MissingEvidenceItem,
   UnderwritingBatch,
 } from "../contracts/underwriting";
-import { IntegrationTransportError } from "../api/errors";
 import {
   canonicalJson,
+  createReferenceCatalogSnapshot,
   createCandidateAnalysisFingerprint,
+  type ReferenceDefinitionRef,
+  type UnderwritingReferenceCatalogSnapshot,
 } from "./fingerprints";
 import {
   createContextRouter,
@@ -45,48 +46,46 @@ import {
   type CandidateGroundingSnapshot,
   type CandidateGroundingPort,
 } from "./candidate-grounding";
+import {
+  parseCandidateGroundingSnapshot,
+  parseDecisionResult,
+  parseFrameworkLensResult,
+  parseGroundedEvidencePack,
+  parseNarrativeArtifacts,
+  parseValuationArtifactSet,
+} from "./stage-replay";
+import {
+  CandidateBudgetExhaustedError,
+  CandidateStageTimeoutError,
+  createCandidateStagePolicies,
+  createCandidateStageRuntime,
+  type CandidateExecutionBudget,
+  type CandidateExecutionStage,
+  type CandidateStagePolicy,
+  type CandidateStageRuntime,
+} from "./candidate-stage-runtime";
+
+export {
+  CandidateBudgetExhaustedError,
+  CandidateStageTimeoutError,
+  type CandidateExecutionBudget,
+  type CandidateExecutionStage,
+  type CandidateStagePolicy,
+  type CandidateStageRuntime,
+};
+export {
+  CandidateCheckpointReplayError,
+  CandidateProviderAttemptReplayError,
+} from "./candidate-stage-runtime";
 
 const MAX_AUTOMATIC_CANDIDATES = 5;
 const SELECTION_POLICY_VERSION = "top-five-belief-revised-v1";
 const DEFAULT_CANDIDATE_TIMEOUT_MS = 30_000;
 const DEFAULT_CANDIDATE_MAX_ATTEMPTS = 2;
 const DEFAULT_CANDIDATE_LEASE_SECONDS = 120;
-const DEFAULT_CANDIDATE_COST_UNITS = 5;
-const DEFAULT_CANDIDATE_TOKEN_UNITS = 12_000;
+const DEFAULT_CANDIDATE_COST_UNITS = 16;
+const DEFAULT_CANDIDATE_TOKEN_UNITS = 64_000;
 const ORCHESTRATOR_WORKER_ID = "underwriting-orchestrator-v1";
-
-export type CandidateExecutionStage = Exclude<
-  CandidateCheckpoint["stage"],
-  "finalization"
->;
-
-export interface CandidateStagePolicy {
-  timeoutMs: number;
-  maxAttempts: number;
-  costUnits: number;
-  tokenUnits: number;
-}
-
-export interface CandidateExecutionBudget {
-  maxCostUnits: number;
-  maxTokenUnits: number;
-  maxConcurrency: 1;
-  stages: Record<CandidateExecutionStage, CandidateStagePolicy>;
-}
-
-export interface CandidateStageRuntime {
-  run<T>(input: {
-    stage: CandidateExecutionStage;
-    inputFingerprint: string;
-    operation(signal: AbortSignal): Promise<T> | T;
-  }): Promise<T>;
-  usage(): {
-    costUnits: number;
-    tokenUnits: number;
-    remainingCostUnits: number;
-    remainingTokenUnits: number;
-  };
-}
 
 export type CandidateFinalizationPayload = Omit<
   CandidateFinalization,
@@ -109,6 +108,7 @@ export interface CandidateExecutorInput {
   deal: RegisteredDeal;
   fundPolicy: FundPolicySnapshot;
   batchInputFingerprint: string;
+  referenceCatalog: UnderwritingReferenceCatalogSnapshot;
   workerId: string;
   leaseToken: string;
   budget: CandidateExecutionBudget;
@@ -162,6 +162,7 @@ export function createUnderwritingOrchestrator(options: {
     Record<CandidateExecutionStage, Partial<CandidateStagePolicy>>
   >;
   candidateExecutionFingerprint?: string;
+  referenceCatalog?: UnderwritingReferenceCatalogSnapshot;
   onWarning?: (warning: string) => void;
   now?: () => Date;
 }): UnderwritingOrchestrator {
@@ -185,7 +186,7 @@ export function createUnderwritingOrchestrator(options: {
       "Candidate token budget",
     ),
     maxConcurrency: 1,
-    stages: stagePolicies({
+    stages: createCandidateStagePolicies({
       timeoutMs: stageTimeoutMs,
       retryableAttempts: retryableStageAttempts,
       overrides: options.candidateStagePolicies,
@@ -200,6 +201,8 @@ export function createUnderwritingOrchestrator(options: {
       ?? "candidate-executor-contract-v2",
     "A candidate execution fingerprint",
   );
+  const referenceCatalog = options.referenceCatalog
+    ?? createReferenceCatalogSnapshot([]);
   const plannedCandidates = new Map<string, PlannedCandidate>();
 
   const processCandidate = async (
@@ -239,7 +242,7 @@ export function createUnderwritingOrchestrator(options: {
     }
 
     const controller = new AbortController();
-    const stages = createCandidateStageRuntime({
+    const stages = await createCandidateStageRuntime({
       runs: options.runs,
       candidate: claimed.candidate,
       workerId: ORCHESTRATOR_WORKER_ID,
@@ -256,6 +259,7 @@ export function createUnderwritingOrchestrator(options: {
         deal: planned.deal,
         fundPolicy: planned.fundPolicy,
         batchInputFingerprint: planned.batchInputFingerprint,
+        referenceCatalog,
         workerId: ORCHESTRATOR_WORKER_ID,
         leaseToken: claimed.leaseToken,
         budget,
@@ -264,13 +268,25 @@ export function createUnderwritingOrchestrator(options: {
       });
     } catch {}
     if (!finalization) {
+      const finalizationInputFingerprint = fingerprint({
+        stage: "finalization",
+        candidateRunId,
+        batchInputFingerprint: planned.batchInputFingerprint,
+      });
       try {
         await options.runs.saveCheckpoint({
           candidateRunId,
           stage: "finalization",
           status: "failed",
-          artifactFingerprint:
-            claimed.candidate.candidateAnalysisFingerprint,
+          inputFingerprint: finalizationInputFingerprint,
+          outputFingerprint: null,
+          outputPayload: null,
+          attemptCount: 1,
+          costUnits: 0,
+          tokenUnits: 0,
+          actualTokenUnits: 0,
+          providerAttempts: [],
+          reasonCode: "CANDIDATE_BOUNDED_EXECUTION_FAILED",
           publicReason:
             "Candidate underwriting failed during bounded stage execution.",
           savedAt: now().toISOString(),
@@ -319,12 +335,35 @@ export function createUnderwritingOrchestrator(options: {
       leaseToken: claimed.leaseToken,
       candidateRunId,
     };
+    const {
+      workerId: _checkpointWorkerId,
+      leaseToken: _checkpointLeaseToken,
+      candidateRunId: _checkpointCandidateRunId,
+      ...durableFinalizationPayload
+    } = payload;
+    const finalizationInputFingerprint = fingerprint({
+      stage: "finalization",
+      candidateRunId,
+      batchInputFingerprint: planned.batchInputFingerprint,
+    });
     try {
       await options.runs.saveCheckpoint({
         candidateRunId,
         stage: "finalization",
         status: "completed",
-        artifactFingerprint: payload.candidateAnalysisFingerprint,
+        inputFingerprint: finalizationInputFingerprint,
+        outputFingerprint: fingerprint({
+          stage: "finalization",
+          inputFingerprint: finalizationInputFingerprint,
+          result: durableFinalizationPayload,
+        }),
+        outputPayload: durableFinalizationPayload,
+        attemptCount: 1,
+        costUnits: 0,
+        tokenUnits: 0,
+        actualTokenUnits: 0,
+        providerAttempts: [],
+        reasonCode: null,
         publicReason: null,
         savedAt: now().toISOString(),
         workerId: ORCHESTRATOR_WORKER_ID,
@@ -360,6 +399,7 @@ export function createUnderwritingOrchestrator(options: {
         policy,
         executionBudget: budget,
         candidateExecutionFingerprint,
+        referenceCatalog,
       });
       const ordinaryBatch = await options.runs.createOrReuseBatch({
         workspaceId: input.scanRun.workspaceId,
@@ -483,7 +523,7 @@ export function createSourceGroundedCandidateExecutor(options: {
     let snapshot: CandidateGroundingSnapshot;
     let resolution: RouterResolution;
     try {
-      const routed = await input.stages.run({
+      snapshot = await input.stages.run({
         stage: "context_router",
         inputFingerprint: fingerprint({
           stage: "context_router",
@@ -491,21 +531,16 @@ export function createSourceGroundedCandidateExecutor(options: {
           analysis: input.analysis,
           deal: input.deal,
         }),
-        operation: async (signal) => {
-          const loaded = await options.grounding.load({
+        parseOutput: parseCandidateGroundingSnapshot,
+        operation: (signal) =>
+          options.grounding.load({
             candidate: input.candidate,
             analysis: input.analysis,
             deal: input.deal,
             signal,
-          });
-          return {
-            snapshot: loaded,
-            resolution: router.resolve(loaded.identityEvidence),
-          };
-        },
+          }),
       });
-      snapshot = routed.snapshot;
-      resolution = routed.resolution;
+      resolution = router.resolve(snapshot.identityEvidence);
     } catch (error) {
       if (error instanceof CandidateGroundingUnavailableError) {
         return unavailableExecution(error.reasonCodes);
@@ -530,8 +565,13 @@ export function createSourceGroundedCandidateExecutor(options: {
     }
     const context = resolution.context;
     let pack: EvidencePack;
+    let criticalEvidenceProfile: ReferenceDefinitionRef;
+    let benchmark: ReferenceDefinitionRef | null;
+    let valuationMethodPolicy: ReferenceDefinitionRef;
+    let frameworkPack: ReferenceDefinitionRef;
+    let decisionPolicy: ReferenceDefinitionRef;
     try {
-      pack = await input.stages.run({
+      const grounded = await input.stages.run({
         stage: "evidence_pack",
         inputFingerprint: fingerprint({
           stage: "evidence_pack",
@@ -541,6 +581,7 @@ export function createSourceGroundedCandidateExecutor(options: {
           fundPolicy: input.fundPolicy,
           snapshot,
         }),
+        parseOutput: parseGroundedEvidencePack,
         operation: (signal) => options.grounding.buildEvidencePack({
           candidate: input.candidate,
           analysis: input.analysis,
@@ -550,6 +591,39 @@ export function createSourceGroundedCandidateExecutor(options: {
           snapshot,
           signal,
         }),
+      });
+      pack = grounded.pack;
+      criticalEvidenceProfile = requireReferenceDefinition({
+        catalog: input.referenceCatalog,
+        expected: grounded.criticalEvidenceProfile,
+      });
+      benchmark = grounded.benchmark
+        ? requireReferenceDefinition({
+            catalog: input.referenceCatalog,
+            expected: {
+              kind: "benchmark_definition",
+              id: grounded.benchmark.entryId,
+              parentId: grounded.benchmark.packId,
+              version: grounded.benchmark.version,
+              definitionFingerprint:
+                grounded.benchmark.definitionFingerprint,
+            },
+          })
+        : null;
+      valuationMethodPolicy = requireReferenceDefinition({
+        catalog: input.referenceCatalog,
+        kind: "valuation_method_policy",
+        id: context.valuationMethodPolicyId,
+      });
+      frameworkPack = requireReferenceDefinition({
+        catalog: input.referenceCatalog,
+        kind: "framework_pack",
+        id: context.frameworkPackId,
+      });
+      decisionPolicy = requireReferenceDefinition({
+        catalog: input.referenceCatalog,
+        kind: "decision_policy",
+        id: context.decisionPolicyId,
       });
     } catch (error) {
       if (error instanceof CandidateGroundingUnavailableError) {
@@ -584,6 +658,7 @@ export function createSourceGroundedCandidateExecutor(options: {
         context,
         fundPolicy: input.fundPolicy,
       }),
+      parseOutput: parseValuationArtifactSet,
       operation: () => valuation.evaluateDetailed({
         pack,
         context,
@@ -597,27 +672,42 @@ export function createSourceGroundedCandidateExecutor(options: {
     };
     let lensResult;
     try {
+      const frameworkInputFingerprint = fingerprint({
+        stage: "framework_lenses",
+        candidate: input.candidate,
+        pack,
+        context,
+        calculations: valuationArtifacts.calculations,
+        execution,
+      });
       lensResult = await input.stages.run({
         stage: "framework_lenses",
-        inputFingerprint: fingerprint({
-          stage: "framework_lenses",
-          candidate: input.candidate,
-          pack,
-          context,
-          calculations: valuationArtifacts.calculations,
-          execution,
-        }),
+        inputFingerprint: frameworkInputFingerprint,
+        parseOutput: parseFrameworkLensResult,
         operation: (signal) => options.frameworkLenses.runAll({
           candidate: input.candidate,
           pack,
           context,
           calculations: valuationArtifacts.calculations,
           signal,
+          providerAttempt: {
+            execute: (request) => input.stages.runProviderAttempt({
+              stage: "framework_lenses",
+              inputFingerprint: frameworkInputFingerprint,
+              attemptFingerprint: request.attemptFingerprint,
+              costUnits: 1,
+              tokenUnits: request.outputTokenUnits,
+              operation: request.operation,
+            }),
+          },
         }),
       });
     } catch (error) {
       if (error instanceof CandidateBudgetExhaustedError) {
         return budgetUnavailableExecution(error.stage);
+      }
+      if (error instanceof CandidateStageTimeoutError) {
+        return timeoutUnavailableExecution(error.stage);
       }
       throw error;
     }
@@ -635,6 +725,7 @@ export function createSourceGroundedCandidateExecutor(options: {
         context,
         decisionPolicy: DECISION_POLICY_V1,
       }),
+      parseOutput: parseDecisionResult,
       operation: () => decision.decide({
         pack,
         coverage: pack.coverage,
@@ -655,6 +746,7 @@ export function createSourceGroundedCandidateExecutor(options: {
         disagreements: lensResult.disagreements,
         decision: formalDecision,
       }),
+      parseOutput: parseNarrativeArtifacts,
       operation: () => {
         const narrative = buildUnderwritingNarrative({
           facts: pack.facts,
@@ -724,17 +816,13 @@ export function createSourceGroundedCandidateExecutor(options: {
         frameworkPackId: context.frameworkPackId,
         decisionPolicyId: context.decisionPolicyId,
       },
-      criticalEvidenceProfile: {
-        id: context.criticalEvidenceProfileId,
-        version: "1",
-      },
-      benchmarkPack: context.benchmarkPackId
-        ? { id: context.benchmarkPackId, version: "1" }
-        : null,
-      valuationMethodPolicy: {
-        id: context.valuationMethodPolicyId,
-        version: "1",
-      },
+      criticalEvidenceProfile,
+      benchmark,
+      valuationMethodPolicy,
+      frameworkPack,
+      decisionPolicy,
+      referenceCatalogFingerprint:
+        input.referenceCatalog.definitionFingerprint,
       formulaVersions,
       providerModel: execution.providerModel,
       promptVersion: execution.promptVersion,
@@ -760,11 +848,24 @@ export function createSourceGroundedCandidateExecutor(options: {
       versionSnapshot: {
         fundPolicyId: input.fundPolicy.id,
         benchmarkPackId: context.benchmarkPackId,
+        benchmarkEntryId: benchmark?.id ?? null,
+        benchmarkDefinitionFingerprint:
+          benchmark?.definitionFingerprint ?? null,
         frameworkPackId: context.frameworkPackId,
+        frameworkPackDefinitionFingerprint:
+          frameworkPack.definitionFingerprint,
         routerVersion: "context-router-v1",
         criticalEvidenceProfileId: context.criticalEvidenceProfileId,
+        criticalEvidenceProfileDefinitionFingerprint:
+          criticalEvidenceProfile.definitionFingerprint,
         valuationMethodPolicyId: context.valuationMethodPolicyId,
+        valuationMethodPolicyDefinitionFingerprint:
+          valuationMethodPolicy.definitionFingerprint,
         decisionPolicyId: context.decisionPolicyId,
+        decisionPolicyDefinitionFingerprint:
+          decisionPolicy.definitionFingerprint,
+        referenceCatalogFingerprint:
+          input.referenceCatalog.definitionFingerprint,
         formulaVersions,
         providerModel: execution.providerModel,
         promptVersion: execution.promptVersion,
@@ -800,6 +901,7 @@ function createOrchestrationFingerprint(
     policy: FundPolicySnapshot;
     executionBudget: CandidateExecutionBudget;
     candidateExecutionFingerprint: string;
+    referenceCatalog: UnderwritingReferenceCatalogSnapshot;
   },
 ): string {
   const value = canonicalJson({
@@ -820,6 +922,7 @@ function createOrchestrationFingerprint(
     selectionPolicyVersion: SELECTION_POLICY_VERSION,
     executionBudget: input.executionBudget,
     candidateExecutionFingerprint: input.candidateExecutionFingerprint,
+    referenceCatalog: input.referenceCatalog,
     routerVersion: "context-router-v1",
     evidencePackBuilderVersion: "evidence_pack_builder_v2",
     decisionPolicyVersion: DECISION_POLICY_V1.version,
@@ -874,203 +977,11 @@ function positiveInteger(value: number, label: string): number {
   return value;
 }
 
-function nonNegativeInteger(value: number, label: string): number {
-  if (!Number.isInteger(value) || value < 0) {
-    throw new Error(`${label} must be a non-negative integer.`);
-  }
-  return value;
-}
-
 function requiredText(value: string, label: string): string {
   if (!value || value.trim() !== value) {
     throw new Error(`${label} is required without surrounding whitespace.`);
   }
   return value;
-}
-
-async function withTimeout<T>(
-  operation: Promise<T>,
-  timeoutMs: number,
-  controller: AbortController,
-): Promise<T> {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
-  const expired = new Promise<never>((_, reject) => {
-    timeout = setTimeout(() => {
-      controller.abort();
-      reject(new Error("Candidate stage budget expired."));
-    }, timeoutMs);
-    timeout.unref?.();
-  });
-  try {
-    return await Promise.race([operation, expired]);
-  } finally {
-    if (timeout) clearTimeout(timeout);
-  }
-}
-
-export class CandidateBudgetExhaustedError extends Error {
-  readonly stage: CandidateExecutionStage;
-
-  constructor(stage: CandidateExecutionStage) {
-    super(`Candidate budget was exhausted before ${stage}.`);
-    this.name = "CandidateBudgetExhaustedError";
-    this.stage = stage;
-  }
-}
-
-function stagePolicies(input: {
-  timeoutMs: number;
-  retryableAttempts: number;
-  overrides?: Partial<
-    Record<CandidateExecutionStage, Partial<CandidateStagePolicy>>
-  >;
-}): Record<CandidateExecutionStage, CandidateStagePolicy> {
-  const retryable = (costUnits: number, tokenUnits: number) => ({
-    timeoutMs: input.timeoutMs,
-    maxAttempts: input.retryableAttempts,
-    costUnits,
-    tokenUnits,
-  });
-  const deterministic = {
-    timeoutMs: input.timeoutMs,
-    maxAttempts: 1,
-    costUnits: 0,
-    tokenUnits: 0,
-  };
-  const defaults: Record<CandidateExecutionStage, CandidateStagePolicy> = {
-    context_router: { ...deterministic },
-    evidence_pack: retryable(0, 0),
-    valuation: { ...deterministic },
-    framework_lenses: retryable(2, 4_000),
-    decision: { ...deterministic },
-    narrative_drafts: { ...deterministic },
-  };
-  return Object.fromEntries(
-    Object.entries(defaults).map(([stage, policy]) => {
-      const candidate = {
-        ...policy,
-        ...(input.overrides?.[stage as CandidateExecutionStage] ?? {}),
-      };
-      return [
-        stage,
-        {
-          timeoutMs: positiveInteger(
-            candidate.timeoutMs,
-            `${stage} timeout`,
-          ),
-          maxAttempts: positiveInteger(
-            candidate.maxAttempts,
-            `${stage} attempts`,
-          ),
-          costUnits: nonNegativeInteger(
-            candidate.costUnits,
-            `${stage} cost units`,
-          ),
-          tokenUnits: nonNegativeInteger(
-            candidate.tokenUnits,
-            `${stage} token units`,
-          ),
-        },
-      ];
-    }),
-  ) as Record<CandidateExecutionStage, CandidateStagePolicy>;
-}
-
-function createCandidateStageRuntime(input: {
-  runs: UnderwritingRunsRepository;
-  candidate: CandidateRun;
-  workerId: string;
-  leaseToken: string;
-  budget: CandidateExecutionBudget;
-  onWarning?: (warning: string) => void;
-  now: () => Date;
-}): CandidateStageRuntime {
-  let consumedCostUnits = 0;
-  let consumedTokenUnits = 0;
-
-  const usage = () => ({
-    costUnits: consumedCostUnits,
-    tokenUnits: consumedTokenUnits,
-    remainingCostUnits: input.budget.maxCostUnits - consumedCostUnits,
-    remainingTokenUnits: input.budget.maxTokenUnits - consumedTokenUnits,
-  });
-
-  return {
-    usage,
-    async run<T>(request: {
-      stage: CandidateExecutionStage;
-      inputFingerprint: string;
-      operation(signal: AbortSignal): Promise<T> | T;
-    }): Promise<T> {
-      const policy = input.budget.stages[request.stage];
-      const checkpoint = (
-        status: CandidateCheckpoint["status"],
-        artifactFingerprint: string,
-        publicReason: string | null,
-      ) =>
-        input.runs.saveCheckpoint({
-          candidateRunId: input.candidate.id,
-          stage: request.stage,
-          status,
-          artifactFingerprint,
-          publicReason,
-          savedAt: input.now().toISOString(),
-          workerId: input.workerId,
-          leaseToken: input.leaseToken,
-        });
-      await checkpoint("running", request.inputFingerprint, null);
-
-      for (let attempt = 1; attempt <= policy.maxAttempts; attempt += 1) {
-        if (
-          consumedCostUnits + policy.costUnits
-            > input.budget.maxCostUnits
-          || consumedTokenUnits + policy.tokenUnits
-            > input.budget.maxTokenUnits
-        ) {
-          const publicReason =
-            `Truncation warning: ${request.stage} was skipped because its candidate cost/token budget was exhausted.`;
-          await checkpoint("failed", request.inputFingerprint, publicReason);
-          input.onWarning?.(
-            `Candidate ${input.candidate.dealId}: ${publicReason}`,
-          );
-          throw new CandidateBudgetExhaustedError(request.stage);
-        }
-        consumedCostUnits += policy.costUnits;
-        consumedTokenUnits += policy.tokenUnits;
-        const controller = new AbortController();
-        let result: T;
-        try {
-          result = await withTimeout(
-            Promise.resolve(request.operation(controller.signal)),
-            policy.timeoutMs,
-            controller,
-          );
-        } catch (error) {
-          const retryable = error instanceof IntegrationTransportError
-            && error.retryable
-            && attempt < policy.maxAttempts;
-          if (retryable) continue;
-          await checkpoint(
-            "failed",
-            request.inputFingerprint,
-            `${request.stage} failed after bounded execution.`,
-          );
-          throw error;
-        }
-        await checkpoint(
-          "completed",
-          fingerprint({
-            stage: request.stage,
-            inputFingerprint: request.inputFingerprint,
-            result,
-          }),
-          null,
-        );
-        return result;
-      }
-      throw new Error(`${request.stage} exhausted its bounded attempts.`);
-    },
-  };
 }
 
 function terminalCandidate(
@@ -1124,6 +1035,40 @@ function normalizedExecution(
   ) as unknown as SourceGroundedCandidateExecutionSettings;
 }
 
+function requireReferenceDefinition(input: {
+  catalog: UnderwritingReferenceCatalogSnapshot;
+  expected?: ReferenceDefinitionRef;
+  kind?: ReferenceDefinitionRef["kind"];
+  id?: string;
+}): ReferenceDefinitionRef {
+  const kind = input.expected?.kind ?? input.kind;
+  const id = input.expected?.id ?? input.id;
+  const definition = input.catalog.definitions.find((candidate) =>
+    candidate.kind === kind
+    && candidate.id === id
+    && (
+      input.expected?.parentId === undefined
+      || candidate.parentId === input.expected.parentId
+    )
+  );
+  if (
+    !definition
+    || (
+      input.expected !== undefined
+      && (
+        definition.version !== input.expected.version
+        || definition.definitionFingerprint
+          !== input.expected.definitionFingerprint
+      )
+    )
+  ) {
+    throw new CandidateGroundingUnavailableError([
+      "REFERENCE_DEFINITION_UNAVAILABLE",
+    ]);
+  }
+  return definition;
+}
+
 function unavailableExecution(
   reasonCodes: string[],
 ): CandidateUnavailableExecution {
@@ -1138,6 +1083,14 @@ function budgetUnavailableExecution(
 ): CandidateUnavailableExecution {
   return unavailableExecution([
     `CANDIDATE_BUDGET_EXHAUSTED_${stage.toUpperCase()}`,
+  ]);
+}
+
+function timeoutUnavailableExecution(
+  stage: CandidateExecutionStage,
+): CandidateUnavailableExecution {
+  return unavailableExecution([
+    `CANDIDATE_STAGE_TIMEOUT_${stage.toUpperCase()}`,
   ]);
 }
 

@@ -47,6 +47,9 @@ import {
   createContextRouter,
   type CriticalEvidenceProfile,
 } from "../../lib/underwriting/router";
+import {
+  createReferenceCatalogSnapshot,
+} from "../../lib/underwriting/fingerprints";
 import { BALANCED_POLICY_VALUES } from "../../seed/underwriting/balanced-policy-v1";
 import { processClaimedRun } from "../../worker/process-run";
 
@@ -63,6 +66,39 @@ const policy: FundPolicySnapshot = {
   createdByUserId: null,
   createdAt: NOW.toISOString(),
 };
+const TEST_REFERENCE_CATALOG = createReferenceCatalogSnapshot([
+  {
+    kind: "critical_evidence_profile",
+    id: "critical_evidence_seed_b2b_saas_v1",
+    version: "1",
+    definitionFingerprint: `sha256:${"c".repeat(64)}`,
+  },
+  {
+    kind: "benchmark_definition",
+    id: "benchmark_entry_synthetic_seed_valuation_v1",
+    parentId: "benchmark_pack_synthetic_us_software_v1",
+    version: "1",
+    definitionFingerprint: `sha256:${"b".repeat(64)}`,
+  },
+  {
+    kind: "valuation_method_policy",
+    id: "valuation_method_seed_b2b_saas_v1",
+    version: "1",
+    definitionFingerprint: `sha256:${"6".repeat(64)}`,
+  },
+  {
+    kind: "decision_policy",
+    id: "decision_policy_seed_b2b_saas_v1",
+    version: "1",
+    definitionFingerprint: `sha256:${"d".repeat(64)}`,
+  },
+  {
+    kind: "framework_pack",
+    id: "framework_pack_synthetic_universal_saas_ai_v1",
+    version: "1",
+    definitionFingerprint: `sha256:${"f".repeat(64)}`,
+  },
+]);
 
 const scanRun: RunRecord = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -175,7 +211,7 @@ function deal(id: string): RegisteredDeal {
 
 async function candidateGroundingFor(
   dealId: string,
-  options: { includeContext: boolean },
+  options: { includeContext: boolean; now?: () => Date },
 ) {
   const sourceRegistry = createMemorySourceRegistry();
   const repository = createMemoryEvidencePacksRepository();
@@ -263,6 +299,7 @@ async function candidateGroundingFor(
     id: "critical_evidence_seed_b2b_saas_v1",
     version: "1",
     publicationStatus: "published",
+    definitionFingerprint: `sha256:${"c".repeat(64)}`,
     fields: [
       {
         fieldId: "company_identity",
@@ -298,6 +335,7 @@ async function candidateGroundingFor(
   return createEvidencePackCandidateGrounding({
     repository,
     sourceRegistry,
+    criticalEvidenceProfiles: [criticalEvidenceProfile],
     builder: createEvidencePackBuilder({
       repository,
       sourceRegistry,
@@ -308,12 +346,15 @@ async function candidateGroundingFor(
     resolveBenchmark: async (context) => context.benchmarkPackId
       ? {
           packId: context.benchmarkPackId,
+          entryId: "benchmark_entry_synthetic_seed_valuation_v1",
+          version: "1",
           value: "24000000",
           currency: "USD",
+          effectiveAt: "2026-07-29",
           staleAfter: "2027-01-25",
+          definitionFingerprint: `sha256:${"b".repeat(64)}`,
         }
       : null,
-    now: () => NOW,
   });
 }
 
@@ -456,12 +497,21 @@ function finalization(input: {
     versionSnapshot: {
       fundPolicyId: policy.id,
       benchmarkPackId: "benchmark_pack_synthetic_us_software_v1",
+      benchmarkEntryId: "benchmark_entry_synthetic_seed_valuation_v1",
+      benchmarkDefinitionFingerprint: `sha256:${"1".repeat(64)}`,
       frameworkPackId:
         "framework_pack_synthetic_universal_saas_ai_v1",
+      frameworkPackDefinitionFingerprint: `sha256:${"2".repeat(64)}`,
       routerVersion: "context-router-v1",
       criticalEvidenceProfileId: "critical_evidence_seed_b2b_saas_v1",
+      criticalEvidenceProfileDefinitionFingerprint:
+        `sha256:${"3".repeat(64)}`,
       valuationMethodPolicyId: "valuation_method_seed_b2b_saas_v1",
+      valuationMethodPolicyDefinitionFingerprint:
+        `sha256:${"4".repeat(64)}`,
       decisionPolicyId: "decision_policy_seed_b2b_saas_v1",
+      decisionPolicyDefinitionFingerprint: `sha256:${"5".repeat(64)}`,
+      referenceCatalogFingerprint: `sha256:${"6".repeat(64)}`,
       formulaVersions: [],
       providerModel: "synthetic-test-lens",
       promptVersion: "framework-lens-v1",
@@ -768,6 +818,53 @@ test("force refresh creates a linked batch and linked CandidateRun", async () =>
   );
 });
 
+test("batch identity changes when an effective reference definition changes", async () => {
+  let sequence = 0;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+  });
+  const changedCatalog = createReferenceCatalogSnapshot(
+    TEST_REFERENCE_CATALOG.definitions.map((definition, index) =>
+      index === 0
+        ? {
+            ...definition,
+            definitionFingerprint: `sha256:${"e".repeat(64)}`,
+          }
+        : definition
+    ),
+  );
+  const original = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    autoProcessCandidates: false,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+  });
+  const changed = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    autoProcessCandidates: false,
+    referenceCatalog: changedCatalog,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+  const input = {
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  };
+
+  const first = await original.createBatchAndSelections(input);
+  const second = await changed.createBatchAndSelections(input);
+
+  assert.notEqual(second.id, first.id);
+  assert.notEqual(
+    second.batchInputFingerprint,
+    first.batchInputFingerprint,
+  );
+});
+
 test("processing a named candidate cannot lease an older queued candidate", async () => {
   let sequence = 0;
   const runs = createMemoryUnderwritingRunsRepository({
@@ -1008,6 +1105,7 @@ test("identity-only evidence requires context confirmation without invoking a fr
   const orchestrator = createUnderwritingOrchestrator({
     runs,
     activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
     candidateExecutor: createSourceGroundedCandidateExecutor({
       grounding,
       frameworkLenses: {
@@ -1067,6 +1165,7 @@ test("runs the source-grounded candidate chain once and persists communication c
   const orchestrator = createUnderwritingOrchestrator({
     runs,
     activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
     candidateExecutor: createSourceGroundedCandidateExecutor({
       grounding,
       frameworkLenses: {
@@ -1117,6 +1216,19 @@ test("runs the source-grounded candidate chain once and persists communication c
   );
   const saved = artifacts.inspect();
   assert.equal(saved.bundles.length, 1);
+  assert.equal(
+    saved.bundles[0]?.versionSnapshot.referenceCatalogFingerprint,
+    TEST_REFERENCE_CATALOG.definitionFingerprint,
+  );
+  assert.equal(
+    saved.bundles[0]?.versionSnapshot
+      .criticalEvidenceProfileDefinitionFingerprint,
+    `sha256:${"c".repeat(64)}`,
+  );
+  assert.equal(
+    saved.bundles[0]?.versionSnapshot.benchmarkEntryId,
+    "benchmark_entry_synthetic_seed_valuation_v1",
+  );
   assert.deepEqual(
     saved.bundles[0]?.actionDrafts.map(({ channel }) => channel).sort(),
     ["dd_request", "email", "internal_memo", "linkedin", "sms"],
@@ -1129,7 +1241,78 @@ test("runs the source-grounded candidate chain once and persists communication c
   );
 });
 
-test("exhausted framework cost budget is a visible truncation without background lens work", async () => {
+test("a clock-advanced source-grounded force refresh aliases the canonical artifacts", async () => {
+  let sequence = 0;
+  let groundingNow = new Date("2026-07-29T12:00:00.000Z");
+  const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+    artifacts,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    refreshNonce: () => `refresh_${++sequence}`,
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      frameworkLenses: {
+        async runAll() {
+          return { judgments: [], disagreements: [] };
+        },
+      },
+      now: () => groundingNow,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+  const input = {
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+  };
+
+  const original = await orchestrator.createBatchAndSelections({
+    ...input,
+    forceRefresh: false,
+  });
+  groundingNow = new Date("2026-07-29T12:00:01.000Z");
+  const refreshed = await orchestrator.createBatchAndSelections({
+    ...input,
+    forceRefresh: true,
+  });
+
+  const candidates = runs.inspect().candidates;
+  const originalCandidate = candidates.find(
+    ({ batchId }) => batchId === original.id,
+  );
+  const refreshedCandidate = candidates.find(
+    ({ batchId }) => batchId === refreshed.id,
+  );
+  assert.ok(originalCandidate);
+  assert.ok(refreshedCandidate);
+  assert.equal(refreshedCandidate.status, "completed");
+  assert.equal(
+    refreshedCandidate.candidateAnalysisFingerprint,
+    originalCandidate.candidateAnalysisFingerprint,
+  );
+  assert.equal(artifacts.inspect().bundles.length, 1);
+});
+
+test("exhausted provider capacity is a visible truncation without starting the provider call", async () => {
   let sequence = 0;
   let lensExecutions = 0;
   const warnings: string[] = [];
@@ -1146,13 +1329,31 @@ test("exhausted framework cost budget is a visible truncation without background
   const orchestrator = createUnderwritingOrchestrator({
     runs,
     activeFundPolicy: async () => policy,
-    candidateCostUnits: 1,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateTokenUnits: 3_999,
     onWarning: (warning) => warnings.push(warning),
     candidateExecutor: createSourceGroundedCandidateExecutor({
       grounding,
       frameworkLenses: {
-        async runAll() {
-          lensExecutions += 1;
+        async runAll(request) {
+          assert.ok(request.providerAttempt);
+          await request.providerAttempt.execute({
+            attemptFingerprint: `sha256:${"9".repeat(64)}`,
+            outputTokenUnits: 4_000,
+            operation: async () => {
+              lensExecutions += 1;
+              return {
+                text: "{}",
+                stopReason: "end_turn",
+                usage: {
+                  inputTokens: 10,
+                  outputTokens: 2,
+                  cacheCreationInputTokens: 0,
+                  cacheReadInputTokens: 0,
+                },
+              };
+            },
+          });
           return { judgments: [], disagreements: [] };
         },
       },
@@ -1195,10 +1396,220 @@ test("exhausted framework cost budget is a visible truncation without background
   );
   assert.match(
     runs.inspect().checkpoints.at(-1)?.publicReason ?? "",
-    /truncation warning.*budget was exhausted/i,
+    /truncation warning.*budget.*no negative/i,
   );
   assert.ok(warnings.some((warning) => /truncation warning/i.test(warning)));
   assert.equal(artifacts.inspect().bundles.length, 0);
+});
+
+test("a reclaimed lease replays completed stages and restores provider usage without repeated work", async () => {
+  let sequence = 0;
+  let currentTime = NOW;
+  let rejectFirstTermination = true;
+  let executorRuns = 0;
+  let groundingExecutions = 0;
+  let providerExecutions = 0;
+  const usages: Array<ReturnType<
+    Parameters<
+      NonNullable<
+        Parameters<typeof createUnderwritingOrchestrator>[0][
+          "candidateExecutor"
+        ]
+      >
+    >[0]["stages"]["usage"]
+  >> = [];
+  const storage = createMemoryUnderwritingRunsRepository({
+    now: () => currentTime,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const runs = {
+    ...storage,
+    async markCandidateFailed(input: {
+      candidateRunId: string;
+      publicReason: string;
+    }) {
+      if (rejectFirstTermination) {
+        rejectFirstTermination = false;
+        throw new Error("simulated worker loss before terminal write");
+      }
+      return storage.markCandidateFailed(input);
+    },
+  };
+  const candidateExecutor: NonNullable<
+    Parameters<typeof createUnderwritingOrchestrator>[0][
+      "candidateExecutor"
+    ]
+  > = async ({ candidate, workerId, leaseToken, stages }) => {
+    executorRuns += 1;
+    const grounding = await stages.run({
+      stage: "context_router",
+      inputFingerprint: `sha256:${"1".repeat(64)}`,
+      parseOutput(value) {
+        assert.deepEqual(value, { identity: "grounded" });
+        return value as { identity: string };
+      },
+      operation: async () => {
+        groundingExecutions += 1;
+        return { identity: "grounded" };
+      },
+    });
+    assert.equal(grounding.identity, "grounded");
+    const lens = await stages.run({
+      stage: "framework_lenses",
+      inputFingerprint: `sha256:${"2".repeat(64)}`,
+      parseOutput(value) {
+        assert.deepEqual(value, { providerText: "grounded judgment" });
+        return value as { providerText: string };
+      },
+      operation: async () => {
+        const completion = await stages.runProviderAttempt({
+          stage: "framework_lenses",
+          inputFingerprint: `sha256:${"2".repeat(64)}`,
+          attemptFingerprint: `sha256:${"3".repeat(64)}`,
+          costUnits: 1,
+          tokenUnits: 4_000,
+          operation: async () => {
+            providerExecutions += 1;
+            return {
+              text: "grounded judgment",
+              stopReason: "end_turn",
+              usage: {
+                inputTokens: 11,
+                outputTokens: 7,
+                cacheCreationInputTokens: 3,
+                cacheReadInputTokens: 5,
+              },
+            };
+          },
+        });
+        return { providerText: completion.text };
+      },
+    });
+    assert.equal(lens.providerText, "grounded judgment");
+    usages.push(stages.usage());
+    if (executorRuns === 1) {
+      throw new Error("simulated worker loss after durable stage completion");
+    }
+    return finalization({
+      candidateRunId: candidate.id,
+      dealId: candidate.dealId,
+      workerId,
+      leaseToken,
+    });
+  };
+  const createOrchestrator = () => createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateExecutor,
+    candidateLeaseSeconds: 1,
+    now: () => currentTime,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+  const input = {
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  };
+
+  await assert.rejects(
+    createOrchestrator().createBatchAndSelections(input),
+    /simulated worker loss before terminal write/,
+  );
+  assert.equal(storage.inspect().candidates[0]?.status, "running");
+  currentTime = new Date(NOW.getTime() + 2_000);
+
+  const resumed = await createOrchestrator().createBatchAndSelections(input);
+
+  assert.equal(resumed.status, "completed");
+  assert.equal(executorRuns, 2);
+  assert.equal(groundingExecutions, 1);
+  assert.equal(providerExecutions, 1);
+  assert.deepEqual(usages, [
+    {
+      costUnits: 1,
+      tokenUnits: 4_000,
+      actualTokenUnits: 26,
+      remainingCostUnits: 15,
+      remainingTokenUnits: 60_000,
+    },
+    {
+      costUnits: 1,
+      tokenUnits: 4_000,
+      actualTokenUnits: 26,
+      remainingCostUnits: 15,
+      remainingTokenUnits: 60_000,
+    },
+  ]);
+});
+
+test("framework timeout is visible unavailability and never generic failure or negative evidence", async () => {
+  let sequence = 0;
+  let providerSignal: AbortSignal | undefined;
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateStagePolicies: {
+      framework_lenses: { timeoutMs: 5 },
+    },
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      frameworkLenses: {
+        async runAll(request) {
+          providerSignal = request.signal;
+          return await new Promise((_, reject) => {
+            request.signal?.addEventListener(
+              "abort",
+              () => reject(request.signal?.reason),
+              { once: true },
+            );
+          });
+        },
+      },
+      now: () => NOW,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+
+  await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+
+  assert.equal(providerSignal?.aborted, true);
+  assert.equal(runs.inspect().candidates[0]?.status, "unavailable");
+  assert.deepEqual(
+    Object.values(runs.inspect().unavailableReasons),
+    [["CANDIDATE_STAGE_TIMEOUT_FRAMEWORK_LENSES"]],
+  );
+  assert.equal(Object.keys(runs.inspect().failureReasons).length, 0);
+  assert.match(
+    runs.inspect().checkpoints.at(-1)?.publicReason ?? "",
+    /truncation warning.*timed out.*no negative/i,
+  );
 });
 
 test("processes a confirmed uploaded Deal from the authoritative registry before underwriting", async () => {

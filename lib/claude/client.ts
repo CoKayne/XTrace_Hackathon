@@ -19,17 +19,45 @@ export interface ClaudeMessage {
   content: string | ClaudeContentBlock[];
 }
 
+export interface ClaudeCompleteInput {
+  system: string;
+  messages: ClaudeMessage[];
+  maxTokens?: number;
+  signal?: AbortSignal;
+}
+
+export interface ClaudeTokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cacheCreationInputTokens: number;
+  cacheReadInputTokens: number;
+}
+
+export interface MeasuredClaudeCompletion {
+  text: string;
+  stopReason: string | null;
+  usage: ClaudeTokenUsage;
+}
+
 export interface ClaudeClient {
-  complete(input: {
-    system: string;
-    messages: ClaudeMessage[];
-    maxTokens?: number;
-    signal?: AbortSignal;
-  }): Promise<string>;
+  complete(input: ClaudeCompleteInput): Promise<string>;
+  completeMeasured?(
+    input: ClaudeCompleteInput & {
+      maxTokens: number;
+      maxTransportAttempts: 1;
+    },
+  ): Promise<MeasuredClaudeCompletion>;
 }
 
 export class ClaudeCompletionTruncatedError extends Error {
   readonly code = "CLAUDE_MAX_TOKENS";
+  readonly usage: ClaudeTokenUsage;
+
+  constructor(message: string, usage: ClaudeTokenUsage = emptyUsage()) {
+    super(message);
+    this.name = "ClaudeCompletionTruncatedError";
+    this.usage = usage;
+  }
 }
 
 export function createClaudeClient(options: {
@@ -43,13 +71,19 @@ export function createClaudeClient(options: {
   const fetchImpl = options.fetchImpl ?? fetch;
   const backoffMs = options.backoffMs ?? 2_000;
 
-  return {
-    async complete(input) {
-      if (!apiKey) {
-        throw new Error("Anthropic is not configured");
-      }
-      let response: Response | undefined;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
+  async function completeMeasured(
+    input: ClaudeCompleteInput,
+    maxTransportAttempts: number,
+  ): Promise<MeasuredClaudeCompletion> {
+    if (!apiKey) {
+      throw new Error("Anthropic is not configured");
+    }
+    let response: Response | undefined;
+    for (
+      let attempt = 0;
+      attempt < maxTransportAttempts;
+      attempt += 1
+    ) {
         throwIfAborted(input.signal);
         if (attempt > 0) {
           await abortableDelay(backoffMs, input.signal);
@@ -85,26 +119,78 @@ export function createClaudeClient(options: {
         }
         const retryable = response.status === 429 || response.status >= 500;
         if (!retryable) break;
-      }
-      if (!response) {
-        throw new IntegrationTransportError({ retryable: true });
-      }
-      if (!response.ok) {
-        throw new IntegrationTransportError({
-          retryable: isRetryableTransportStatus(response.status),
-        });
-      }
-      const body = await response.json() as {
-        stop_reason?: string;
-        content?: Array<{ type: string; text?: string }>;
+    }
+    if (!response) {
+      throw new IntegrationTransportError({ retryable: true });
+    }
+    if (!response.ok) {
+      throw new IntegrationTransportError({
+        retryable: isRetryableTransportStatus(response.status),
+      });
+    }
+    const body = await response.json() as {
+      stop_reason?: string;
+      content?: Array<{ type: string; text?: string }>;
+      usage?: {
+        input_tokens?: number;
+        output_tokens?: number;
+        cache_creation_input_tokens?: number;
+        cache_read_input_tokens?: number;
       };
-      if (body.stop_reason === "max_tokens") {
-        throw new ClaudeCompletionTruncatedError("Anthropic completion reached the max token limit.");
-      }
-      const text = body.content?.find((block) => block.type === "text")?.text;
-      if (!text) throw new Error("Anthropic returned no text content");
-      return text;
+    };
+    const usage = parseUsage(body.usage);
+    if (body.stop_reason === "max_tokens") {
+      throw new ClaudeCompletionTruncatedError(
+        "Anthropic completion reached the max token limit.",
+        usage,
+      );
+    }
+    const text = body.content?.find((block) => block.type === "text")?.text;
+    if (!text) throw new Error("Anthropic returned no text content");
+    return {
+      text,
+      stopReason: body.stop_reason ?? null,
+      usage,
+    };
+  }
+
+  return {
+    async complete(input) {
+      return (await completeMeasured(input, 2)).text;
     },
+    completeMeasured(input) {
+      return completeMeasured(input, input.maxTransportAttempts);
+    },
+  };
+}
+
+function parseUsage(
+  usage: {
+    input_tokens?: number;
+    output_tokens?: number;
+    cache_creation_input_tokens?: number;
+    cache_read_input_tokens?: number;
+  } | undefined,
+): ClaudeTokenUsage {
+  return {
+    inputTokens: tokenCount(usage?.input_tokens),
+    outputTokens: tokenCount(usage?.output_tokens),
+    cacheCreationInputTokens:
+      tokenCount(usage?.cache_creation_input_tokens),
+    cacheReadInputTokens: tokenCount(usage?.cache_read_input_tokens),
+  };
+}
+
+function tokenCount(value: number | undefined): number {
+  return Number.isInteger(value) && value! >= 0 ? value! : 0;
+}
+
+function emptyUsage(): ClaudeTokenUsage {
+  return {
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheCreationInputTokens: 0,
+    cacheReadInputTokens: 0,
   };
 }
 

@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import {
   FundPolicySnapshotSchema,
   ResolvedUnderwritingContextSchema,
@@ -26,6 +28,7 @@ import type { CriticalEvidenceProfile } from "../../lib/underwriting/router";
 import type {
   SelectedBenchmarkInput,
 } from "../../lib/underwriting/evidence/builder";
+import { canonicalJson } from "../../lib/underwriting/fingerprints";
 
 export interface ContextKey {
   stage: SliceOneStage;
@@ -104,10 +107,12 @@ const UNSUPPORTED_CONTEXT_REASON =
   "Vertical Slice 1 supports only Seed or Series A B2B SaaS or Enterprise AI preferred-equity contexts.";
 const SYNTHETIC_BENCHMARK_PACK_ID =
   "benchmark_pack_synthetic_us_software_v1";
+const SYNTHETIC_BENCHMARK_PACK_VERSION = "1";
+const SYNTHETIC_BENCHMARK_EFFECTIVE_AT = "2026-07-29";
 const SYNTHETIC_BENCHMARK_STALE_AFTER = "2027-01-25";
 
 const SLICE_ONE_CRITICAL_EVIDENCE_PROFILES: CriticalEvidenceProfile[] =
-  SLICE_ONE_CONTEXTS.map((context) => ({
+  SLICE_ONE_CONTEXTS.map((context) => criticalEvidenceProfile({
     id: context.criticalEvidenceProfileId,
     version: "1",
     publicationStatus: "published",
@@ -322,15 +327,21 @@ export function createMemoryUnderwritingReferencesRepository(options: {
           !== SYNTHETIC_BENCHMARK_PACK_ID
         || !["seed", "series_a"].includes(input.stage)
         || !isIsoDate(input.asOfDate)
+        || input.asOfDate < SYNTHETIC_BENCHMARK_EFFECTIVE_AT
+        || input.asOfDate > SYNTHETIC_BENCHMARK_STALE_AFTER
       ) {
         return null;
       }
-      return {
+      return selectedBenchmark({
         packId: input.packId,
+        entryId:
+          `benchmark_entry_synthetic_${input.stage}_valuation_v1`,
+        version: SYNTHETIC_BENCHMARK_PACK_VERSION,
         value: input.stage === "seed" ? "24000000" : "80000000",
         currency: "USD",
+        effectiveAt: SYNTHETIC_BENCHMARK_EFFECTIVE_AT,
         staleAfter: SYNTHETIC_BENCHMARK_STALE_AFTER,
-      };
+      });
     },
 
     inspect() {
@@ -623,12 +634,12 @@ export function createSupabaseUnderwritingReferencesRepository(options: {
       );
       if (fields.length === 0) return null;
       if (fields.some((field) => field === null)) return null;
-      return {
+      return criticalEvidenceProfile({
         id: String(row.id),
         version: String(row.version),
         publicationStatus: "published",
         fields: fields as CriticalEvidenceProfile["fields"],
-      };
+      });
     },
 
     async getSelectedBenchmark(input) {
@@ -639,32 +650,49 @@ export function createSupabaseUnderwritingReferencesRepository(options: {
           + "&publication_status=eq.published&limit=1",
       ) as Array<Record<string, unknown>>;
       const pack = packs[0];
-      if (!pack) return null;
+      const retrievalDate = String(pack?.retrieval_date);
+      const staleAfterDays = Number(pack?.stale_after_days);
+      if (
+        !pack
+        || !isIsoDate(retrievalDate)
+        || !Number.isInteger(staleAfterDays)
+        || staleAfterDays <= 0
+        || retrievalDate > input.asOfDate
+      ) {
+        return null;
+      }
+      const staleAfter = addUtcDays(retrievalDate, staleAfterDays);
+      if (input.asOfDate > staleAfter) return null;
       const entries = await request(
         `/benchmark_entries?benchmark_pack_id=eq.${
           encodeURIComponent(packId)
         }&stage=eq.${encodeURIComponent(input.stage)}`
-          + "&metric=eq.reported_valuation&order=effective_at.desc&limit=1",
+          + "&metric=eq.reported_valuation"
+          + `&effective_at=lte.${encodeURIComponent(input.asOfDate)}`
+          + "&order=effective_at.desc&limit=1",
       ) as Array<Record<string, unknown>>;
       const entry = entries[0];
+      const effectiveAt = String(entry?.effective_at);
       if (
         !entry
+        || typeof entry.id !== "string"
+        || typeof pack.version !== "string"
         || typeof entry.value !== "string"
         || entry.currency !== "USD"
-        || !isIsoDate(String(pack.retrieval_date))
-        || !Number.isInteger(Number(pack.stale_after_days))
+        || !isIsoDate(effectiveAt)
+        || effectiveAt > input.asOfDate
       ) {
         return null;
       }
-      return {
+      return selectedBenchmark({
         packId,
+        entryId: entry.id,
+        version: pack.version,
         value: entry.value,
         currency: "USD",
-        staleAfter: addUtcDays(
-          String(pack.retrieval_date),
-          Number(pack.stale_after_days),
-        ),
-      };
+        effectiveAt,
+        staleAfter,
+      });
     },
   };
 }
@@ -726,6 +754,40 @@ function criticalField(
     acceptedAssertionStatuses: ["reported", "corroborated", "verified"],
     acceptedFreshness: ["current"],
   };
+}
+
+function criticalEvidenceProfile(
+  value: Omit<CriticalEvidenceProfile, "definitionFingerprint">,
+): CriticalEvidenceProfile {
+  const definition = {
+    ...value,
+    fields: [...value.fields].sort((left, right) =>
+      Buffer.from(left.fieldId, "utf8").compare(
+        Buffer.from(right.fieldId, "utf8"),
+      )
+    ),
+  };
+  return {
+    ...definition,
+    definitionFingerprint: definitionFingerprint(definition),
+  };
+}
+
+function selectedBenchmark(
+  value: Omit<SelectedBenchmarkInput, "definitionFingerprint">,
+): SelectedBenchmarkInput {
+  return {
+    ...value,
+    definitionFingerprint: definitionFingerprint(value),
+  };
+}
+
+function definitionFingerprint(value: unknown): string {
+  return `sha256:${
+    createHash("sha256")
+      .update(canonicalJson(value), "utf8")
+      .digest("hex")
+  }`;
 }
 
 function parseCriticalEvidenceField(

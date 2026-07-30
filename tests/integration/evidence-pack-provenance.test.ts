@@ -30,6 +30,7 @@ const profile: CriticalEvidenceProfile = {
   id: "profile_1",
   version: "1",
   publicationStatus: "published",
+  definitionFingerprint: `sha256:${"c".repeat(64)}`,
   fields: [{
     fieldId: "company_identity",
     critical: true,
@@ -57,9 +58,13 @@ const referenceInputs = {
   },
   benchmark: {
     packId: context.benchmarkPackId!,
+    entryId: "benchmark_entry_synthetic_seed_valuation_v1",
+    version: "1",
     value: "24000000",
     currency: "USD",
+    effectiveAt: "2026-07-29",
     staleAfter: "2027-01-25",
+    definitionFingerprint: `sha256:${"b".repeat(64)}`,
   },
 };
 
@@ -76,8 +81,8 @@ async function fixture() {
     contentType: "text/markdown",
     extractorId: "plain_text_v1",
     extractorVersion: "1",
-    extractedAt: "2026-07-29T09:00:00.000Z",
-    createdAt: "2026-07-29T09:00:01.000Z",
+    extractedAt: "2026-07-29T09:00:00+00:00",
+    createdAt: "2026-07-29T09:00:01+00:00",
   });
   await repository.putSourceEvidence([{
     id: "fact_company",

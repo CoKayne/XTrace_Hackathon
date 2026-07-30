@@ -169,7 +169,15 @@ test("claim returns a lease capability and checkpoints reject a foreign token", 
     candidateRunId: claimed.candidate.id,
     stage: "evidence_pack" as const,
     status: "completed" as const,
-    artifactFingerprint: `sha256:${"5".repeat(64)}`,
+    inputFingerprint: `sha256:${"5".repeat(64)}`,
+    outputFingerprint: `sha256:${"6".repeat(64)}`,
+    outputPayload: { packId: "pack_1" },
+    attemptCount: 1,
+    costUnits: 0,
+    tokenUnits: 0,
+    actualTokenUnits: 0,
+    providerAttempts: [],
+    reasonCode: null,
     publicReason: null,
     savedAt: "2026-07-29T12:00:00.000Z",
   };
@@ -187,6 +195,107 @@ test("claim returns a lease capability and checkpoints reject a foreign token", 
     leaseToken: claimed.leaseToken,
   });
   assert.deepEqual(repository.inspect().checkpoints, [checkpoint]);
+});
+
+test("completed checkpoints are readable by exact workspace and candidate", async () => {
+  const repository = createMemoryUnderwritingRunsRepository(
+    deterministicOptions(),
+  );
+  const batch = await repository.createOrReuseBatch({
+    workspaceId: "workspace_1",
+    scanRunId: "scan_1",
+    batchInputFingerprint: `sha256:${"4".repeat(64)}`,
+    fundPolicySnapshotId: "fund_policy_1",
+    forceRefresh: false,
+    refreshNonce: null,
+    rerunOfId: null,
+  });
+  await repository.saveSelections({
+    batchId: batch.id,
+    selections: [{
+      dealId: "deal_1",
+      status: "selected",
+      rank: 1,
+      reason: "Top candidate",
+    }],
+  });
+  const [candidate] = await repository.createSelectedCandidates({
+    batchId: batch.id,
+    dealIds: ["deal_1"],
+  });
+  assert.ok(candidate);
+  const claimed = await repository.claimCandidate({
+    workspaceId: "workspace_1",
+    candidateRunId: candidate.id,
+    workerId: "worker_1",
+    leaseSeconds: 60,
+  });
+  assert.ok(claimed);
+  const checkpoint = {
+    candidateRunId: candidate.id,
+    stage: "context_router" as const,
+    status: "completed" as const,
+    inputFingerprint: `sha256:${"5".repeat(64)}`,
+    outputFingerprint: `sha256:${"6".repeat(64)}`,
+    outputPayload: { contextId: "context_1" },
+    attemptCount: 1,
+    costUnits: 0,
+    tokenUnits: 0,
+    actualTokenUnits: 0,
+    providerAttempts: [],
+    reasonCode: null,
+    publicReason: null,
+    savedAt: "2026-07-29T12:00:00.000Z",
+  };
+  await repository.saveCheckpoint({
+    ...checkpoint,
+    workerId: "worker_1",
+    leaseToken: claimed.leaseToken,
+  });
+
+  const readable = repository as typeof repository & {
+    listCheckpoints(input: {
+      workspaceId: string;
+      candidateRunId: string;
+    }): Promise<typeof checkpoint[]>;
+  };
+  assert.deepEqual(await readable.listCheckpoints({
+    workspaceId: "workspace_1",
+    candidateRunId: candidate.id,
+  }), [checkpoint]);
+  assert.deepEqual(await readable.listCheckpoints({
+    workspaceId: "workspace_foreign",
+    candidateRunId: candidate.id,
+  }), []);
+  await repository.saveCheckpoint({
+    ...checkpoint,
+    savedAt: "2026-07-29T12:00:01.000Z",
+    workerId: "worker_1",
+    leaseToken: claimed.leaseToken,
+  });
+  assert.equal(
+    repository.inspect().checkpoints[0]?.savedAt,
+    checkpoint.savedAt,
+    "an idempotent completed write retains the original checkpoint",
+  );
+  await assert.rejects(
+    repository.saveCheckpoint({
+      ...checkpoint,
+      outputPayload: { contextId: "mutated_context" },
+      workerId: "worker_1",
+      leaseToken: claimed.leaseToken,
+    }),
+    /immutable/i,
+  );
+  await assert.rejects(
+    repository.saveCheckpoint({
+      ...checkpoint,
+      inputFingerprint: `sha256:${"7".repeat(64)}`,
+      workerId: "worker_1",
+      leaseToken: claimed.leaseToken,
+    }),
+    /input fingerprint changed/i,
+  );
 });
 
 test("target-scoped claim never leases an older candidate or a candidate from another workspace", async () => {
@@ -404,4 +513,55 @@ test("Supabase candidate writes use the exact target claim and alias-aware final
       body: { p_payload: { marker: true } },
     },
   ]);
+});
+
+test("Supabase checkpoint replay reads only the exact workspace candidate", async () => {
+  let requestedUrl = "";
+  const runs = createSupabaseUnderwritingRunsRepository({
+    url: "https://supabase.example",
+    serviceRoleKey: "secret",
+    fetchImpl: async (url) => {
+      requestedUrl = String(url);
+      return Response.json([{
+        candidate_run_id: "candidate_target",
+        stage: "framework_lenses",
+        status: "completed",
+        input_fingerprint: `sha256:${"1".repeat(64)}`,
+        output_fingerprint: `sha256:${"2".repeat(64)}`,
+        output_payload: { judgments: [], disagreements: [] },
+        attempt_count: 1,
+        cost_units: 1,
+        token_units: 4_000,
+        actual_token_units: 17,
+        provider_attempts: [{
+          attemptFingerprint: `sha256:${"3".repeat(64)}`,
+          status: "completed",
+          reservedCostUnits: 1,
+          reservedTokenUnits: 4_000,
+          actualTokenUnits: 17,
+        }],
+        reason_code: null,
+        public_reason: null,
+        saved_at: "2026-07-29T12:00:00.000Z",
+      }]);
+    },
+  });
+
+  const checkpoints = await runs.listCheckpoints({
+    workspaceId: "workspace_target",
+    candidateRunId: "candidate_target",
+  });
+
+  assert.equal(checkpoints[0]?.actualTokenUnits, 17);
+  const url = new URL(requestedUrl);
+  assert.equal(url.pathname, "/rest/v1/candidate_checkpoints");
+  assert.equal(
+    url.searchParams.get("workspace_id"),
+    "eq.workspace_target",
+  );
+  assert.equal(
+    url.searchParams.get("candidate_run_id"),
+    "eq.candidate_target",
+  );
+  assert.equal(url.searchParams.get("order"), "saved_at.asc,stage.asc");
 });

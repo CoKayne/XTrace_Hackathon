@@ -87,6 +87,7 @@ const profile: CriticalEvidenceProfile = {
   id: "critical_evidence_seed_b2b_saas_v1",
   version: "1",
   publicationStatus: "published",
+  definitionFingerprint: `sha256:${"c".repeat(64)}`,
   fields: [
     {
       fieldId: "company_identity",

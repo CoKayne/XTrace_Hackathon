@@ -14,7 +14,10 @@ import type {
   XTraceLineageRepository,
 } from "../../db/repositories/xtrace-lineage";
 import type { CompanyAnalysis } from "../contracts/domain";
-import type { EvidencePack } from "../contracts/evidence";
+import {
+  SourceRevisionSchema,
+  type EvidencePack,
+} from "../contracts/evidence";
 import type {
   CandidateRun,
   FundPolicySnapshot,
@@ -28,14 +31,24 @@ import {
 import { normalizeSourceEvidence } from "./evidence/normalization";
 import type {
   CandidateIdentityEvidence,
+  CriticalEvidenceProfile,
   RouterEvidenceValue,
 } from "./router";
+import type {
+  ReferenceDefinitionRef,
+} from "./fingerprints";
 
 export interface CandidateGroundingSnapshot {
   identityEvidence: CandidateIdentityEvidence;
   sourceRevisionIds: string[];
   sourceRevisionSnapshots: SourceRevision[];
   xtraceLineage: XTraceLineageSnapshot;
+}
+
+export interface GroundedEvidencePack {
+  pack: EvidencePack;
+  criticalEvidenceProfile: ReferenceDefinitionRef;
+  benchmark: SelectedBenchmarkInput | null;
 }
 
 export interface CandidateGroundingPort {
@@ -53,20 +66,22 @@ export interface CandidateGroundingPort {
     fundPolicy: FundPolicySnapshot;
     snapshot: CandidateGroundingSnapshot;
     signal: AbortSignal;
-  }): Promise<EvidencePack>;
+  }): Promise<GroundedEvidencePack>;
 }
 
 export function createEvidencePackCandidateGrounding(options: {
   repository: EvidencePacksRepository;
   sourceRegistry: SourceRegistry;
   builder: EvidencePackBuilder;
+  criticalEvidenceProfiles: CriticalEvidenceProfile[];
   xtraceLineage?: Pick<XTraceLineageRepository, "resolve">;
   resolveBenchmark(
     context: ResolvedUnderwritingContext,
   ): Promise<SelectedBenchmarkInput | null>;
-  now?: () => Date;
 }): CandidateGroundingPort {
-  const now = options.now ?? (() => new Date());
+  const criticalEvidenceProfiles = new Map(
+    options.criticalEvidenceProfiles.map((profile) => [profile.id, profile]),
+  );
 
   return {
     async load({ candidate, analysis, deal, signal }) {
@@ -93,7 +108,7 @@ export function createEvidencePackCandidateGrounding(options: {
             "ACTIVE_SOURCE_REVISION_UNAVAILABLE",
           ]);
         }
-        sourceRevisionSnapshots.push(revision);
+        sourceRevisionSnapshots.push(canonicalSourceRevision(revision));
       }
       const sourceEvidence = await options.repository.listSourceEvidence({
         workspaceId: candidate.workspaceId,
@@ -112,7 +127,7 @@ export function createEvidencePackCandidateGrounding(options: {
         sourceEvidence,
         sourceRevisionSnapshots,
         repository: options.xtraceLineage,
-        capturedAt: now().toISOString(),
+        capturedAt: analysis.createdAt,
       });
       return {
         identityEvidence,
@@ -125,6 +140,17 @@ export function createEvidencePackCandidateGrounding(options: {
 
     async buildEvidencePack(input) {
       throwIfAborted(input.signal);
+      const criticalEvidenceProfile = criticalEvidenceProfiles.get(
+        input.context.criticalEvidenceProfileId,
+      );
+      if (
+        !criticalEvidenceProfile
+        || criticalEvidenceProfile.publicationStatus !== "published"
+      ) {
+        throw new CandidateGroundingUnavailableError([
+          "CRITICAL_EVIDENCE_PROFILE_UNAVAILABLE",
+        ]);
+      }
       const benchmark = await options.resolveBenchmark(input.context);
       throwIfAborted(input.signal);
       if (
@@ -138,7 +164,7 @@ export function createEvidencePackCandidateGrounding(options: {
           "SELECTED_BENCHMARK_UNAVAILABLE",
         ]);
       }
-      return options.builder.build({
+      const pack = await options.builder.build({
         workspaceId: input.candidate.workspaceId,
         dealId: input.candidate.dealId,
         asOfDate: input.context.asOfDate,
@@ -148,6 +174,17 @@ export function createEvidencePackCandidateGrounding(options: {
         fundPolicy: input.fundPolicy,
         benchmark,
       });
+      return {
+        pack,
+        criticalEvidenceProfile: {
+          kind: "critical_evidence_profile",
+          id: criticalEvidenceProfile.id,
+          version: criticalEvidenceProfile.version,
+          definitionFingerprint:
+            criticalEvidenceProfile.definitionFingerprint,
+        },
+        benchmark,
+      };
     },
   };
 }
@@ -317,6 +354,17 @@ function throwIfAborted(signal: AbortSignal): void {
       ? signal.reason
       : new Error("Candidate grounding was cancelled.");
   }
+}
+
+function canonicalSourceRevision(
+  revision: SourceRevision,
+): SourceRevision {
+  const parsed = SourceRevisionSchema.parse(revision);
+  return SourceRevisionSchema.parse({
+    ...parsed,
+    extractedAt: new Date(parsed.extractedAt).toISOString(),
+    createdAt: new Date(parsed.createdAt).toISOString(),
+  });
 }
 
 function uniqueSorted(values: readonly string[]): string[] {

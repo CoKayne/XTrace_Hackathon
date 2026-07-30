@@ -37,7 +37,18 @@ import {
   createEvidencePackBuilder,
 } from "../lib/underwriting/evidence/builder";
 import { createContextRouter } from "../lib/underwriting/router";
-import { SLICE_ONE_CONTEXTS } from "../seed/underwriting/slice-one-contexts-v1";
+import {
+  SLICE_ONE_CONTEXTS,
+  SYNTHETIC_US_SOFTWARE_BENCHMARK_PACK_ID,
+} from "../seed/underwriting/slice-one-contexts-v1";
+import {
+  SYNTHETIC_FRAMEWORK_PACK,
+} from "../seed/underwriting/framework-pack-v1";
+import { DECISION_POLICY_V1 } from "../lib/underwriting/decision/rules";
+import {
+  createCanonicalFingerprint,
+  createReferenceCatalogSnapshot,
+} from "../lib/underwriting/fingerprints";
 import { createProductInputGate } from "../lib/corpus/import-readiness";
 import { readMarketProviderConfiguration } from "../lib/market/config";
 import { createDefaultMarketProviders } from "../lib/market/providers";
@@ -113,9 +124,69 @@ export async function runNextQueuedScan(): Promise<boolean> {
         ),
       )
     ).filter((profile) => profile !== null);
+    const referenceAsOfDate = claimed.createdAt.slice(0, 10);
+    const benchmarks = (
+      await Promise.all(
+        (["seed", "series_a"] as const).map((stage) =>
+          references.getSelectedBenchmark({
+            packId: SYNTHETIC_US_SOFTWARE_BENCHMARK_PACK_ID,
+            stage,
+            asOfDate: referenceAsOfDate,
+          })
+        ),
+      )
+    ).filter((benchmark) => benchmark !== null);
+    const referenceCatalog = createReferenceCatalogSnapshot([
+      ...criticalEvidenceProfiles.map((profile) => ({
+        kind: "critical_evidence_profile" as const,
+        id: profile.id,
+        version: profile.version,
+        definitionFingerprint: profile.definitionFingerprint,
+      })),
+      ...benchmarks.map((benchmark) => ({
+        kind: "benchmark_definition" as const,
+        id: benchmark.entryId,
+        parentId: benchmark.packId,
+        version: benchmark.version,
+        definitionFingerprint: benchmark.definitionFingerprint,
+      })),
+      ...SLICE_ONE_CONTEXTS.map((context) => ({
+        kind: "valuation_method_policy" as const,
+        id: context.valuationMethodPolicyId,
+        version: "1",
+        definitionFingerprint: createCanonicalFingerprint({
+          id: context.valuationMethodPolicyId,
+          version: "1",
+          stage: context.stage,
+          businessModel: context.businessModel,
+          methods: [
+            "venture_method",
+            "market_comps",
+            "ownership_return",
+          ],
+        }),
+      })),
+      ...SLICE_ONE_CONTEXTS.map((context) => ({
+        kind: "decision_policy" as const,
+        id: context.decisionPolicyId,
+        version: "1",
+        definitionFingerprint: createCanonicalFingerprint({
+          ...DECISION_POLICY_V1,
+          id: context.decisionPolicyId,
+        }),
+      })),
+      {
+        kind: "framework_pack",
+        id: SYNTHETIC_FRAMEWORK_PACK.id,
+        version: SYNTHETIC_FRAMEWORK_PACK.version,
+        definitionFingerprint:
+          createCanonicalFingerprint(SYNTHETIC_FRAMEWORK_PACK),
+      },
+    ]);
     const grounding = createEvidencePackCandidateGrounding({
       repository: evidenceRepository,
       sourceRegistry,
+      criticalEvidenceProfiles,
       builder: createEvidencePackBuilder({
         repository: evidenceRepository,
         sourceRegistry,
@@ -138,6 +209,7 @@ export async function runNextQueuedScan(): Promise<boolean> {
         references.activeFundPolicy(workspaceId),
       candidateExecutionFingerprint:
         `source-grounded-v2:${model}:framework-lens-v1:framework-judgment-v1`,
+      referenceCatalog,
       candidateExecutor: createSourceGroundedCandidateExecutor({
         grounding,
         frameworkLenses: createFrameworkLensService({

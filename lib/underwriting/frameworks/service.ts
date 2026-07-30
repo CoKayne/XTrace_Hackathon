@@ -2,7 +2,10 @@ import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 
-import type { ClaudeClient } from "../../claude/client";
+import type {
+  ClaudeClient,
+  MeasuredClaudeCompletion,
+} from "../../claude/client";
 import {
   CalculationSchema,
   EvidencePackSchema,
@@ -154,10 +157,19 @@ export interface FrameworkLensService {
     context: ResolvedUnderwritingContext;
     calculations: Calculation[];
     signal?: AbortSignal;
+    providerAttempt?: FrameworkProviderAttemptExecutor;
   }): Promise<{
     judgments: FrameworkJudgment[];
     disagreements: FrameworkDisagreement[];
   }>;
+}
+
+export interface FrameworkProviderAttemptExecutor {
+  execute(input: {
+    attemptFingerprint: string;
+    outputTokenUnits: number;
+    operation(): Promise<MeasuredClaudeCompletion>;
+  }): Promise<MeasuredClaudeCompletion>;
 }
 
 export function createMemoryFrameworkLensCache(): MemoryFrameworkLensCache {
@@ -378,6 +390,7 @@ export function createFrameworkLensService(options: {
                     card,
                     fingerprint,
                     signal: rawInput.signal,
+                    providerAttempt: rawInput.providerAttempt,
                   });
                   judgment = result.judgment;
                   attempts = result.attempts;
@@ -425,6 +438,7 @@ export function createFrameworkLensService(options: {
                   card,
                   fingerprint,
                   signal: rawInput.signal,
+                  providerAttempt: rawInput.providerAttempt,
                 });
                 judgment = result.judgment;
                 attempts = result.attempts;

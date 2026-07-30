@@ -46,6 +46,7 @@ export interface CriticalEvidenceProfile {
   version: string;
   publicationStatus: "draft" | "published" | "retired";
   fields: CriticalEvidenceField[];
+  definitionFingerprint: string;
 }
 
 export type RouterResolution =

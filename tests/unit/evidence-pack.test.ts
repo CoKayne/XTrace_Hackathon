@@ -34,6 +34,7 @@ const profile: CriticalEvidenceProfile = {
   id: context.criticalEvidenceProfileId,
   version: "1",
   publicationStatus: "published",
+  definitionFingerprint: `sha256:${"c".repeat(64)}`,
   fields: [
     {
       fieldId: "company_identity",
@@ -77,9 +78,13 @@ const referenceInputs = {
   } satisfies FundPolicySnapshot,
   benchmark: {
     packId: context.benchmarkPackId!,
+    entryId: "benchmark_entry_synthetic_seed_valuation_v1",
+    version: "1",
     value: "24000000",
     currency: "USD",
+    effectiveAt: "2026-07-29",
     staleAfter: "2027-01-25",
+    definitionFingerprint: `sha256:${"b".repeat(64)}`,
   },
 };
 
@@ -350,9 +355,13 @@ test("uses the pinned custom Fund Policy and selected benchmark values without B
     },
     benchmark: {
       packId: context.benchmarkPackId!,
+      entryId: "benchmark_entry_custom_seed_valuation_v1",
+      version: "1",
       value: "31500000",
       currency: "USD",
+      effectiveAt: "2026-07-29",
       staleAfter: "2026-10-31",
+      definitionFingerprint: `sha256:${"d".repeat(64)}`,
     },
   });
 
@@ -396,6 +405,32 @@ test("uses the pinned custom Fund Policy and selected benchmark values without B
       ({ field }) => field === "compatible_benchmark_stale_after",
     )?.value,
     "2026-10-31",
+  );
+});
+
+test("2030 Evidence Pack build rejects a benchmark stale for its as-of date", async () => {
+  const { builder } = await setup();
+  await assert.rejects(
+    builder.build({
+      workspaceId: "workspace_1",
+      dealId: "deal_1",
+      asOfDate: "2030-01-01",
+      sourceRevisionIds: ["revision_1"],
+      xtraceLineage: {
+        memoryIds: [],
+        sourceRevisionIds: [],
+        sourceIds: [],
+        fixtureIds: [],
+        capturedAt: "2026-07-29T10:09:00.000Z",
+      },
+      context: {
+        ...context,
+        id: "underwriting_context_seed_b2b_saas_v1:2030-01-01",
+        asOfDate: "2030-01-01",
+      },
+      ...referenceInputs,
+    }),
+    /benchmark.*(?:as-of|stale)/i,
   );
 });
 

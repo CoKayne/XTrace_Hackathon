@@ -343,7 +343,14 @@ function validateSavedEvidencePack(
   const pack = EvidencePackSchema.parse(input.pack);
   const inputFingerprint = requiredFingerprint(input.inputFingerprint);
   const sourceRevisionSnapshots = input.sourceRevisionSnapshots.map(
-    (revision) => SourceRevisionSchema.parse(revision),
+    (revision) => {
+      const parsed = SourceRevisionSchema.parse(revision);
+      return SourceRevisionSchema.parse({
+        ...parsed,
+        extractedAt: new Date(parsed.extractedAt).toISOString(),
+        createdAt: new Date(parsed.createdAt).toISOString(),
+      });
+    },
   );
   const revisionIds = sourceRevisionSnapshots.map(({ id }) => id);
   if (

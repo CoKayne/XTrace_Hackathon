@@ -33,21 +33,45 @@ const IdSchema = z.string().min(1).refine(
   (value) => value.trim() === value,
   "IDs cannot have surrounding whitespace",
 );
+const FingerprintSchema = z.string().regex(/^sha256:[0-9a-f]{64}$/);
 
 export const CandidateVersionSnapshotSchema = z.strictObject({
   fundPolicyId: IdSchema,
   benchmarkPackId: IdSchema.nullable(),
+  benchmarkEntryId: IdSchema.nullable(),
+  benchmarkDefinitionFingerprint: FingerprintSchema.nullable(),
   frameworkPackId: IdSchema,
+  frameworkPackDefinitionFingerprint: FingerprintSchema,
   routerVersion: z.string().min(1),
   criticalEvidenceProfileId: IdSchema,
+  criticalEvidenceProfileDefinitionFingerprint: FingerprintSchema,
   valuationMethodPolicyId: IdSchema,
+  valuationMethodPolicyDefinitionFingerprint: FingerprintSchema,
   decisionPolicyId: IdSchema,
+  decisionPolicyDefinitionFingerprint: FingerprintSchema,
+  referenceCatalogFingerprint: FingerprintSchema,
   formulaVersions: z.array(z.string().min(1)),
   providerModel: z.string().min(1),
   promptVersion: z.string().min(1),
   schemaVersion: z.string().min(1),
   settingsFingerprint: z.string().min(1),
   applicationCommit: z.string().min(1),
+}).superRefine((value, context) => {
+  const benchmarkValues = [
+    value.benchmarkPackId,
+    value.benchmarkEntryId,
+    value.benchmarkDefinitionFingerprint,
+  ];
+  if (
+    benchmarkValues.some((item) => item === null)
+      !== benchmarkValues.every((item) => item === null)
+  ) {
+    context.addIssue({
+      code: "custom",
+      message:
+        "Benchmark pack, entry, and definition fingerprint must be pinned together.",
+    });
+  }
 });
 
 export type CandidateVersionSnapshot = z.infer<

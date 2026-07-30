@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { ClaudeClient } from "../../lib/claude/client";
+import { IntegrationTransportError } from "../../lib/api/errors";
 import type {
   Assumption,
   Calculation,
@@ -544,5 +545,119 @@ test("only exact Task 7 cards run; draft, lookalike, and non-applicable cards ab
       { applicability: "unavailable", conclusion: "abstain" },
       { applicability: "not_applicable", conclusion: "abstain" },
     ],
+  );
+});
+
+test("reserves every initial and repair provider request instead of one flat stage charge", async () => {
+  const reservations: Array<{
+    attemptFingerprint: string;
+    outputTokenUnits: number;
+  }> = [];
+  let calls = 0;
+  const service = createFrameworkLensService({
+    execution,
+    client: {
+      async complete(request) {
+        calls += 1;
+        const content = String(request.messages[0]?.content);
+        const payload = JSON.parse(content) as {
+          card?: FrameworkCard;
+          originalRequest?: { card: FrameworkCard };
+        };
+        const card = payload.card ?? payload.originalRequest?.card;
+        assert.ok(card);
+        if (card.id === SYNTHETIC_FRAMEWORK_PACK.cards[0]!.id && calls === 1) {
+          return "{\"malformed\":true}";
+        }
+        return JSON.stringify(lensOutput(card));
+      },
+    },
+  });
+  const providerAttempt = {
+    async execute<T>(request: {
+      attemptFingerprint: string;
+      outputTokenUnits: number;
+      operation(): Promise<T>;
+    }): Promise<T> {
+      reservations.push({
+        attemptFingerprint: request.attemptFingerprint,
+        outputTokenUnits: request.outputTokenUnits,
+      });
+      return request.operation();
+    },
+  };
+
+  await service.runAll({
+    ...input(),
+    providerAttempt,
+  } as Parameters<typeof service.runAll>[0]);
+
+  assert.equal(calls, 9);
+  assert.equal(reservations.length, 9);
+  assert.equal(
+    reservations.reduce(
+      (total, reservation) => total + reservation.outputTokenUnits,
+      0,
+    ),
+    9 * 4_000,
+  );
+  assert.equal(
+    new Set(reservations.map(({ attemptFingerprint }) => attemptFingerprint))
+      .size,
+    9,
+  );
+});
+
+test("reserves retryable transport attempts separately and propagates provider budget failures", async () => {
+  const card = SYNTHETIC_FRAMEWORK_PACK.cards[0]!;
+  let calls = 0;
+  const reservations: string[] = [];
+  const service = createFrameworkLensService({
+    cards: [card],
+    execution,
+    client: {
+      async complete() {
+        calls += 1;
+        if (calls === 1) {
+          throw new IntegrationTransportError({ retryable: true });
+        }
+        return JSON.stringify(lensOutput(card));
+      },
+    },
+  });
+  const result = await service.runAll({
+    ...input(),
+    providerAttempt: {
+      async execute(request) {
+        reservations.push(request.attemptFingerprint);
+        return request.operation();
+      },
+    },
+  });
+
+  assert.equal(calls, 2);
+  assert.equal(result.judgments[0]?.applicability, "applicable");
+  assert.equal(reservations.length, 2);
+  assert.equal(new Set(reservations).size, 2);
+
+  const budgeted = createFrameworkLensService({
+    cards: [card],
+    execution,
+    client: {
+      async complete() {
+        throw new Error("provider operation must not start");
+      },
+    },
+  });
+  await assert.rejects(
+    budgeted.runAll({
+      ...input(),
+      providerAttempt: {
+        async execute() {
+          throw new Error("candidate provider budget exhausted");
+        },
+      },
+    }),
+    /provider budget exhausted/,
   );
 });

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 
 import {
   CandidateCheckpointSchema,
@@ -71,6 +72,10 @@ export interface UnderwritingRunsRepository {
     workerId: string;
     leaseSeconds: number;
   }): Promise<ClaimedCandidateRun | null>;
+  listCheckpoints(input: {
+    workspaceId: string;
+    candidateRunId: string;
+  }): Promise<CandidateCheckpoint[]>;
   saveCheckpoint(input: CandidateCheckpointWrite): Promise<void>;
   markCandidateUnavailable(input: {
     candidateRunId: string;
@@ -444,18 +449,58 @@ export function createMemoryUnderwritingRunsRepository(
       ) {
         throw new Error("The checkpoint lease does not match its owner.");
       }
-      const checkpoint = CandidateCheckpointSchema.parse({
-        candidateRunId: input.candidateRunId,
-        stage: input.stage,
-        status: input.status,
-        artifactFingerprint: input.artifactFingerprint,
-        publicReason: input.publicReason,
-        savedAt: input.savedAt,
-      });
-      checkpoints.set(
-        checkpointIdentity(checkpoint.candidateRunId, checkpoint.stage),
-        checkpoint,
+      const {
+        workerId: _workerId,
+        leaseToken: _leaseToken,
+        ...checkpointInput
+      } = input;
+      const checkpoint = CandidateCheckpointSchema.parse(checkpointInput);
+      const identity = checkpointIdentity(
+        checkpoint.candidateRunId,
+        checkpoint.stage,
       );
+      const prior = checkpoints.get(identity);
+      if (
+        prior
+        && prior.inputFingerprint !== checkpoint.inputFingerprint
+      ) {
+        throw new Error(
+          "Candidate checkpoint input fingerprint changed.",
+        );
+      }
+      if (prior?.status === "completed") {
+        const { savedAt: _priorSavedAt, ...priorState } = prior;
+        const { savedAt: _nextSavedAt, ...nextState } = checkpoint;
+        if (!isDeepStrictEqual(priorState, nextState)) {
+          throw new Error("Completed candidate checkpoint is immutable.");
+        }
+        return;
+      }
+      checkpoints.set(identity, checkpoint);
+    },
+
+    async listCheckpoints(input) {
+      const candidateRunId = requiredText(
+        input.candidateRunId,
+        "A candidate run",
+      );
+      const candidate = candidates.get(candidateRunId);
+      if (
+        !candidate
+        || candidate.workspaceId
+          !== requiredText(input.workspaceId, "A workspace")
+      ) {
+        return [];
+      }
+      return [...checkpoints.values()]
+        .filter((checkpoint) =>
+          checkpoint.candidateRunId === candidateRunId
+        )
+        .sort((left, right) =>
+          left.savedAt.localeCompare(right.savedAt)
+          || left.stage.localeCompare(right.stage)
+        )
+        .map((checkpoint) => structuredClone(checkpoint));
     },
 
     async markCandidateUnavailable(input) {
@@ -633,6 +678,25 @@ export function createSupabaseUnderwritingRunsRepository(options: {
     return responseBody.trim() ? JSON.parse(responseBody) : null;
   }
 
+  async function read(pathname: string): Promise<unknown> {
+    let response: Response;
+    try {
+      response = await fetchImpl(`${base}${pathname}`, {
+        headers,
+        cache: "no-store",
+      });
+    } catch {
+      throw new IntegrationTransportError({ retryable: true });
+    }
+    if (!response.ok) {
+      throw new IntegrationTransportError({
+        retryable: isRetryableTransportStatus(response.status),
+      });
+    }
+    const responseBody = await response.text();
+    return responseBody.trim() ? JSON.parse(responseBody) : null;
+  }
+
   return {
     async createOrReuseBatch(input) {
       const validated = validateBatchInput(input);
@@ -736,14 +800,12 @@ export function createSupabaseUnderwritingRunsRepository(options: {
     },
 
     async saveCheckpoint(input) {
-      const checkpoint = CandidateCheckpointSchema.parse({
-        candidateRunId: input.candidateRunId,
-        stage: input.stage,
-        status: input.status,
-        artifactFingerprint: input.artifactFingerprint,
-        publicReason: input.publicReason,
-        savedAt: input.savedAt,
-      });
+      const {
+        workerId: _workerId,
+        leaseToken: _leaseToken,
+        ...checkpointInput
+      } = input;
+      const checkpoint = CandidateCheckpointSchema.parse(checkpointInput);
       await request("/rpc/save_underwriting_checkpoint", {
         p_payload: {
           workerId: requiredText(input.workerId, "A worker"),
@@ -751,6 +813,17 @@ export function createSupabaseUnderwritingRunsRepository(options: {
           checkpoint,
         },
       });
+    },
+
+    async listCheckpoints(input) {
+      const query = new URLSearchParams({
+        workspace_id: `eq.${requiredText(input.workspaceId, "A workspace")}`,
+        candidate_run_id:
+          `eq.${requiredText(input.candidateRunId, "A candidate run")}`,
+        order: "saved_at.asc,stage.asc",
+      });
+      const rows = await read(`/candidate_checkpoints?${query}`) as unknown[];
+      return Array.isArray(rows) ? rows.map(parseCheckpoint) : [];
     },
 
     async markCandidateUnavailable(input) {
@@ -825,6 +898,29 @@ function parseCandidate(value: unknown): CandidateRun {
     rerunOfId: row.rerunOfId ?? row.rerun_of_id ?? null,
     createdAt: row.createdAt ?? row.created_at,
     finalizedAt: row.finalizedAt ?? row.finalized_at ?? null,
+  });
+}
+
+function parseCheckpoint(value: unknown): CandidateCheckpoint {
+  const row = value as Record<string, unknown>;
+  return CandidateCheckpointSchema.parse({
+    candidateRunId: row.candidateRunId ?? row.candidate_run_id,
+    stage: row.stage,
+    status: row.status,
+    inputFingerprint: row.inputFingerprint ?? row.input_fingerprint,
+    outputFingerprint:
+      row.outputFingerprint ?? row.output_fingerprint ?? null,
+    outputPayload: row.outputPayload ?? row.output_payload ?? null,
+    attemptCount: row.attemptCount ?? row.attempt_count ?? 0,
+    costUnits: row.costUnits ?? row.cost_units ?? 0,
+    tokenUnits: row.tokenUnits ?? row.token_units ?? 0,
+    actualTokenUnits:
+      row.actualTokenUnits ?? row.actual_token_units ?? 0,
+    providerAttempts:
+      row.providerAttempts ?? row.provider_attempts ?? [],
+    reasonCode: row.reasonCode ?? row.reason_code ?? null,
+    publicReason: row.publicReason ?? row.public_reason ?? null,
+    savedAt: row.savedAt ?? row.saved_at,
   });
 }
 

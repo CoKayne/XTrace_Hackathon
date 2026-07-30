@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   createBatchInputFingerprint,
   createCandidateAnalysisFingerprint,
+  createReferenceCatalogSnapshot,
   type BatchFingerprintInput,
   type CandidateFingerprintInput,
 } from "../../lib/underwriting/fingerprints";
@@ -73,6 +74,15 @@ function batchInput(): BatchFingerprintInput {
       id: "decision_policy_1",
       version: "1",
     },
+    referenceCatalog: createReferenceCatalogSnapshot([
+      reference("critical_evidence_profile", "critical_1", "1"),
+      reference("benchmark_definition", "benchmark_entry_1", "2", {
+        parentId: "benchmark_1",
+      }),
+      reference("valuation_method_policy", "valuation_policy_1", "3"),
+      reference("framework_pack", "framework_pack_1", "4"),
+      reference("decision_policy", "decision_policy_1", "5"),
+    ]),
   };
 }
 
@@ -102,9 +112,20 @@ function candidateInput(): CandidateFingerprintInput {
       frameworkPackId: "framework_pack_1",
       decisionPolicyId: "decision_policy_1",
     },
-    criticalEvidenceProfile: { id: "critical_1", version: "1" },
-    benchmarkPack: { id: "benchmark_1", version: "1" },
-    valuationMethodPolicy: { id: "valuation_policy_1", version: "1" },
+    criticalEvidenceProfile:
+      reference("critical_evidence_profile", "critical_1", "1"),
+    benchmark: reference(
+      "benchmark_definition",
+      "benchmark_entry_1",
+      "2",
+      { parentId: "benchmark_1" },
+    ),
+    valuationMethodPolicy:
+      reference("valuation_method_policy", "valuation_policy_1", "3"),
+    frameworkPack: reference("framework_pack", "framework_pack_1", "4"),
+    decisionPolicy: reference("decision_policy", "decision_policy_1", "5"),
+    referenceCatalogFingerprint:
+      batchInput().referenceCatalog.definitionFingerprint,
     formulaVersions: [
       "venture_return_method_v1@1",
       "market_comps_v1@1",
@@ -225,7 +246,7 @@ test("candidate fingerprint is canonical and binds all candidate-specific versio
       input.criticalEvidenceProfile.version = "2";
     },
     (input) => {
-      input.benchmarkPack = null;
+      input.benchmark = null;
     },
     (input) => {
       input.valuationMethodPolicy.version = "2";
@@ -255,3 +276,78 @@ test("candidate fingerprint is canonical and binds all candidate-specific versio
     assert.notEqual(createCandidateAnalysisFingerprint(input), baseline);
   }
 });
+
+test("batch and candidate fingerprints bind every effective reference definition digest", () => {
+  const batch = batchInput();
+  const changedBatch = structuredClone(batch);
+  changedBatch.referenceCatalog =
+    createReferenceCatalogSnapshot(changedBatch.referenceCatalog.definitions
+      .map((definition, index) => index === 0
+        ? {
+            ...definition,
+            definitionFingerprint: `sha256:${"f".repeat(64)}`,
+          }
+        : definition));
+  assert.notEqual(
+    createBatchInputFingerprint(batch),
+    createBatchInputFingerprint(changedBatch),
+  );
+
+  const candidate = candidateInput();
+  candidate.referenceCatalogFingerprint = `sha256:${"0".repeat(64)}`;
+  candidate.criticalEvidenceProfile.definitionFingerprint =
+    `sha256:${"1".repeat(64)}`;
+  candidate.benchmark!.definitionFingerprint =
+    `sha256:${"2".repeat(64)}`;
+  candidate.valuationMethodPolicy.definitionFingerprint =
+    `sha256:${"3".repeat(64)}`;
+  candidate.frameworkPack =
+    reference("framework_pack", "framework_pack_1", "4");
+  candidate.decisionPolicy =
+    reference("decision_policy", "decision_policy_1", "5");
+  const baseline = createCandidateAnalysisFingerprint(candidate);
+  for (
+    const field of [
+      "criticalEvidenceProfile",
+      "benchmark",
+      "valuationMethodPolicy",
+      "frameworkPack",
+      "decisionPolicy",
+    ] as const
+  ) {
+    const changed = structuredClone(candidate);
+    changed[field]!.definitionFingerprint = `sha256:${"f".repeat(64)}`;
+    assert.notEqual(
+      createCandidateAnalysisFingerprint(changed),
+      baseline,
+      `${field} digest must be identity-bearing`,
+    );
+  }
+  const changedCatalog = structuredClone(candidate);
+  changedCatalog.referenceCatalogFingerprint =
+    `sha256:${"e".repeat(64)}`;
+  assert.notEqual(
+    createCandidateAnalysisFingerprint(changedCatalog),
+    baseline,
+  );
+});
+
+function reference(
+  kind:
+    | "critical_evidence_profile"
+    | "benchmark_definition"
+    | "valuation_method_policy"
+    | "decision_policy"
+    | "framework_pack",
+  id: string,
+  digit: string,
+  options: { parentId?: string } = {},
+) {
+  return {
+    kind,
+    id,
+    version: "1",
+    ...(options.parentId ? { parentId: options.parentId } : {}),
+    definitionFingerprint: `sha256:${digit.repeat(64)}`,
+  };
+}

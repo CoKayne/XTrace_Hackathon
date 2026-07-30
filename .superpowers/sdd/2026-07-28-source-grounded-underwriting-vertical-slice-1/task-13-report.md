@@ -199,3 +199,114 @@ Each was followed by a focused GREEN run before the next behavior was added.
 2. Task11b is still external to this branch. This implementation deliberately
    wires the current Task 11 synthetic lens API and leaves a provider seam for
    Task11b.
+
+---
+
+## Fix round 2 — source-grounded identity, accounting, replay, and SQL exactness
+
+This round resolves every remaining finding in
+`task-13-fix-1-review.md` while preserving the approved C3
+workspace-and-candidate-scoped claim path. It does not change Task11b,
+Task12 decision behavior, or Task14/15 UI/API scope.
+
+### Behavior fixed
+
+1. **C1 — temporal references and immutable definitions**
+   - Memory and Supabase benchmark lookup now enforce
+     `effectiveAt <= asOfDate <= staleAfter`, reject future retrieval dates,
+     and return no benchmark for stale 2030 requests.
+   - Selected benchmarks pin entry ID, version, effective date, expiry, and a
+     canonical SHA-256 definition digest.
+   - Critical Evidence profiles pin a canonical digest of their exact
+     structured child fields.
+   - `0012` installs the immutable-reference trigger on published Critical
+     Evidence child rows; runtime roles retain read-only access.
+
+2. **C2 and I1 — stable execution identity**
+   - XTrace `capturedAt` is derived from the persisted
+     `CompanyAnalysis.createdAt`, never the execution clock.
+   - Batch and candidate fingerprints bind the exact Critical Evidence,
+     benchmark, valuation-policy, decision-policy, framework-pack, and full
+     reference-catalog digests.
+   - Candidate version snapshots persist those exact definition digests.
+   - A one-second clock-advanced real source-grounded forced rerun now
+     completes as an alias of one canonical artifact bundle.
+
+3. **I2 — actual provider accounting and visible truncation**
+   - The flat framework-stage charge is removed. Every initial, repair, and
+     retryable transport request reserves one cost unit and its 4,000-token
+     output capacity before the network operation starts.
+   - The production Claude adapter reports provider input, output,
+     cache-creation, and cache-read usage; checkpoints settle that exact
+     usage after each attempt.
+   - Capacity exhaustion refuses the next provider operation before dispatch.
+     Framework exhaustion and timeout persist explicit truncation state and
+     produce candidate unavailability, with no negative judgment inferred.
+   - Retryable transport calls have unique physical-attempt fingerprints;
+     arbitrary provider/budget errors are not misclassified as JSON repair.
+
+4. **I2 — durable checkpoint replay**
+   - Memory and Supabase repositories expose exact workspace/candidate
+     checkpoint reads.
+   - Checkpoints persist input/output fingerprints, validated replay payloads,
+     bounded attempt counts, reserved/actual usage, and provider-attempt
+     settlement state.
+   - Completed checkpoints are immutable. Replay requires an exact input
+     fingerprint, a stage-specific output parser, and a recomputed matching
+     output fingerprint.
+   - A reclaimed lease restores usage and reuses completed grounding and
+     framework stages without repeating provider work.
+
+5. **Additional `0012` exactness/parity finding**
+   - `save_evidence_pack_build()` now compares every supplied canonical
+     camelCase Source Revision snapshot byte-for-byte with its immutable
+     database row.
+   - Evidence Pack revision IDs and snapshot IDs must be duplicate-free exact
+     sets; altered, omitted, extra, and duplicate snapshots are rejected.
+   - Source timestamps are normalized to canonical UTC milliseconds before
+     persistence so PostgREST offsets cannot create false mismatches.
+   - Drizzle now mirrors the migration's source-evidence and Evidence Pack
+     JSON shape and identity constraints.
+   - The checkpoint migration is safe to reapply after the legacy
+     `artifact_fingerprint` column has already been removed.
+
+### Adversarial RED evidence
+
+The following failures were observed before the corresponding production
+changes:
+
+- a 2030 request returned a stale benchmark, and a future-effective entry was
+  not constrained by the requested as-of date;
+- published Critical Evidence child rows could be updated in PostgreSQL;
+- advancing only the execution clock changed a real source-grounded
+  candidate/artifact identity;
+- changing effective reference definition bytes did not change batch or
+  candidate identity;
+- measured Claude mode did not exist, the framework provider callback
+  recorded zero reservations, and eight physical requests were represented
+  by one 4,000-unit stage charge;
+- a five-millisecond framework timeout produced generic candidate failure;
+- no checkpoint read API existed, so lease reclaim repeated completed work
+  and reset usage;
+- the static `0012` exact-snapshot/parity assertions failed, matching the
+  review's live proof that altered/partial snapshot payloads were accepted.
+
+Each behavior received a focused GREEN run before the next slice.
+
+### Fix-round verification
+
+- Focused contracts/reference/evidence/framework/orchestrator/checkpoint/
+  finalization suite: **96 total, 90 passed, 6 PostgreSQL-only skipped,
+  0 failed**.
+- Full repository suite: **628 total, 608 passed, 18 skipped, 2 failed only
+  because the managed sandbox denied `listen(127.0.0.1)` with `EPERM`**.
+  These are the same two known Chat route listener tests and are unrelated to
+  Task 13.
+- `npm run typecheck`: passed.
+- `npm run lint -- --quiet`: passed.
+- `git diff --check`: passed.
+- Live PostgreSQL could not run in this managed sandbox: even a temporary
+  local cluster failed during initialization because System V shared-memory
+  creation was denied. The live exact-snapshot and Critical Evidence
+  immutability probes remain present and environment-skipped; static
+  migration assertions are green.

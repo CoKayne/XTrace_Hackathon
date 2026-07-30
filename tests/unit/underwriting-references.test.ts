@@ -148,17 +148,108 @@ test("resolves the exact published Critical Evidence and stage benchmark payload
   });
 
   assert.equal(profile?.publicationStatus, "published");
+  assert.match(profile?.definitionFingerprint ?? "", /^sha256:[0-9a-f]{64}$/);
   assert.equal(
     profile?.fields.find(({ fieldId }) => fieldId === "company_identity")
       ?.minimumModelInput,
     true,
   );
-  assert.deepEqual(benchmark, {
+  assert.equal(benchmark?.packId, "benchmark_pack_synthetic_us_software_v1");
+  assert.equal(benchmark?.value, "80000000");
+  assert.equal(benchmark?.currency, "USD");
+  assert.equal(benchmark?.staleAfter, "2027-01-25");
+  assert.match(
+    benchmark?.definitionFingerprint ?? "",
+    /^sha256:[0-9a-f]{64}$/,
+  );
+});
+
+test("2030 benchmark lookup fails closed in memory and Supabase", async () => {
+  const memory = createMemoryUnderwritingReferencesRepository();
+  assert.equal(await memory.getSelectedBenchmark({
     packId: "benchmark_pack_synthetic_us_software_v1",
-    value: "80000000",
-    currency: "USD",
-    staleAfter: "2027-01-25",
+    stage: "seed",
+    asOfDate: "2030-01-01",
+  }), null);
+
+  const requestedUrls: string[] = [];
+  const supabase = createSupabaseUnderwritingReferencesRepository({
+    url: "https://database.example.test",
+    serviceRoleKey: "secret",
+    fetchImpl: async (request) => {
+      const url = String(request);
+      requestedUrls.push(url);
+      if (url.includes("/benchmark_packs?")) {
+        return Response.json([{
+          id: "benchmark_pack_synthetic_us_software_v1",
+          version: "1",
+          publication_status: "published",
+          retrieval_date: "2026-07-29",
+          stale_after_days: 180,
+        }]);
+      }
+      if (url.includes("/benchmark_entries?")) {
+        return Response.json([{
+          id: "benchmark_seed_reported_valuation_v1",
+          version: "1",
+          value: "24000000",
+          currency: "USD",
+          effective_at: "2026-07-29",
+        }]);
+      }
+      throw new Error(`Unexpected URL ${url}`);
+    },
   });
+
+  assert.equal(await supabase.getSelectedBenchmark({
+    packId: "benchmark_pack_synthetic_us_software_v1",
+    stage: "seed",
+    asOfDate: "2030-01-01",
+  }), null);
+  assert.equal(
+    requestedUrls.some((url) => url.includes("/benchmark_entries?")),
+    false,
+    "a stale pack must fail closed before an entry can be selected",
+  );
+});
+
+test("Supabase benchmark selection filters out entries newer than its as-of date", async () => {
+  const requestedUrls: string[] = [];
+  const repository = createSupabaseUnderwritingReferencesRepository({
+    url: "https://database.example.test",
+    serviceRoleKey: "secret",
+    fetchImpl: async (request) => {
+      const url = String(request);
+      requestedUrls.push(url);
+      if (url.includes("/benchmark_packs?")) {
+        return Response.json([{
+          id: "benchmark_pack_synthetic_us_software_v1",
+          version: "1",
+          publication_status: "published",
+          retrieval_date: "2026-07-29",
+          stale_after_days: 180,
+        }]);
+      }
+      return Response.json([{
+        id: "benchmark_entry_synthetic_seed_valuation_v1",
+        value: "24000000",
+        currency: "USD",
+        effective_at: "2026-07-29",
+      }]);
+    },
+  });
+
+  const benchmark = await repository.getSelectedBenchmark({
+    packId: "benchmark_pack_synthetic_us_software_v1",
+    stage: "seed",
+    asOfDate: "2026-08-01",
+  });
+
+  assert.ok(benchmark);
+  assert.equal(benchmark.effectiveAt, "2026-07-29");
+  assert.ok(requestedUrls.some((url) =>
+    url.includes("effective_at=lte.2026-08-01")
+  ));
 });
 
 test("Supabase reads immutable structured Critical Evidence fields from the profile child table", async () => {
@@ -198,22 +289,21 @@ test("Supabase reads immutable structured Critical Evidence fields from the prof
     "critical_evidence_seed_b2b_saas_v1",
   );
 
-  assert.deepEqual(profile, {
-    id: "critical_evidence_seed_b2b_saas_v1",
-    version: "1",
-    publicationStatus: "published",
-    fields: [{
-      fieldId: "company_identity",
-      critical: true,
-      minimumModelInput: true,
-      acceptedAssertionStatuses: [
-        "reported",
-        "corroborated",
-        "verified",
-      ],
-      acceptedFreshness: ["current"],
-    }],
-  });
+  assert.equal(profile?.id, "critical_evidence_seed_b2b_saas_v1");
+  assert.equal(profile?.version, "1");
+  assert.equal(profile?.publicationStatus, "published");
+  assert.deepEqual(profile?.fields, [{
+    fieldId: "company_identity",
+    critical: true,
+    minimumModelInput: true,
+    acceptedAssertionStatuses: [
+      "reported",
+      "corroborated",
+      "verified",
+    ],
+    acceptedFreshness: ["current"],
+  }]);
+  assert.match(profile?.definitionFingerprint ?? "", /^sha256:[0-9a-f]{64}$/);
   assert.ok(requestedUrls.some((url) =>
     url.includes("/critical_evidence_profile_fields?")
   ));

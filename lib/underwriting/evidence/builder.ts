@@ -36,9 +36,13 @@ const BUILDER_VERSION = "evidence_pack_builder_v2";
 
 export interface SelectedBenchmarkInput {
   packId: string;
+  entryId: string;
+  version: string;
   value: string;
   currency: string;
+  effectiveAt: string;
   staleAfter: string;
+  definitionFingerprint: string;
 }
 
 export interface EvidencePackBuilder {
@@ -322,11 +326,19 @@ function buildAssumptions(input: {
     if (
       !benchmark
       || benchmark.packId !== input.context.benchmarkPackId
+      || !requiredText(benchmark.entryId, "A benchmark entry")
+      || !requiredText(benchmark.version, "A benchmark version")
       || benchmark.currency !== "USD"
+      || !isIsoDate(benchmark.effectiveAt)
       || !isIsoDate(benchmark.staleAfter)
+      || benchmark.effectiveAt > input.context.asOfDate
+      || benchmark.staleAfter < input.context.asOfDate
+      || !/^sha256:[0-9a-f]{64}$/.test(
+        benchmark.definitionFingerprint,
+      )
     ) {
       throw new Error(
-        "The selected benchmark must exactly match the resolved context.",
+        "The selected benchmark must exactly match the resolved context and be valid as-of the Evidence Pack date; future or stale benchmarks are unavailable.",
       );
     }
     assumptions.push(

@@ -411,6 +411,14 @@ export const CandidateRunSchema = z.strictObject({
   finalizedAt: IsoDateTimeSchema.nullable(),
 });
 
+export const CandidateProviderAttemptSchema = z.strictObject({
+  attemptFingerprint: z.string().regex(/^sha256:[0-9a-f]{64}$/),
+  status: z.enum(["reserved", "completed", "failed", "aborted"]),
+  reservedCostUnits: z.number().int().nonnegative(),
+  reservedTokenUnits: z.number().int().nonnegative(),
+  actualTokenUnits: z.number().int().nonnegative(),
+});
+
 export const CandidateCheckpointSchema = z.strictObject({
   candidateRunId: IdSchema,
   stage: z.enum([
@@ -423,7 +431,15 @@ export const CandidateCheckpointSchema = z.strictObject({
     "finalization",
   ]),
   status: z.enum(["running", "completed", "failed"]),
-  artifactFingerprint: z.string().min(1),
+  inputFingerprint: z.string().min(1),
+  outputFingerprint: z.string().min(1).nullable(),
+  outputPayload: z.unknown().nullable(),
+  attemptCount: z.number().int().nonnegative(),
+  costUnits: z.number().int().nonnegative(),
+  tokenUnits: z.number().int().nonnegative(),
+  actualTokenUnits: z.number().int().nonnegative(),
+  providerAttempts: z.array(CandidateProviderAttemptSchema),
+  reasonCode: z.string().min(1).nullable(),
   publicReason: z.string().min(1).nullable(),
   savedAt: IsoDateTimeSchema,
 });
@@ -484,6 +500,9 @@ export type UnderwritingSelection = z.infer<
 >;
 export type CandidateRun = z.infer<typeof CandidateRunSchema>;
 export type CandidateCheckpoint = z.infer<typeof CandidateCheckpointSchema>;
+export type CandidateProviderAttempt = z.infer<
+  typeof CandidateProviderAttemptSchema
+>;
 export type XTraceLineageSnapshot = z.infer<
   typeof XTraceLineageSnapshotSchema
 >;
