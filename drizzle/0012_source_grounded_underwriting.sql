@@ -169,7 +169,8 @@ create table if not exists public.evidence_pack_builds (
     check (
       coalesce(
         pack_payload ->> 'workspaceId' = workspace_id
-        and pack_payload ->> 'id' = pack_id,
+        and pack_payload ->> 'id' = pack_id
+        and btrim(coalesce(pack_payload ->> 'dealId', '')) <> '',
         false
       )
   )
@@ -199,10 +200,40 @@ alter table public.evidence_pack_builds
   check (
     coalesce(
       pack_payload ->> 'workspaceId' = workspace_id
-      and pack_payload ->> 'id' = pack_id,
+      and pack_payload ->> 'id' = pack_id
+      and btrim(coalesce(pack_payload ->> 'dealId', '')) <> '',
       false
     )
   );
+
+do $migration$
+declare
+  function_definition text := pg_get_functiondef(
+    'public.finalize_candidate_underwriting(jsonb)'::regprocedure
+  );
+begin
+  if position(
+    'evidence_pack ->> ''dealId'' <> target.deal_id'
+    in function_definition
+  ) > 0 then
+    function_definition := replace(
+      function_definition,
+      'evidence_pack ->> ''dealId'' <> target.deal_id',
+      'nullif(btrim(evidence_pack ->> ''dealId''), '''') '
+        || 'is distinct from target.deal_id'
+    );
+    execute function_definition;
+  end if;
+  if position(
+    'evidence_pack ->> ''dealId'' <> target.deal_id'
+    in pg_get_functiondef(
+      'public.finalize_candidate_underwriting(jsonb)'::regprocedure
+    )
+  ) > 0 then
+    raise exception 'Legacy finalizer Deal binding remains null-unsafe';
+  end if;
+end;
+$migration$;
 
 create or replace function public.claim_underwriting_candidate(
   p_workspace_id text,
@@ -352,7 +383,8 @@ begin
     or jsonb_typeof(evidence_pack) <> 'object'
     or btrim(coalesce(evidence_pack ->> 'id', '')) = ''
     or evidence_pack ->> 'workspaceId' <> target.workspace_id
-    or evidence_pack ->> 'dealId' <> target.deal_id
+    or nullif(btrim(evidence_pack ->> 'dealId'), '')
+      is distinct from target.deal_id
   then
     raise exception
       'Non-reuse finalization requires an immutable Evidence Pack build';
@@ -548,6 +580,7 @@ declare
   target public.evidence_pack_builds%rowtype;
   v_workspace_id text := btrim(p_payload -> 'pack' ->> 'workspaceId');
   v_pack_id text := btrim(p_payload -> 'pack' ->> 'id');
+  v_deal_id text := btrim(p_payload -> 'pack' ->> 'dealId');
   v_input_fingerprint text := btrim(p_payload ->> 'inputFingerprint');
   snapshots jsonb := p_payload -> 'sourceRevisionSnapshots';
   pack_revision_ids jsonb := p_payload -> 'pack' -> 'sourceRevisionIds';
@@ -561,6 +594,7 @@ declare
 begin
   if coalesce(v_workspace_id, '') = ''
     or coalesce(v_pack_id, '') = ''
+    or coalesce(v_deal_id, '') = ''
     or v_input_fingerprint !~ '^sha256:[0-9a-f]{64}$'
     or jsonb_typeof(p_payload -> 'pack') <> 'object'
     or jsonb_typeof(snapshots) <> 'array'
@@ -806,6 +840,8 @@ create policy critical_evidence_profile_fields_underwriting_owner
 alter function public.claim_underwriting_candidate(text, text, text, integer)
   owner to vsee_underwriting_owner;
 alter function public.finalize_or_reuse_candidate_underwriting(jsonb)
+  owner to vsee_underwriting_owner;
+alter function public.finalize_candidate_underwriting(jsonb)
   owner to vsee_underwriting_owner;
 alter function public.save_source_evidence_items(jsonb)
   owner to vsee_underwriting_owner;

@@ -938,6 +938,18 @@ test("0012 declares target claims, immutable rerun aliases, and grounded evidenc
   );
   assert.match(
     migration,
+    /nullif\(btrim\(evidence_pack ->> 'dealId'\), ''\)\s+is distinct from target\.deal_id/i,
+  );
+  assert.match(
+    migration,
+    /coalesce\(v_deal_id, ''\) = ''/i,
+  );
+  assert.match(
+    readFileSync(migrationPath, "utf8"),
+    /nullif\(btrim\(evidence_pack ->> 'dealId'\), ''\)\s+is distinct from target\.deal_id/i,
+  );
+  assert.match(
+    migration,
     /revoke all on function public\.finalize_candidate_underwriting\(jsonb\)[\s\S]*from service_role/i,
   );
   assert.match(
@@ -954,6 +966,10 @@ test("0012 declares target claims, immutable rerun aliases, and grounded evidenc
   assert.match(schema, /evidence_pack_builds_payload_shape_check/i);
   assert.match(schema, /evidence_pack_builds_snapshots_shape_check/i);
   assert.match(schema, /evidence_pack_builds_payload_identity_check/i);
+  assert.match(
+    schema,
+    /btrim\(coalesce\([\s\S]*packPayload[\s\S]*->> 'dealId'[\s\S]*''\)\) <> ''/i,
+  );
   assert.match(
     schema,
     /critical_evidence_profile_fields_assertion_statuses_shape_check/i,
@@ -1056,7 +1072,110 @@ test(
       );
 
       seedSqlSourceRevision(database);
+      const missingDealPack = structuredClone(
+        payload.evidencePack,
+      ) as Record<string, unknown>;
+      delete missingDealPack.dealId;
+      const nullDealPack = {
+        ...payload.evidencePack,
+        dealId: null,
+      };
+      const missingDealFingerprint = `sha256:${"1".repeat(64)}`;
+      const nullDealFingerprint = `sha256:${"2".repeat(64)}`;
+      for (
+        const invalidBuild of [
+          {
+            ...sqlFinalizationBuildPayload(payload),
+            pack: missingDealPack,
+            inputFingerprint: missingDealFingerprint,
+          },
+          {
+            ...sqlFinalizationBuildPayload(payload),
+            pack: nullDealPack,
+            inputFingerprint: nullDealFingerprint,
+          },
+        ]
+      ) {
+        assert.throws(
+          () => executeSql(database, `
+            set role service_role;
+            select public.save_evidence_pack_build(
+              ${sqlJson(invalidBuild)}
+            );
+          `),
+          /immutable Evidence Pack build/i,
+        );
+      }
+
       saveSqlFinalizationBuild(database, payload);
+      executeSql(database, `
+        alter table public.evidence_pack_builds
+          drop constraint evidence_pack_builds_payload_identity_check;
+        insert into public.evidence_pack_builds (
+          workspace_id, input_fingerprint, pack_id, pack_payload,
+          source_revision_snapshots
+        ) values
+        (
+          'workspace_1',
+          '${missingDealFingerprint}',
+          'evidence_pack_missing_deal',
+          ${sqlJson({
+            ...missingDealPack,
+            id: "evidence_pack_missing_deal",
+          })},
+          '[]'::jsonb
+        ),
+        (
+          'workspace_1',
+          '${nullDealFingerprint}',
+          'evidence_pack_null_deal',
+          ${sqlJson({
+            ...nullDealPack,
+            id: "evidence_pack_null_deal",
+          })},
+          '[]'::jsonb
+        );
+      `);
+      const missingDealFinalization = {
+        ...payload,
+        evidencePackBuildInputFingerprint: missingDealFingerprint,
+        evidencePack: {
+          ...missingDealPack,
+          id: "evidence_pack_missing_deal",
+        },
+      };
+      const nullDealFinalization = {
+        ...payload,
+        evidencePackBuildInputFingerprint: nullDealFingerprint,
+        evidencePack: {
+          ...nullDealPack,
+          id: "evidence_pack_null_deal",
+        },
+      };
+      for (
+        const invalid of [
+          missingDealFinalization,
+          nullDealFinalization,
+        ]
+      ) {
+        assert.throws(
+          () => executeSql(database, `
+            set role service_role;
+            select public.finalize_or_reuse_candidate_underwriting(
+              ${sqlJson(invalid)}
+            );
+          `),
+          /immutable Evidence Pack build|artifact identity/i,
+        );
+        assert.throws(
+          () => executeSql(database, `
+            select public.finalize_candidate_underwriting(
+              ${sqlJson(invalid)}
+            );
+          `),
+          /artifact identity/i,
+        );
+      }
       for (
         const invalid of [
           {
@@ -1315,6 +1434,34 @@ test(
           set role service_role;
           select public.save_source_evidence_items(
             ${sqlJson([{ ...sourceEvidence, value: "series_a" }])}
+          );
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          insert into public.evidence_pack_builds (
+            workspace_id, input_fingerprint, pack_id, pack_payload,
+            source_revision_snapshots
+          ) values (
+            'workspace_1',
+            'sha256:${"7".repeat(64)}',
+            'missing_deal_pack',
+            '{"workspaceId":"workspace_1","id":"missing_deal_pack"}'::jsonb,
+            '[]'::jsonb
+          );
+        `)
+      );
+      assert.throws(() =>
+        executeSql(database, `
+          insert into public.evidence_pack_builds (
+            workspace_id, input_fingerprint, pack_id, pack_payload,
+            source_revision_snapshots
+          ) values (
+            'workspace_1',
+            'sha256:${"8".repeat(64)}',
+            'null_deal_pack',
+            '{"workspaceId":"workspace_1","id":"null_deal_pack","dealId":null}'::jsonb,
+            '[]'::jsonb
           );
         `)
       );
@@ -2020,29 +2167,36 @@ function saveSqlFinalizationBuild(
   database: string,
   payload: CandidateFinalization,
 ): void {
-  const revisionId = payload.evidencePack.sourceRevisionIds[0]!;
+  const build = sqlFinalizationBuildPayload(payload);
   executeSql(database, `
     set role service_role;
-    select public.save_evidence_pack_build(${sqlJson({
-      pack: payload.evidencePack,
-      inputFingerprint: payload.evidencePackBuildInputFingerprint,
-      sourceRevisionSnapshots: [{
-        id: revisionId,
-        workspaceId: payload.evidencePack.workspaceId,
-        sourceId: "source_deal_1",
-        revision: 1,
-        contentHash: `sha256:${"d".repeat(64)}`,
-        objectKey: "private/deal_1.md",
-        objectVersion: "object:v1",
-        contentType: "text/markdown",
-        extractorId: "plain_text_v1",
-        extractorVersion: "1",
-        extractedAt: "2026-07-29T10:00:00.000Z",
-        supersedesRevisionId: null,
-        createdAt: "2026-07-29T10:05:00.000Z",
-      }],
-    })});
+    select public.save_evidence_pack_build(${sqlJson(build)});
   `);
+}
+
+function sqlFinalizationBuildPayload(
+  payload: CandidateFinalization,
+): Record<string, unknown> {
+  const revisionId = payload.evidencePack.sourceRevisionIds[0]!;
+  return {
+    pack: payload.evidencePack,
+    inputFingerprint: payload.evidencePackBuildInputFingerprint,
+    sourceRevisionSnapshots: [{
+      id: revisionId,
+      workspaceId: payload.evidencePack.workspaceId,
+      sourceId: "source_deal_1",
+      revision: 1,
+      contentHash: `sha256:${"d".repeat(64)}`,
+      objectKey: "private/deal_1.md",
+      objectVersion: "object:v1",
+      contentType: "text/markdown",
+      extractorId: "plain_text_v1",
+      extractorVersion: "1",
+      extractedAt: "2026-07-29T10:00:00.000Z",
+      supersedesRevisionId: null,
+      createdAt: "2026-07-29T10:05:00.000Z",
+    }],
+  };
 }
 
 function setupSqlUnderwritingWorkspace(database: string): void {

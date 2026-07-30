@@ -305,7 +305,7 @@ export const evidencePackBuilds = pgTable("evidence_pack_builds", {
   ),
   check(
     "evidence_pack_builds_payload_identity_check",
-    sql`coalesce(${table.packPayload} ->> 'workspaceId' = ${table.workspaceId} and ${table.packPayload} ->> 'id' = ${table.packId}, false)`,
+    sql`coalesce(${table.packPayload} ->> 'workspaceId' = ${table.workspaceId} and ${table.packPayload} ->> 'id' = ${table.packId} and btrim(coalesce(${table.packPayload} ->> 'dealId', '')) <> '', false)`,
   ),
 ]);
 

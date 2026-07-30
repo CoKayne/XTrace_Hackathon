@@ -936,7 +936,8 @@ begin
   end if;
   if jsonb_typeof(evidence_pack) <> 'object'
     or evidence_pack ->> 'workspaceId' <> target.workspace_id
-    or evidence_pack ->> 'dealId' <> target.deal_id
+    or nullif(btrim(evidence_pack ->> 'dealId'), '')
+      is distinct from target.deal_id
     or jsonb_typeof(context_snapshot) <> 'object'
     or jsonb_typeof(scenario_model) <> 'object'
     or jsonb_typeof(p_payload -> 'calculationClaimEdges') <> 'array'
