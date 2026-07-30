@@ -3,7 +3,7 @@ import "./globals.css";
 import "./vsee.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://second-look-vc-demo.duankayne.chatgpt.site"),
+  metadataBase: new URL("https://vsee-vc-intelligence.dream86625.chatgpt.site"),
   title: "VSee — VC Decision Intelligence",
   description: "XTrace connects live market shifts to the beliefs behind past investment decisions.",
   openGraph: {
