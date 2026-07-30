@@ -44,6 +44,7 @@ export async function POST(
   try {
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
+    if (context.mode !== "product") throw new Error("FORBIDDEN");
     if (
       process.env.NODE_ENV === "production" &&
       (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)

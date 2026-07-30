@@ -248,6 +248,37 @@ for (const route of allCurrentRouteHandlers) {
   });
 }
 
+test("POST /api/runs keeps the public demo read-only and never queues a scan", async () => {
+  const workspaceId = `workspace_public_demo_run_${crypto.randomUUID()}`;
+  const before = await getDataClient().listRuns(workspaceId);
+  assert.deepEqual(before, []);
+
+  const response = await createRun(
+    jsonRequest("/api/runs", { xtraceEnabled: false }),
+    undefined,
+    {
+      async resolveRequestContext() {
+        return {
+          mode: "public_demo",
+          principal: null,
+          workspaceId,
+          role: "demo",
+          permissions: {
+            readWorkspace: true,
+            readPrivateSources: false,
+            mutateSources: false,
+            managePolicy: false,
+            administerFrameworks: false,
+          },
+        };
+      },
+    },
+  );
+
+  assert.equal(response.status, 403);
+  assert.deepEqual(await getDataClient().listRuns(workspaceId), []);
+});
+
 for (const route of [
   {
     path: "/api/documents/upload",

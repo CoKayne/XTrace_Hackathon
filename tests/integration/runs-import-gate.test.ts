@@ -5,8 +5,30 @@ import "../helpers/public-demo";
 import { POST as createRun } from "../../app/api/runs/route";
 import { getDataClient } from "../../db/client";
 import { createRunsRepository } from "../../db/repositories/runs";
+import type { RouteDependencies } from "../../lib/api/route-dependencies";
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
 import { createDefaultDemoDataStore } from "../../lib/storage/service";
+
+const productPartner: RouteDependencies = {
+  async resolveRequestContext() {
+    return {
+      mode: "product",
+      principal: {
+        userId: "user_runs_import_gate",
+        email: "runs-import-gate@example.test",
+      },
+      workspaceId: "workspace_demo",
+      role: "partner",
+      permissions: {
+        readWorkspace: true,
+        readPrivateSources: true,
+        mutateSources: true,
+        managePolicy: false,
+        administerFrameworks: false,
+      },
+    };
+  },
+};
 
 test("POST /api/runs refuses to trust client state until all 13 product inputs are durable", async () => {
   const previousAnthropicKey = process.env.ANTHROPIC_API_KEY;
@@ -32,7 +54,7 @@ test("POST /api/runs refuses to trust client state until all 13 product inputs a
       },
       body: JSON.stringify({ xtraceEnabled: false }),
     });
-    const emptyResponse = await createRun(request());
+    const emptyResponse = await createRun(request(), undefined, productPartner);
     assert.equal(emptyResponse.status, 409);
     assert.equal((await emptyResponse.json()).error.code, "CONFLICT");
 
@@ -46,7 +68,11 @@ test("POST /api/runs refuses to trust client state until all 13 product inputs a
       workspaceId: "workspace_demo",
       documentId: reference.id,
     });
-    const incompleteResponse = await createRun(request());
+    const incompleteResponse = await createRun(
+      request(),
+      undefined,
+      productPartner,
+    );
     assert.equal(incompleteResponse.status, 409);
     assert.match(
       (await incompleteResponse.json()).error.message,
@@ -57,7 +83,7 @@ test("POST /api/runs refuses to trust client state until all 13 product inputs a
       workspaceId: "workspace_demo",
       documentId: productInputs[12].id,
     });
-    const readyResponse = await createRun(request());
+    const readyResponse = await createRun(request(), undefined, productPartner);
     assert.equal(readyResponse.status, 201);
   } finally {
     await store.resetDemoData("workspace_demo");

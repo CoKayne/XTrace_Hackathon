@@ -4,7 +4,10 @@ import {
   type RouteDependencies,
 } from "../../../lib/api/route-dependencies";
 import { rateLimitRequest, requirePermission } from "../../../lib/api/safety";
-import { getIntelligenceRepository } from "../../../db/repositories/intelligence";
+import {
+  getIntelligenceRepository,
+  type IntelligenceRepository,
+} from "../../../db/repositories/intelligence";
 import {
   createGroundedChatService,
   type ChatEvidence,
@@ -72,15 +75,22 @@ function allDemoSources() {
 async function searchRuntimeIntelligence(
   question: string,
   workspaceId: string,
+  repository: IntelligenceRepository,
+  mode: "public_demo" | "product",
 ): Promise<ChatEvidence[]> {
   const tokens = evidenceQueryTokens(question);
   if (!tokens.length) return [];
-  const repository = getIntelligenceRepository();
   const [events, reports] = await Promise.all([
     repository.listMarketEvents(workspaceId),
     repository.listReports(workspaceId),
   ]);
   const eventEvidence = events.flatMap((event) => {
+    const sources = mode === "public_demo"
+      ? event.sources
+      : event.sources.filter((source) =>
+        source.provenance !== "demo_fixture"
+      );
+    if (sources.length === 0) return [];
     const haystack = [
       event.title,
       event.summary,
@@ -92,27 +102,108 @@ async function searchRuntimeIntelligence(
     if (!tokens.every((token) => searchableTokens.has(token))) return [];
     return [{
       text: `${event.title}. ${event.summary}`,
-      sources: event.sources,
+      sources,
     }];
   });
-  const companyByDeal = new Map(
-    buildDemoViewModel().deals.map((deal) => [deal.id, deal.companyName]),
-  );
+  const companyByDeal = mode === "public_demo"
+    ? new Map(
+        buildDemoViewModel().deals.map((deal) => [deal.id, deal.companyName]),
+      )
+    : new Map<string, string>();
+  const searchableReports = mode === "public_demo"
+    ? reports
+    : reports.map((report) => ({
+        ...report,
+        opportunities: report.opportunities.filter(
+          isProductOpportunityEvidence,
+        ),
+        companyAnalyses: report.companyAnalyses.filter(
+          isProductCompanyAnalysisEvidence,
+        ),
+      }));
   const reportEvidence = buildPersistedReportEvidence({
     question,
-    reports,
+    reports: searchableReports,
     companyByDeal,
   });
   return [...eventEvidence, ...reportEvidence].slice(0, 12);
 }
 
+function hasDemoFixtureSource(sources: readonly SourceRef[]): boolean {
+  return sources.some((source) => source.provenance === "demo_fixture");
+}
+
+function isProductOpportunityEvidence(
+  opportunity: {
+    demoFixtureIds: readonly string[];
+    sources: readonly SourceRef[];
+  },
+): boolean {
+  return opportunity.demoFixtureIds.length === 0
+    && !hasDemoFixtureSource(opportunity.sources);
+}
+
+function isProductCompanyAnalysisEvidence(
+  analysis: {
+    investmentMemory: { fixtureIds: readonly string[] };
+    sources: readonly SourceRef[];
+  },
+): boolean {
+  return analysis.investmentMemory.fixtureIds.length === 0
+    && !hasDemoFixtureSource(analysis.sources);
+}
+
+async function productMemoryScope(
+  workspaceId: string,
+  repository: IntelligenceRepository,
+): Promise<{
+  sourceById: Map<string, SourceRef>;
+  candidateDealIds: string[];
+}> {
+  const reports = await repository.listReports(workspaceId);
+  const sourceById = new Map<string, SourceRef>();
+  const dealIds = new Set<string>();
+  const addDurableDealSources = (
+    dealId: string,
+    sources: readonly SourceRef[],
+  ) => {
+    const durableSources = sources.filter((source) =>
+      source.provenance !== "demo_fixture"
+    );
+    if (durableSources.length === 0) return;
+    dealIds.add(dealId);
+    for (const source of durableSources) sourceById.set(source.id, source);
+  };
+  for (const report of reports) {
+    for (const opportunity of report.opportunities) {
+      if (!isProductOpportunityEvidence(opportunity)) continue;
+      addDurableDealSources(opportunity.dealId, opportunity.sources);
+    }
+    for (const analysis of report.companyAnalyses) {
+      if (!isProductCompanyAnalysisEvidence(analysis)) continue;
+      addDurableDealSources(analysis.dealId, analysis.sources);
+    }
+  }
+  return {
+    sourceById,
+    candidateDealIds: [...dealIds],
+  };
+}
+
 async function recallExistingMemory(
   question: string,
   workspaceId: string,
+  mode: "public_demo" | "product",
+  repository: IntelligenceRepository,
 ): Promise<MemoryRecallOutcome> {
   if (!isXTraceConfigured()) return { status: "unavailable" };
-  const sourceById = allDemoSources();
-  const deals = buildDemoViewModel().deals;
+  const scope = mode === "public_demo"
+    ? {
+        sourceById: allDemoSources(),
+        candidateDealIds: buildDemoViewModel().deals.map((deal) => deal.id),
+      }
+    : await productMemoryScope(workspaceId, repository);
+  if (scope.candidateDealIds.length === 0) return { status: "unavailable" };
   const service = createXTraceService(getXTraceClient(), {
     workspaceId,
   });
@@ -120,12 +211,24 @@ async function recallExistingMemory(
     const contexts = await service.recallDealContext({
       workspaceId,
       query: question,
-      candidateDealIds: deals.map((deal) => deal.id),
+      candidateDealIds: scope.candidateDealIds,
       limit: 8,
     });
     const evidence = contexts.flatMap((context) => {
-      const sources = [...context.sourceIds, ...context.fixtureIds].flatMap((sourceId) => {
-        const source = sourceById.get(sourceId);
+      if (
+        mode === "product"
+        && (
+          context.fixtureIds.length > 0
+          || context.provenance === "demo_fixture"
+        )
+      ) {
+        return [];
+      }
+      const evidenceIds = mode === "public_demo"
+        ? [...context.sourceIds, ...context.fixtureIds]
+        : context.sourceIds;
+      const sources = evidenceIds.flatMap((sourceId) => {
+        const source = scope.sourceById.get(sourceId);
         return source ? [source] : [];
       });
       return sources.map((source) => ({
@@ -191,15 +294,29 @@ export async function POST(
     }
     const input = ChatRequestSchema.parse(await request.json());
     const claude = process.env.ANTHROPIC_API_KEY ? createClaudeClient() : null;
+    const repository =
+      dependencies.intelligence ?? getIntelligenceRepository();
     const service = createGroundedChatService({
       async searchExistingData({ question }) {
         return [
-          ...searchDemoEvidence(question),
-          ...await searchRuntimeIntelligence(question, context.workspaceId),
+          ...(context.mode === "public_demo"
+            ? searchDemoEvidence(question)
+            : []),
+          ...await searchRuntimeIntelligence(
+            question,
+            context.workspaceId,
+            repository,
+            context.mode,
+          ),
         ];
       },
       async recallMemory({ question }) {
-        return recallExistingMemory(question, context.workspaceId);
+        return recallExistingMemory(
+          question,
+          context.workspaceId,
+          context.mode,
+          repository,
+        );
       },
       async complete({ system, prompt }) {
         if (!claude) return deterministicCompletion(prompt);
