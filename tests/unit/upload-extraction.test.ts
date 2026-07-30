@@ -316,6 +316,76 @@ test("Supabase claims an expired upload immediately after expiry but not before"
   assert.equal(await before.claimNext("worker-b"), null);
 });
 
+test("Supabase terminal lease mutations use the database-time transition RPC", async () => {
+  const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
+  const repository = createSupabaseUploadedDocumentsRepository({
+    url: "https://db.test",
+    serviceRoleKey: "key",
+    fetchImpl: async (url, init) => {
+      requests.push({
+        url: String(url),
+        body: JSON.parse(String(init?.body)) as Record<string, unknown>,
+      });
+      assert.equal(init?.method, "POST");
+      return Response.json(true);
+    },
+  });
+  const lease = {
+    workspaceId: "workspace_demo",
+    id: "upload_1",
+    workerId: "worker-a",
+    leaseToken: "00000000-0000-4000-8000-000000000001",
+  };
+
+  assert.equal(await repository.savePreview({
+    ...lease,
+    preview: previewFixture(),
+  }), true);
+  assert.equal(await repository.fail({
+    ...lease,
+    reason: "extraction failed",
+  }), true);
+  assert.equal(await repository.completeConfirmed(lease), true);
+  assert.equal(await repository.failConfirmed({
+    ...lease,
+    reason: "ingest failed",
+  }), true);
+  assert.deepEqual(
+    requests.map(({ url, body }) => ({
+      pathname: new URL(url).pathname,
+      transition: body.p_transition,
+      hasPreview: body.p_extraction_preview !== null,
+      failureReason: body.p_failure_reason,
+    })),
+    [
+      {
+        pathname: "/rest/v1/rpc/transition_uploaded_document_lease",
+        transition: "extraction_complete",
+        hasPreview: true,
+        failureReason: null,
+      },
+      {
+        pathname: "/rest/v1/rpc/transition_uploaded_document_lease",
+        transition: "extraction_fail",
+        hasPreview: false,
+        failureReason: "extraction failed",
+      },
+      {
+        pathname: "/rest/v1/rpc/transition_uploaded_document_lease",
+        transition: "confirmed_complete",
+        hasPreview: false,
+        failureReason: null,
+      },
+      {
+        pathname: "/rest/v1/rpc/transition_uploaded_document_lease",
+        transition: "confirmed_fail",
+        hasPreview: false,
+        failureReason: "ingest failed",
+      },
+    ],
+  );
+});
+
 function previewFixture(): ExtractionPreview {
   return {
     candidateCompanyName: "Acme",

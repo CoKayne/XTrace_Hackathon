@@ -179,6 +179,360 @@ test("memory confirmation remains one atomic idempotent receipt across service i
   assert.equal(deals.inspect().assignments.length, 1);
 });
 
+for (
+  const [label, unrelatedWorkspaceId] of [
+    ["another workspace", "workspace_2"],
+    ["the same workspace", "workspace_1"],
+  ] as const
+) {
+  test(`failed memory promotion preserves unrelated writes in ${label}`, async () => {
+    const uploads = await awaitingUpload();
+    const sources = createMemorySourceRegistry();
+    const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+    let reachedUploadMutation!: () => void;
+    const uploadMutationReached = new Promise<void>((resolve) => {
+      reachedUploadMutation = resolve;
+    });
+    let releaseUploadMutation!: () => void;
+    const uploadMutationReleased = new Promise<void>((resolve) => {
+      releaseUploadMutation = resolve;
+    });
+    const failingService = createUploadConfirmationService({
+      uploads: {
+        ...uploads,
+        async markConfirmed() {
+          reachedUploadMutation();
+          await uploadMutationReleased;
+          throw new Error("injected paused upload transition failure");
+        },
+      },
+      sources,
+      deals,
+    });
+    const failingConfirmation = failingService.confirm({
+      workspaceId: "workspace_1",
+      uploadId: "upload_1",
+      assignedByUserId: "user_1",
+      choice: {
+        companyName: "Acme",
+        assignment: { kind: "new_deal", dealStatus: "evaluating" },
+      },
+    });
+    await Promise.race([
+      uploadMutationReached,
+      failingConfirmation.then(
+        () => {
+          throw new Error("The failing promotion unexpectedly succeeded.");
+        },
+        (error: unknown) => {
+          throw error;
+        },
+      ),
+    ]);
+
+    await uploads.create({
+      id: "upload_unrelated",
+      workspaceId: unrelatedWorkspaceId,
+      filename: "unrelated.txt",
+      contentType: "text/plain",
+      byteSize: 9,
+      checksum: `unrelated-${unrelatedWorkspaceId}`,
+      objectKey: `private/${unrelatedWorkspaceId}/unrelated.txt`,
+    });
+    await sources.createInitialRevision({
+      id: "revision_unrelated",
+      workspaceId: unrelatedWorkspaceId,
+      sourceId: "source_unrelated",
+      contentHash: `hash-${unrelatedWorkspaceId}`,
+      objectKey: `private/${unrelatedWorkspaceId}/source.txt`,
+      objectVersion: `hash-${unrelatedWorkspaceId}`,
+      contentType: "text/plain",
+      extractorId: "plain_text_v1",
+      extractorVersion: "1",
+      extractedAt: "2026-07-29T12:00:00.000Z",
+      createdAt: "2026-07-29T12:00:00.000Z",
+    });
+    await deals.confirmSourceAssignment({
+      requestId: "request_unrelated",
+      workspaceId: unrelatedWorkspaceId,
+      dealId: "deal_unrelated",
+      companyId: "company_unrelated",
+      companyName: "Unrelated",
+      status: "watchlist",
+      sourceRevisionId: "revision_unrelated",
+      assignedByUserId: "user_unrelated",
+      reason: "Concurrent unrelated write.",
+      confirmedAt: "2026-07-29T12:00:01.000Z",
+    });
+
+    releaseUploadMutation();
+    await assert.rejects(
+      failingConfirmation,
+      /injected paused upload transition failure/,
+    );
+    assert.ok(await uploads.get({
+      workspaceId: unrelatedWorkspaceId,
+      id: "upload_unrelated",
+    }));
+    assert.ok(await sources.getRevision({
+      workspaceId: unrelatedWorkspaceId,
+      revisionId: "revision_unrelated",
+    }));
+    assert.ok(await deals.findForWorkspace({
+      workspaceId: unrelatedWorkspaceId,
+      dealId: "deal_unrelated",
+    }));
+    assert.equal(
+      sources.inspect().revisions.some((revision) =>
+        revision.id === "revision_unrelated"
+        && revision.workspaceId === unrelatedWorkspaceId
+      ),
+      true,
+    );
+    assert.equal(
+      deals.inspect().assignments.some((assignment) =>
+        assignment.dealId === "deal_unrelated"
+        && assignment.workspaceId === unrelatedWorkspaceId
+      ),
+      true,
+    );
+  });
+}
+
+test("failed promotion cannot erase a concurrent upload targeting the same Deal", async () => {
+  const uploads = await awaitingUpload();
+  await uploads.create({
+    id: "upload_2",
+    workspaceId: "workspace_1",
+    filename: "second.txt",
+    contentType: "text/plain",
+    byteSize: 30,
+    checksum: "content-hash-two",
+    objectKey: "private/workspaces/workspace_1/uploads/upload_2/second.txt",
+  });
+  const secondClaim = await uploads.claimNext("extractor-b");
+  assert.ok(secondClaim);
+  assert.equal(secondClaim.id, "upload_2");
+  assert.equal(await uploads.savePreview({
+    workspaceId: secondClaim.workspaceId,
+    id: secondClaim.id,
+    workerId: secondClaim.workerId,
+    leaseToken: secondClaim.leaseToken,
+    preview: {
+      ...preview,
+      extractionMetadata: {
+        ...preview.extractionMetadata,
+        contentHash: "content-hash-two",
+      },
+    },
+  }), true);
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  await sources.createInitialRevision({
+    id: "revision_seed",
+    workspaceId: "workspace_1",
+    sourceId: "source_seed",
+    contentHash: "seed-hash",
+    objectKey: "private/seed.txt",
+    objectVersion: "seed-hash",
+    contentType: "text/plain",
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T10:00:00.000Z",
+    createdAt: "2026-07-29T10:00:00.000Z",
+  });
+  await deals.confirmSourceAssignment({
+    requestId: "seed-request",
+    workspaceId: "workspace_1",
+    dealId: "deal_existing",
+    companyId: "company_existing",
+    companyName: "Existing Co",
+    status: "watchlist",
+    sourceRevisionId: "revision_seed",
+    assignedByUserId: "seed",
+    reason: "seed",
+    confirmedAt: "2026-07-29T10:00:01.000Z",
+  });
+  let reachedUploadMutation!: () => void;
+  const uploadMutationReached = new Promise<void>((resolve) => {
+    reachedUploadMutation = resolve;
+  });
+  let releaseUploadMutation!: () => void;
+  const uploadMutationReleased = new Promise<void>((resolve) => {
+    releaseUploadMutation = resolve;
+  });
+  const failingService = createUploadConfirmationService({
+    uploads: {
+      ...uploads,
+      async markConfirmed() {
+        reachedUploadMutation();
+        await uploadMutationReleased;
+        throw new Error("injected same-Deal upload transition failure");
+      },
+    },
+    sources,
+    deals,
+  });
+  const successfulService = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+  });
+  const existingDealChoice = {
+    companyName: "Existing Co",
+    assignment: {
+      kind: "existing_deal" as const,
+      dealId: "deal_existing",
+    },
+  };
+  const failingConfirmation = failingService.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: existingDealChoice,
+  });
+  await Promise.race([
+    uploadMutationReached,
+    failingConfirmation.then(
+      () => {
+        throw new Error("The failing promotion unexpectedly succeeded.");
+      },
+      (error: unknown) => {
+        throw error;
+      },
+    ),
+  ]);
+  const successfulConfirmation = successfulService.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_2",
+    assignedByUserId: "user_2",
+    choice: existingDealChoice,
+  });
+  await Promise.race([
+    successfulConfirmation.then(() => undefined),
+    new Promise<void>((resolve) => setImmediate(resolve)),
+  ]);
+  releaseUploadMutation();
+
+  await assert.rejects(
+    failingConfirmation,
+    /injected same-Deal upload transition failure/,
+  );
+  const successful = await successfulConfirmation;
+  assert.equal((await uploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_1",
+  }))?.status, "awaiting_confirmation");
+  assert.equal((await uploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_2",
+  }))?.status, "confirmed");
+  assert.equal(
+    (await sources.getRevision({
+      workspaceId: "workspace_1",
+      revisionId: successful.sourceRevisionId,
+    }))?.contentHash,
+    "content-hash-two",
+  );
+  assert.equal(sources.inspect().revisions.length, 2);
+  assert.equal(deals.inspect().assignments.length, 2);
+  assert.deepEqual(
+    (await deals.findForWorkspace({
+      workspaceId: "workspace_1",
+      dealId: "deal_existing",
+    }))?.activeSourceRevisionIds,
+    ["revision_seed", successful.sourceRevisionId].sort(),
+  );
+});
+
+test("failed promotion cannot orphan a concurrent exact-source append", async () => {
+  const uploads = await awaitingUpload();
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  let reachedUploadMutation!: () => void;
+  const uploadMutationReached = new Promise<void>((resolve) => {
+    reachedUploadMutation = resolve;
+  });
+  let releaseUploadMutation!: () => void;
+  const uploadMutationReleased = new Promise<void>((resolve) => {
+    releaseUploadMutation = resolve;
+  });
+  const failingService = createUploadConfirmationService({
+    uploads: {
+      ...uploads,
+      async markConfirmed() {
+        reachedUploadMutation();
+        await uploadMutationReleased;
+        throw new Error("injected source-history transition failure");
+      },
+    },
+    sources,
+    deals,
+  });
+  const failingConfirmation = failingService.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  });
+  await Promise.race([
+    uploadMutationReached,
+    failingConfirmation.then(
+      () => {
+        throw new Error("The failing promotion unexpectedly succeeded.");
+      },
+      (error: unknown) => {
+        throw error;
+      },
+    ),
+  ]);
+  const initial = sources.inspect().revisions[0];
+  assert.ok(initial);
+  let appendSettled = false;
+  const append = sources.appendRevision({
+    id: "revision_concurrent_append",
+    workspaceId: initial.workspaceId,
+    sourceId: initial.sourceId,
+    contentHash: "concurrent-hash",
+    objectKey: "private/concurrent-append.txt",
+    objectVersion: "concurrent-hash",
+    contentType: "text/plain",
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T12:06:00.000Z",
+    supersedesRevisionId: initial.id,
+    createdAt: "2026-07-29T12:06:00.000Z",
+  });
+  void append.then(
+    () => {
+      appendSettled = true;
+    },
+    () => {
+      appendSettled = true;
+    },
+  );
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  const appendSettledBeforeRollback = appendSettled;
+  releaseUploadMutation();
+
+  await Promise.race([
+    Promise.allSettled([failingConfirmation, append]),
+    new Promise<never>((_resolve, reject) => {
+      setTimeout(() => reject(new Error("source promotion deadlocked")), 1_000);
+    }),
+  ]);
+  assert.equal(appendSettledBeforeRollback, false);
+  await assert.rejects(
+    failingConfirmation,
+    /injected source-history transition failure/,
+  );
+  await assert.rejects(append, /initial source revision is required/i);
+  assert.equal(sources.inspect().revisions.length, 0);
+});
+
 test("confirmation rejects a preview without source-backed facts before any registry write", async () => {
   const uploads = createMemoryUploadedDocumentsRepository();
   await uploads.create({
@@ -437,6 +791,28 @@ test("memory confirmation rolls back the revision when Deal confirmation fails",
     workspaceId: "workspace_1",
     id: "upload_1",
   }))?.status, "awaiting_confirmation");
+
+  const retryService = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+  });
+  const retryInput = {
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: {
+        kind: "new_deal" as const,
+        dealStatus: "evaluating" as const,
+      },
+    },
+  };
+  const firstRetry = await retryService.confirm(retryInput);
+  assert.deepEqual(await retryService.confirm(retryInput), firstRetry);
+  assert.equal(sources.inspect().revisions.length, 1);
+  assert.equal(deals.inspect().assignments.length, 1);
 });
 
 function exactBundleAssignment(input: {

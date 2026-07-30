@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 
 import {
   IntegrationTransportError,
@@ -124,8 +125,11 @@ export interface UploadedDocumentsRepository {
 
 export interface MemoryUploadedDocumentsRepository
   extends UploadedDocumentsRepository {
-  captureAtomicState(): unknown;
-  restoreAtomicState(state: unknown): void;
+  capturePromotionState(scope: {
+    workspaceId: string;
+    uploadId: string;
+  }): unknown;
+  restorePromotionState(before: unknown, expected: unknown): void;
 }
 
 const LEASE_MS = 5 * 60_000;
@@ -140,21 +144,34 @@ export function createMemoryUploadedDocumentsRepository(options: {
   }>();
   const now = options.now ?? (() => new Date());
   return {
-    captureAtomicState() {
-      return structuredClone([...rows.entries()]);
+    capturePromotionState(scope) {
+      const key = uploadIdentity(scope.workspaceId, scope.uploadId);
+      return {
+        key,
+        row: rows.has(key) ? structuredClone(rows.get(key)) : null,
+      };
     },
 
-    restoreAtomicState(rawState) {
-      const state = rawState as Array<
-        [string, UploadedDocumentRecord & {
+    restorePromotionState(rawBefore, rawExpected) {
+      type PromotionState = {
+        key: string;
+        row: (UploadedDocumentRecord & {
           leaseExpiresAt: number | null;
           workerId: string | null;
           leaseToken: string | null;
-        }]
-      >;
-      rows.clear();
-      for (const [key, row] of state) {
-        rows.set(key, structuredClone(row));
+        }) | null;
+      };
+      const before = rawBefore as PromotionState;
+      const expected = rawExpected as PromotionState;
+      if (before.key !== expected.key) {
+        throw new Error("Upload promotion states do not share an identity.");
+      }
+      const current = rows.get(before.key) ?? null;
+      if (!isDeepStrictEqual(current, expected.row)) return;
+      if (before.row) {
+        rows.set(before.key, structuredClone(before.row));
+      } else {
+        rows.delete(before.key);
       }
     },
 
@@ -501,41 +518,20 @@ export function createSupabaseUploadedDocumentsRepository(options: {
         : Boolean(rows[0]?.renew_uploaded_document_lease);
     },
     async savePreview(input) {
-      const rows = await request(`/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
-        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.extracting`
-        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`
-        + `&lease_token=eq.${encodeURIComponent(input.leaseToken)}`, {
-        method: "PATCH",
-        headers: { Prefer: "return=representation" },
-        body: JSON.stringify({
-          status: "awaiting_confirmation",
-          failure_reason: null,
-          extraction_preview: input.preview,
-          lease_expires_at: null,
-          worker_id: null,
-          lease_token: null,
-          updated_at: now().toISOString(),
-        }),
-      }) as Record<string, unknown>[];
-      return rows.length === 1;
+      return transitionLease({
+        ...input,
+        transition: "extraction_complete",
+        extractionPreview: input.preview,
+        failureReason: null,
+      });
     },
     async fail(input) {
-      const rows = await request(`/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
-        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.extracting`
-        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`
-        + `&lease_token=eq.${encodeURIComponent(input.leaseToken)}`, {
-        method: "PATCH",
-        headers: { Prefer: "return=representation" },
-        body: JSON.stringify({
-          status: "failed",
-          failure_reason: input.reason.slice(0, 400),
-          lease_expires_at: null,
-          worker_id: null,
-          lease_token: null,
-          updated_at: now().toISOString(),
-        }),
-      }) as Record<string, unknown>[];
-      return rows.length === 1;
+      return transitionLease({
+        ...input,
+        transition: "extraction_fail",
+        extractionPreview: null,
+        failureReason: input.reason,
+      });
     },
     async markConfirmed(input) {
       const rows = await request(
@@ -585,46 +581,20 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       return toRecord(value.upload as Record<string, unknown>);
     },
     async completeConfirmed(input) {
-      const rows = await request(
-        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
-        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.ingesting_memory`
-        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`
-        + `&lease_token=eq.${encodeURIComponent(input.leaseToken)}`,
-        {
-          method: "PATCH",
-          headers: { Prefer: "return=representation" },
-          body: JSON.stringify({
-            status: "ready",
-            failure_reason: null,
-            worker_id: null,
-            lease_token: null,
-            lease_expires_at: null,
-            updated_at: now().toISOString(),
-          }),
-        },
-      ) as Record<string, unknown>[];
-      return rows.length === 1;
+      return transitionLease({
+        ...input,
+        transition: "confirmed_complete",
+        extractionPreview: null,
+        failureReason: null,
+      });
     },
     async failConfirmed(input) {
-      const rows = await request(
-        `/uploaded_documents?workspace_id=eq.${encodeURIComponent(input.workspaceId)}`
-        + `&id=eq.${encodeURIComponent(input.id)}&status=eq.ingesting_memory`
-        + `&worker_id=eq.${encodeURIComponent(input.workerId)}`
-        + `&lease_token=eq.${encodeURIComponent(input.leaseToken)}`,
-        {
-          method: "PATCH",
-          headers: { Prefer: "return=representation" },
-          body: JSON.stringify({
-            status: "confirmed",
-            failure_reason: input.reason.slice(0, 400),
-            worker_id: null,
-            lease_token: null,
-            lease_expires_at: null,
-            updated_at: now().toISOString(),
-          }),
-        },
-      ) as Record<string, unknown>[];
-      return rows.length === 1;
+      return transitionLease({
+        ...input,
+        transition: "confirmed_fail",
+        extractionPreview: null,
+        failureReason: input.reason,
+      });
     },
     async deleteAll(workspaceId) {
       await request(
@@ -658,6 +628,44 @@ export function createSupabaseUploadedDocumentsRepository(options: {
       workerId,
       leaseToken,
     };
+  }
+
+  async function transitionLease(input: {
+    workspaceId: string;
+    id: string;
+    workerId: string;
+    leaseToken: string;
+    transition:
+      | "extraction_complete"
+      | "extraction_fail"
+      | "confirmed_complete"
+      | "confirmed_fail";
+    extractionPreview: ExtractionPreview | null;
+    failureReason: string | null;
+  }): Promise<boolean> {
+    const value = await request(
+      "/rpc/transition_uploaded_document_lease",
+      {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({
+          p_workspace_id: input.workspaceId,
+          p_upload_id: input.id,
+          p_worker_id: input.workerId,
+          p_lease_token: input.leaseToken,
+          p_transition: input.transition,
+          p_extraction_preview: input.extractionPreview,
+          p_failure_reason: input.failureReason?.slice(0, 400) ?? null,
+        }),
+      },
+    ) as boolean | Array<
+      boolean | { transition_uploaded_document_lease: boolean }
+    >;
+    if (typeof value === "boolean") return value;
+    const first = value[0];
+    return typeof first === "boolean"
+      ? first
+      : Boolean(first?.transition_uploaded_document_lease);
   }
 }
 

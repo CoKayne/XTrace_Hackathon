@@ -53,7 +53,6 @@ export class UploadConfirmationConflictError extends Error {
   }
 }
 
-const memoryPromotionLocks = new WeakMap<object, Promise<void>>();
 const confirmationLockSets = new WeakMap<
   object,
   Map<string, Promise<void>>
@@ -196,8 +195,9 @@ export function createUploadConfirmationService(dependencies: {
           )),
           interactions: {},
         };
-        const createRevision = () =>
-          dependencies.sources.createInitialRevision({
+        const assignmentRequestId =
+          `upload-confirmation:${upload.id}:${upload.checksum}`;
+        const revisionInput = {
             id: sourceRevisionId,
             workspaceId: input.workspaceId,
             sourceId,
@@ -212,10 +212,16 @@ export function createUploadConfirmationService(dependencies: {
             extractedAt:
               upload.extractionPreview!.extractionMetadata.extractedAt,
             createdAt: confirmedAt,
-          });
+          };
+        const createRevision = (
+          createInitialRevision: SourceRegistry["createInitialRevision"] =
+            dependencies.sources.createInitialRevision.bind(
+              dependencies.sources,
+            ),
+        ) => createInitialRevision(revisionInput);
         const confirmAssignment = (revisionId: string) =>
           dependencies.deals.confirmSourceAssignment({
-            requestId: `upload-confirmation:${upload.id}:${upload.checksum}`,
+            requestId: assignmentRequestId,
             workspaceId: input.workspaceId,
             dealId: identity.dealId,
             companyId: identity.companyId,
@@ -254,11 +260,33 @@ export function createUploadConfirmationService(dependencies: {
             evidence,
           });
         } else {
-          await promoteMemoryAtomically(dependencies, async () => {
-            const revision = await createRevision();
-            await confirmAssignment(revision.id);
-            await markUploadConfirmed();
-          });
+          await promoteMemoryAtomically(
+            dependencies,
+            {
+              upload: {
+                workspaceId: input.workspaceId,
+                uploadId: upload.id,
+              },
+              source: {
+                workspaceId: input.workspaceId,
+                sourceId,
+                sourceRevisionId,
+              },
+              deal: {
+                workspaceId: input.workspaceId,
+                dealId: identity.dealId,
+                companyId: identity.companyId,
+                sourceId,
+                sourceRevisionId,
+                requestId: assignmentRequestId,
+              },
+            },
+            {
+              createRevision,
+              confirmAssignment,
+              markUploadConfirmed,
+            },
+          );
         }
         return {
           uploadId: upload.id,
@@ -382,26 +410,67 @@ function confirmationLocksFor(
   return created;
 }
 
-interface AtomicMemoryAdapter {
-  captureAtomicState(): unknown;
-  restoreAtomicState(state: unknown): void;
+interface AtomicMemoryAdapter<Scope> {
+  capturePromotionState(scope: Scope): unknown;
+  restorePromotionState(before: unknown, expected: unknown): void;
 }
 
-interface AtomicMemoryDealAdapter extends AtomicMemoryAdapter {
+interface AtomicMemoryDealAdapter<Scope>
+  extends AtomicMemoryAdapter<Scope> {
   usesSourceRegistry(registry: SourceRegistry): boolean;
+  withPromotionLock<T>(
+    scope: { workspaceId: string; dealId: string },
+    operation: () => Promise<T>,
+  ): Promise<T>;
 }
 
-async function promoteMemoryAtomically<T>(
+interface AtomicMemorySourceAdapter<Scope>
+  extends AtomicMemoryAdapter<Scope> {
+  withPromotionLock<T>(
+    scope: {
+      workspaceId: string;
+      sourceId: string;
+      sourceRevisionId: string;
+    },
+    operation: (
+      createInitialRevision: SourceRegistry["createInitialRevision"],
+    ) => Promise<T>,
+  ): Promise<T>;
+}
+
+async function promoteMemoryAtomically(
   dependencies: {
     uploads: UploadedDocumentsRepository;
     sources: SourceRegistry;
     deals: DealRegistry;
   },
-  operation: () => Promise<T>,
-): Promise<T> {
+  scopes: {
+    upload: { workspaceId: string; uploadId: string };
+    source: {
+      workspaceId: string;
+      sourceId: string;
+      sourceRevisionId: string;
+    };
+    deal: {
+      workspaceId: string;
+      dealId: string;
+      companyId: string;
+      sourceId: string;
+      sourceRevisionId: string;
+      requestId: string;
+    };
+  },
+  steps: {
+    createRevision: (
+      createInitialRevision: SourceRegistry["createInitialRevision"],
+    ) => Promise<{ id: string }>;
+    confirmAssignment: (revisionId: string) => Promise<unknown>;
+    markUploadConfirmed: () => Promise<unknown>;
+  },
+): Promise<void> {
   if (
     !isAtomicMemoryAdapter(dependencies.uploads)
-    || !isAtomicMemoryAdapter(dependencies.sources)
+    || !isAtomicMemorySourceAdapter(dependencies.sources)
     || !isAtomicMemoryDealAdapter(dependencies.deals)
     || !dependencies.deals.usesSourceRegistry(dependencies.sources)
   ) {
@@ -410,72 +479,79 @@ async function promoteMemoryAtomically<T>(
     );
   }
   const uploads = dependencies.uploads as UploadedDocumentsRepository
-    & AtomicMemoryAdapter;
+    & AtomicMemoryAdapter<typeof scopes.upload>;
   const sources = dependencies.sources as SourceRegistry
-    & AtomicMemoryAdapter;
-  const deals = dependencies.deals as DealRegistry & AtomicMemoryDealAdapter;
-  return withWeakKeyLock(
-    memoryPromotionLocks,
-    uploads,
-    async () => {
-      const adapters: AtomicMemoryAdapter[] = [
-        uploads,
-        sources,
-        deals,
-      ];
-      const checkpoints = adapters.map((adapter) =>
-        adapter.captureAtomicState()
-      );
-      try {
-        return await operation();
-      } catch (error) {
-        for (let index = adapters.length - 1; index >= 0; index -= 1) {
-          adapters[index].restoreAtomicState(checkpoints[index]);
+    & AtomicMemorySourceAdapter<typeof scopes.source>;
+  const deals = dependencies.deals as DealRegistry
+    & AtomicMemoryDealAdapter<typeof scopes.deal>;
+  // Every promotion acquires Source before Deal; ordinary mutators acquire
+  // at most their owning repository's lock.
+  return sources.withPromotionLock(
+    scopes.source,
+    (createInitialRevision) =>
+      deals.withPromotionLock(scopes.deal, async () => {
+        const beforeUpload = uploads.capturePromotionState(scopes.upload);
+        const beforeSource = sources.capturePromotionState(scopes.source);
+        const beforeDeal = deals.capturePromotionState(scopes.deal);
+        let expectedUpload = beforeUpload;
+        let expectedSource = beforeSource;
+        let expectedDeal = beforeDeal;
+        try {
+          let revision: { id: string };
+          try {
+            revision = await steps.createRevision(createInitialRevision);
+          } finally {
+            expectedSource = sources.capturePromotionState(scopes.source);
+          }
+          try {
+            await steps.confirmAssignment(revision.id);
+          } finally {
+            expectedDeal = deals.capturePromotionState(scopes.deal);
+          }
+          try {
+            await steps.markUploadConfirmed();
+          } finally {
+            expectedUpload = uploads.capturePromotionState(scopes.upload);
+          }
+        } catch (error) {
+          uploads.restorePromotionState(beforeUpload, expectedUpload);
+          deals.restorePromotionState(beforeDeal, expectedDeal);
+          sources.restorePromotionState(beforeSource, expectedSource);
+          throw error;
         }
-        throw error;
-      }
-    },
+      }),
   );
 }
 
-function isAtomicMemoryAdapter(value: unknown): value is AtomicMemoryAdapter {
+function isAtomicMemoryAdapter(
+  value: unknown,
+): value is AtomicMemoryAdapter<unknown> {
   return Boolean(
     value
       && typeof value === "object"
-      && "captureAtomicState" in value
-      && typeof value.captureAtomicState === "function"
-      && "restoreAtomicState" in value
-      && typeof value.restoreAtomicState === "function",
+      && "capturePromotionState" in value
+      && typeof value.capturePromotionState === "function"
+      && "restorePromotionState" in value
+      && typeof value.restorePromotionState === "function",
   );
 }
 
 function isAtomicMemoryDealAdapter(
   value: unknown,
-): value is AtomicMemoryDealAdapter {
+): value is AtomicMemoryDealAdapter<unknown> {
   return isAtomicMemoryAdapter(value)
     && "usesSourceRegistry" in value
-    && typeof value.usesSourceRegistry === "function";
+    && typeof value.usesSourceRegistry === "function"
+    && "withPromotionLock" in value
+    && typeof value.withPromotionLock === "function";
 }
 
-async function withWeakKeyLock<T>(
-  locks: WeakMap<object, Promise<void>>,
-  key: object,
-  operation: () => Promise<T>,
-): Promise<T> {
-  const previous = locks.get(key) ?? Promise.resolve();
-  let release!: () => void;
-  const current = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  const queued = previous.then(() => current);
-  locks.set(key, queued);
-  await previous;
-  try {
-    return await operation();
-  } finally {
-    release();
-    if (locks.get(key) === queued) locks.delete(key);
-  }
+function isAtomicMemorySourceAdapter(
+  value: unknown,
+): value is AtomicMemorySourceAdapter<unknown> {
+  return isAtomicMemoryAdapter(value)
+    && "withPromotionLock" in value
+    && typeof value.withPromotionLock === "function";
 }
 
 async function withKeyLock<T>(

@@ -2,6 +2,7 @@ import {
   SourceRevisionSchema,
   type SourceRevision,
 } from "../../lib/contracts/evidence";
+import { isDeepStrictEqual } from "node:util";
 import {
   IntegrationTransportError,
   isRetryableTransportStatus,
@@ -66,8 +67,22 @@ export interface SourceRegistry {
 }
 
 export interface MemorySourceRegistry extends SourceRegistry {
-  captureAtomicState(): unknown;
-  restoreAtomicState(state: unknown): void;
+  capturePromotionState(scope: {
+    workspaceId: string;
+    sourceId: string;
+    sourceRevisionId: string;
+  }): unknown;
+  restorePromotionState(before: unknown, expected: unknown): void;
+  withPromotionLock<T>(
+    scope: {
+      workspaceId: string;
+      sourceId: string;
+      sourceRevisionId: string;
+    },
+    operation: (
+      createInitialRevision: SourceRegistry["createInitialRevision"],
+    ) => Promise<T>,
+  ): Promise<T>;
   inspect(): {
     revisions: SourceRevision[];
     annotations: SourceRevisionAnnotation[];
@@ -147,116 +162,208 @@ export function createMemorySourceRegistry(): MemorySourceRegistry {
   const revisions = new Map<string, SourceRevision>();
   const revisionIdsBySource = new Map<string, string[]>();
   const annotations: SourceRevisionAnnotation[] = [];
+  const mutationLocks = new Map<string, Promise<void>>();
   let annotationSequence = 0;
 
+  async function createInitialRevisionUnlocked(
+    rawInput: CreateSourceRevisionInput,
+  ): Promise<SourceRevision> {
+    const input = validatedInput(rawInput);
+    const key = sourceIdentity(input.workspaceId, input.sourceId);
+    const existingIds = revisionIdsBySource.get(key) ?? [];
+    const candidate = SourceRevisionSchema.parse({
+      ...input,
+      revision: 1,
+      supersedesRevisionId: null,
+    });
+    if (existingIds.length > 0) {
+      const existing = revisions.get(
+        identity(input.workspaceId, existingIds[0]),
+      )!;
+      if (equalRevision(existing, candidate)) {
+        return structuredClone(existing);
+      }
+      throw new Error(
+        "Source revision 1 is immutable and already contains different data.",
+      );
+    }
+    const revisionKey = identity(input.workspaceId, input.id);
+    if (revisions.has(revisionKey)) {
+      throw new Error(
+        `Revision id ${input.id} already belongs to another source in this workspace.`,
+      );
+    }
+    revisions.set(revisionKey, structuredClone(candidate));
+    revisionIdsBySource.set(key, [candidate.id]);
+    return structuredClone(candidate);
+  }
+
+  async function appendRevisionUnlocked(
+    rawInput: AppendSourceRevisionInput,
+  ): Promise<SourceRevision> {
+    const input = {
+      ...validatedInput(rawInput),
+      supersedesRevisionId: requiredText(
+        rawInput.supersedesRevisionId,
+        "A superseded revision id",
+      ),
+    };
+    const sourceKey = sourceIdentity(input.workspaceId, input.sourceId);
+    const currentIds = revisionIdsBySource.get(sourceKey) ?? [];
+    if (currentIds.length === 0) {
+      throw new Error(
+        "An initial source revision is required before an append.",
+      );
+    }
+    const revisionKey = identity(input.workspaceId, input.id);
+    const existingTarget = revisions.get(revisionKey);
+    if (existingTarget) {
+      if (revisionMatchesInput(existingTarget, input)) {
+        return structuredClone(existingTarget);
+      }
+      throw new Error(
+        `Revision id ${input.id} is immutable and already contains different data.`,
+      );
+    }
+    const currentId = currentIds.at(-1)!;
+    if (input.supersedesRevisionId !== currentId) {
+      throw new Error(
+        "A source append must supersede the exact current previous revision.",
+      );
+    }
+    const current = revisions.get(identity(input.workspaceId, currentId))!;
+    if (current.sourceId !== input.sourceId) {
+      throw new Error(
+        "The superseded revision belongs to a different source.",
+      );
+    }
+    const candidate = SourceRevisionSchema.parse({
+      ...input,
+      revision: current.revision + 1,
+    });
+    revisions.set(revisionKey, structuredClone(candidate));
+    revisionIdsBySource.set(sourceKey, [...currentIds, candidate.id]);
+    return structuredClone(candidate);
+  }
+
   return {
-    captureAtomicState() {
+    capturePromotionState(scope) {
+      const revisionKey = identity(
+        scope.workspaceId,
+        scope.sourceRevisionId,
+      );
+      const sourceKey = sourceIdentity(scope.workspaceId, scope.sourceId);
       return {
-        revisions: structuredClone([...revisions.entries()]),
-        revisionIdsBySource: structuredClone([
-          ...revisionIdsBySource.entries(),
-        ]),
-        annotations: structuredClone(annotations),
-        annotationSequence,
+        revisionKey,
+        sourceKey,
+        revision: revisions.has(revisionKey)
+          ? structuredClone(revisions.get(revisionKey)!)
+          : null,
+        revisionIds: structuredClone(revisionIdsBySource.get(sourceKey) ?? []),
       };
     },
 
-    restoreAtomicState(rawState) {
-      const state = rawState as {
-        revisions: Array<[string, SourceRevision]>;
-        revisionIdsBySource: Array<[string, string[]]>;
-        annotations: SourceRevisionAnnotation[];
-        annotationSequence: number;
+    restorePromotionState(rawBefore, rawExpected) {
+      type PromotionState = {
+        revisionKey: string;
+        sourceKey: string;
+        revision: SourceRevision | null;
+        revisionIds: string[];
       };
-      revisions.clear();
-      for (const [key, revision] of state.revisions) {
-        revisions.set(key, structuredClone(revision));
+      const before = rawBefore as PromotionState;
+      const expected = rawExpected as PromotionState;
+      if (
+        before.revisionKey !== expected.revisionKey
+        || before.sourceKey !== expected.sourceKey
+      ) {
+        throw new Error("Source promotion states do not share an identity.");
       }
-      revisionIdsBySource.clear();
-      for (const [key, ids] of state.revisionIdsBySource) {
-        revisionIdsBySource.set(key, structuredClone(ids));
+      const currentRevision = revisions.get(before.revisionKey) ?? null;
+      const revisionCanBeRestored = isDeepStrictEqual(
+        currentRevision,
+        expected.revision,
+      );
+      if (revisionCanBeRestored) {
+        if (before.revision) {
+          revisions.set(
+            before.revisionKey,
+            structuredClone(before.revision),
+          );
+        } else {
+          revisions.delete(before.revisionKey);
+        }
       }
-      annotations.splice(0, annotations.length, ...structuredClone(
-        state.annotations,
-      ));
-      annotationSequence = state.annotationSequence;
+      const beforeIds = new Set(before.revisionIds);
+      const expectedIds = new Set(expected.revisionIds);
+      const currentIds = revisionIdsBySource.get(before.sourceKey) ?? [];
+      const compensatedIds = currentIds.filter((revisionId) =>
+        !revisionCanBeRestored
+        || !expectedIds.has(revisionId)
+        || beforeIds.has(revisionId)
+      );
+      for (const revisionId of before.revisionIds) {
+        if (
+          !expectedIds.has(revisionId)
+          && !compensatedIds.includes(revisionId)
+        ) {
+          compensatedIds.push(revisionId);
+        }
+      }
+      if (compensatedIds.length > 0) {
+        revisionIdsBySource.set(before.sourceKey, compensatedIds);
+      } else {
+        revisionIdsBySource.delete(before.sourceKey);
+      }
+    },
+
+    withPromotionLock(scope, operation) {
+      const workspaceId = requiredWorkspaceId(scope.workspaceId);
+      const sourceId = requiredText(scope.sourceId, "A source id");
+      requiredText(scope.sourceRevisionId, "A source revision id");
+      const key = sourceIdentity(workspaceId, sourceId);
+      return withMemoryKeyLock(mutationLocks, key, async () => {
+        let active = true;
+        const createWithinLock: SourceRegistry["createInitialRevision"] =
+          (input) => {
+            if (!active) {
+              throw new Error("The source promotion lock is no longer active.");
+            }
+            if (
+              requiredWorkspaceId(input.workspaceId) !== workspaceId
+              || requiredText(input.sourceId, "A source id") !== sourceId
+            ) {
+              throw new Error(
+                "The locked source promotion cannot mutate another source.",
+              );
+            }
+            return createInitialRevisionUnlocked(input);
+          };
+        try {
+          return await operation(createWithinLock);
+        } finally {
+          active = false;
+        }
+      });
     },
 
     async createInitialRevision(rawInput) {
       const input = validatedInput(rawInput);
       const key = sourceIdentity(input.workspaceId, input.sourceId);
-      const existingIds = revisionIdsBySource.get(key) ?? [];
-      const candidate = SourceRevisionSchema.parse({
-        ...input,
-        revision: 1,
-        supersedesRevisionId: null,
-      });
-      if (existingIds.length > 0) {
-        const existing = revisions.get(
-          identity(input.workspaceId, existingIds[0]),
-        )!;
-        if (equalRevision(existing, candidate)) {
-          return structuredClone(existing);
-        }
-        throw new Error(
-          "Source revision 1 is immutable and already contains different data.",
-        );
-      }
-      const revisionKey = identity(input.workspaceId, input.id);
-      if (revisions.has(revisionKey)) {
-        throw new Error(
-          `Revision id ${input.id} already belongs to another source in this workspace.`,
-        );
-      }
-      revisions.set(revisionKey, structuredClone(candidate));
-      revisionIdsBySource.set(key, [candidate.id]);
-      return structuredClone(candidate);
+      return withMemoryKeyLock(
+        mutationLocks,
+        key,
+        () => createInitialRevisionUnlocked(input),
+      );
     },
 
     async appendRevision(rawInput) {
-      const input = {
-        ...validatedInput(rawInput),
-        supersedesRevisionId: requiredText(
-          rawInput.supersedesRevisionId,
-          "A superseded revision id",
-        ),
-      };
-      const sourceKey = sourceIdentity(input.workspaceId, input.sourceId);
-      const currentIds = revisionIdsBySource.get(sourceKey) ?? [];
-      if (currentIds.length === 0) {
-        throw new Error(
-          "An initial source revision is required before an append.",
-        );
-      }
-      const revisionKey = identity(input.workspaceId, input.id);
-      const existingTarget = revisions.get(revisionKey);
-      if (existingTarget) {
-        if (revisionMatchesInput(existingTarget, input)) {
-          return structuredClone(existingTarget);
-        }
-        throw new Error(
-          `Revision id ${input.id} is immutable and already contains different data.`,
-        );
-      }
-      const currentId = currentIds.at(-1)!;
-      if (input.supersedesRevisionId !== currentId) {
-        throw new Error(
-          "A source append must supersede the exact current previous revision.",
-        );
-      }
-      const current = revisions.get(identity(input.workspaceId, currentId))!;
-      if (current.sourceId !== input.sourceId) {
-        throw new Error(
-          "The superseded revision belongs to a different source.",
-        );
-      }
-      const candidate = SourceRevisionSchema.parse({
-        ...input,
-        revision: current.revision + 1,
-      });
-      revisions.set(revisionKey, structuredClone(candidate));
-      revisionIdsBySource.set(sourceKey, [...currentIds, candidate.id]);
-      return structuredClone(candidate);
+      const input = validatedInput(rawInput);
+      const key = sourceIdentity(input.workspaceId, input.sourceId);
+      return withMemoryKeyLock(
+        mutationLocks,
+        key,
+        () => appendRevisionUnlocked(rawInput),
+      );
     },
 
     async getRevision({ workspaceId, revisionId }) {
@@ -314,6 +421,27 @@ export function createMemorySourceRegistry(): MemorySourceRegistry {
       };
     },
   };
+}
+
+async function withMemoryKeyLock<T>(
+  locks: Map<string, Promise<void>>,
+  key: string,
+  operation: () => Promise<T>,
+): Promise<T> {
+  const previous = locks.get(key) ?? Promise.resolve();
+  let release!: () => void;
+  const current = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const queued = previous.then(() => current);
+  locks.set(key, queued);
+  await previous;
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (locks.get(key) === queued) locks.delete(key);
+  }
 }
 
 function revisionFromRow(row: Record<string, unknown>): SourceRevision {

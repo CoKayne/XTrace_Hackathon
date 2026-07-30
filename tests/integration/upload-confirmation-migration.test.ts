@@ -123,28 +123,197 @@ test(
           from public.claim_next_uploaded_document(
             'confirmed', 'worker-a', 300
           );
-          select upload.status || '|' || upload.deal_id || '|' ||
-            upload.source_revision_id || '|' ||
+          insert into public.uploaded_documents (
+            id, workspace_id, filename, content_type, byte_size, checksum,
+            object_key, status
+          ) values (
+            'upload_2', 'workspace_upload', 'second.txt', 'text/plain', 20,
+            'content-hash-two', 'private/workspace_upload/second.txt',
+            'queued'
+          );
+          do $lease_test$
+          declare
+            lease_token uuid;
+            transitioned boolean;
+          begin
+            update public.uploaded_documents
+            set lease_expires_at = clock_timestamp() - interval '1 second'
+            where workspace_id = 'workspace_upload' and id = 'upload_1';
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_1', 'worker-a',
+              (select upload.lease_token
+               from public.uploaded_documents as upload
+               where upload.workspace_id = 'workspace_upload'
+                 and upload.id = 'upload_1'),
+              'confirmed_complete', null, null
+            ) into transitioned;
+            if transitioned then
+              raise exception 'expired confirmed completion succeeded';
+            end if;
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_1', 'worker-a',
+              (select upload.lease_token
+               from public.uploaded_documents as upload
+               where upload.workspace_id = 'workspace_upload'
+                 and upload.id = 'upload_1'),
+              'confirmed_fail', null, 'expired confirmed failure'
+            ) into transitioned;
+            if transitioned then
+              raise exception 'expired confirmed failure succeeded';
+            end if;
+            perform *
+            from public.claim_next_uploaded_document(
+              'confirmed', 'worker-b', 300
+            );
+            select upload.lease_token into lease_token
+            from public.uploaded_documents as upload
+            where upload.workspace_id = 'workspace_upload'
+              and upload.id = 'upload_1';
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_1', 'worker-b', lease_token,
+              'confirmed_complete', null, null
+            ) into transitioned;
+            if not transitioned then
+              raise exception 'reclaimed confirmed completion failed';
+            end if;
+
+            update public.uploaded_documents
+            set status = 'ingesting_memory',
+                worker_id = 'expired-confirmed-fail',
+                lease_token = gen_random_uuid(),
+                lease_expires_at = clock_timestamp() - interval '1 second'
+            where workspace_id = 'workspace_upload' and id = 'upload_1';
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_1', 'expired-confirmed-fail',
+              (select upload.lease_token
+               from public.uploaded_documents as upload
+               where upload.workspace_id = 'workspace_upload'
+                 and upload.id = 'upload_1'),
+              'confirmed_fail', null, 'expired confirmed failure'
+            ) into transitioned;
+            if transitioned then
+              raise exception 'second expired confirmed failure succeeded';
+            end if;
+            perform *
+            from public.claim_next_uploaded_document(
+              'confirmed', 'worker-c', 300
+            );
+            select upload.lease_token into lease_token
+            from public.uploaded_documents as upload
+            where upload.workspace_id = 'workspace_upload'
+              and upload.id = 'upload_1';
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_1', 'worker-c', lease_token,
+              'confirmed_fail', null, 'retryable provider failure'
+            ) into transitioned;
+            if not transitioned then
+              raise exception 'reclaimed confirmed failure failed';
+            end if;
+
+            perform *
+            from public.claim_next_uploaded_document(
+              'queued', 'extractor-a', 300
+            );
+            update public.uploaded_documents
+            set lease_expires_at = clock_timestamp() - interval '1 second'
+            where workspace_id = 'workspace_upload' and id = 'upload_2';
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_2', 'extractor-a',
+              (select upload.lease_token
+               from public.uploaded_documents as upload
+               where upload.workspace_id = 'workspace_upload'
+                 and upload.id = 'upload_2'),
+              'extraction_complete',
+              '{"candidateCompanyName":"Second","candidateHeadline":null,"facts":[],"extractionMetadata":{"extractorId":"plain_text_v1","extractorVersion":"1","extractedAt":"2026-07-29T12:10:00.000Z"}}',
+              null
+            ) into transitioned;
+            if transitioned then
+              raise exception 'expired extraction completion succeeded';
+            end if;
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_2', 'extractor-a',
+              (select upload.lease_token
+               from public.uploaded_documents as upload
+               where upload.workspace_id = 'workspace_upload'
+                 and upload.id = 'upload_2'),
+              'extraction_fail', null, 'expired extraction failure'
+            ) into transitioned;
+            if transitioned then
+              raise exception 'expired extraction failure succeeded';
+            end if;
+            perform *
+            from public.claim_next_uploaded_document(
+              'queued', 'extractor-b', 300
+            );
+            select upload.lease_token into lease_token
+            from public.uploaded_documents as upload
+            where upload.workspace_id = 'workspace_upload'
+              and upload.id = 'upload_2';
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_2', 'extractor-b', lease_token,
+              'extraction_complete',
+              '{"candidateCompanyName":"Second","candidateHeadline":null,"facts":[],"extractionMetadata":{"extractorId":"plain_text_v1","extractorVersion":"1","extractedAt":"2026-07-29T12:10:00.000Z"}}',
+              null
+            ) into transitioned;
+            if not transitioned then
+              raise exception 'reclaimed extraction completion failed';
+            end if;
+
+            update public.uploaded_documents
+            set status = 'extracting',
+                extraction_preview = null,
+                failure_reason = null,
+                worker_id = 'expired-extraction-fail',
+                lease_token = gen_random_uuid(),
+                lease_expires_at = clock_timestamp() - interval '1 second'
+            where workspace_id = 'workspace_upload' and id = 'upload_2';
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_2', 'expired-extraction-fail',
+              (select upload.lease_token
+               from public.uploaded_documents as upload
+               where upload.workspace_id = 'workspace_upload'
+                 and upload.id = 'upload_2'),
+              'extraction_fail', null, 'expired extraction failure'
+            ) into transitioned;
+            if transitioned then
+              raise exception 'second expired extraction failure succeeded';
+            end if;
+            perform *
+            from public.claim_next_uploaded_document(
+              'queued', 'extractor-c', 300
+            );
+            select upload.lease_token into lease_token
+            from public.uploaded_documents as upload
+            where upload.workspace_id = 'workspace_upload'
+              and upload.id = 'upload_2';
+            select public.transition_uploaded_document_lease(
+              'workspace_upload', 'upload_2', 'extractor-c', lease_token,
+              'extraction_fail', null, 'terminal extraction failure'
+            ) into transitioned;
+            if not transitioned then
+              raise exception 'reclaimed extraction failure failed';
+            end if;
+          end
+          $lease_test$;
+          select confirmed.status || '|' || extraction.status || '|' ||
+            confirmed.deal_id || '|' || confirmed.source_revision_id || '|' ||
             (select count(*) from public.source_revisions
              where workspace_id = 'workspace_upload') || '|' ||
             (select count(*) from public.deal_source_assignments
              where workspace_id = 'workspace_upload') || '|' ||
             (select count(*) from public.source_evidence
-             where workspace_id = 'workspace_upload') || '|' ||
-            upload.worker_id || '|' ||
-            (upload.lease_token is not null)::text || '|' ||
-            (select count(*)
-             from public.claim_next_uploaded_document(
-               'confirmed', 'worker-b', 300
-             ))
-          from public.uploaded_documents as upload
-          where upload.workspace_id = 'workspace_upload'
-            and upload.id = 'upload_1';
+             where workspace_id = 'workspace_upload')
+          from public.uploaded_documents as confirmed
+          cross join public.uploaded_documents as extraction
+          where confirmed.workspace_id = 'workspace_upload'
+            and confirmed.id = 'upload_1'
+            and extraction.workspace_id = 'workspace_upload'
+            and extraction.id = 'upload_2';
         `,
       ], { encoding: "utf8" }).trim();
       assert.equal(
         output,
-        "ingesting_memory|deal_1|revision_1|1|1|1|worker-a|true|0",
+        "confirmed|failed|deal_1|revision_1|1|1|1",
       );
     } finally {
       execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });

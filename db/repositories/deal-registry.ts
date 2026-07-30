@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
+
 import {
   DealMemoryBundleSchema,
   DealStatusSchema,
@@ -102,14 +105,23 @@ export interface AnalysisEligibleSnapshot {
 }
 
 export interface MemoryDealRegistry extends DealRegistry {
-  captureAtomicState(): unknown;
-  restoreAtomicState(state: unknown): void;
+  capturePromotionState(scope: MemoryDealPromotionScope): unknown;
+  restorePromotionState(before: unknown, expected: unknown): void;
+  withPromotionLock<T>(
+    scope: { workspaceId: string; dealId: string },
+    operation: () => Promise<T>,
+  ): Promise<T>;
   usesSourceRegistry(registry: SourceRegistry): boolean;
   inspect(): {
     deals: RegisteredDeal[];
     assignments: DealSourceAssignment[];
     externalEffects: string[];
   };
+}
+
+export interface MemoryDealPromotionScope extends DealMemoryOwnership {
+  companyId: string;
+  requestId: string;
 }
 
 function requiredText(value: string, label: string): string {
@@ -252,16 +264,6 @@ function exactSourceBundlesFromConfirmation(
   }));
 }
 
-function replaceMap<T>(
-  target: Map<string, T>,
-  entries: Array<[string, T]>,
-): void {
-  target.clear();
-  for (const [key, value] of entries) {
-    target.set(key, structuredClone(value));
-  }
-}
-
 export function sourceRevisionFingerprint(
   revisionIds: readonly string[],
 ): string {
@@ -329,7 +331,169 @@ export function createMemoryDealRegistry(options: {
   const assignments: DealSourceAssignment[] = [];
   const requestAssignments = new Map<string, DealSourceAssignment>();
   const externalEffects: string[] = [];
+  const promotionLocks = new Map<string, Promise<void>>();
   let assignmentSequence = 0;
+
+  type PromotionState = {
+    scope: MemoryDealPromotionScope;
+    dealKey: string;
+    companyKey: string;
+    requestKey: string;
+    exactBundleKey: string;
+    deal: RegisteredDeal | null;
+    company: { id: string; name: string } | null;
+    bundle: DealMemoryBundle | null;
+    lineage: DealMemoryLineage | null;
+    exactBundle: ExactSourceMemoryBundle | null;
+    assignments: DealSourceAssignment[];
+    requestAssignmentId: string | null;
+  };
+
+  function capturePromotionState(
+    rawScope: MemoryDealPromotionScope,
+  ): PromotionState {
+    const ownership = validateMemoryOwnership(rawScope);
+    const scope = {
+      ...ownership,
+      companyId: requiredText(rawScope.companyId, "A company id"),
+      requestId: requiredText(rawScope.requestId, "A request id"),
+    };
+    const dealKey = identity(scope.workspaceId, scope.dealId);
+    const companyKey = identity(scope.workspaceId, scope.companyId);
+    const requestKey = identity(scope.workspaceId, scope.requestId);
+    const exactBundleKey = exactSourceIdentity(scope);
+    return {
+      scope,
+      dealKey,
+      companyKey,
+      requestKey,
+      exactBundleKey,
+      deal: deals.has(dealKey) ? structuredClone(deals.get(dealKey)!) : null,
+      company: companies.has(companyKey)
+        ? structuredClone(companies.get(companyKey)!)
+        : null,
+      bundle: bundles.has(dealKey)
+        ? structuredClone(bundles.get(dealKey)!)
+        : null,
+      lineage: bundleLineage.has(dealKey)
+        ? structuredClone(bundleLineage.get(dealKey)!)
+        : null,
+      exactBundle: exactSourceBundles.has(exactBundleKey)
+        ? structuredClone(exactSourceBundles.get(exactBundleKey)!)
+        : null,
+      assignments: assignments
+        .filter((assignment) =>
+          assignment.workspaceId === scope.workspaceId
+          && assignment.dealId === scope.dealId
+          && assignment.sourceId === scope.sourceId
+        )
+        .map((assignment) => structuredClone(assignment)),
+      requestAssignmentId: requestAssignments.get(requestKey)?.id ?? null,
+    };
+  }
+
+  function restorePromotionState(
+    before: PromotionState,
+    expected: PromotionState,
+  ): void {
+    if (
+      before.dealKey !== expected.dealKey
+      || before.companyKey !== expected.companyKey
+      || before.requestKey !== expected.requestKey
+      || before.exactBundleKey !== expected.exactBundleKey
+    ) {
+      throw new Error("Deal promotion states do not share an identity.");
+    }
+
+    restoreMapValue(bundles, before.dealKey, before.bundle, expected.bundle);
+    restoreMapValue(
+      bundleLineage,
+      before.dealKey,
+      before.lineage,
+      expected.lineage,
+    );
+    restoreMapValue(
+      exactSourceBundles,
+      before.exactBundleKey,
+      before.exactBundle,
+      expected.exactBundle,
+    );
+
+    const beforeAssignments = new Map(
+      before.assignments.map((assignment) => [assignment.id, assignment]),
+    );
+    const expectedAssignments = new Map(
+      expected.assignments.map((assignment) => [assignment.id, assignment]),
+    );
+    for (const [assignmentId, expectedAssignment] of expectedAssignments) {
+      const currentIndex = assignments.findIndex((assignment) =>
+        assignment.id === assignmentId
+      );
+      if (currentIndex < 0) continue;
+      const current = assignments[currentIndex];
+      if (!isDeepStrictEqual(current, expectedAssignment)) continue;
+      const original = beforeAssignments.get(assignmentId);
+      if (original) {
+        assignments[currentIndex] = structuredClone(original);
+      } else {
+        assignments.splice(currentIndex, 1);
+      }
+    }
+    for (const [assignmentId, original] of beforeAssignments) {
+      if (
+        !expectedAssignments.has(assignmentId)
+        && !assignments.some((assignment) => assignment.id === assignmentId)
+      ) {
+        assignments.push(structuredClone(original));
+      }
+    }
+
+    const currentRequestAssignment =
+      requestAssignments.get(before.requestKey) ?? null;
+    if (
+      (currentRequestAssignment?.id ?? null)
+        === expected.requestAssignmentId
+    ) {
+      if (before.requestAssignmentId) {
+        const original = assignments.find((assignment) =>
+          assignment.id === before.requestAssignmentId
+        );
+        if (original) requestAssignments.set(before.requestKey, original);
+      } else {
+        requestAssignments.delete(before.requestKey);
+      }
+    }
+
+    restoreMapValue(deals, before.dealKey, before.deal, expected.deal);
+    const currentCompany = companies.get(before.companyKey) ?? null;
+    if (isDeepStrictEqual(currentCompany, expected.company)) {
+      if (before.company) {
+        companies.set(before.companyKey, structuredClone(before.company));
+      } else if (
+        ![...deals.values()].some((deal) =>
+          deal.workspaceId === before.scope.workspaceId
+          && deal.companyId === before.scope.companyId
+        )
+      ) {
+        companies.delete(before.companyKey);
+      }
+    }
+  }
+
+  function restoreMapValue<T>(
+    target: Map<string, T>,
+    key: string,
+    before: T | null,
+    expected: T | null,
+  ): void {
+    const current = target.get(key) ?? null;
+    if (!isDeepStrictEqual(current, expected)) return;
+    if (before) {
+      target.set(key, structuredClone(before));
+    } else {
+      target.delete(key);
+    }
+  }
 
   async function findForWorkspace(input: {
     workspaceId: string;
@@ -342,60 +506,21 @@ export function createMemoryDealRegistry(options: {
   }
 
   return {
-    captureAtomicState() {
-      return {
-        deals: structuredClone([...deals.entries()]),
-        companies: structuredClone([...companies.entries()]),
-        bundles: structuredClone([...bundles.entries()]),
-        bundleLineage: structuredClone([...bundleLineage.entries()]),
-        exactSourceBundles: structuredClone([
-          ...exactSourceBundles.entries(),
-        ]),
-        assignments: structuredClone(assignments),
-        requestAssignments: [...requestAssignments.entries()].map(
-          ([key, assignment]) => [key, assignment.id] as const,
-        ),
-        externalEffects: structuredClone(externalEffects),
-        assignmentSequence,
-      };
+    capturePromotionState,
+
+    restorePromotionState(rawBefore, rawExpected) {
+      restorePromotionState(
+        rawBefore as PromotionState,
+        rawExpected as PromotionState,
+      );
     },
 
-    restoreAtomicState(rawState) {
-      const state = rawState as {
-        deals: Array<[string, RegisteredDeal]>;
-        companies: Array<[string, { id: string; name: string }]>;
-        bundles: Array<[string, DealMemoryBundle]>;
-        bundleLineage: Array<[string, DealMemoryLineage]>;
-        exactSourceBundles: Array<[string, ExactSourceMemoryBundle]>;
-        assignments: DealSourceAssignment[];
-        requestAssignments: Array<readonly [string, string]>;
-        externalEffects: string[];
-        assignmentSequence: number;
-      };
-      replaceMap(deals, state.deals);
-      replaceMap(companies, state.companies);
-      replaceMap(bundles, state.bundles);
-      replaceMap(bundleLineage, state.bundleLineage);
-      replaceMap(exactSourceBundles, state.exactSourceBundles);
-      assignments.splice(
-        0,
-        assignments.length,
-        ...structuredClone(state.assignments),
+    withPromotionLock(scope, operation) {
+      const key = identity(
+        requiredWorkspaceId(scope.workspaceId),
+        requiredText(scope.dealId, "A Deal id"),
       );
-      const assignmentById = new Map(
-        assignments.map((assignment) => [assignment.id, assignment]),
-      );
-      requestAssignments.clear();
-      for (const [key, assignmentId] of state.requestAssignments) {
-        const assignment = assignmentById.get(assignmentId);
-        if (assignment) requestAssignments.set(key, assignment);
-      }
-      externalEffects.splice(
-        0,
-        externalEffects.length,
-        ...structuredClone(state.externalEffects),
-      );
-      assignmentSequence = state.assignmentSequence;
+      return withMemoryKeyLock(promotionLocks, key, operation);
     },
 
     usesSourceRegistry(registry) {
@@ -724,6 +849,27 @@ export function createMemoryDealRegistry(options: {
       };
     },
   };
+}
+
+async function withMemoryKeyLock<T>(
+  locks: Map<string, Promise<void>>,
+  key: string,
+  operation: () => Promise<T>,
+): Promise<T> {
+  const previous = locks.get(key) ?? Promise.resolve();
+  let release!: () => void;
+  const current = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const queued = previous.then(() => current);
+  locks.set(key, queued);
+  await previous;
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (locks.get(key) === queued) locks.delete(key);
+  }
 }
 
 function dealFromRow(
@@ -1186,4 +1332,3 @@ export function getDealRegistry(): DealRegistry {
     : createMemoryDealRegistry({ sourceRegistry: getSourceRegistry() });
   return singleton;
 }
-import { createHash } from "node:crypto";

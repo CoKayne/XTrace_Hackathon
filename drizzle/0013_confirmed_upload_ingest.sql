@@ -171,6 +171,87 @@ begin
 end;
 $$;
 
+create or replace function public.transition_uploaded_document_lease(
+  p_workspace_id text,
+  p_upload_id text,
+  p_worker_id text,
+  p_lease_token uuid,
+  p_transition text,
+  p_extraction_preview jsonb,
+  p_failure_reason text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  transitioned_count integer;
+begin
+  if btrim(coalesce(p_workspace_id, '')) = ''
+    or btrim(coalesce(p_upload_id, '')) = ''
+    or btrim(coalesce(p_worker_id, '')) = ''
+    or p_lease_token is null
+  then
+    raise exception 'A complete upload lease identity is required';
+  end if;
+  if p_transition is null
+    or p_transition not in (
+      'extraction_complete',
+      'extraction_fail',
+      'confirmed_complete',
+      'confirmed_fail'
+    )
+  then
+    raise exception 'The upload lease transition is invalid';
+  end if;
+  if p_transition = 'extraction_complete'
+    and coalesce(jsonb_typeof(p_extraction_preview), 'null') <> 'object'
+  then
+    raise exception 'Extraction completion requires a preview object';
+  end if;
+  if p_transition in ('extraction_fail', 'confirmed_fail')
+    and btrim(coalesce(p_failure_reason, '')) = ''
+  then
+    raise exception 'A failure reason is required';
+  end if;
+
+  update public.uploaded_documents as upload
+  set status = case p_transition
+        when 'extraction_complete' then 'awaiting_confirmation'
+        when 'extraction_fail' then 'failed'
+        when 'confirmed_complete' then 'ready'
+        when 'confirmed_fail' then 'confirmed'
+      end,
+      failure_reason = case
+        when p_transition in ('extraction_fail', 'confirmed_fail')
+          then left(p_failure_reason, 400)
+        else null
+      end,
+      extraction_preview = case
+        when p_transition = 'extraction_complete'
+          then p_extraction_preview
+        else upload.extraction_preview
+      end,
+      worker_id = null,
+      lease_token = null,
+      lease_expires_at = null,
+      updated_at = clock_timestamp()
+  where upload.workspace_id = p_workspace_id
+    and upload.id = p_upload_id
+    and upload.status = case
+      when p_transition in ('extraction_complete', 'extraction_fail')
+        then 'extracting'
+      else 'ingesting_memory'
+    end
+    and upload.worker_id = p_worker_id
+    and upload.lease_token = p_lease_token
+    and upload.lease_expires_at > clock_timestamp();
+  get diagnostics transitioned_count = row_count;
+  return transitioned_count = 1;
+end;
+$$;
+
 create or replace function public.confirm_uploaded_document(
   p_confirmation jsonb
 )
@@ -358,6 +439,9 @@ alter function public.claim_next_uploaded_document(text, text, integer)
 alter function public.renew_uploaded_document_lease(
   text, text, text, uuid, integer
 ) owner to vsee_registry_owner;
+alter function public.transition_uploaded_document_lease(
+  text, text, text, uuid, text, jsonb, text
+) owner to vsee_registry_owner;
 alter function public.confirm_uploaded_document(jsonb)
   owner to vsee_registry_owner;
 
@@ -384,6 +468,9 @@ revoke all on function
 revoke all on function
   public.renew_uploaded_document_lease(text, text, text, uuid, integer)
   from public;
+revoke all on function public.transition_uploaded_document_lease(
+  text, text, text, uuid, text, jsonb, text
+) from public;
 revoke all on function public.confirm_uploaded_document(jsonb) from public;
 
 do $$
@@ -403,6 +490,10 @@ begin
       restricted_role
     );
     execute format(
+      'revoke all on function public.transition_uploaded_document_lease(text, text, text, uuid, text, jsonb, text) from %I',
+      restricted_role
+    );
+    execute format(
       'revoke all on function public.confirm_uploaded_document(jsonb) from %I',
       restricted_role
     );
@@ -415,6 +506,9 @@ begin
     grant execute on function
       public.renew_uploaded_document_lease(text, text, text, uuid, integer)
       to service_role;
+    grant execute on function public.transition_uploaded_document_lease(
+      text, text, text, uuid, text, jsonb, text
+    ) to service_role;
     grant execute on function public.confirm_uploaded_document(jsonb)
       to service_role;
   end if;
