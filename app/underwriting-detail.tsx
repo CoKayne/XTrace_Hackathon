@@ -37,6 +37,7 @@ type EvidenceAssumptionView = {
   unit: string | null;
   scenario: string;
   rationale: string;
+  inputRefIds: string[];
   provenanceOrigin: string;
   sensitivity: string;
   requiresConfirmation: boolean;
@@ -59,8 +60,6 @@ type JudgmentView = {
   frameworkVersion: string;
   applicability: string;
   conclusion: string;
-  supportEvidenceItemIds: string[];
-  counterEvidenceItemIds: string[];
   strongestSupport: string | null;
   strongestCounterargument: string | null;
   unknowns: string[];
@@ -69,11 +68,57 @@ type JudgmentView = {
     sourceReliability: string;
     evidenceStrength: string;
     evidenceCoverage: string;
-    applicability: string;
     judgment: string;
   };
   frameworkMetadata?: {
+    packId: string;
     packName: string;
+    packVersion: string;
+    sourceCatalogId: string;
+    researchCutoff: string;
+    components: Array<{
+      frameworkId: string;
+      version: string;
+      name: string;
+      attribution: {
+        display: string;
+      };
+      sourceRefs: Array<{
+        sourceId: string;
+        claimIds: string[];
+        locator: {
+          kind: string;
+          value: string;
+        };
+        attributionScope: string;
+        supportType: string;
+      }>;
+    }>;
+    sources: Array<{
+      sourceId: string;
+      title: string;
+      authorOrSpeaker: string[];
+      publisher: string;
+      sourceClass: string;
+      sourceType: string;
+      url: string;
+      edition: string;
+      publishedAt: string | null;
+      eventAt: string | null;
+      accessedAt: string;
+      language: string;
+      rightsStatus: string;
+      attributionScope: string;
+      attributionNotes: string;
+      immutableRevision: {
+        status: string;
+        hashAlgorithm: string | null;
+        contentHash: string | null;
+        reviewedPdfPages?: number[];
+        reviewedTimestampRanges?: string[];
+        videoId?: string;
+      };
+    }>;
     formalDecisionWeight: string;
   };
 };
@@ -391,6 +436,12 @@ export function UnderwritingDetailPanel({
                     : ""}
                 </p>
                 <small>{assumption.rationale}</small>
+                <small>
+                  Persisted input references ·{" "}
+                  {assumption.inputRefIds.length
+                    ? assumption.inputRefIds.join(" · ")
+                    : "None"}
+                </small>
               </article>
             ))}
           </div>
@@ -442,9 +493,16 @@ export function UnderwritingDetailPanel({
                 <b>{judgment.applicability} · {judgment.conclusion}</b>
               </header>
               {judgment.frameworkMetadata && (
-                <p className="vsee-zero-weight">
-                  Advisory formal decision weight · 0
-                </p>
+                <>
+                  <p className="vsee-zero-weight">
+                    Advisory formal decision weight · 0
+                  </p>
+                  <AdvisoryFrameworkProvenance
+                    judgmentCardId={judgment.frameworkCardId}
+                    judgmentCardVersion={judgment.frameworkVersion}
+                    metadata={judgment.frameworkMetadata}
+                  />
+                </>
               )}
               <Definition
                 label="Support"
@@ -751,6 +809,117 @@ function DetailSection({
   );
 }
 
+function AdvisoryFrameworkProvenance({
+  judgmentCardId,
+  judgmentCardVersion,
+  metadata,
+}: {
+  judgmentCardId: string;
+  judgmentCardVersion: string;
+  metadata: NonNullable<JudgmentView["frameworkMetadata"]>;
+}) {
+  return (
+    <details className="vsee-details vsee-advisory-provenance">
+      <summary>Open complete advisory provenance</summary>
+      <dl>
+        <dt>Pack identity</dt>
+        <dd>{metadata.packId}</dd>
+        <dt>Pack version</dt>
+        <dd>{metadata.packVersion}</dd>
+        <dt>Judgment card</dt>
+        <dd>{judgmentCardId} · {judgmentCardVersion}</dd>
+        <dt>Source catalog</dt>
+        <dd>{metadata.sourceCatalogId}</dd>
+        <dt>Research cutoff</dt>
+        <dd>{formatDateOnly(metadata.researchCutoff)}</dd>
+      </dl>
+      <h5>Component cards</h5>
+      <ul>
+        {metadata.components.map((component) => (
+          <li key={`${component.frameworkId}:${component.version}`}>
+            <strong>
+              {component.frameworkId} · {component.version} · {component.name}
+            </strong>
+            <small>{component.attribution.display}</small>
+            <ul>
+              {component.sourceRefs.map((reference) => (
+                <li
+                  key={[
+                    reference.sourceId,
+                    reference.locator.kind,
+                    reference.locator.value,
+                  ].join(":")}
+                >
+                  {reference.sourceId} · {humanize(reference.locator.kind)}
+                  {" · "}{reference.locator.value}
+                  {" · "}{reference.attributionScope.replaceAll("_", " ")}
+                  {" · "}{reference.supportType}
+                  {" · claims "}{reference.claimIds.join(" · ")}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+      <h5>Public source references</h5>
+      <ul>
+        {metadata.sources.map((source) => {
+          const href = safeExternalHttpUrl(source.url);
+          return (
+            <li key={source.sourceId}>
+              {href
+                ? (
+                  <a href={href} target="_blank" rel="noreferrer">
+                    {source.title} ↗
+                  </a>
+                )
+                : <span>{source.title}</span>}
+              <small>
+                {source.sourceId} · {source.publisher} · {source.edition}
+              </small>
+              <small>
+                {source.authorOrSpeaker.join(" · ")} · {source.sourceClass}
+                {" · "}{source.sourceType} · {source.language}
+              </small>
+              <small>
+                {source.attributionScope.replaceAll("_", " ")} ·{" "}
+                {source.rightsStatus.replaceAll("_", " ")}
+              </small>
+              <small>
+                Published {source.publishedAt ?? "Unavailable"} · event{" "}
+                {source.eventAt ?? "Unavailable"} · accessed{" "}
+                {source.accessedAt}
+              </small>
+              <small>{source.attributionNotes}</small>
+              <small>
+                Immutable revision · {source.immutableRevision.status} ·{" "}
+                {source.immutableRevision.hashAlgorithm ?? "no hash algorithm"}
+                {" · "}
+                {source.immutableRevision.contentHash ?? "no content hash"}
+                {source.immutableRevision.reviewedPdfPages?.length
+                  ? ` · reviewed pages ${
+                      source.immutableRevision.reviewedPdfPages.join(" · ")
+                    }`
+                  : ""}
+                {source.immutableRevision.reviewedTimestampRanges?.length
+                  ? ` · reviewed timestamps ${
+                      source.immutableRevision.reviewedTimestampRanges.join(
+                        " · ",
+                      )
+                    }`
+                  : ""}
+                {source.immutableRevision.videoId
+                  ? ` · video ${source.immutableRevision.videoId}`
+                  : ""}
+              </small>
+            </li>
+          );
+        })}
+      </ul>
+    </details>
+  );
+}
+
 function LineageValue({
   label,
   value,
@@ -900,6 +1069,26 @@ function formatDate(value: string): string {
     day: "numeric",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function formatDateOnly(value: string): string {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00.000Z`));
+}
+
+function safeExternalHttpUrl(value: string): string | null {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:"
+      ? url.toString()
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 function humanize(value: string): string {

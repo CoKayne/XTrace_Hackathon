@@ -121,7 +121,12 @@ interface Source {
   publisher?: string;
   publishedAt?: string;
   excerpt: string;
-  provenance: "source_document" | "public_web" | "demo_fixture" | "model_inference";
+  provenance:
+    | "source_document"
+    | "public_web"
+    | "demo_fixture"
+    | "model_inference"
+    | "underwriting_reference";
 }
 
 interface MarketEvent {

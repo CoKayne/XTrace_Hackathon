@@ -637,7 +637,10 @@ test("underwriting detail preserves section order, lineage, public version pins,
     "Policy",
     "Benchmark",
     "Framework",
-    "Research catalog",
+    "Underwriting reference catalog",
+    "Framework catalog version",
+    "Framework catalog fingerprint",
+    "Framework corpus digest",
     "Router",
     "Critical Evidence",
     "Valuation Method",
@@ -657,6 +660,24 @@ test("underwriting detail preserves section order, lineage, public version pins,
   assert.match(html, /private-settings-fingerprint/);
   assert.match(html, /private-application-commit/);
   assert.match(html, /formal decision weight · 0/i);
+  assert.match(html, /named_advisory_pack_v1/);
+  assert.match(html, /2\.3\.0/);
+  assert.match(html, /named_advisory_sources_v1/);
+  assert.match(html, /Jun 30, 2026/);
+  assert.match(html, /PT-01/);
+  assert.match(html, /1\.4\.0/);
+  assert.match(html, /Contrarian Monopoly Lens/);
+  assert.match(html, /Peter Thiel public source/);
+  assert.match(html, /https:\/\/example\.test\/peter-thiel-source/);
+  assert.match(html, /Peter Thiel · Blake Masters/);
+  assert.match(html, /A1 · book/);
+  assert.match(html, /person direct · primary/);
+  assert.match(html, /claim_monopoly/);
+  assert.match(html, /sha256:source-content/);
+  assert.match(html, /Public-source paraphrase only/);
+  assert.match(html, /framework-catalog-v7/);
+  assert.match(html, /sha256:framework-catalog/);
+  assert.match(html, /sha256:framework-corpus/);
   assert.doesNotMatch(html, /\bTo\b|>Send<|>Publish</);
 });
 
@@ -1077,7 +1098,53 @@ function underwritingDetailFixture() {
         dependencyType: "fact",
       }],
       frameworkMetadata: {
+        packId: "named_advisory_pack_v1",
         packName: "Named advisory pack",
+        packVersion: "2.3.0",
+        sourceCatalogId: "named_advisory_sources_v1",
+        researchCutoff: "2026-06-30",
+        componentCardIds: ["PT-01"],
+        components: [{
+          frameworkId: "PT-01",
+          version: "1.4.0",
+          name: "Contrarian Monopoly Lens",
+          attribution: {
+            display: "Based on Peter Thiel public works",
+          },
+          sourceRefs: [{
+            sourceId: "source_pt_1",
+            claimIds: ["claim_monopoly"],
+            locator: {
+              kind: "chapter_page",
+              value: "Chapter 3, p. 25",
+            },
+            attributionScope: "person_direct",
+            supportType: "primary",
+          }],
+        }],
+        sources: [{
+          sourceId: "source_pt_1",
+          title: "Peter Thiel public source",
+          authorOrSpeaker: ["Peter Thiel", "Blake Masters"],
+          publisher: "Public Publisher",
+          sourceClass: "A1",
+          sourceType: "book",
+          url: "https://example.test/peter-thiel-source",
+          edition: "First public edition",
+          publishedAt: "2014-09-16",
+          eventAt: null,
+          accessedAt: "2026-06-30",
+          language: "English",
+          rightsStatus: "public_source_paraphrase",
+          attributionScope: "person_direct",
+          attributionNotes: "Public-source paraphrase only.",
+          immutableRevision: {
+            status: "verified",
+            hashAlgorithm: "sha256",
+            contentHash: "sha256:source-content",
+            reviewedPdfPages: [25],
+          },
+        }],
         formalDecisionWeight: "0",
       },
       fingerprint: "sha256:judgment",
@@ -1178,6 +1245,9 @@ function underwritingDetailFixture() {
       decisionPolicyId: "decision_policy_1",
       decisionPolicyDefinitionFingerprint: "sha256:decision",
       referenceCatalogFingerprint: "sha256:catalog",
+      frameworkCatalogVersion: "framework-catalog-v7",
+      frameworkCatalogFingerprint: "sha256:framework-catalog",
+      frameworkCorpusDigest: "sha256:framework-corpus",
       formulaVersions: ["venture_method@1"],
       providerModel: "private-provider-model",
       promptVersion: "private-prompt-version",

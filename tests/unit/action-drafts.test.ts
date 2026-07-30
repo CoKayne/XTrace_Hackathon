@@ -182,13 +182,12 @@ test("renders authorized persisted advisory lineage and conflicts only in draft-
       draft.body,
       /Formal decision weight: 0 \(experimental advisory; not a published formal decision factor\)/,
     );
-    assert.match(
+    assert.doesNotMatch(draft.body, /Product-synthesis notice:/);
+    assert.doesNotMatch(draft.body, /No-endorsement notice:/);
+    assert.doesNotMatch(draft.body, /No-private-reasoning notice:/);
+    assert.doesNotMatch(
       draft.body,
-      /This experimental product synthesis is not an endorsement by any named person or organization\./,
-    );
-    assert.match(
-      draft.body,
-      /does not claim or reconstruct private reasoning or hidden chain of thought\./,
+      /Component qualifications and limitations:/,
     );
     assert.match(draft.body, /PT-01 @ 0\.1\.0 — Contrarian Truth \/ Secret/);
     assert.match(
@@ -203,6 +202,11 @@ test("renders authorized persisted advisory lineage and conflicts only in draft-
       draft.body,
       /Advisory counterevidence: The cohort evidence may instead support the consensus explanation\./,
     );
+    assert.match(
+      draft.body,
+      /Public limitations: Public-source synthesis cannot establish private investor reasoning\./,
+    );
+    assert.doesNotMatch(draft.body, /\n  Limitations:/);
     assert.match(
       draft.body,
       /Independent customer calls remain unknown\./,
@@ -249,7 +253,7 @@ test("derives draft-only diligence requests from advisory unknowns, counterevide
   );
   assert.match(
     diligenceRequest.body,
-    /Address advisory limitation \[Peter Thiel Public Frameworks — Research Draft\]: Public-source synthesis cannot establish private investor reasoning\./,
+    /Address public advisory limitation \[Peter Thiel Public Frameworks — Research Draft\]: Public-source synthesis cannot establish private investor reasoning\./,
   );
 });
 

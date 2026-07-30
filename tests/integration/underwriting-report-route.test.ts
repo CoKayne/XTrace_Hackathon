@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { GET as getReport } from "../../app/api/reports/[id]/route";
 import { GET as getUnderwriting } from "../../app/api/reports/[id]/underwriting/[dealId]/route";
+import { GET as listActionDrafts } from "../../app/api/action-drafts/route";
 import { GET as search } from "../../app/api/search/route";
 import {
   createMemoryIntelligenceRepository,
@@ -15,10 +16,27 @@ import {
   createMemoryUnderwritingRunsRepository,
 } from "../../db/repositories/underwriting-runs";
 import type { RouteDependencies } from "../../lib/api/route-dependencies";
+import {
+  createActionDraftGenerator,
+} from "../../lib/underwriting/action-drafts";
+import {
+  buildUnderwritingNarrative,
+} from "../../lib/underwriting/narrative";
 
 const WORKSPACE_ID = "workspace_read_api";
 const REPORT_ID = "report_read_api";
 const RUN_ID = "run_read_api";
+const PUBLIC_JUDGMENT_LIMITATION = "Management-reported evidence.";
+const PRIVATE_LIMITATION_MARKERS = [
+  "Private no-endorsement authoring notice.",
+  "Private reasoning notice.",
+  "Private experimental notice.",
+  "Private pack review issue.",
+  "Private contraindication.",
+  "Private qualification.",
+  "Private card review issue.",
+  "Private rights note.",
+] as const;
 
 function productDependencies(
   overrides: Partial<RouteDependencies> = {},
@@ -68,7 +86,7 @@ function finalizedBundle(input: {
   const calculationId = "calculation_searchable";
   const judgmentId = "judgment_searchable";
   const decisionId = "decision_searchable";
-  return {
+  const bundle = {
     candidateRunId: input.candidateRunId,
     workspaceId,
     dealId,
@@ -115,7 +133,7 @@ function finalizedBundle(input: {
         value: "8",
         unit: "multiple",
         rationale: "Pinned policy assumption",
-        inputRefIds: [],
+        inputRefIds: ["fund_policy_1"],
         sensitivity: "high",
         requiresConfirmation: false,
       }],
@@ -185,7 +203,10 @@ function finalizedBundle(input: {
       strongestSupport: "Carrier revenue supports early demand.",
       strongestCounterargument: null,
       unknowns: [],
-      limitations: ["Management-reported evidence."],
+      limitations: [
+        PUBLIC_JUDGMENT_LIMITATION,
+        ...PRIVATE_LIMITATION_MARKERS,
+      ],
       confidence: {
         sourceReliability: "medium",
         evidenceStrength: "medium",
@@ -198,6 +219,176 @@ function finalizedBundle(input: {
         dependencyItemId: factId,
         dependencyType: "fact",
       }],
+      frameworkMetadata: {
+        packId: "public_advisory_pack",
+        packName: "Public advisory pack",
+        packVersion: "1.2.3",
+        packDescription: "Private unpublished pack description.",
+        packReview: {
+          contentStatus: "draft",
+          publicationStatus: "unpublished",
+          openIssues: ["Private pack review issue."],
+        },
+        sourceCatalogId: "public_advisory_sources",
+        researchCutoff: "2026-06-30",
+        context: {
+          stage: "seed",
+          businessModel: "b2b_saas",
+          geography: "us",
+          securityType: "preferred",
+        },
+        applicable: true,
+        componentCardIds: ["PT-01"],
+        components: [{
+          schemaVersion: "framework-card-authoring-v1",
+          frameworkId: "PT-01",
+          slug: "contrarian-monopoly",
+          name: "Contrarian Monopoly Lens",
+          version: "1.4.0",
+          positioning: {
+            oneLineSummary: "Private positioning.",
+            productLabel: "Private product label.",
+            notAClaimOf: ["Private disclaimer."],
+          },
+          attribution: {
+            display: "Based on public works",
+            scope: "person_direct",
+            people: ["Public Investor"],
+            organizations: [],
+            fidelityConfidence: "high",
+          },
+          neutralParaphrase: "Private authoring body.",
+          claimTypes: ["direct_doctrine"],
+          sourceRefs: [{
+            sourceId: "source_public_1",
+            claimIds: ["claim_public_1"],
+            locator: {
+              kind: "chapter_page",
+              value: "Chapter 3, p. 25",
+            },
+            attributionScope: "person_direct",
+            supportType: "primary",
+          }],
+          applicability: {
+            stages: ["seed"],
+            businessModels: ["b2b_saas"],
+            sectors: ["software"],
+            geographies: ["us"],
+            securityTypes: ["preferred"],
+          },
+          requiredConditions: ["Private required condition."],
+          requiredEvidence: [{
+            evidenceKey: "private_evidence",
+            description: "Private required evidence.",
+            necessity: "required",
+            acceptableSources: ["Private source class."],
+            missingEffect: "insufficient_evidence",
+          }],
+          decisionQuestions: ["Private decision question?"],
+          positiveSignals: ["Private positive signal."],
+          redFlags: ["Private red flag."],
+          disconfirmingEvidence: ["Private disconfirming evidence."],
+          contraindications: ["Private contraindication."],
+          decisionMethod: {
+            kind: "qualitative_lens",
+            instructions: ["Private authoring instruction."],
+            outputOrder: [
+              "evidence",
+              "applicable_rule",
+              "judgment",
+              "counterevidence",
+              "unknowns",
+              "conclusion",
+              "next_evidence_request",
+            ],
+            deterministicRule: null,
+          },
+          confidenceAnchors: {
+            sourceReliability: {
+              low: "Private low.",
+              medium: "Private medium.",
+              high: "Private high.",
+            },
+            evidenceStrength: {
+              low: "Private low.",
+              medium: "Private medium.",
+              high: "Private high.",
+            },
+            evidenceCoverage: {
+              low: "Private low.",
+              medium: "Private medium.",
+              high: "Private high.",
+            },
+            applicabilityConfidence: {
+              low: "Private low.",
+              medium: "Private medium.",
+              high: "Private high.",
+            },
+            judgmentConfidence: {
+              low: "Private low.",
+              medium: "Private medium.",
+              high: "Private high.",
+            },
+          },
+          overlapFrameworkIds: [],
+          conflictingFrameworkIds: [],
+          decisionUtility: {
+            status: "advisory",
+            formalDecisionWeight: 0,
+            allowedUses: ["research_question"],
+            promotionRequirements: ["Private promotion requirement."],
+            empiricalQualifications: ["Private qualification."],
+          },
+          rights: {
+            status: "public_source_paraphrase",
+            displayMode: "neutral_paraphrase_only",
+            containsLongQuote: false,
+            notes: "Private rights note.",
+          },
+          review: {
+            contentStatus: "draft",
+            publicationStatus: "unpublished",
+            reviewer: null,
+            reviewedAt: null,
+            openIssues: ["Private card review issue."],
+          },
+          changeLog: [{
+            version: "1.4.0",
+            date: "2026-06-30",
+            summary: "Private change summary.",
+          }],
+        }],
+        sources: [{
+          sourceId: "source_public_1",
+          title: "Public source title",
+          authorOrSpeaker: ["Public Investor"],
+          publisher: "Public Publisher",
+          sourceClass: "A1",
+          sourceType: "book",
+          url: "https://example.test/public-source",
+          edition: "First edition",
+          publishedAt: "2014-09-16",
+          eventAt: null,
+          accessedAt: "2026-06-30",
+          language: "English",
+          rightsStatus: "public_source_paraphrase",
+          attributionScope: "person_direct",
+          attributionNotes: "Public-source attribution.",
+          immutableRevision: {
+            status: "verified",
+            hashAlgorithm: "sha256",
+            contentHash: "sha256:public-source",
+            reviewedPdfPages: [25],
+          },
+        }],
+        notices: {
+          noEndorsement: "Private no-endorsement authoring notice.",
+          noPrivateReasoning: "Private reasoning notice.",
+          experimentalOnly: "Private experimental notice.",
+        },
+        formalDecisionWeight: "0",
+        authorizationDigest: `sha256:${"9".repeat(64)}`,
+      },
       fingerprint: `sha256:${"b".repeat(64)}`,
     }],
     disagreements: [],
@@ -276,6 +467,33 @@ function finalizedBundle(input: {
       },
     ],
   } as CandidateArtifactBundle;
+  bundle.narrative = buildUnderwritingNarrative({
+    facts: bundle.evidencePack.facts,
+    assumptions: bundle.evidencePack.assumptions,
+    calculations: bundle.calculations,
+    judgments: bundle.judgments,
+    disagreements: bundle.disagreements,
+    decision: bundle.decision,
+  });
+  bundle.actionDrafts = createActionDraftGenerator({
+    workspaceId,
+    now: () => new Date("2026-07-29T12:00:00.000Z"),
+  }).generate({
+    candidateRunId: input.candidateRunId,
+    decision: bundle.decision,
+    missingEvidence: [{
+      fieldId: "net_retention",
+      label: "Net retention",
+      reasonCode: "MISSING_CRITICAL_EVIDENCE",
+      mostLikelyDecisionImpact: "May change the current decision ceiling.",
+    }],
+    recommendedNextSteps: [
+      "Review saved public evidence with the founder.",
+    ],
+    judgments: bundle.judgments,
+    disagreements: bundle.disagreements,
+  });
+  return bundle;
 }
 
 async function readRepositories() {
@@ -461,6 +679,329 @@ test("candidate detail returns exact persisted replay lineage", async () => {
   );
 });
 
+test("candidate detail allowlists public advisory provenance without unpublished authoring bodies", async () => {
+  const repositories = await readRepositories();
+  const response = await getUnderwriting(
+    new Request(
+      `https://vsee.test/api/reports/${REPORT_ID}/underwriting/deal_selected`,
+    ),
+    params(REPORT_ID, "deal_selected") as {
+      params: Promise<{ id: string; dealId: string }>;
+    },
+    productDependencies({
+      intelligence: repositories.intelligence,
+      underwritingRuns: repositories.runs,
+      underwritingArtifacts: repositories.artifacts,
+    }),
+  );
+
+  assert.equal(response.status, 200);
+  const payload = await response.json() as {
+    data: {
+      judgments: Array<Record<string, unknown> & {
+        frameworkMetadata?: Record<string, unknown> & {
+          components: Array<Record<string, unknown>>;
+          sources: Array<Record<string, unknown>>;
+        };
+      }>;
+    };
+  };
+  const judgment = payload.data.judgments[0];
+  const metadata = judgment.frameworkMetadata;
+  assert.ok(metadata);
+  assert.equal(metadata.packId, "public_advisory_pack");
+  assert.equal(metadata.packVersion, "1.2.3");
+  assert.equal(metadata.sourceCatalogId, "public_advisory_sources");
+  assert.equal(metadata.researchCutoff, "2026-06-30");
+  assert.deepEqual(metadata.components, [{
+    frameworkId: "PT-01",
+    version: "1.4.0",
+    name: "Contrarian Monopoly Lens",
+    attribution: {
+      display: "Based on public works",
+    },
+    sourceRefs: [{
+      sourceId: "source_public_1",
+      claimIds: ["claim_public_1"],
+      locator: {
+        kind: "chapter_page",
+        value: "Chapter 3, p. 25",
+      },
+      attributionScope: "person_direct",
+      supportType: "primary",
+    }],
+  }]);
+  assert.deepEqual(metadata.sources, [{
+    sourceId: "source_public_1",
+    title: "Public source title",
+    authorOrSpeaker: ["Public Investor"],
+    publisher: "Public Publisher",
+    sourceClass: "A1",
+    sourceType: "book",
+    url: "https://example.test/public-source",
+    edition: "First edition",
+    publishedAt: "2014-09-16",
+    eventAt: null,
+    accessedAt: "2026-06-30",
+    language: "English",
+    rightsStatus: "public_source_paraphrase",
+    attributionScope: "person_direct",
+    attributionNotes: "Public-source attribution.",
+    immutableRevision: {
+      status: "verified",
+      hashAlgorithm: "sha256",
+      contentHash: "sha256:public-source",
+      reviewedPdfPages: [25],
+    },
+  }]);
+  for (const privateField of [
+    "packDescription",
+    "packReview",
+    "context",
+    "applicable",
+    "notices",
+    "authorizationDigest",
+  ]) {
+    assert.equal(privateField in metadata, false);
+  }
+  for (const privateField of [
+    "neutralParaphrase",
+    "requiredConditions",
+    "requiredEvidence",
+    "decisionQuestions",
+    "decisionMethod",
+    "review",
+    "rights",
+    "decisionUtility",
+  ]) {
+    assert.equal(privateField in metadata.components[0], false);
+  }
+  for (const privateField of [
+    "analysisType",
+    "unusedEvidenceItemIds",
+    "claimEdges",
+    "fingerprint",
+  ]) {
+    assert.equal(privateField in judgment, false);
+  }
+  const serialized = JSON.stringify(payload.data);
+  for (const privateMarker of [
+    "Private unpublished pack description.",
+    ...PRIVATE_LIMITATION_MARKERS,
+    "Private authoring instruction.",
+  ]) {
+    assert.doesNotMatch(serialized, new RegExp(privateMarker));
+  }
+  assert.match(serialized, /Public advisory pack/);
+  assert.match(serialized, /PT-01/);
+  assert.match(serialized, /https:\/\/example\.test\/public-source/);
+  assert.match(serialized, new RegExp(PUBLIC_JUDGMENT_LIMITATION));
+});
+
+test("search and action-draft reads rebuild public advisory text without persisted private markers", async () => {
+  const repositories = await readRepositories();
+  for (const privateMarker of PRIVATE_LIMITATION_MARKERS) {
+    const privateSearch = await search(
+      new Request(
+        `https://vsee.test/api/search?q=${encodeURIComponent(privateMarker)}`,
+      ),
+      undefined,
+      productDependencies({
+        underwritingArtifacts: repositories.artifacts,
+      }),
+    );
+    assert.equal(privateSearch.status, 200);
+    assert.deepEqual(
+      (await privateSearch.json() as {
+        data: { results: unknown[] };
+      }).data.results,
+      [],
+    );
+  }
+
+  const publicSearch = await search(
+    new Request(
+      "https://vsee.test/api/search?q=Public%20advisory%20pack",
+    ),
+    undefined,
+    productDependencies({
+      underwritingArtifacts: repositories.artifacts,
+    }),
+  );
+  const publicResults = (await publicSearch.json() as {
+    data: { results: Array<{ analysisType: string; text: string }> };
+  }).data.results;
+  assert.equal(publicResults.length, 1);
+  assert.equal(publicResults[0].analysisType, "final_synthesis");
+  assert.match(publicResults[0].text, /Public advisory pack/);
+  assert.match(publicResults[0].text, /PT-01/);
+  assert.match(
+    publicResults[0].text,
+    /https:\/\/example\.test\/public-source/,
+  );
+  const publicLimitationSearch = await search(
+    new Request(
+      `https://vsee.test/api/search?q=${
+        encodeURIComponent(PUBLIC_JUDGMENT_LIMITATION)
+      }`,
+    ),
+    undefined,
+    productDependencies({
+      underwritingArtifacts: repositories.artifacts,
+    }),
+  );
+  const publicLimitationResults =
+    (await publicLimitationSearch.json() as {
+      data: { results: Array<{ text: string }> };
+    }).data.results;
+  assert.ok(publicLimitationResults.length > 0);
+  assert.equal(
+    publicLimitationResults.every(({ text }) =>
+      text.includes(PUBLIC_JUDGMENT_LIMITATION)
+    ),
+    true,
+  );
+
+  const persistedDrafts = await repositories.artifacts.listActionDrafts({
+    workspaceId: WORKSPACE_ID,
+    candidateRunId: repositories.candidate.id,
+  });
+  const persistedMemo = persistedDrafts.find(({ channel }) =>
+    channel === "internal_memo"
+  );
+  assert.ok(persistedMemo);
+  const editedConclusion =
+    "advisory conclusion: mixed after partner review";
+  assert.match(persistedMemo.body, /advisory conclusion: supportive/);
+  assert.match(
+    persistedMemo.body,
+    new RegExp(PUBLIC_JUDGMENT_LIMITATION),
+  );
+  for (const privateMarker of PRIVATE_LIMITATION_MARKERS) {
+    assert.doesNotMatch(persistedMemo.body, new RegExp(privateMarker));
+  }
+  const currentDraftResponse = await listActionDrafts(
+    new Request(
+      `https://vsee.test/api/action-drafts?candidateRunId=${
+        repositories.candidate.id
+      }`,
+    ),
+    undefined,
+    productDependencies({
+      underwritingArtifacts: repositories.artifacts,
+    }),
+  );
+  const currentMemo =
+    (await currentDraftResponse.json() as {
+      data: Array<{ channel: string; body: string }>;
+    }).data.find(({ channel }) => channel === "internal_memo");
+  assert.ok(currentMemo);
+  assert.match(currentMemo.body, new RegExp(PUBLIC_JUDGMENT_LIMITATION));
+  for (const privateMarker of PRIVATE_LIMITATION_MARKERS) {
+    assert.doesNotMatch(currentMemo.body, new RegExp(privateMarker));
+  }
+
+  const legacyBodyWithoutLimitationLines = persistedMemo.body
+    .split("\n")
+    .filter((line) =>
+      !line.startsWith("  Limitations:")
+      && !line.startsWith("  Public limitations:")
+      && !line.startsWith("- Address advisory limitation [")
+      && !line.startsWith("- Address public advisory limitation [")
+    )
+    .join("\n");
+  const legacyEditedBody = legacyBodyWithoutLimitationLines
+    .replace(
+      "  Applicability: applicable; advisory conclusion: supportive",
+      [
+        "  Product-synthesis notice: Private experimental notice.",
+        "  No-endorsement notice: Private no-endorsement authoring notice.",
+        "  No-private-reasoning notice: Private reasoning notice.",
+        `  Applicability: applicable; ${editedConclusion}`,
+      ].join("\n"),
+    )
+    .replace(
+      "  Component Cards:",
+      [
+        `  Limitations: ${
+          [PUBLIC_JUDGMENT_LIMITATION, ...PRIVATE_LIMITATION_MARKERS].join(
+            "; ",
+          )
+        }`,
+        "  Component Cards:",
+      ].join("\n"),
+    )
+    .replace(
+      "\nINDEPENDENT ADVISORY CONFLICTS",
+      [
+        "  Component qualifications and limitations:",
+        "    - PT-01: Private contraindication.",
+        "    - PT-01: Private qualification.",
+        "    - PT-01: Private card review issue.",
+        "    - PT-01: Private rights note.",
+        "",
+        "INDEPENDENT ADVISORY CONFLICTS",
+      ].join("\n"),
+    )
+    .replace(
+      "ADVISORY DILIGENCE REQUESTS\n",
+      [
+        "ADVISORY DILIGENCE REQUESTS",
+        ...[PUBLIC_JUDGMENT_LIMITATION, ...PRIVATE_LIMITATION_MARKERS].map(
+          (limitation) =>
+            `- Address advisory limitation [Public advisory pack]: ${limitation}`,
+        ),
+        "",
+      ].join("\n"),
+    );
+  await repositories.artifacts.replaceActionDraftBody({
+    workspaceId: WORKSPACE_ID,
+    draftId: persistedMemo.id,
+    body: legacyEditedBody,
+  });
+
+  const draftResponse = await listActionDrafts(
+    new Request(
+      `https://vsee.test/api/action-drafts?candidateRunId=${
+        repositories.candidate.id
+      }`,
+    ),
+    undefined,
+    productDependencies({
+      underwritingArtifacts: repositories.artifacts,
+    }),
+  );
+  assert.equal(draftResponse.status, 200);
+  const drafts = (await draftResponse.json() as {
+    data: Array<{ channel: string; body: string }>;
+  }).data;
+  const internalMemo = drafts.find(({ channel }) =>
+    channel === "internal_memo"
+  );
+  assert.ok(internalMemo);
+  assert.match(
+    internalMemo.body,
+    /Review saved public evidence with the founder\./,
+  );
+  assert.match(internalMemo.body, new RegExp(editedConclusion));
+  assert.match(internalMemo.body, /Public advisory pack/);
+  assert.match(internalMemo.body, /PT-01/);
+  assert.match(
+    internalMemo.body,
+    /https:\/\/example\.test\/public-source/,
+  );
+  assert.doesNotMatch(
+    internalMemo.body,
+    new RegExp(PUBLIC_JUDGMENT_LIMITATION),
+  );
+  for (const privateMarker of [
+    ...PRIVATE_LIMITATION_MARKERS,
+    "Private authoring instruction.",
+  ]) {
+    assert.doesNotMatch(internalMemo.body, new RegExp(privateMarker));
+  }
+});
+
 test("search reads finalized persisted analysis items only and retains citations", async () => {
   const repositories = await readRepositories();
   const response = await search(
@@ -489,6 +1030,50 @@ test("search reads finalized persisted analysis items only and retains citations
     payload.data.results[0].sourceRevisionIds,
     ["revision_searchable"],
   );
+});
+
+test("assumption search preserves the exact persisted policy reference lineage", async () => {
+  const repositories = await readRepositories();
+  const response = await search(
+    new Request(
+      "https://vsee.test/api/search?q=exit%20multiple%20pinned%20policy%20assumption",
+    ),
+    undefined,
+    productDependencies({
+      underwritingArtifacts: repositories.artifacts,
+    }),
+  );
+
+  assert.equal(response.status, 200);
+  const payload = await response.json() as {
+    data: {
+      results: Array<{
+        itemId: string;
+        analysisType: string;
+        inputRefIds: string[];
+        sourceRevisionIds: string[];
+        claimEdges: Array<{
+          claimItemId: string;
+          dependencyItemId: string;
+          dependencyType: string;
+        }>;
+      }>;
+    };
+  };
+  assert.deepEqual(payload.data.results, [{
+    itemId: "assumption_searchable",
+    candidateRunId: repositories.candidate.id,
+    dealId: "deal_selected",
+    analysisType: "assumption",
+    text: "exit_multiple: 8. Pinned policy assumption",
+    inputRefIds: ["fund_policy_1"],
+    sourceRevisionIds: [],
+    claimEdges: [{
+      claimItemId: "assumption_searchable",
+      dependencyItemId: "fund_policy_1",
+      dependencyType: "policy_ref",
+    }],
+  }]);
 });
 
 test("new persisted-underwriting reads cannot cross organization scope", async () => {

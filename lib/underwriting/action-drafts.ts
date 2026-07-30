@@ -11,10 +11,10 @@ import {
   type MissingEvidenceItem,
 } from "../contracts/underwriting";
 import {
-  renderAdvisoryDiligenceRequests,
-  renderExperimentalAdvisoryOpinions,
-  renderIndependentAdvisoryConflicts,
-} from "./advisory-rendering";
+  renderPublicAdvisoryConflicts,
+  renderPublicAdvisoryDiligenceRequests,
+  renderPublicAdvisoryOpinions,
+} from "./public-advisory-rendering";
 
 export interface ActionDraftGenerator {
   generate(input: {
@@ -70,13 +70,13 @@ export function createActionDraftGenerator(options: {
         ? [
           "",
           "EXPERIMENTAL ADVISORY OPINIONS — DRAFT ONLY",
-          renderExperimentalAdvisoryOpinions(judgments),
+          renderPublicAdvisoryOpinions(judgments),
           "",
           "INDEPENDENT ADVISORY CONFLICTS",
-          renderIndependentAdvisoryConflicts(disagreements, judgments),
+          renderPublicAdvisoryConflicts(disagreements, judgments),
           "",
           "ADVISORY DILIGENCE REQUESTS",
-          renderAdvisoryDiligenceRequests(judgments),
+          renderPublicAdvisoryDiligenceRequests(judgments),
         ]
         : [];
       const definitions = [

@@ -200,8 +200,23 @@ export function versionRows(
       ),
     },
     {
-      label: "Research catalog",
+      label: "Underwriting reference catalog",
       value: snapshot.referenceCatalogFingerprint,
+    },
+    {
+      label: "Framework catalog version",
+      value: snapshot.frameworkCatalogVersion
+        ?? "Unavailable — legacy snapshot did not pin a framework catalog",
+    },
+    {
+      label: "Framework catalog fingerprint",
+      value: snapshot.frameworkCatalogFingerprint
+        ?? "Unavailable — legacy snapshot did not pin a framework catalog",
+    },
+    {
+      label: "Framework corpus digest",
+      value: snapshot.frameworkCorpusDigest
+        ?? "Unavailable — legacy snapshot did not pin a framework corpus",
     },
     { label: "Router", value: snapshot.routerVersion },
     {

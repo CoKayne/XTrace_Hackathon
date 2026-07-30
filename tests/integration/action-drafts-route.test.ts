@@ -15,6 +15,34 @@ import type { PublicActionDraft } from "../../lib/underwriting/read-model";
 const WORKSPACE_ID = "workspace_drafts";
 const CANDIDATE_RUN_ID = "candidate_drafts";
 const DRAFT_ID = "draft_email";
+const LEGACY_MEMO_ID = "draft_legacy_memo";
+const LEGACY_MEMO_BODY = [
+  "INTERNAL UNDERWRITING ACTION MEMO",
+  "  Limitations: Partner-authored preface must survive.",
+  "",
+  "EXPERIMENTAL ADVISORY OPINIONS — DRAFT ONLY",
+  "- Pack: Legacy public advisory pack",
+  "  Applicability: applicable; advisory conclusion: supportive",
+  "  Product-synthesis notice: Private generated notice.",
+  "  Limitations: Private generated limitation.",
+  "  Component qualifications and limitations:",
+  "    - PT-01: Private generated review issue.",
+  "",
+  "INDEPENDENT ADVISORY CONFLICTS",
+  "Unavailable",
+  "",
+  "ADVISORY DILIGENCE REQUESTS",
+  "- Address advisory limitation [Legacy pack]: Private generated limitation.",
+  "- Resolve advisory unknown [Legacy pack]: Public generated question.",
+  "",
+  "  Limitations: Partner-authored appendix must survive.",
+  "- Address advisory limitation [Partner note]: Partner-authored follow-up must survive.",
+].join("\n");
+const ORDINARY_EMAIL_WITH_MATCHING_LINES = [
+  "Subject: Partner-authored limitations",
+  "  Limitations: Keep this email line.",
+  "- Address advisory limitation [Partner note]: Keep this email request.",
+].join("\n");
 
 function productDependencies(
   artifacts: ReturnType<typeof createMemoryUnderwritingArtifactsRepository>,
@@ -59,6 +87,41 @@ function seedDraftRepository() {
       createdAt: "2026-07-29T12:00:00.000Z",
       updatedAt: "2026-07-29T12:00:00.000Z",
     }],
+  } as CandidateArtifactBundle);
+  return artifacts;
+}
+
+function seedLegacyDraftRepository() {
+  const artifacts = createMemoryUnderwritingArtifactsRepository({
+    now: () => new Date("2026-07-29T13:00:00.000Z"),
+  });
+  artifacts.commitPrepared({
+    candidateRunId: CANDIDATE_RUN_ID,
+    workspaceId: WORKSPACE_ID,
+    dealId: "deal_drafts",
+    candidateAnalysisFingerprint: `sha256:${"e".repeat(64)}`,
+    actionDrafts: [
+      {
+        id: LEGACY_MEMO_ID,
+        workspaceId: WORKSPACE_ID,
+        candidateRunId: CANDIDATE_RUN_ID,
+        channel: "internal_memo",
+        audienceType: "internal",
+        body: LEGACY_MEMO_BODY,
+        createdAt: "2026-07-29T12:00:00.000Z",
+        updatedAt: "2026-07-29T12:00:00.000Z",
+      },
+      {
+        id: DRAFT_ID,
+        workspaceId: WORKSPACE_ID,
+        candidateRunId: CANDIDATE_RUN_ID,
+        channel: "email",
+        audienceType: "founder",
+        body: ORDINARY_EMAIL_WITH_MATCHING_LINES,
+        createdAt: "2026-07-29T12:00:00.000Z",
+        updatedAt: "2026-07-29T12:00:00.000Z",
+      },
+    ],
   } as CandidateArtifactBundle);
   return artifacts;
 }
@@ -139,6 +202,72 @@ test("PATCH replaces only the current draft body on the same identity", async ()
     })).length,
     1,
   );
+});
+
+test("GET and PATCH sanitize only the exact legacy generated advisory spans", async () => {
+  const artifacts = seedLegacyDraftRepository();
+  const readPublicDrafts = async () => {
+    const response = await listDrafts(
+      new Request(
+        `https://vsee.test/api/action-drafts?candidateRunId=${CANDIDATE_RUN_ID}`,
+      ),
+      undefined,
+      productDependencies(artifacts),
+    );
+    assert.equal(response.status, 200);
+    return (await response.json() as {
+      data: PublicActionDraft[];
+    }).data;
+  };
+
+  const initialDrafts = await readPublicDrafts();
+  const initialMemo = initialDrafts.find(({ id }) => id === LEGACY_MEMO_ID);
+  const initialEmail = initialDrafts.find(({ id }) => id === DRAFT_ID);
+  assert.ok(initialMemo);
+  assert.ok(initialEmail);
+  assert.equal(initialEmail.body, ORDINARY_EMAIL_WITH_MATCHING_LINES);
+  assert.match(initialMemo.body, /Partner-authored preface must survive/);
+  assert.match(initialMemo.body, /Partner-authored appendix must survive/);
+  assert.match(initialMemo.body, /Partner-authored follow-up must survive/);
+  assert.match(initialMemo.body, /Public generated question/);
+  assert.doesNotMatch(initialMemo.body, /Private generated notice/);
+  assert.doesNotMatch(initialMemo.body, /Private generated limitation/);
+  assert.doesNotMatch(initialMemo.body, /Private generated review issue/);
+
+  const revisedBody = LEGACY_MEMO_BODY.replace(
+    "advisory conclusion: supportive",
+    "advisory conclusion: mixed after partner edit",
+  );
+  const patchResponse = await updateDraft(
+    new Request(`https://vsee.test/api/action-drafts/${LEGACY_MEMO_ID}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ body: revisedBody }),
+    }),
+    { params: Promise.resolve({ id: LEGACY_MEMO_ID }) },
+    productDependencies(artifacts),
+  );
+  assert.equal(patchResponse.status, 200);
+  const patched = (await patchResponse.json() as {
+    data: PublicActionDraft;
+  }).data;
+  assert.match(patched.body, /mixed after partner edit/);
+  assert.match(patched.body, /Partner-authored preface must survive/);
+  assert.match(patched.body, /Partner-authored appendix must survive/);
+  assert.match(patched.body, /Partner-authored follow-up must survive/);
+  assert.doesNotMatch(patched.body, /Private generated limitation/);
+
+  const persisted = (await artifacts.listActionDrafts({
+    workspaceId: WORKSPACE_ID,
+    candidateRunId: CANDIDATE_RUN_ID,
+  })).find(({ id }) => id === LEGACY_MEMO_ID);
+  assert.equal(persisted?.body, revisedBody);
+
+  const rereadMemo = (await readPublicDrafts()).find(({ id }) =>
+    id === LEGACY_MEMO_ID
+  );
+  assert.ok(rereadMemo);
+  assert.equal(rereadMemo.body, patched.body);
 });
 
 test("the draft Save interaction PATCHes the current identity and persists only its body", async () => {

@@ -236,6 +236,9 @@ test("version rows expose every persisted replay pin exactly", () => {
     decisionPolicyId: "decision_v1",
     decisionPolicyDefinitionFingerprint: "sha256:decision",
     referenceCatalogFingerprint: "sha256:catalog",
+    frameworkCatalogVersion: "framework-catalog-v7",
+    frameworkCatalogFingerprint: "sha256:framework-catalog",
+    frameworkCorpusDigest: "sha256:framework-corpus",
     formulaVersions: ["returns@1", "ownership@2"],
     providerModel: "claude-opus-4-8",
     promptVersion: "underwriting-v3",
@@ -250,7 +253,10 @@ test("version rows expose every persisted replay pin exactly", () => {
       "Policy",
       "Benchmark",
       "Framework",
-      "Research catalog",
+      "Underwriting reference catalog",
+      "Framework catalog version",
+      "Framework catalog fingerprint",
+      "Framework corpus digest",
       "Router",
       "Critical Evidence",
       "Valuation Method",
@@ -274,6 +280,18 @@ test("version rows expose every persisted replay pin exactly", () => {
   assert.equal(
     rows.find(({ label }) => label === "Decision")?.value,
     "decision_v1 · sha256:decision",
+  );
+  assert.equal(
+    rows.find(({ label }) => label === "Framework catalog version")?.value,
+    "framework-catalog-v7",
+  );
+  assert.equal(
+    rows.find(({ label }) => label === "Framework catalog fingerprint")?.value,
+    "sha256:framework-catalog",
+  );
+  assert.equal(
+    rows.find(({ label }) => label === "Framework corpus digest")?.value,
+    "sha256:framework-corpus",
   );
   assert.equal(
     rows.find(({ label }) => label === "Model")?.value,
@@ -301,6 +319,7 @@ test("product search presents only finalized artifact results with exact Source 
       dealId: "deal_1",
       analysisType: "fact",
       text: "arr: 2400000 USD",
+      inputRefIds: [],
       sourceRevisionIds: ["revision_1"],
       claimEdges: [],
     },
@@ -310,6 +329,7 @@ test("product search presents only finalized artifact results with exact Source 
       dealId: "deal_1",
       analysisType: "calculation",
       text: "venture_method: 19200000 money",
+      inputRefIds: [],
       sourceRevisionIds: ["revision_1", "revision_2"],
       claimEdges: [{
         claimItemId: "calculation_1",
@@ -329,6 +349,65 @@ test("product search presents only finalized artifact results with exact Source 
     [
       ["revision_1", "/api/source-revisions/revision_1/access"],
       ["revision_2", "/api/source-revisions/revision_2/access"],
+    ],
+  );
+});
+
+test("product search visibly cites assumption policy, benchmark, and untyped persisted references without fabricated URLs", () => {
+  const message = toProductSearchMessage([
+    {
+      itemId: "assumption_1",
+      candidateRunId: "candidate_1",
+      dealId: "deal_1",
+      analysisType: "assumption",
+      text: "exit_multiple: 8. Pinned assumptions.",
+      inputRefIds: [
+        "policy_v3",
+        "benchmark_pack_v2",
+        "reference_record_9",
+      ],
+      sourceRevisionIds: [],
+      claimEdges: [
+        {
+          claimItemId: "assumption_1",
+          dependencyItemId: "policy_v3",
+          dependencyType: "policy_ref",
+        },
+        {
+          claimItemId: "assumption_1",
+          dependencyItemId: "benchmark_pack_v2",
+          dependencyType: "benchmark_ref",
+        },
+      ],
+    },
+  ]);
+
+  assert.deepEqual(
+    message.citations.map(({ id, provenance, title, url }) => ({
+      id,
+      provenance,
+      title,
+      url,
+    })),
+    [
+      {
+        id: "benchmark_pack_v2",
+        provenance: "underwriting_reference",
+        title: "Benchmark reference · benchmark_pack_v2",
+        url: undefined,
+      },
+      {
+        id: "policy_v3",
+        provenance: "underwriting_reference",
+        title: "Policy reference · policy_v3",
+        url: undefined,
+      },
+      {
+        id: "reference_record_9",
+        provenance: "underwriting_reference",
+        title: "Persisted reference · reference_record_9",
+        url: undefined,
+      },
     ],
   );
 });

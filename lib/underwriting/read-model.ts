@@ -14,9 +14,16 @@ import type {
 import type {
   ActionDraft,
   CandidateRun,
+  FrameworkJudgment,
   UnderwritingBatch,
 } from "../contracts/underwriting";
 import { evidenceQueryTokens } from "../demo/search";
+import { buildUnderwritingNarrative } from "./narrative";
+import {
+  publicFrameworkLimitations,
+  renderPublicAdvisorySections,
+  sanitizeLegacyPublicActionDraftBody,
+} from "./public-advisory-rendering";
 
 export type DealUnderwritingStatus =
   | "not_selected"
@@ -61,6 +68,7 @@ export interface UnderwritingSearchResult {
     | "framework_judgment"
     | "final_synthesis";
   text: string;
+  inputRefIds: string[];
   sourceRevisionIds: string[];
   claimEdges: ClaimEdge[];
 }
@@ -164,24 +172,164 @@ export function toCandidateUnderwritingDetail(
     context: structuredClone(bundle.context),
     scenarioModel: structuredClone(bundle.scenarioModel),
     calculations: structuredClone(bundle.calculations),
-    judgments: structuredClone(bundle.judgments),
+    judgments: bundle.judgments.map(toPublicFrameworkJudgment),
     disagreements: structuredClone(bundle.disagreements),
     valuation: structuredClone(bundle.valuation),
     decision: structuredClone(bundle.decision),
-    narrative: bundle.narrative,
+    narrative: publicNarrativeForBundle(bundle),
     claimEdges: structuredClone(bundle.claimEdges),
     sourceRevisionIds: [...bundle.evidencePack.sourceRevisionIds],
     versionSnapshot: toPublicVersionSnapshot(bundle.versionSnapshot),
   };
 }
 
-export function toPublicActionDraft(draft: ActionDraft): PublicActionDraft {
+function toPublicFrameworkJudgment(
+  judgment: CandidateArtifactBundle["judgments"][number],
+) {
+  return {
+    id: judgment.id,
+    frameworkCardId: judgment.frameworkCardId,
+    frameworkVersion: judgment.frameworkVersion,
+    applicability: judgment.applicability,
+    conclusion: judgment.conclusion,
+    strongestSupport: judgment.strongestSupport,
+    strongestCounterargument: judgment.strongestCounterargument,
+    unknowns: [...judgment.unknowns],
+    limitations: publicFrameworkLimitations(judgment),
+    confidence: {
+      sourceReliability: judgment.confidence.sourceReliability,
+      evidenceStrength: judgment.confidence.evidenceStrength,
+      evidenceCoverage: judgment.confidence.evidenceCoverage,
+      judgment: judgment.confidence.judgment,
+    },
+    ...(judgment.frameworkMetadata
+      ? {
+        frameworkMetadata: {
+          packId: judgment.frameworkMetadata.packId,
+          packName: judgment.frameworkMetadata.packName,
+          packVersion: judgment.frameworkMetadata.packVersion,
+          sourceCatalogId: judgment.frameworkMetadata.sourceCatalogId,
+          researchCutoff: judgment.frameworkMetadata.researchCutoff,
+          components: judgment.frameworkMetadata.components.map(
+            (component) => ({
+              frameworkId: component.frameworkId,
+              version: component.version,
+              name: component.name,
+              attribution: {
+                display: component.attribution.display,
+              },
+              sourceRefs: component.sourceRefs.map((reference) => ({
+                sourceId: reference.sourceId,
+                claimIds: [...reference.claimIds],
+                locator: {
+                  kind: reference.locator.kind,
+                  value: reference.locator.value,
+                },
+                attributionScope: reference.attributionScope,
+                supportType: reference.supportType,
+              })),
+            }),
+          ),
+          sources: judgment.frameworkMetadata.sources.map((source) => ({
+            sourceId: source.sourceId,
+            title: source.title,
+            authorOrSpeaker: [...source.authorOrSpeaker],
+            publisher: source.publisher,
+            sourceClass: source.sourceClass,
+            sourceType: source.sourceType,
+            url: source.url,
+            edition: source.edition,
+            publishedAt: source.publishedAt,
+            eventAt: source.eventAt,
+            accessedAt: source.accessedAt,
+            language: source.language,
+            rightsStatus: source.rightsStatus,
+            attributionScope: source.attributionScope,
+            attributionNotes: source.attributionNotes,
+            immutableRevision: {
+              status: source.immutableRevision.status,
+              hashAlgorithm: source.immutableRevision.hashAlgorithm,
+              contentHash: source.immutableRevision.contentHash,
+              ...(source.immutableRevision.reviewedPdfPages
+                ? {
+                  reviewedPdfPages: [
+                    ...source.immutableRevision.reviewedPdfPages,
+                  ],
+                }
+                : {}),
+              ...(source.immutableRevision.reviewedTimestampRanges
+                ? {
+                  reviewedTimestampRanges: [
+                    ...source.immutableRevision.reviewedTimestampRanges,
+                  ],
+                }
+                : {}),
+              ...(source.immutableRevision.videoId
+                ? { videoId: source.immutableRevision.videoId }
+                : {}),
+            },
+          })),
+          formalDecisionWeight:
+            judgment.frameworkMetadata.formalDecisionWeight,
+        },
+      }
+      : {}),
+  };
+}
+
+function publicNarrativeForBundle(bundle: CandidateArtifactBundle): string {
+  const formalNarrative = buildUnderwritingNarrative({
+    facts: bundle.evidencePack.facts,
+    assumptions: bundle.evidencePack.assumptions,
+    calculations: bundle.calculations,
+    judgments: bundle.judgments.map(withoutFrameworkAuthoring),
+    disagreements: bundle.disagreements,
+    decision: bundle.decision,
+  });
+  const advisorySections = renderPublicAdvisorySections({
+    judgments: bundle.judgments,
+    disagreements: bundle.disagreements,
+  });
+  return advisorySections.length === 0
+    ? formalNarrative
+    : `${formalNarrative}\n\n${advisorySections}`;
+}
+
+function withoutFrameworkAuthoring(
+  judgment: CandidateArtifactBundle["judgments"][number],
+): FrameworkJudgment {
+  return {
+    id: judgment.id,
+    analysisType: judgment.analysisType,
+    frameworkCardId: judgment.frameworkCardId,
+    frameworkVersion: judgment.frameworkVersion,
+    applicability: judgment.applicability,
+    conclusion: judgment.conclusion,
+    supportEvidenceItemIds: [...judgment.supportEvidenceItemIds],
+    counterEvidenceItemIds: [...judgment.counterEvidenceItemIds],
+    unusedEvidenceItemIds: [...judgment.unusedEvidenceItemIds],
+    strongestSupport: judgment.strongestSupport,
+    strongestCounterargument: judgment.strongestCounterargument,
+    unknowns: [...judgment.unknowns],
+    limitations: publicFrameworkLimitations(judgment),
+    confidence: structuredClone(judgment.confidence),
+    claimEdges: structuredClone(judgment.claimEdges),
+    fingerprint: judgment.fingerprint,
+  };
+}
+
+export function toPublicActionDraft(
+  draft: ActionDraft,
+): PublicActionDraft {
   return {
     id: draft.id,
     candidateRunId: draft.candidateRunId,
     channel: draft.channel,
     audienceType: draft.audienceType,
-    body: draft.body,
+    body: sanitizeLegacyPublicActionDraftBody({
+      channel: draft.channel,
+      body: draft.body,
+    }),
     createdAt: draft.createdAt,
     updatedAt: draft.updatedAt,
   };
@@ -226,17 +374,27 @@ function searchItemsForBundle(
       itemId: fact.id,
       analysisType: "fact" as const,
       text: `${fact.field}: ${fact.value}${fact.unit ? ` ${fact.unit}` : ""}`,
+      inputRefIds: [],
       sourceRevisionIds: [fact.sourceRevisionId],
       claimEdges: [],
     })),
-    ...bundle.evidencePack.assumptions.map((assumption) => ({
-      ...common,
-      itemId: assumption.id,
-      analysisType: "assumption" as const,
-      text: `${assumption.field}: ${assumption.value}. ${assumption.rationale}`,
-      sourceRevisionIds: [],
-      claimEdges: [] as ClaimEdge[],
-    })),
+    ...bundle.evidencePack.assumptions.map((assumption) => {
+      const lineage = assumptionSearchLineage({
+        assumption,
+        facts,
+        bundle,
+      });
+      return {
+        ...common,
+        itemId: assumption.id,
+        analysisType: "assumption" as const,
+        text:
+          `${assumption.field}: ${assumption.value}. ${assumption.rationale}`,
+        inputRefIds: [...assumption.inputRefIds],
+        sourceRevisionIds: lineage.sourceRevisionIds,
+        claimEdges: lineage.claimEdges,
+      };
+    }),
     ...bundle.calculations.map((calculation) => {
       const itemEdges = edges.filter((edge) =>
         edge.claimItemId === calculation.id
@@ -247,6 +405,7 @@ function searchItemsForBundle(
         analysisType: "calculation" as const,
         text:
           `${calculation.formulaId}: ${calculation.output} ${calculation.unit}`,
+        inputRefIds: [],
         sourceRevisionIds: sourceRevisionIdsForClaim({
           claimItemId: calculation.id,
           facts,
@@ -265,8 +424,9 @@ function searchItemsForBundle(
         judgment.strongestSupport,
         judgment.strongestCounterargument,
         ...judgment.unknowns,
-        ...judgment.limitations,
+        ...publicFrameworkLimitations(judgment),
       ].filter(Boolean).join(". "),
+      inputRefIds: [],
       sourceRevisionIds: sourceRevisionIdsForClaim({
         claimItemId: judgment.id,
         facts,
@@ -283,8 +443,12 @@ function searchItemsForBundle(
         bundle.decision.companyQuality,
         bundle.decision.priceAttractiveness,
         bundle.decision.fundFit,
-        bundle.narrative,
+        renderPublicAdvisorySections({
+          judgments: bundle.judgments,
+          disagreements: bundle.disagreements,
+        }),
       ].filter(Boolean).join(". "),
+      inputRefIds: [],
       sourceRevisionIds: sourceRevisionIdsForClaim({
         claimItemId: bundle.decision.id,
         facts,
@@ -293,6 +457,58 @@ function searchItemsForBundle(
       claimEdges: structuredClone(bundle.decision.claimEdges),
     },
   ];
+}
+
+function assumptionSearchLineage(input: {
+  assumption: CandidateArtifactBundle["evidencePack"]["assumptions"][number];
+  facts: Map<string, Fact>;
+  bundle: CandidateArtifactBundle;
+}): {
+  sourceRevisionIds: string[];
+  claimEdges: ClaimEdge[];
+} {
+  const policyIds = new Set([
+    input.bundle.versionSnapshot.fundPolicyId,
+    input.bundle.versionSnapshot.criticalEvidenceProfileId,
+    input.bundle.versionSnapshot.valuationMethodPolicyId,
+    input.bundle.versionSnapshot.decisionPolicyId,
+  ]);
+  const benchmarkPackId = input.bundle.versionSnapshot.benchmarkPackId;
+  const sourceRevisionIds = new Set<string>();
+  const claimEdges: ClaimEdge[] = [];
+
+  for (const inputRefId of input.assumption.inputRefIds) {
+    const fact = input.facts.get(inputRefId);
+    if (fact) {
+      sourceRevisionIds.add(fact.sourceRevisionId);
+      claimEdges.push({
+        claimItemId: input.assumption.id,
+        dependencyItemId: inputRefId,
+        dependencyType: "fact",
+      });
+      continue;
+    }
+    if (policyIds.has(inputRefId)) {
+      claimEdges.push({
+        claimItemId: input.assumption.id,
+        dependencyItemId: inputRefId,
+        dependencyType: "policy_ref",
+      });
+      continue;
+    }
+    if (benchmarkPackId !== null && inputRefId === benchmarkPackId) {
+      claimEdges.push({
+        claimItemId: input.assumption.id,
+        dependencyItemId: inputRefId,
+        dependencyType: "benchmark_ref",
+      });
+    }
+  }
+
+  return {
+    sourceRevisionIds: [...sourceRevisionIds].sort(),
+    claimEdges,
+  };
 }
 
 function sourceRevisionIdsForClaim(input: {
