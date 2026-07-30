@@ -688,6 +688,92 @@ test("Supabase reads accept PostgREST timestamptz offset timestamps", async () =
   assert.equal(dealAnalyses.length, 19);
 });
 
+test("Supabase reads quarantine malformed legacy analyses without hiding valid rows", async () => {
+  const report = completeReport([companyAnalysis(1)]);
+  const validAnalysis = report.companyAnalyses[0];
+  const validRow = {
+    id: validAnalysis.id,
+    workspace_id: report.workspaceId,
+    report_id: report.id,
+    run_id: validAnalysis.runId,
+    deal_id: validAnalysis.dealId,
+    company_name: validAnalysis.companyName,
+    deal_status: validAnalysis.dealStatus,
+    outcome: validAnalysis.outcome,
+    confidence: validAnalysis.confidence,
+    score: validAnalysis.score,
+    investment_memory: validAnalysis.investmentMemory,
+    market_evidence: validAnalysis.marketEvidence,
+    implications: validAnalysis.implications,
+    recommended_next_move: validAnalysis.recommendedNextMove,
+    company_brief: validAnalysis.companyBrief,
+    source_refs: validAnalysis.sources,
+    created_at: validAnalysis.createdAt,
+  };
+  const malformedLegacyRow = {
+    ...validRow,
+    id: "analysis_legacy_malformed",
+    company_name: "Legacy Company",
+    investment_memory: null,
+    company_brief: null,
+  };
+  const repository = createSupabaseIntelligenceRepository({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      if (url.includes("/intelligence_reports")) {
+        return Response.json([{
+          id: report.id,
+          workspace_id: report.workspaceId,
+          run_id: report.runId,
+          created_at: report.createdAt,
+          market_summary: report.marketSummary,
+          opportunities: report.opportunities,
+          analysis_status: report.analysisStatus,
+          company_count: 2,
+          belief_revised_count: 0,
+          monitor_count: 0,
+          no_material_change_count: 1,
+          analysis_unavailable_count: 1,
+          priority_deal_id: null,
+          evidence_coverage: report.evidenceCoverage,
+        }]);
+      }
+      if (url.includes("/company_analyses")) {
+        return Response.json([malformedLegacyRow, validRow]);
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    },
+  });
+
+  const fetched = await repository.getReportByRunId(
+    report.workspaceId,
+    report.runId,
+  );
+  assert.deepEqual(
+    fetched?.companyAnalyses.map((analysis) => analysis.id),
+    [validAnalysis.id],
+  );
+  assert.equal(fetched?.counts.companyCount, 1);
+  assert.equal(fetched?.counts.analysisUnavailable, 0);
+  assert.equal(
+    fetched?.companyAnalyses.some(
+      (analysis) => analysis.companyName === "Legacy Company",
+    ),
+    false,
+  );
+
+  const dealAnalyses = await repository.listDealAnalyses(
+    report.workspaceId,
+    validAnalysis.dealId,
+  );
+  assert.deepEqual(
+    dealAnalyses.map((analysis) => analysis.id),
+    [validAnalysis.id],
+  );
+});
+
 test("resetScanProducts wipes reports and market events but nothing else is reachable", async () => {
   const repository = createMemoryIntelligenceRepository({
     now: () => new Date("2026-07-24T12:00:00.000Z"),

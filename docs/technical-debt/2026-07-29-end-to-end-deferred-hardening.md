@@ -337,8 +337,10 @@
     `/api/reports` rows 中有早於目前 underwriting/read DTO shape 的 legacy
     payload，投影時會 fail closed。
 - **影響**
-  - 舊 hosted 資料仍在時，report list 可能回傳 server error；這不代表新的
-    `0000`–`0015` database 或目前 serializer 可以接受 malformed rows。
+  - Read path 現在會逐筆驗證並隔離 malformed analysis，因此單一舊 row
+    不再讓整個 report list 回傳 server error，也不會為缺失欄位捏造資料。
+  - 被隔離的 analysis 不會出現在 company detail；混合新舊資料時，畫面只
+    顯示能通過目前 schema 的分析。
   - 公開 Sites 的 `worker=false` 是另一件事：`public_demo` 本來就 read-only，
     Sites 也不提供長時間 Worker。不得用假 heartbeat 掩蓋。
 - **暫時限制**
@@ -346,12 +348,14 @@
   - Product acceptance 使用完整 migration chain、目前 seed/backfill 與獨立
     healthy Worker，不把 legacy hosted row 當成功 fixture。
 - **完整修正**
-  - 為 legacy report payload 建立一次性、可稽核的 backfill 或 quarantine；
-    不得在 read path 猜測缺失的投資事實。
+  - 目前已完成 read-time quarantine；後續仍應為 legacy report payload
+    建立一次性、可稽核的 backfill，或將隔離狀態持久化供管理者檢查。
+  - 不得在 backfill 或 read path 猜測缺失的投資事實。
 - **完成條件**
-  - 既有 hosted rows 全部能通過目前 DTO validation，或被明確 quarantine。
-  - `/api/reports` 不因單一 legacy row 讓整個 workspace list 失敗，且沒有
-    fabricated fallback。
+  - 已完成：`/api/reports` 不因單一 legacy row 讓整個 workspace list
+    失敗，且沒有 fabricated fallback。
+  - 未完成：既有 hosted rows 全部能通過目前 DTO validation，或有可查詢、
+    可稽核的持久化 quarantine/backfill 紀錄。
 
 ### TD-UI-001：Action Draft Save 缺少真正的 UI 互動覆蓋
 

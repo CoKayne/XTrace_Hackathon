@@ -454,9 +454,11 @@ export function createSupabaseIntelligenceRepository(options: {
     const body = await response.text();
     return body.trim() ? JSON.parse(body) : null;
   }
-  function toAnalysis(row: Record<string, unknown>): CompanyAnalysis {
+  function toAnalysis(
+    row: Record<string, unknown>,
+  ): CompanyAnalysis | null {
     const sources = Array.isArray(row.source_refs) ? row.source_refs : [];
-    return CompanyAnalysisSchema.parse({
+    const parsed = CompanyAnalysisSchema.safeParse({
       id: String(row.id),
       reportId: String(row.report_id),
       runId: String(row.run_id),
@@ -481,6 +483,7 @@ export function createSupabaseIntelligenceRepository(options: {
       sources,
       createdAt: String(row.created_at),
     });
+    return parsed.success ? parsed.data : null;
   }
   function toReport(
     row: Record<string, unknown>,
@@ -527,6 +530,7 @@ export function createSupabaseIntelligenceRepository(options: {
     ) as Record<string, unknown>[];
     for (const row of rows) {
       const analysis = toAnalysis(row);
+      if (!analysis) continue;
       const current = grouped.get(analysis.reportId) ?? [];
       current.push(analysis);
       grouped.set(analysis.reportId, current);
@@ -627,7 +631,10 @@ export function createSupabaseIntelligenceRepository(options: {
         `/company_analyses?workspace_id=eq.${encodeURIComponent(workspaceId)}`
         + `&deal_id=eq.${encodeURIComponent(dealId)}&order=created_at.desc`,
       ) as Record<string, unknown>[];
-      return rows.map(toAnalysis);
+      return rows.flatMap((row) => {
+        const analysis = toAnalysis(row);
+        return analysis ? [analysis] : [];
+      });
     },
     async resetScanProducts(workspaceId) {
       workspaceId = requiredWorkspaceId(workspaceId);
