@@ -34,6 +34,8 @@ import {
 import {
   authorizedResearchComposites,
   isAuthorizedResearchComposite,
+  loadResearchFrameworkCatalog,
+  RESEARCH_FRAMEWORK_CATALOG_VERSION,
   type ResearchFrameworkCatalog,
 } from "./research-loader";
 import {
@@ -164,6 +166,20 @@ export interface FrameworkLensService {
   }>;
 }
 
+export interface ContextAwareFrameworkLensSelection {
+  readonly catalogVersion: typeof RESEARCH_FRAMEWORK_CATALOG_VERSION;
+  readonly catalogFingerprint: string;
+  readonly corpusDigest: string;
+  readonly catalog: ResearchFrameworkCatalog;
+  readonly service: FrameworkLensService;
+}
+
+export interface ContextAwareFrameworkLensResolver {
+  resolve(
+    context: ResolvedUnderwritingContext,
+  ): Promise<ContextAwareFrameworkLensSelection>;
+}
+
 export interface FrameworkProviderAttemptExecutor {
   execute(input: {
     attemptFingerprint: string;
@@ -195,6 +211,50 @@ export function createMemoryFrameworkLensCache(): MemoryFrameworkLensCache {
           compareUtf8(left.fingerprint, right.fingerprint)
         )
         .map((record) => structuredClone(record));
+    },
+  };
+}
+
+export function createContextAwareFrameworkLensResolver(
+  options: Omit<
+    Parameters<typeof createFrameworkLensService>[0],
+    "advisoryCatalog"
+  >,
+): ContextAwareFrameworkLensResolver {
+  const selections = new Map<
+    string,
+    Promise<ContextAwareFrameworkLensSelection>
+  >();
+
+  return {
+    resolve(rawContext) {
+      const context = ResolvedUnderwritingContextSchema.parse(rawContext);
+      const key = canonicalJson({
+        catalogVersion: RESEARCH_FRAMEWORK_CATALOG_VERSION,
+        stage: context.stage,
+        businessModel: context.businessModel,
+        geography: context.geography,
+        securityType: context.securityType,
+      });
+      const existing = selections.get(key);
+      if (existing) return existing;
+
+      const pending = loadResearchFrameworkCatalog({ context })
+        .then((catalog) => Object.freeze({
+          catalogVersion: RESEARCH_FRAMEWORK_CATALOG_VERSION,
+          catalogFingerprint: catalog.fingerprint,
+          corpusDigest: catalog.authorization.corpusDigest,
+          catalog,
+          service: createFrameworkLensService({
+            ...options,
+            advisoryCatalog: catalog,
+          }),
+        }));
+      selections.set(key, pending);
+      void pending.catch(() => {
+        if (selections.get(key) === pending) selections.delete(key);
+      });
+      return pending;
     },
   };
 }

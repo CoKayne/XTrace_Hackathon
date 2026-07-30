@@ -39,6 +39,7 @@ type ResearchContext = Pick<
 >;
 
 export interface ResearchFrameworkCatalog {
+  readonly version: typeof RESEARCH_FRAMEWORK_CATALOG_VERSION;
   readonly context: ResearchContext;
   readonly composites: readonly ExperimentalAdvisoryFrameworkCard[];
   readonly stats: Readonly<{
@@ -75,6 +76,8 @@ interface LoadedPack {
 }
 
 const MAX_RESEARCH_PACKS = 20;
+export const RESEARCH_FRAMEWORK_CATALOG_VERSION =
+  "research-framework-catalog-v1";
 const CANONICAL_RESEARCH_ROOT = fileURLToPath(
   new URL("../../../research/framework-authoring", import.meta.url),
 );
@@ -203,13 +206,14 @@ export async function loadResearchFrameworkCatalog(
     corpusDigest,
   };
   const fingerprint = sha256({
-    kind: "research-framework-catalog-v1",
+    kind: RESEARCH_FRAMEWORK_CATALOG_VERSION,
     context,
     composites,
     stats,
     authorization,
   });
   const catalog = deepFreeze({
+    version: RESEARCH_FRAMEWORK_CATALOG_VERSION,
     context,
     composites,
     stats,

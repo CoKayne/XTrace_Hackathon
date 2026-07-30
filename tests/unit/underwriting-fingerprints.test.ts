@@ -126,6 +126,11 @@ function candidateInput(): CandidateFingerprintInput {
     decisionPolicy: reference("decision_policy", "decision_policy_1", "5"),
     referenceCatalogFingerprint:
       batchInput().referenceCatalog.definitionFingerprint,
+    frameworkCatalog: {
+      version: "research-framework-catalog-v1",
+      fingerprint: `sha256:${"b".repeat(64)}`,
+      corpusDigest: `sha256:${"c".repeat(64)}`,
+    },
     formulaVersions: [
       "venture_return_method_v1@1",
       "market_comps_v1@1",
@@ -328,6 +333,32 @@ test("batch and candidate fingerprints bind every effective reference definition
     `sha256:${"e".repeat(64)}`;
   assert.notEqual(
     createCandidateAnalysisFingerprint(changedCatalog),
+    baseline,
+  );
+});
+
+test("candidate fingerprints bind the selected research catalog and audited corpus", () => {
+  const baseline = createCandidateAnalysisFingerprint(candidateInput());
+  const changedVersion = candidateInput();
+  changedVersion.frameworkCatalog!.version =
+    "research-framework-catalog-v2";
+  const changedCatalog = candidateInput();
+  changedCatalog.frameworkCatalog!.fingerprint =
+    `sha256:${"d".repeat(64)}`;
+  const changedCorpus = candidateInput();
+  changedCorpus.frameworkCatalog!.corpusDigest =
+    `sha256:${"e".repeat(64)}`;
+
+  assert.notEqual(
+    createCandidateAnalysisFingerprint(changedVersion),
+    baseline,
+  );
+  assert.notEqual(
+    createCandidateAnalysisFingerprint(changedCatalog),
+    baseline,
+  );
+  assert.notEqual(
+    createCandidateAnalysisFingerprint(changedCorpus),
     baseline,
   );
 });

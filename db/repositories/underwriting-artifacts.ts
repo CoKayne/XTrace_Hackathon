@@ -50,6 +50,9 @@ export const CandidateVersionSnapshotSchema = z.strictObject({
   decisionPolicyId: IdSchema,
   decisionPolicyDefinitionFingerprint: FingerprintSchema,
   referenceCatalogFingerprint: FingerprintSchema,
+  frameworkCatalogVersion: z.string().min(1).optional(),
+  frameworkCatalogFingerprint: FingerprintSchema.optional(),
+  frameworkCorpusDigest: FingerprintSchema.optional(),
   formulaVersions: z.array(z.string().min(1)),
   providerModel: z.string().min(1),
   promptVersion: z.string().min(1),
@@ -70,6 +73,21 @@ export const CandidateVersionSnapshotSchema = z.strictObject({
       code: "custom",
       message:
         "Benchmark pack, entry, and definition fingerprint must be pinned together.",
+    });
+  }
+  const frameworkCatalogValues = [
+    value.frameworkCatalogVersion,
+    value.frameworkCatalogFingerprint,
+    value.frameworkCorpusDigest,
+  ];
+  if (
+    frameworkCatalogValues.some((item) => item === undefined)
+      !== frameworkCatalogValues.every((item) => item === undefined)
+  ) {
+    context.addIssue({
+      code: "custom",
+      message:
+        "Framework catalog version, fingerprint, and corpus digest must be pinned together.",
     });
   }
 });

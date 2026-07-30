@@ -17,6 +17,7 @@ import type {
   CandidateRun,
   FundPolicySnapshot,
   MissingEvidenceItem,
+  ResolvedUnderwritingContext,
   UnderwritingBatch,
 } from "../contracts/underwriting";
 import {
@@ -83,8 +84,8 @@ const SELECTION_POLICY_VERSION = "top-five-belief-revised-v1";
 const DEFAULT_CANDIDATE_TIMEOUT_MS = 30_000;
 const DEFAULT_CANDIDATE_MAX_ATTEMPTS = 2;
 const DEFAULT_CANDIDATE_LEASE_SECONDS = 120;
-const DEFAULT_CANDIDATE_COST_UNITS = 16;
-const DEFAULT_CANDIDATE_TOKEN_UNITS = 64_000;
+const DEFAULT_CANDIDATE_COST_UNITS = 28;
+const DEFAULT_CANDIDATE_TOKEN_UNITS = 112_000;
 const ORCHESTRATOR_WORKER_ID = "underwriting-orchestrator-v1";
 
 export type CandidateFinalizationPayload = Omit<
@@ -130,6 +131,13 @@ export interface SourceGroundedCandidateExecutionSettings {
   schemaVersion: string;
   settingsFingerprint: string;
   applicationCommit: string;
+}
+
+export interface FrameworkLensExecutionSelection {
+  catalogVersion: string;
+  catalogFingerprint: string;
+  corpusDigest: string;
+  service: FrameworkLensService;
 }
 
 export interface UnderwritingOrchestrator {
@@ -493,7 +501,10 @@ export function createUnderwritingOrchestrator(options: {
 
 export function createSourceGroundedCandidateExecutor(options: {
   grounding: CandidateGroundingPort;
-  frameworkLenses: FrameworkLensService;
+  frameworkLenses?: FrameworkLensService;
+  resolveFrameworkLenses?: (
+    context: ResolvedUnderwritingContext,
+  ) => Promise<FrameworkLensExecutionSelection>;
   router?: ContextRouter;
   valuation?: ValuationEngine;
   decision?: DecisionEngine;
@@ -502,6 +513,14 @@ export function createSourceGroundedCandidateExecutor(options: {
 }): (
   input: CandidateExecutorInput,
 ) => Promise<CandidateFinalizationPayload | CandidateUnavailableExecution> {
+  if (
+    (options.frameworkLenses === undefined)
+      === (options.resolveFrameworkLenses === undefined)
+  ) {
+    throw new Error(
+      "Candidate execution requires exactly one static or context-aware Framework lens service.",
+    );
+  }
   const router = options.router ?? createContextRouter();
   const valuation = options.valuation ?? createValuationEngine({
     now: options.now,
@@ -564,6 +583,16 @@ export function createSourceGroundedCandidateExecutor(options: {
       ]);
     }
     const context = resolution.context;
+    const frameworkSelection = options.resolveFrameworkLenses
+      ? validateFrameworkLensSelection(
+        await options.resolveFrameworkLenses(context),
+      )
+      : {
+        catalogVersion: null,
+        catalogFingerprint: null,
+        corpusDigest: null,
+        service: options.frameworkLenses!,
+      };
     let pack: EvidencePack;
     let evidencePackBuildInputFingerprint: string;
     let criticalEvidenceProfile: ReferenceDefinitionRef;
@@ -681,12 +710,17 @@ export function createSourceGroundedCandidateExecutor(options: {
         context,
         calculations: valuationArtifacts.calculations,
         execution,
+        frameworkCatalog: {
+          version: frameworkSelection.catalogVersion,
+          fingerprint: frameworkSelection.catalogFingerprint,
+          corpusDigest: frameworkSelection.corpusDigest,
+        },
       });
       lensResult = await input.stages.run({
         stage: "framework_lenses",
         inputFingerprint: frameworkInputFingerprint,
         parseOutput: parseFrameworkLensResult,
-        operation: (signal) => options.frameworkLenses.runAll({
+        operation: (signal) => frameworkSelection.service.runAll({
           candidate: input.candidate,
           pack,
           context,
@@ -825,6 +859,15 @@ export function createSourceGroundedCandidateExecutor(options: {
       decisionPolicy,
       referenceCatalogFingerprint:
         input.referenceCatalog.definitionFingerprint,
+      frameworkCatalog: frameworkSelection.catalogFingerprint
+        && frameworkSelection.corpusDigest
+        && frameworkSelection.catalogVersion
+        ? {
+          version: frameworkSelection.catalogVersion,
+          fingerprint: frameworkSelection.catalogFingerprint,
+          corpusDigest: frameworkSelection.corpusDigest,
+        }
+        : null,
       formulaVersions,
       providerModel: execution.providerModel,
       promptVersion: execution.promptVersion,
@@ -869,6 +912,16 @@ export function createSourceGroundedCandidateExecutor(options: {
           decisionPolicy.definitionFingerprint,
         referenceCatalogFingerprint:
           input.referenceCatalog.definitionFingerprint,
+        ...(frameworkSelection.catalogVersion
+            && frameworkSelection.catalogFingerprint
+            && frameworkSelection.corpusDigest
+          ? {
+            frameworkCatalogVersion: frameworkSelection.catalogVersion,
+            frameworkCatalogFingerprint:
+              frameworkSelection.catalogFingerprint,
+            frameworkCorpusDigest: frameworkSelection.corpusDigest,
+          }
+          : {}),
         formulaVersions,
         providerModel: execution.providerModel,
         promptVersion: execution.promptVersion,
@@ -877,6 +930,37 @@ export function createSourceGroundedCandidateExecutor(options: {
         applicationCommit: execution.applicationCommit,
       },
     };
+  };
+}
+
+function validateFrameworkLensSelection(
+  input: FrameworkLensExecutionSelection,
+): FrameworkLensExecutionSelection {
+  const catalogVersion = requiredText(
+    input.catalogVersion,
+    "A Framework catalog version",
+  );
+  const catalogFingerprint = requiredText(
+    input.catalogFingerprint,
+    "A Framework catalog fingerprint",
+  );
+  const corpusDigest = requiredText(
+    input.corpusDigest,
+    "A Framework corpus digest",
+  );
+  if (
+    !/^sha256:[0-9a-f]{64}$/.test(catalogFingerprint)
+    || !/^sha256:[0-9a-f]{64}$/.test(corpusDigest)
+  ) {
+    throw new Error(
+      "Framework catalog and corpus fingerprints must be canonical SHA-256 digests.",
+    );
+  }
+  return {
+    catalogVersion,
+    catalogFingerprint,
+    corpusDigest,
+    service: input.service,
   };
 }
 

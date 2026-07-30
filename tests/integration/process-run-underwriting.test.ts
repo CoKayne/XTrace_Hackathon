@@ -49,8 +49,12 @@ import {
   type CriticalEvidenceProfile,
 } from "../../lib/underwriting/router";
 import {
+  createCanonicalFingerprint,
   createReferenceCatalogSnapshot,
 } from "../../lib/underwriting/fingerprints";
+import type {
+  FrameworkLensService,
+} from "../../lib/underwriting/frameworks/service";
 import { BALANCED_POLICY_VALUES } from "../../seed/underwriting/balanced-policy-v1";
 import { processClaimedRun } from "../../worker/process-run";
 
@@ -1138,9 +1142,9 @@ test("a candidate failure preserves a completed predecessor and leaves the batch
   );
 });
 
-test("identity-only evidence requires context confirmation without invoking a framework lens", async () => {
+test("identity-only evidence requires context confirmation before resolving a framework catalog", async () => {
   let sequence = 0;
-  let lensExecutions = 0;
+  let frameworkResolutions = 0;
   const runs = createMemoryUnderwritingRunsRepository({
     now: () => NOW,
     idGenerator: (kind) => `${kind}_${++sequence}`,
@@ -1155,11 +1159,11 @@ test("identity-only evidence requires context confirmation without invoking a fr
     referenceCatalog: TEST_REFERENCE_CATALOG,
     candidateExecutor: createSourceGroundedCandidateExecutor({
       grounding,
-      frameworkLenses: {
-        async runAll() {
-          lensExecutions += 1;
-          return { judgments: [], disagreements: [] };
-        },
+      resolveFrameworkLenses: async () => {
+        frameworkResolutions += 1;
+        throw new Error(
+          "A Framework catalog cannot be selected before context resolves.",
+        );
       },
       now: () => NOW,
       execution: {
@@ -1182,7 +1186,7 @@ test("identity-only evidence requires context confirmation without invoking a fr
     forceRefresh: false,
   });
 
-  assert.equal(lensExecutions, 0);
+  assert.equal(frameworkResolutions, 0);
   assert.equal(runs.inspect().candidates[0]?.status, "unavailable");
   assert.deepEqual(
     Object.values(runs.inspect().unavailableReasons),
@@ -1199,6 +1203,10 @@ test("identity-only evidence requires context confirmation without invoking a fr
 test("runs the source-grounded candidate chain once and persists communication channels as drafts", async () => {
   let sequence = 0;
   let lensExecutions = 0;
+  let frameworkResolutions = 0;
+  let frameworkInput:
+    | Parameters<FrameworkLensService["runAll"]>[0]
+    | undefined;
   const artifacts = createMemoryUnderwritingArtifactsRepository();
   const evidencePacks = createMemoryEvidencePacksRepository();
   const runs = createMemoryUnderwritingRunsRepository({
@@ -1218,11 +1226,21 @@ test("runs the source-grounded candidate chain once and persists communication c
     referenceCatalog: TEST_REFERENCE_CATALOG,
     candidateExecutor: createSourceGroundedCandidateExecutor({
       grounding,
-      frameworkLenses: {
-        async runAll() {
-          lensExecutions += 1;
-          return { judgments: [], disagreements: [] };
-        },
+      resolveFrameworkLenses: async (context) => {
+        frameworkResolutions += 1;
+        assert.equal(context.stage, "seed");
+        return {
+          catalogVersion: "research-framework-catalog-v1",
+          catalogFingerprint: `sha256:${"7".repeat(64)}`,
+          corpusDigest: `sha256:${"8".repeat(64)}`,
+          service: {
+            async runAll(request) {
+              lensExecutions += 1;
+              frameworkInput = request;
+              return { judgments: [], disagreements: [] };
+            },
+          },
+        };
       },
       now: () => NOW,
       execution: {
@@ -1250,8 +1268,34 @@ test("runs the source-grounded candidate chain once and persists communication c
   assert.equal(replay.id, first.id);
   assert.equal(first.status, "completed");
   assert.equal(replay.status, "completed");
+  assert.equal(frameworkResolutions, 1);
   assert.equal(lensExecutions, 1);
   assert.equal(runs.inspect().candidates[0]?.status, "completed");
+  assert.ok(frameworkInput);
+  assert.equal(
+    runs.inspect().checkpoints.find(
+      ({ stage }) => stage === "framework_lenses",
+    )?.inputFingerprint,
+    createCanonicalFingerprint({
+      stage: "framework_lenses",
+      candidate: frameworkInput.candidate,
+      pack: frameworkInput.pack,
+      context: frameworkInput.context,
+      calculations: frameworkInput.calculations,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+      frameworkCatalog: {
+        version: "research-framework-catalog-v1",
+        fingerprint: `sha256:${"7".repeat(64)}`,
+        corpusDigest: `sha256:${"8".repeat(64)}`,
+      },
+    }),
+  );
   assert.deepEqual(
     runs.inspect().checkpoints.map(({ stage, status }) => [stage, status]),
     [
@@ -1269,6 +1313,18 @@ test("runs the source-grounded candidate chain once and persists communication c
   assert.equal(
     saved.bundles[0]?.versionSnapshot.referenceCatalogFingerprint,
     TEST_REFERENCE_CATALOG.definitionFingerprint,
+  );
+  assert.equal(
+    saved.bundles[0]?.versionSnapshot.frameworkCatalogVersion,
+    "research-framework-catalog-v1",
+  );
+  assert.equal(
+    saved.bundles[0]?.versionSnapshot.frameworkCatalogFingerprint,
+    `sha256:${"7".repeat(64)}`,
+  );
+  assert.equal(
+    saved.bundles[0]?.versionSnapshot.frameworkCorpusDigest,
+    `sha256:${"8".repeat(64)}`,
   );
   assert.equal(
     saved.bundles[0]?.versionSnapshot
@@ -1289,6 +1345,115 @@ test("runs the source-grounded candidate chain once and persists communication c
     ),
     true,
   );
+});
+
+test("default candidate budget reserves one complete eight-core plus twenty-advisory run", async () => {
+  let sequence = 0;
+  const artifacts = createMemoryUnderwritingArtifactsRepository();
+  const evidencePacks = createMemoryEvidencePacksRepository();
+  const observedUsage: Array<{
+    costUnits: number;
+    tokenUnits: number;
+    remainingCostUnits: number;
+    remainingTokenUnits: number;
+  }> = [];
+  const runs = createMemoryUnderwritingRunsRepository({
+    now: () => NOW,
+    idGenerator: (kind) => `${kind}_${++sequence}`,
+    leaseTokenGenerator: () => `lease_${++sequence}`,
+    artifacts,
+    evidencePacks,
+  });
+  const grounding = await candidateGroundingFor("deal_a", {
+    includeContext: true,
+    repository: evidencePacks,
+  });
+  const orchestrator = createUnderwritingOrchestrator({
+    runs,
+    activeFundPolicy: async () => policy,
+    referenceCatalog: TEST_REFERENCE_CATALOG,
+    candidateExecutor: createSourceGroundedCandidateExecutor({
+      grounding,
+      resolveFrameworkLenses: async () => ({
+        catalogVersion: "research-framework-catalog-v1",
+        catalogFingerprint: `sha256:${"7".repeat(64)}`,
+        corpusDigest: `sha256:${"8".repeat(64)}`,
+        service: {
+          async runAll(request) {
+            assert.ok(request.providerAttempt);
+            for (let index = 0; index < 28; index += 1) {
+              await request.providerAttempt.execute({
+                attemptFingerprint:
+                  `sha256:${index.toString(16).padStart(64, "0")}`,
+                outputTokenUnits: 4_000,
+                operation: async () => ({
+                  text: "{}",
+                  stopReason: "end_turn",
+                  usage: {
+                    inputTokens: 10,
+                    outputTokens: 20,
+                    cacheCreationInputTokens: 0,
+                    cacheReadInputTokens: 0,
+                  },
+                }),
+              });
+            }
+            return { judgments: [], disagreements: [] };
+          },
+        },
+      }),
+      now: () => NOW,
+      execution: {
+        providerModel: "synthetic-test-lens",
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: `sha256:${"b".repeat(64)}`,
+        applicationCommit: "task13-test",
+      },
+    }),
+    now: () => NOW,
+  });
+  const analyses = [analysis("deal_a", 0.99)];
+  const batch = await orchestrator.createBatchAndSelections({
+    scanRun,
+    report: report(analyses),
+    analyses,
+    eligibleDeals: [deal("deal_a")],
+    forceRefresh: false,
+  });
+  const frameworkCheckpoint = runs.inspect().checkpoints.find(
+    ({ stage }) => stage === "framework_lenses",
+  );
+  assert.ok(frameworkCheckpoint);
+  const reservedTokenUnits = frameworkCheckpoint.providerAttempts.reduce(
+    (total, attempt) => total + attempt.reservedTokenUnits,
+    0,
+  );
+  observedUsage.push({
+    costUnits: frameworkCheckpoint.costUnits,
+    tokenUnits: reservedTokenUnits,
+    remainingCostUnits: 28 - frameworkCheckpoint.costUnits,
+    remainingTokenUnits: 112_000 - reservedTokenUnits,
+  });
+
+  assert.equal(
+    batch.status,
+    "completed",
+    JSON.stringify(runs.inspect().checkpoints.map((checkpoint) => ({
+      stage: checkpoint.stage,
+      status: checkpoint.status,
+      reasonCode: checkpoint.reasonCode,
+      costUnits: checkpoint.costUnits,
+      tokenUnits: checkpoint.tokenUnits,
+      providerAttempts: checkpoint.providerAttempts.length,
+    }))),
+  );
+  assert.deepEqual(observedUsage, [{
+    costUnits: 28,
+    tokenUnits: 112_000,
+    remainingCostUnits: 0,
+    remainingTokenUnits: 0,
+  }]);
 });
 
 test("a clock-advanced source-grounded force refresh aliases the canonical artifacts", async () => {
@@ -1849,15 +2014,15 @@ test("a reclaimed lease replays completed stages and restores provider usage wit
       costUnits: 1,
       tokenUnits: 26,
       actualTokenUnits: 26,
-      remainingCostUnits: 15,
-      remainingTokenUnits: 63_974,
+      remainingCostUnits: 27,
+      remainingTokenUnits: 111_974,
     },
     {
       costUnits: 1,
       tokenUnits: 26,
       actualTokenUnits: 26,
-      remainingCostUnits: 15,
-      remainingTokenUnits: 63_974,
+      remainingCostUnits: 27,
+      remainingTokenUnits: 111_974,
     },
   ]);
 });

@@ -96,6 +96,11 @@ export interface CandidateFingerprintInput {
   frameworkPack: ReferenceDefinitionRef;
   decisionPolicy: ReferenceDefinitionRef;
   referenceCatalogFingerprint: string;
+  frameworkCatalog?: {
+    version: string;
+    fingerprint: string;
+    corpusDigest: string;
+  } | null;
   formulaVersions: string[];
   providerModel: string;
   promptVersion: string;
@@ -205,6 +210,22 @@ export function createCandidateAnalysisFingerprint(
       input.referenceCatalogFingerprint,
       "Reference catalog fingerprint",
     ),
+    frameworkCatalog: input.frameworkCatalog
+      ? {
+        version: required(
+          input.frameworkCatalog.version,
+          "Framework catalog version",
+        ),
+        fingerprint: requiredFingerprint(
+          input.frameworkCatalog.fingerprint,
+          "Framework catalog fingerprint",
+        ),
+        corpusDigest: requiredFingerprint(
+          input.frameworkCatalog.corpusDigest,
+          "Framework corpus digest",
+        ),
+      }
+      : null,
     formulaVersions: sortedUnique(input.formulaVersions),
     providerModel: required(input.providerModel, "Provider model"),
     promptVersion: required(input.promptVersion, "Prompt version"),

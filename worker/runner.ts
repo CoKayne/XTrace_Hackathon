@@ -24,7 +24,7 @@ import { getXTraceLineageRepository } from "../db/repositories/xtrace-lineage";
 import { createClaudeClient } from "../lib/claude/client";
 import { createClaudeMatchingReasoner } from "../lib/matching/claude-reasoner";
 import {
-  createFrameworkLensService,
+  createContextAwareFrameworkLensResolver,
 } from "../lib/underwriting/frameworks/service";
 import {
   createSourceGroundedCandidateExecutor,
@@ -206,6 +206,18 @@ export async function runNextQueuedScan(): Promise<boolean> {
         : Promise.resolve(null),
     });
     const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
+    const frameworkLenses = createContextAwareFrameworkLensResolver({
+      client: claude,
+      execution: {
+        provider: "anthropic",
+        model,
+        promptVersion: "framework-lens-v1",
+        schemaVersion: "framework-judgment-v1",
+        settingsFingerprint: "balanced-underwriting-v1",
+        applicationCommit:
+          process.env.RAILWAY_GIT_COMMIT_SHA ?? "local-development",
+      },
+    });
     const underwriting = createUnderwritingOrchestrator({
       runs: underwritingRuns,
       activeFundPolicy: (workspaceId) =>
@@ -215,18 +227,8 @@ export async function runNextQueuedScan(): Promise<boolean> {
       referenceCatalog,
       candidateExecutor: createSourceGroundedCandidateExecutor({
         grounding,
-        frameworkLenses: createFrameworkLensService({
-          client: claude,
-          execution: {
-            provider: "anthropic",
-            model,
-            promptVersion: "framework-lens-v1",
-            schemaVersion: "framework-judgment-v1",
-            settingsFingerprint: "balanced-underwriting-v1",
-            applicationCommit:
-              process.env.RAILWAY_GIT_COMMIT_SHA ?? "local-development",
-          },
-        }),
+        resolveFrameworkLenses: (context) =>
+          frameworkLenses.resolve(context),
         execution: {
           providerModel: model,
           promptVersion: "framework-lens-v1",
