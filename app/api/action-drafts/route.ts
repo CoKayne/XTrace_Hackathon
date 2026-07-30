@@ -8,6 +8,7 @@ import {
 } from "../../../lib/api/route-dependencies";
 import { requirePermission } from "../../../lib/api/safety";
 import { toPublicActionDraft } from "../../../lib/underwriting/read-model";
+import { isDurableWorkspaceMode } from "../../../lib/auth/request-context";
 
 const CandidateRunIdSchema = z.string().trim().min(1).max(500);
 
@@ -21,7 +22,7 @@ export async function GET(
   try {
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
-    if (context.mode !== "product") throw new Error("FORBIDDEN");
+    if (!isDurableWorkspaceMode(context.mode)) throw new Error("FORBIDDEN");
     const candidateRunId = CandidateRunIdSchema.parse(
       new URL(request.url).searchParams.get("candidateRunId") ?? "",
     );

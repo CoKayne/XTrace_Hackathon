@@ -7,6 +7,7 @@ import { requirePermission } from "../../../lib/api/safety";
 import { buildDemoViewModel } from "../../../lib/demo/view-model";
 import { getDealRegistry } from "../../../db/repositories/deal-registry";
 import { listProductDeals } from "../../../lib/deals/read-model";
+import { isDurableWorkspaceMode } from "../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export async function GET(
     const url = new URL(request.url);
     const query = url.searchParams.get("q")?.trim().toLocaleLowerCase() ?? "";
     const status = url.searchParams.get("status")?.trim() ?? "";
-    const deals = context.mode === "product"
+    const deals = isDurableWorkspaceMode(context.mode)
       ? await listProductDeals({
         workspaceId: context.workspaceId,
         query,

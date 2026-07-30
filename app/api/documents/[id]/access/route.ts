@@ -7,6 +7,7 @@ import {
 import { rateLimitRequest, requirePermission } from "../../../../../lib/api/safety";
 import { getPreloadedDocument } from "../../../../../lib/corpus/manifest";
 import { createDefaultPrivateDocumentAccess } from "../../../../../lib/storage/service";
+import { isDurableWorkspaceMode } from "../../../../../lib/auth/request-context";
 
 export const runtime = "nodejs";
 const PRIVATE_READ_TTL_SECONDS = 10 * 60;
@@ -34,6 +35,7 @@ export async function GET(
       );
     }
 
+    if (!isDurableWorkspaceMode(requestContext.mode)) throw new Error("FORBIDDEN");
     requirePermission(requestContext, "readPrivateSources");
     const revision = preloaded
       ? null

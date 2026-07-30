@@ -9,6 +9,7 @@ import {
   ReplaceActionDraftBodySchema,
 } from "../../../../lib/contracts/http";
 import { toPublicActionDraft } from "../../../../lib/underwriting/read-model";
+import { isDurableWorkspaceMode } from "../../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export async function PATCH(
       dependencies,
     );
     requirePermission(requestContext, "readWorkspace");
-    if (requestContext.mode !== "product") throw new Error("FORBIDDEN");
+    if (!isDurableWorkspaceMode(requestContext.mode)) throw new Error("FORBIDDEN");
     if (!requestContext.principal) throw new Error("UNAUTHENTICATED");
     const { id } = await context.params;
     const input = ReplaceActionDraftBodySchema.parse(await request.json());

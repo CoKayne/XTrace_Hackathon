@@ -9,6 +9,7 @@ import { getDealRegistry } from "../../../db/repositories/deal-registry";
 import { getIntelligenceRepository } from "../../../db/repositories/intelligence";
 import { getUploadedDocumentsRepository } from "../../../db/repositories/uploaded-documents";
 import { buildProductOverview } from "../../../lib/deals/read-model";
+import { isDurableWorkspaceMode } from "../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export async function GET(
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
     return jsonOk(
-      context.mode === "product"
+      isDurableWorkspaceMode(context.mode)
         ? await buildProductOverview({
           workspaceId: context.workspaceId,
           deals: dependencies.dealRegistry ?? getDealRegistry(),

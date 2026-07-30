@@ -172,6 +172,89 @@ test("product request limiting keys by the authorized principal and workspace", 
   assert.doesNotMatch(hashes.join(" "), /workspace_attacker|203\\.0\\.113\\.44/);
 });
 
+test("public sandbox request limiting keys the server workspace and caller origin", async () => {
+  const hashes: string[] = [];
+  const environment = {
+    NODE_ENV: "production",
+    SUPABASE_URL: "https://database.example",
+    SUPABASE_SERVICE_ROLE_KEY: "server-only",
+  };
+  const fetchImpl: typeof fetch = async (_url, init) => {
+    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    hashes.push(String(body.p_client_hash));
+    return Response.json([{ allowed: true, retry_after_seconds: 0 }]);
+  };
+  const context: AuthorizedRequestContext = {
+    mode: "public_sandbox",
+    principal: {
+      userId: "system:public-sandbox",
+      email: "public-sandbox@invalid.local",
+    },
+    workspaceId: "workspace_sandbox",
+    role: "sandbox",
+    permissions: {
+      readWorkspace: true,
+      readPrivateSources: true,
+      mutateSources: true,
+      managePolicy: true,
+      administerFrameworks: false,
+    },
+  };
+
+  await rateLimitRequest(
+    new Request("https://demo.example/api/runs?workspaceId=attacker", {
+      headers: {
+        "cf-connecting-ip": "203.0.113.44",
+        "x-workspace-id": "attacker",
+      },
+    }),
+    "run-scan",
+    5,
+    60_000,
+    { environment, fetchImpl, context },
+  );
+  await rateLimitRequest(
+    new Request("https://demo.example/api/runs?workspaceId=another-attacker", {
+      headers: {
+        "cf-connecting-ip": "203.0.113.44",
+        "x-workspace-id": "another-attacker",
+      },
+    }),
+    "run-scan",
+    5,
+    60_000,
+    { environment, fetchImpl, context },
+  );
+  await rateLimitRequest(
+    new Request("https://demo.example/api/runs", {
+      headers: { "cf-connecting-ip": "198.51.100.20" },
+    }),
+    "run-scan",
+    5,
+    60_000,
+    { environment, fetchImpl, context },
+  );
+  await rateLimitRequest(
+    new Request("https://demo.example/api/runs", {
+      headers: { "cf-connecting-ip": "203.0.113.44" },
+    }),
+    "run-scan",
+    5,
+    60_000,
+    {
+      environment,
+      fetchImpl,
+      context: { ...context, workspaceId: "workspace_sandbox_other" },
+    },
+  );
+
+  assert.equal(hashes[0], hashes[1]);
+  assert.notEqual(hashes[0], hashes[2]);
+  assert.notEqual(hashes[0], hashes[3]);
+  assert.ok(hashes.every((hash) => /^[a-f0-9]{64}$/.test(hash)));
+  assert.doesNotMatch(hashes.join(" "), /attacker|203\.0\.113\.44/);
+});
+
 test("product rate-limit identity is injective for delimiter-bearing trusted identifiers", async () => {
   const hashes: string[] = [];
   const environment = {

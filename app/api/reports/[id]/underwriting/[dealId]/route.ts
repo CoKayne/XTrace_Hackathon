@@ -15,6 +15,7 @@ import {
   findCandidateForReportDeal,
   toCandidateUnderwritingDetail,
 } from "../../../../../../lib/underwriting/read-model";
+import { isDurableWorkspaceMode } from "../../../../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export async function GET(
       dependencies,
     );
     requirePermission(requestContext, "readWorkspace");
-    if (requestContext.mode !== "product") throw new Error("FORBIDDEN");
+    if (!isDurableWorkspaceMode(requestContext.mode)) throw new Error("FORBIDDEN");
     const { id, dealId } = await context.params;
     const report = await (
       dependencies.intelligence ?? getIntelligenceRepository()

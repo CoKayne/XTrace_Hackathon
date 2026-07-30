@@ -279,6 +279,16 @@ test("POST /api/runs keeps the public demo read-only and never queues a scan", a
   assert.deepEqual(await getDataClient().listRuns(workspaceId), []);
 });
 
+test("POST /api/runs accepts an anonymous public-sandbox request", async () => {
+  await withDeployment("public_sandbox", async () => {
+    const response = await createRun(
+      jsonRequest("/api/runs", { xtraceEnabled: false }),
+    );
+
+    assert.equal(response.status, 503);
+  });
+});
+
 for (const route of [
   {
     path: "/api/documents/upload",
@@ -573,7 +583,7 @@ function params<T extends Record<string, string>>(value: T): { params: Promise<T
 }
 
 async function withDeployment(
-  mode: "product" | "public_demo",
+  mode: "product" | "public_demo" | "public_sandbox",
   action: () => Promise<void>,
 ): Promise<void> {
   const previousMode = process.env.VSEE_DEPLOYMENT_MODE;

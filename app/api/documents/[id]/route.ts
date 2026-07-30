@@ -12,6 +12,7 @@ import {
   privateObjectKey,
   type PrivateObjectStorage,
 } from "../../../../lib/storage/service";
+import { isDurableWorkspaceMode } from "../../../../lib/auth/request-context";
 
 export const runtime = "nodejs";
 
@@ -39,6 +40,7 @@ export async function GET(
       }, dependencies.privateObjectStorage);
     }
 
+    if (!isDurableWorkspaceMode(requestContext.mode)) throw new Error("FORBIDDEN");
     requirePermission(requestContext, "readPrivateSources");
     const capability = await (
       dependencies.documentAccess ?? createDefaultPrivateDocumentAccess()

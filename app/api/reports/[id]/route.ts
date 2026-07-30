@@ -11,6 +11,7 @@ import { toPublicReport } from "../../../../lib/reports/public";
 import {
   buildUnderwritingBatchSummary,
 } from "../../../../lib/underwriting/read-model";
+import { isDurableWorkspaceMode } from "../../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export async function GET(
     if (!report) {
       return jsonError("NOT_FOUND", `Report ${id} was not found`, 404);
     }
-    const underwritingBatch = requestContext.mode === "product"
+    const underwritingBatch = isDurableWorkspaceMode(requestContext.mode)
       ? await buildUnderwritingBatchSummary({
         workspaceId: requestContext.workspaceId,
         scanRunId: report.runId,

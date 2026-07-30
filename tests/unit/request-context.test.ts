@@ -5,6 +5,7 @@ import { resolveRequestContext } from "../../lib/auth/request-context";
 import { errorResponse, jsonError } from "../../lib/api/response";
 import { IntegrationTransportError } from "../../lib/api/errors";
 import { ApiErrorSchema } from "../../lib/contracts/http";
+import { uiSessionForContext } from "../../app/ui-capabilities";
 
 function productContextFixture(input: {
   membership: { workspaceId: string; role: "owner" | "partner" | "associate" | "admin" } | null;
@@ -37,6 +38,39 @@ test("public demo resolves the server demo workspace with mutation disabled", as
     mutateSources: false,
     managePolicy: false,
     administerFrameworks: false,
+  });
+});
+
+test("public sandbox resolves one server-owned writable workspace", async () => {
+  const context = await resolveRequestContext(
+    new Request("https://vsee.test/api/runs", {
+      headers: { "x-workspace-id": "attacker_workspace" },
+    }),
+    {
+      environment: {
+        VSEE_DEPLOYMENT_MODE: "public_sandbox",
+        DEMO_WORKSPACE_ID: "workspace_sandbox",
+      },
+    },
+  );
+
+  assert.equal(context.mode, "public_sandbox");
+  assert.equal(context.workspaceId, "workspace_sandbox");
+  assert.equal(context.principal?.userId, "system:public-sandbox");
+  assert.deepEqual(context.permissions, {
+    readWorkspace: true,
+    readPrivateSources: true,
+    mutateSources: true,
+    managePolicy: true,
+    administerFrameworks: false,
+  });
+  assert.deepEqual(uiSessionForContext(context).capabilities, {
+    runScans: true,
+    resetDemo: true,
+    uploadSources: true,
+    confirmUploads: true,
+    manageFundPolicy: true,
+    saveActionDrafts: true,
   });
 });
 

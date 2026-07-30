@@ -336,6 +336,28 @@ for (const route of authenticatedProductHandlers) {
   });
 }
 
+for (const route of authenticatedProductHandlers.filter(({ path }) => [
+  "/api/action-drafts",
+  "/api/action-drafts/[id]",
+  "/api/chat",
+  "/api/deals",
+  "/api/deals/[id]",
+  "/api/documents/[id]",
+  "/api/documents/[id]/access",
+  "/api/overview",
+  "/api/reports/[id]",
+  "/api/reports/[id]/underwriting/[dealId]",
+  "/api/search",
+  "/api/runs",
+].includes(path))) {
+  test(`${route.method} ${route.path} reaches durable behavior in the public sandbox`, async () => {
+    const response = await route.invoke(publicSandboxDependencies());
+    assert.notEqual(response.status, 401);
+    assert.notEqual(response.status, 403);
+    assert.notEqual(response.status, 500);
+  });
+}
+
 const sourceMutationPaths = new Set([
   "/api/documents/upload",
   "/api/uploads",
@@ -988,6 +1010,29 @@ function productDependencies(
               managePolicy: role === "owner" || role === "admin",
               administerFrameworks: false,
             },
+      };
+    },
+  };
+}
+
+function publicSandboxDependencies(): RouteDependencies {
+  return {
+    async resolveRequestContext() {
+      return {
+        mode: "public_sandbox",
+        principal: {
+          userId: "system:public-sandbox",
+          email: "public-sandbox@invalid.local",
+        },
+        workspaceId: "workspace_demo",
+        role: "sandbox",
+        permissions: {
+          readWorkspace: true,
+          readPrivateSources: true,
+          mutateSources: true,
+          managePolicy: true,
+          administerFrameworks: false,
+        },
       };
     },
   };

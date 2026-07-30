@@ -29,6 +29,10 @@ import {
   isXTraceConfigured,
 } from "../../../lib/xtrace/client";
 import { createXTraceService } from "../../../lib/xtrace/service";
+import {
+  isDurableWorkspaceMode,
+  type DeploymentMode,
+} from "../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +80,7 @@ async function searchRuntimeIntelligence(
   question: string,
   workspaceId: string,
   repository: IntelligenceRepository,
-  mode: "public_demo" | "product",
+  mode: DeploymentMode,
 ): Promise<ChatEvidence[]> {
   const tokens = evidenceQueryTokens(question);
   if (!tokens.length) return [];
@@ -85,11 +89,11 @@ async function searchRuntimeIntelligence(
     repository.listReports(workspaceId),
   ]);
   const eventEvidence = events.flatMap((event) => {
-    const sources = mode === "public_demo"
-      ? event.sources
-      : event.sources.filter((source) =>
+    const sources = isDurableWorkspaceMode(mode)
+      ? event.sources.filter((source) =>
         source.provenance !== "demo_fixture"
-      );
+      )
+      : event.sources;
     if (sources.length === 0) return [];
     const haystack = [
       event.title,
@@ -105,14 +109,13 @@ async function searchRuntimeIntelligence(
       sources,
     }];
   });
-  const companyByDeal = mode === "public_demo"
-    ? new Map(
+  const companyByDeal = isDurableWorkspaceMode(mode)
+    ? new Map<string, string>()
+    : new Map(
         buildDemoViewModel().deals.map((deal) => [deal.id, deal.companyName]),
       )
-    : new Map<string, string>();
-  const searchableReports = mode === "public_demo"
-    ? reports
-    : reports.map((report) => ({
+  const searchableReports = isDurableWorkspaceMode(mode)
+    ? reports.map((report) => ({
         ...report,
         opportunities: report.opportunities.filter(
           isProductOpportunityEvidence,
@@ -120,7 +123,8 @@ async function searchRuntimeIntelligence(
         companyAnalyses: report.companyAnalyses.filter(
           isProductCompanyAnalysisEvidence,
         ),
-      }));
+      }))
+    : reports;
   const reportEvidence = buildPersistedReportEvidence({
     question,
     reports: searchableReports,
@@ -193,16 +197,16 @@ async function productMemoryScope(
 async function recallExistingMemory(
   question: string,
   workspaceId: string,
-  mode: "public_demo" | "product",
+  mode: DeploymentMode,
   repository: IntelligenceRepository,
 ): Promise<MemoryRecallOutcome> {
   if (!isXTraceConfigured()) return { status: "unavailable" };
-  const scope = mode === "public_demo"
-    ? {
+  const scope = isDurableWorkspaceMode(mode)
+    ? await productMemoryScope(workspaceId, repository)
+    : {
         sourceById: allDemoSources(),
         candidateDealIds: buildDemoViewModel().deals.map((deal) => deal.id),
-      }
-    : await productMemoryScope(workspaceId, repository);
+      };
   if (scope.candidateDealIds.length === 0) return { status: "unavailable" };
   const service = createXTraceService(getXTraceClient(), {
     workspaceId,
@@ -216,7 +220,7 @@ async function recallExistingMemory(
     });
     const evidence = contexts.flatMap((context) => {
       if (
-        mode === "product"
+        isDurableWorkspaceMode(mode)
         && (
           context.fixtureIds.length > 0
           || context.provenance === "demo_fixture"
@@ -224,9 +228,9 @@ async function recallExistingMemory(
       ) {
         return [];
       }
-      const evidenceIds = mode === "public_demo"
-        ? [...context.sourceIds, ...context.fixtureIds]
-        : context.sourceIds;
+      const evidenceIds = isDurableWorkspaceMode(mode)
+        ? context.sourceIds
+        : [...context.sourceIds, ...context.fixtureIds];
       const sources = evidenceIds.flatMap((sourceId) => {
         const source = scope.sourceById.get(sourceId);
         return source ? [source] : [];

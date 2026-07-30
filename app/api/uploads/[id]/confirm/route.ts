@@ -14,6 +14,7 @@ import {
   UploadConfirmationConflictError,
   UploadConfirmationNotFoundError,
 } from "../../../../../lib/uploads/confirmation";
+import { isDurableWorkspaceMode } from "../../../../../lib/auth/request-context";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export async function POST(
       dependencies,
     );
     requirePermission(requestContext, "mutateSources");
+    if (!isDurableWorkspaceMode(requestContext.mode)) throw new Error("FORBIDDEN");
     const choice = ConfirmUploadSchema.parse(await request.json());
     const { id } = await context.params;
     const service = createUploadConfirmationService({

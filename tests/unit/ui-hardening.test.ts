@@ -155,6 +155,46 @@ test("health exposes product controls from the server-authorized request context
   });
 });
 
+test("health exposes all testing controls for a public sandbox context", async () => {
+  const response = await getHealth(
+    new Request("http://localhost/api/settings/health"),
+    undefined,
+    {
+      async resolveRequestContext() {
+        return {
+          mode: "public_sandbox",
+          principal: {
+            userId: "system:public-sandbox",
+            email: "public-sandbox@invalid.local",
+          },
+          workspaceId: "workspace_sandbox",
+          role: "sandbox",
+          permissions: {
+            readWorkspace: true,
+            readPrivateSources: true,
+            mutateSources: true,
+            managePolicy: true,
+            administerFrameworks: false,
+          },
+        };
+      },
+    },
+  );
+  const body = await response.json() as {
+    data: { deploymentMode: string; capabilities: Record<string, boolean> };
+  };
+
+  assert.equal(body.data.deploymentMode, "public_sandbox");
+  assert.deepEqual(body.data.capabilities, {
+    runScans: true,
+    resetDemo: true,
+    uploadSources: true,
+    confirmUploads: true,
+    manageFundPolicy: true,
+    saveActionDrafts: true,
+  });
+});
+
 test("health reports XTrace configured for an mmk key without an organization ID", async () => {
   const previousApiKey = process.env.XTRACE_API_KEY;
   const previousOrgId = process.env.XTRACE_ORG_ID;

@@ -16,6 +16,7 @@ import { getProductInputReadiness } from "../../../lib/corpus/import-readiness";
 import { createDefaultDemoDataStore } from "../../../lib/storage/service";
 import { isXTraceConfigured } from "../../../lib/xtrace/client";
 import { toPublicRun } from "../../../lib/runs/public";
+import { isDurableWorkspaceMode } from "../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export async function POST(
   try {
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
-    if (context.mode !== "product") throw new Error("FORBIDDEN");
+    if (!isDurableWorkspaceMode(context.mode)) throw new Error("FORBIDDEN");
     if (
       process.env.NODE_ENV === "production" &&
       (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)

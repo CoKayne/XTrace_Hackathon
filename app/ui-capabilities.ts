@@ -74,17 +74,19 @@ export function uiSessionForContext(
   context: AuthorizedRequestContext,
 ): UiSession {
   const product = context.mode === "product";
+  const sandbox = context.mode === "public_sandbox";
+  const durableWorkspace = product || sandbox;
   return {
     deploymentMode: context.mode,
     capabilities: {
-      runScans: product,
+      runScans: durableWorkspace,
       // Reset deletes durable analysis products and is intentionally not
-      // presented as an end-user capability in either deployment mode.
-      resetDemo: false,
-      uploadSources: product && context.permissions.mutateSources,
-      confirmUploads: product && context.permissions.mutateSources,
-      manageFundPolicy: product && context.permissions.managePolicy,
-      saveActionDrafts: product && context.principal !== null,
+      // presented as an authenticated-product capability.
+      resetDemo: sandbox,
+      uploadSources: durableWorkspace && context.permissions.mutateSources,
+      confirmUploads: durableWorkspace && context.permissions.mutateSources,
+      manageFundPolicy: durableWorkspace && context.permissions.managePolicy,
+      saveActionDrafts: durableWorkspace && context.principal !== null,
     },
   };
 }

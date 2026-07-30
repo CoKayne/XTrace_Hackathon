@@ -14,6 +14,7 @@ import {
   canonicalPublicAppOrigin,
   uiSessionForContext,
 } from "../../../ui-capabilities";
+import { isDurableWorkspaceMode } from "../../../../lib/auth/request-context";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export async function GET(
         worker = false;
       }
     }
-    const canonicalAppOrigin = context.mode === "public_demo"
+    const canonicalAppOrigin = !isDurableWorkspaceMode(context.mode)
       ? canonicalPublicAppOrigin(process.env.PUBLIC_APP_URL)
       : undefined;
 

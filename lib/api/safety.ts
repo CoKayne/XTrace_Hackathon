@@ -131,6 +131,15 @@ function rateLimitClientIdentifier(
       context.workspaceId,
     ]);
   }
+  if (context?.mode === "public_sandbox") {
+    return JSON.stringify([
+      "public_sandbox",
+      "workspace",
+      context.workspaceId,
+      "origin",
+      clientIdentifier(request),
+    ]);
+  }
   return clientIdentifier(request);
 }
 

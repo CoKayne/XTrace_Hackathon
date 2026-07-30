@@ -10,6 +10,7 @@ import { requirePermission } from "../../../lib/api/safety";
 import {
   searchPersistedUnderwriting,
 } from "../../../lib/underwriting/read-model";
+import { isDurableWorkspaceMode } from "../../../lib/auth/request-context";
 
 const SearchQuerySchema = z.string().trim().min(2).max(500);
 
@@ -23,7 +24,7 @@ export async function GET(
   try {
     const context = await resolveRouteRequestContext(request, dependencies);
     requirePermission(context, "readWorkspace");
-    if (context.mode !== "product") throw new Error("FORBIDDEN");
+    if (!isDurableWorkspaceMode(context.mode)) throw new Error("FORBIDDEN");
     const query = SearchQuerySchema.parse(
       new URL(request.url).searchParams.get("q") ?? "",
     );

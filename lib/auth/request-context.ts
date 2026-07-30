@@ -9,9 +9,15 @@ import {
   type TrustedSessionResolver,
 } from "./session";
 
-export type DeploymentMode = "public_demo" | "product";
-export type WorkspaceRole = WorkspaceMembershipRole | "demo";
+export type DeploymentMode = "public_demo" | "public_sandbox" | "product";
+export type WorkspaceRole = WorkspaceMembershipRole | "demo" | "sandbox";
 export type { AuthenticatedPrincipal } from "./session";
+
+export const PUBLIC_SANDBOX_ACTOR_ID = "system:public-sandbox";
+
+export function isDurableWorkspaceMode(mode: DeploymentMode): boolean {
+  return mode === "public_sandbox" || mode === "product";
+}
 
 export interface AuthorizedRequestContext {
   mode: DeploymentMode;
@@ -51,6 +57,27 @@ export async function resolveRequestContext(
         readPrivateSources: false,
         mutateSources: false,
         managePolicy: false,
+        administerFrameworks: false,
+      },
+    };
+  }
+
+  if (mode === "public_sandbox") {
+    const workspaceId = environment.DEMO_WORKSPACE_ID?.trim();
+    if (!workspaceId) throw new Error("INTERNAL_ERROR");
+    return {
+      mode,
+      principal: {
+        userId: PUBLIC_SANDBOX_ACTOR_ID,
+        email: "public-sandbox@invalid.local",
+      },
+      workspaceId,
+      role: "sandbox",
+      permissions: {
+        readWorkspace: true,
+        readPrivateSources: true,
+        mutateSources: true,
+        managePolicy: true,
         administerFrameworks: false,
       },
     };

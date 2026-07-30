@@ -7,6 +7,7 @@ import { requirePermission } from "../../../../lib/api/safety";
 import { buildDemoViewModel } from "../../../../lib/demo/view-model";
 import { getDealRegistry } from "../../../../db/repositories/deal-registry";
 import { toProductDealView } from "../../../../lib/deals/read-model";
+import { isDurableWorkspaceMode } from "../../../../lib/auth/request-context";
 
 export async function GET(
   request: Request,
@@ -20,7 +21,7 @@ export async function GET(
     );
     requirePermission(requestContext, "readWorkspace");
     const { id } = await context.params;
-    const deal = requestContext.mode === "product"
+    const deal = isDurableWorkspaceMode(requestContext.mode)
       ? await (
         dependencies.dealRegistry ?? getDealRegistry()
       ).findForWorkspace({
