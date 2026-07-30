@@ -36,6 +36,7 @@ test("server-renders the VSee investor workflow shell", async () => {
     "Overview",
     "Deals",
     "Sources",
+    "Fund Policy",
     "Market",
     "Reports",
     "Chat",
@@ -44,7 +45,7 @@ test("server-renders the VSee investor workflow shell", async () => {
     assert.match(html, new RegExp(`Open ${label}`));
   }
   assert.doesNotMatch(html, /aria-label="Open Runs"/);
-  assert.match(html, /Loading the fixed evidence corpus/);
+  assert.match(html, /Loading workspace evidence/);
 });
 
 test("keeps company intelligence and responsive hierarchy in the production source", async () => {

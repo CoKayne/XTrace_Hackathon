@@ -4,6 +4,11 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 
 import { ReportDraftDialog } from "./report-draft-dialog";
 import { ScanProgress } from "./scan-progress";
+import { FundPolicyView } from "./fund-policy";
+import {
+  SourceUploadFlow,
+  type SourceUploadDto,
+} from "./source-upload-flow";
 import {
   CompanyIntelligenceReport,
   type IntelligenceReportView,
@@ -15,14 +20,29 @@ import {
 import { decisionReasonLabel } from "../lib/demo/decision-label";
 import { SAMPLE_DEAL_PROFILES } from "./deal-profiles";
 import type { ChatMemoryStatus } from "../lib/chat/service";
-import type { UploadPreviewDto } from "../lib/uploads/confirmation";
+import type { ConfirmUpload } from "../lib/contracts/http";
+import type {
+  UploadRecoveryDto,
+  UploadRecoveryDetailDto,
+} from "../lib/uploads/confirmation";
+import type {
+  UnderwritingSearchResult,
+} from "../lib/underwriting/read-model";
+import { toProductSearchMessage } from "./product-search-view-model";
+import {
+  SAFE_UI_SESSION,
+  type UiCapabilities,
+  type UiSession,
+} from "./ui-capabilities";
+import { SourceRevisionLink } from "./source-revision-link";
 
-type UploadedDocument = UploadPreviewDto;
+type UploadedDocument = SourceUploadDto;
 
 type View =
   | "overview"
   | "deals"
   | "import"
+  | "policy"
   | "market"
   | "reports"
   | "chat"
@@ -47,6 +67,11 @@ interface Deal {
   documentId: string;
   sourceTitle: string;
   sourceUrl: string;
+  sourceRevisionIds?: string[];
+  sourceLinks?: Array<{
+    sourceRevisionId: string;
+    sourceUrl: string;
+  }>;
   fixture?: DemoFixture;
 }
 
@@ -69,6 +94,8 @@ interface Overview {
     marketReports: number;
     referenceDocuments: number;
     fixtureDeals: number;
+    activeSourceRevisions?: number;
+    uploads?: number;
   };
   deals: Deal[];
   documents: DocumentItem[];
@@ -114,6 +141,8 @@ interface MarketEvent {
 type Report = IntelligenceReportView;
 
 interface Health {
+  deploymentMode: UiSession["deploymentMode"];
+  capabilities: UiCapabilities;
   postgres: boolean;
   worker: boolean;
   xtrace: boolean;
@@ -145,6 +174,7 @@ const nav: Array<{ view: View; label: string; icon: string }> = [
   { view: "overview", label: "Overview", icon: "⌂" },
   { view: "deals", label: "Deals", icon: "▤" },
   { view: "import", label: "Sources", icon: "↥" },
+  { view: "policy", label: "Fund Policy", icon: "§" },
   { view: "market", label: "Market", icon: "◉" },
   { view: "reports", label: "Reports", icon: "◇" },
   { view: "chat", label: "Chat", icon: "⌘" },
@@ -188,6 +218,18 @@ function shortDate(value: string) {
   }).format(new Date(value));
 }
 
+async function loadCanonicalUploads(): Promise<UploadedDocument[]> {
+  const uploads = await api<UploadRecoveryDto[]>("/api/uploads");
+  return Promise.all(uploads.map(async (upload) => {
+    if (upload.status === "awaiting_confirmation") {
+      return api<UploadRecoveryDetailDto>(
+        `/api/uploads/${encodeURIComponent(upload.uploadId)}`,
+      );
+    }
+    return { ...upload, candidateDeals: [] };
+  }));
+}
+
 export default function Home() {
   const [view, setView] = useState<View>("overview");
   const [overview, setOverview] = useState<Overview | null>(null);
@@ -221,10 +263,10 @@ export default function Home() {
         api<MarketEvent[]>("/api/market/events"),
         api<Report[]>("/api/reports"),
         api<Health>("/api/settings/health"),
-        api<UploadedDocument[]>("/api/documents/uploaded"),
+        loadCanonicalUploads(),
       ]);
     if (model.status === "fulfilled") setOverview(model.value);
-    else setError(model.reason instanceof Error ? model.reason.message : "Unable to load the fixed corpus");
+    else setError(model.reason instanceof Error ? model.reason.message : "Unable to load workspace evidence");
     if (runRows.status === "fulfilled") setRuns(runRows.value);
     if (marketRows.status === "fulfilled") setEvents(marketRows.value);
     if (reportRows.status === "fulfilled") setReports(reportRows.value);
@@ -235,6 +277,12 @@ export default function Home() {
         setXtraceEnabled(healthState.value.xtrace);
         xtraceInitialized.current = true;
       }
+    } else {
+      setError(
+        healthState.reason instanceof Error
+          ? healthState.reason.message
+          : "Unable to verify server capabilities",
+      );
     }
   }, []);
 
@@ -275,11 +323,16 @@ export default function Home() {
   }, [runs, load]);
 
   useEffect(() => {
-    if (!uploads.some((item) => item.status === "queued" || item.status === "extracting")) {
+    if (!uploads.some((item) =>
+      item.status === "queued"
+      || item.status === "extracting"
+      || item.status === "confirmed"
+      || item.status === "ingesting_memory"
+    )) {
       return;
     }
     const timer = window.setInterval(() => {
-      void api<UploadedDocument[]>("/api/documents/uploaded")
+      void loadCanonicalUploads()
         .then(setUploads)
         .catch(() => undefined);
     }, 3_000);
@@ -393,7 +446,14 @@ export default function Home() {
 
   const latestRun = runs[0];
   const latestReport = reports[0];
+  const uiSession: UiSession = health
+    ? {
+        deploymentMode: health.deploymentMode,
+        capabilities: health.capabilities,
+      }
+    : SAFE_UI_SESSION;
   const scanReady = Boolean(
+    uiSession.capabilities.runScans &&
     health?.postgres &&
     health.worker &&
     health.anthropic &&
@@ -412,6 +472,12 @@ export default function Home() {
   }
 
   async function runScan() {
+    if (!uiSession.capabilities.runScans) {
+      setError(
+        "Market scans are disabled in this read-only public demo.",
+      );
+      return;
+    }
     if (!scanReady) {
       setError("Confirm the complete 13-source corpus first. The scan also needs PostgreSQL, an active worker, Anthropic, and—when enabled—XTrace.");
       setView("settings");
@@ -450,15 +516,9 @@ export default function Home() {
         headers: {},
         body,
       });
-      const record: UploadedDocument = {
-        uploadId: created.uploadId,
-        filename: file.name,
-        contentType: file.type || "application/octet-stream",
-        status: created.status,
-        failure: null,
-        preview: null,
-        candidateDeals: [],
-      };
+      const record = await api<UploadRecoveryDetailDto>(
+        `/api/uploads/${encodeURIComponent(created.uploadId)}`,
+      );
       setUploads((current) => [
         record,
         ...current.filter((item) => item.uploadId !== record.uploadId),
@@ -473,19 +533,37 @@ export default function Home() {
     }
   }
 
-  async function resetDemo() {
-    setBusy("reset");
+  async function confirmUploadedSource(
+    uploadId: string,
+    choice: ConfirmUpload,
+  ) {
+    if (!uiSession.capabilities.confirmUploads) {
+      setError("The server did not grant source confirmation.");
+      return;
+    }
+    setBusy(`confirm:${uploadId}`);
     setError("");
     try {
-      await api("/api/demo/reset", { method: "POST" });
-      setFocusedReportId(null);
-      const url = new URL(window.location.href);
-      url.searchParams.delete("report");
-      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      const confirmed = await api<{
+        uploadId: string;
+        dealId: string;
+        sourceRevisionId: string;
+        status: "confirmed";
+      }>(`/api/uploads/${encodeURIComponent(uploadId)}/confirm`, {
+        method: "POST",
+        body: JSON.stringify(choice),
+      });
+      setUploads(await loadCanonicalUploads());
+      setNotice(
+        `Confirmed ${confirmed.uploadId}. Deal ${confirmed.dealId} and Source Revision ${confirmed.sourceRevisionId} are durable.`,
+      );
       await load();
-      setNotice("Demo reset. Run a scan to generate a fresh evidence-linked report.");
-    } catch (resetError) {
-      setError(resetError instanceof Error ? resetError.message : "Could not reset the demo");
+    } catch (confirmError) {
+      setError(
+        confirmError instanceof Error
+          ? confirmError.message
+          : "Could not confirm the upload.",
+      );
     } finally {
       setBusy(null);
     }
@@ -584,6 +662,23 @@ export default function Home() {
     setBusy("chat");
     setError("");
     try {
+      if (uiSession.deploymentMode === "product") {
+        const search = await api<{
+          query: string;
+          results: UnderwritingSearchResult[];
+        }>(`/api/search?q=${encodeURIComponent(question)}`);
+        const message = toProductSearchMessage(search.results);
+        setChatMessages((current) => [
+          ...current,
+          {
+            role: "assistant",
+            text: message.text,
+            citations: message.citations,
+            memoryStatus: "disabled",
+          },
+        ]);
+        return;
+      }
       const answer = await api<{
         answer: string;
         citations: Source[];
@@ -646,12 +741,11 @@ export default function Home() {
           <div className="vsee-top-actions">
             <button
               className="vsee-memory-toggle"
-              onClick={resetDemo}
-              disabled={busy === "reset"}
-              aria-label="Clear prior scan results so the next scan starts from a clean slate"
-              title="Clears reports, analyses, run history, and market events. Deals, sources, and XTrace memory stay."
+              disabled
+              aria-label="Reset is disabled"
+              title="Durable analysis products are never deleted from this UI."
             >
-              {busy === "reset" ? "RESETTING…" : "RESET DEMO"}
+              RESET DISABLED
             </button>
             <button
               className={`vsee-memory-toggle ${xtraceEnabled ? "on" : ""}`}
@@ -668,8 +762,16 @@ export default function Home() {
               className="vsee-run"
               onClick={runScan}
               disabled={busy === "scan" || !scanReady}
-              aria-label={scanReady ? "Run a 14-day market scan" : "Scan unavailable until required integrations are ready"}
-              title={scanReady ? undefined : "PostgreSQL, worker, Anthropic, and the selected memory mode must be ready"}
+              aria-label={scanReady
+                ? "Run a 14-day market scan"
+                : uiSession.deploymentMode === "public_demo"
+                ? "Scan disabled in the read-only public demo"
+                : "Scan unavailable until required integrations are ready"}
+              title={scanReady
+                ? undefined
+                : uiSession.deploymentMode === "public_demo"
+                ? "Public demo is read-only."
+                : "PostgreSQL, worker, Anthropic, and the selected memory mode must be ready"}
             >
               {busy === "scan" ? "QUEUING…" : "WAKE AGENT & SCAN MARKET"} <span>→</span>
             </button>
@@ -679,8 +781,8 @@ export default function Home() {
         {error && <div className="vsee-banner error" role="alert">{error}<button onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
         {notice && <div className="vsee-banner" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notice">×</button></div>}
 
-        {!overview ? (
-          <section className="vsee-loading">Loading the fixed evidence corpus…</section>
+        {!overview || !health ? (
+          <section className="vsee-loading">Loading workspace evidence…</section>
         ) : (
           <>
             {view === "overview" && (
@@ -693,6 +795,7 @@ export default function Home() {
                 onRun={runScan}
                 scanReady={scanReady}
                 xtraceEnabled={xtraceEnabled}
+                deploymentMode={uiSession.deploymentMode}
               />
             )}
             {view === "deals" && (
@@ -701,6 +804,7 @@ export default function Home() {
                 uploads={uploads}
                 query={query}
                 onQuery={setQuery}
+                deploymentMode={uiSession.deploymentMode}
               />
             )}
             {view === "import" && (
@@ -718,6 +822,17 @@ export default function Home() {
                 onConfirm={confirmSources}
                 onConfirmedDealAssignments={setConfirmedDealAssignments}
                 busy={busy === "import" || busy === "preview"}
+                deploymentMode={uiSession.deploymentMode}
+                capabilities={uiSession.capabilities}
+                confirmingUploadId={busy?.startsWith("confirm:")
+                  ? busy.slice("confirm:".length)
+                  : null}
+                onConfirmUpload={confirmUploadedSource}
+              />
+            )}
+            {view === "policy" && (
+              <FundPolicyView
+                canManage={uiSession.capabilities.manageFundPolicy}
               />
             )}
             {view === "market" && <MarketView events={events} />}
@@ -727,6 +842,10 @@ export default function Home() {
                 deals={overview.deals}
                 onDraft={draftReport}
                 focusedReportId={focusedReportId}
+                deploymentMode={uiSession.deploymentMode}
+                canSaveActionDrafts={
+                  uiSession.capabilities.saveActionDrafts
+                }
               />
             )}
             {view === "chat" && (
@@ -737,6 +856,7 @@ export default function Home() {
                 onSubmit={askChat}
                 busy={busy === "chat"}
                 xtraceEnabled={xtraceEnabled}
+                deploymentMode={uiSession.deploymentMode}
               />
             )}
             {view === "settings" && <SettingsView health={health} runs={runs} />}
@@ -766,6 +886,7 @@ function OverviewView({
   onRun,
   scanReady,
   xtraceEnabled,
+  deploymentMode,
 }: {
   overview: Overview;
   latestRun?: Run;
@@ -775,6 +896,7 @@ function OverviewView({
   onRun(): void;
   scanReady: boolean;
   xtraceEnabled: boolean;
+  deploymentMode: UiSession["deploymentMode"];
 }) {
   const companyByDeal = new Map(
     overview.deals.map((deal) => [deal.id, deal.companyName]),
@@ -786,21 +908,45 @@ function OverviewView({
           <p className="vsee-eyebrow">SECOND LOOK ENGINE</p>
           <h1>The market changed.<br /><em>Your old Deal memory should know.</em></h1>
           <p>
-            VSee scans the last 14 days of public evidence, recalls historical Deals
-            {xtraceEnabled ? " through XTrace" : " from confirmed structured memory"}, and surfaces
-            only medium- or high-confidence reasons to look again.
+            {deploymentMode === "product"
+              ? "VSee uses persisted Deal Registry sources, finalized report artifacts, and exact Source Revision lineage to surface source-grounded reasons to look again."
+              : `VSee scans the last 14 days of public evidence, recalls historical Deals ${
+                  xtraceEnabled
+                    ? "through XTrace"
+                    : "from confirmed structured memory"
+                }, and surfaces only medium- or high-confidence reasons to look again.`}
           </p>
         </div>
         <div className="vsee-hero-card">
-          <span>FIXED MVP CORPUS</span>
+          <span>
+            {deploymentMode === "product"
+              ? "PERSISTED DEAL REGISTRY"
+              : "FIXED MVP CORPUS"}
+          </span>
           <strong>{overview.stats.deals}</strong>
           <p>historical Deals</p>
-          <div><b>{overview.stats.marketReports}</b> market reports <b>{overview.stats.fixtureDeals}</b> labeled VC decisions</div>
+          <div>
+            <b>{overview.stats.marketReports}</b> reports{" "}
+            <b>
+              {deploymentMode === "product"
+                ? overview.stats.activeSourceRevisions ?? 0
+                : overview.stats.fixtureDeals}
+            </b>{" "}
+            {deploymentMode === "product"
+              ? "active Source Revisions"
+              : "labeled VC decisions"}
+          </div>
         </div>
       </section>
 
       <section className="vsee-stat-grid">
-        <Metric label="Historical Deals" value={String(overview.stats.deals)} note="From 9 supplied pitch deck files" />
+        <Metric
+          label="Historical Deals"
+          value={String(overview.stats.deals)}
+          note={deploymentMode === "product"
+            ? "Persisted Deal Registry"
+            : "From 9 supplied pitch deck files"}
+        />
         <Metric label="Market window" value="14 days" note="Manual, repeatable scan" />
         <Metric label="Latest signals" value={String(events.length)} note="Evidence-linked only" />
         <Metric
@@ -815,7 +961,11 @@ function OverviewView({
           <header>
             <span>LIVE WORKFLOW</span>
             <button onClick={onRun} disabled={!scanReady}>
-              {scanReady ? "START SCAN →" : "SCAN NOT READY"}
+              {scanReady
+                ? "START SCAN →"
+                : deploymentMode === "public_demo"
+                ? "READ-ONLY DEMO"
+                : "SCAN NOT READY"}
             </button>
           </header>
           {[
@@ -904,21 +1054,31 @@ function UploadedDealCards({ uploads }: { uploads: UploadedDocument[] }) {
   );
 }
 
-function DealsView({
+export function DealsView({
   deals,
   uploads,
   query,
   onQuery,
+  deploymentMode,
 }: {
   deals: Deal[];
   uploads: UploadedDocument[];
   query: string;
   onQuery(value: string): void;
+  deploymentMode: UiSession["deploymentMode"];
 }) {
   return (
     <div className="vsee-content">
-      <SectionTitle eyebrow="HISTORICAL MEMORY" title="Every Deal you have already met." copy="Company facts come from the supplied pitch decks. Investment state and prior decision context are synthetic demo fixtures only when explicitly labeled." />
-      <UploadedDealCards uploads={uploads} />
+      <SectionTitle
+        eyebrow="HISTORICAL MEMORY"
+        title="Every Deal you have already met."
+        copy={deploymentMode === "product"
+          ? "Company identity, status, and exact source links come from the persisted Deal Registry."
+          : "Company facts come from the supplied pitch decks. Investment state and prior decision context are synthetic demo fixtures only when explicitly labeled."}
+      />
+      {deploymentMode === "public_demo" && (
+        <UploadedDealCards uploads={uploads} />
+      )}
       <input
         className="vsee-search"
         value={query}
@@ -934,17 +1094,34 @@ function DealsView({
       ) : (
         <div className="vsee-deal-list">
           {deals.map((deal) => {
-            const profile = SAMPLE_DEAL_PROFILES[deal.id];
+            const profile = deploymentMode === "public_demo"
+              ? SAMPLE_DEAL_PROFILES[deal.id]
+              : undefined;
+            const sourceLinks = deal.sourceLinks?.length
+              ? deal.sourceLinks
+              : deal.sourceUrl
+              ? [{
+                  sourceRevisionId: deal.documentId || deal.sourceTitle,
+                  sourceUrl: deal.sourceUrl,
+                }]
+              : [];
             return (
           <article className="vsee-deal" key={deal.id}>
             <div className="vsee-monogram">{deal.companyName.slice(0, 2).toUpperCase()}</div>
             <div className="vsee-deal-name">
               <strong>{deal.companyName}</strong>
-              <a href={deal.sourceUrl} target="_blank" rel="noreferrer">{deal.sourceTitle} ↗</a>
+              {sourceLinks.length ? sourceLinks.map((source) => (
+                <SourceRevisionLink
+                  revisionId={source.sourceRevisionId}
+                  key={source.sourceRevisionId}
+                >
+                  {source.sourceRevisionId} ↗
+                </SourceRevisionLink>
+              )) : <span>No confirmed Source Revision</span>}
             </div>
             <span className={`vsee-status ${deal.status}`}>{statusLabels[deal.status]}</span>
             <div className="vsee-context">
-              {deal.fixture ? (
+              {deploymentMode === "public_demo" && deal.fixture ? (
                 <>
                   <b>{deal.fixture.label}</b>
                   <dl className="vsee-context-grid">
@@ -967,7 +1144,14 @@ function DealsView({
                   </dl>
                 </>
               ) : (
-                <><b>SOURCE ONLY</b><span>No synthetic decision record attached.</span></>
+                <>
+                  <b>SOURCE LINEAGE</b>
+                  <span>
+                    {deploymentMode === "product"
+                      ? `${deal.sourceRevisionIds?.length ?? sourceLinks.length} confirmed Source Revision(s).`
+                      : "No synthetic decision record attached."}
+                  </span>
+                </>
               )}
               {profile && (
                 <>
@@ -1008,75 +1192,6 @@ const uploadStatusCopy: Record<UploadedDocument["status"], string> = {
   failed: "Extraction failed",
 };
 
-function UploadPanel({
-  uploads,
-  onUpload,
-  uploading,
-}: {
-  uploads: UploadedDocument[];
-  onUpload(file: File): void;
-  uploading: boolean;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  return (
-    <section className="vsee-upload-panel" aria-labelledby="upload-title">
-      <header>
-        <div>
-          <span className="vsee-eyebrow">ADD YOUR OWN</span>
-          <h2 id="upload-title">Upload a source for review.</h2>
-          <p>
-            TXT, Markdown, JPEG, PNG, GIF, or WebP. We first show an extraction
-            preview; uploads never create a Deal, enter memory, join the fixed corpus,
-            or change the 14-day scan until later confirmation.
-          </p>
-        </div>
-        <button
-          className="primary"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-        >
-          {uploading ? "UPLOADING…" : "UPLOAD DOCUMENT"}
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".txt,.md,.jpg,.jpeg,.png,.gif,.webp"
-          hidden
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) onUpload(file);
-            event.target.value = "";
-          }}
-        />
-      </header>
-      {uploads.length > 0 && (
-        <div className="vsee-upload-list">
-          {uploads.map((upload) => (
-            <article key={upload.uploadId}>
-              <div>
-                <strong>{upload.preview?.candidateCompanyName ?? upload.filename}</strong>
-                <small>
-                  {upload.filename} · {upload.contentType}
-                </small>
-              </div>
-              <span className={`vsee-upload-status ${upload.status}`}>
-                {uploadStatusCopy[upload.status]}
-              </span>
-              <p>
-                {upload.status === "awaiting_confirmation"
-                  ? `${upload.preview?.facts.length ?? 0} extracted facts. Awaiting your confirmation before Deal or memory actions.`
-                  : upload.status === "failed"
-                  ? upload.failure ?? "The document could not be extracted."
-                  : "The background agent is reading this document."}
-              </p>
-            </article>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
 function SourcesView({
   documents,
   selected,
@@ -1091,6 +1206,10 @@ function SourcesView({
   onConfirm,
   onConfirmedDealAssignments,
   busy,
+  deploymentMode,
+  capabilities,
+  confirmingUploadId,
+  onConfirmUpload,
 }: {
   documents: DocumentItem[];
   selected: string[];
@@ -1105,6 +1224,10 @@ function SourcesView({
   onConfirm(): void;
   onConfirmedDealAssignments(ids: string[]): void;
   busy: boolean;
+  deploymentMode: UiSession["deploymentMode"];
+  capabilities: UiCapabilities;
+  confirmingUploadId: string | null;
+  onConfirmUpload(uploadId: string, choice: ConfirmUpload): void;
 }) {
   const assignments = (preview ?? []).flatMap((item) => {
     if (!item.requiresDealConfirmation) return [];
@@ -1137,18 +1260,51 @@ function SourcesView({
   }
   return (
     <div className="vsee-content">
-      <SectionTitle eyebrow="PRELOADED SOURCES" title="Confirm the evidence corpus." copy="The MVP uses exactly the supplied 9 pitch decks and 4 market reports. The VC Brain remains reference-only and never enters runtime memory." />
+      <SectionTitle
+        eyebrow={deploymentMode === "product"
+          ? "PRIVATE SOURCE REGISTRY"
+          : "PRELOADED SOURCES"}
+        title={deploymentMode === "product"
+          ? "Review and confirm source identity."
+          : "Inspect the evidence corpus."}
+        copy={deploymentMode === "product"
+          ? "Uploaded sources remain staged until company identity and Deal ownership are explicitly confirmed."
+          : "The public demo exposes its supplied source list for inspection, while all source mutations remain disabled."}
+      />
 
-      <UploadPanel uploads={uploads} onUpload={onUpload} uploading={uploading} />
-      <div className="vsee-source-actions">
-        <span>{selected.length} selected</span>
-        <button onClick={() => onSelected(importableIds)}>SELECT 13 PRODUCT INPUTS</button>
-        {!preview && (
-          <button className="primary" onClick={onPreview} disabled={!completeCorpusSelected || busy}>
-            {busy ? "PREPARING…" : "REVIEW ASSIGNMENTS →"}
+      <SourceUploadFlow
+        uploads={uploads}
+        canUpload={capabilities.uploadSources}
+        canConfirm={capabilities.confirmUploads}
+        uploading={uploading}
+        confirmingUploadId={confirmingUploadId}
+        onUpload={onUpload}
+        onConfirm={onConfirmUpload}
+      />
+      {documents.length > 0 && (
+        <div className="vsee-source-actions">
+          <span>{selected.length} selected · read-only demo corpus</span>
+          <button
+            onClick={() => onSelected(importableIds)}
+            disabled={!capabilities.confirmUploads}
+          >
+            SELECT 13 PRODUCT INPUTS
           </button>
-        )}
-      </div>
+          {!preview && (
+            <button
+              className="primary"
+              onClick={onPreview}
+              disabled={
+                !capabilities.confirmUploads
+                || !completeCorpusSelected
+                || busy
+              }
+            >
+              {busy ? "PREPARING…" : "REVIEW ASSIGNMENTS →"}
+            </button>
+          )}
+        </div>
+      )}
       {preview && (
         <section className="vsee-import-review" aria-labelledby="import-review-title">
           <header>
@@ -1167,6 +1323,7 @@ function SourcesView({
                   <input
                     type="checkbox"
                     checked={checked}
+                    disabled={!capabilities.confirmUploads}
                     onChange={() => onConfirmedDealAssignments(checked
                       ? confirmedDealAssignments.filter((key) => key !== assignment.key)
                       : [...confirmedDealAssignments, assignment.key])}
@@ -1207,7 +1364,9 @@ function SourcesView({
               <input
                 type="checkbox"
                 checked={selected.includes(document.id)}
-                disabled={!document.importable}
+                disabled={
+                  !document.importable || !capabilities.confirmUploads
+                }
                 onChange={() => toggle(document.id)}
                 aria-label={`${selected.includes(document.id) ? "Deselect" : "Select"} ${document.title}`}
               />
@@ -1249,11 +1408,15 @@ function ReportsView({
   deals,
   onDraft,
   focusedReportId,
+  deploymentMode,
+  canSaveActionDrafts,
 }: {
   reports: Report[];
   deals: Deal[];
   onDraft(report: Report): void;
   focusedReportId: string | null;
+  deploymentMode: UiSession["deploymentMode"];
+  canSaveActionDrafts: boolean;
 }) {
   const companyByDeal = new Map(deals.map((deal) => [deal.id, deal.companyName]));
   // Default to the newest report; a shared permalink (?report=<id>) still
@@ -1270,6 +1433,12 @@ function ReportsView({
           focused={focusedReportId === report.id}
           allowDraft
           onDraft={onDraft}
+          showDemoProfiles={deploymentMode === "public_demo"}
+          underwritingEnabled={deploymentMode === "product"}
+          canSaveActionDrafts={canSaveActionDrafts}
+          companyNames={Object.fromEntries(
+            deals.map((deal) => [deal.id, deal.companyName]),
+          )}
           key={report.id}
         />
       ) : (
@@ -1348,6 +1517,7 @@ export function ChatView({
   onSubmit,
   busy,
   xtraceEnabled,
+  deploymentMode = "public_demo",
 }: {
   messages: ChatMessage[];
   question: string;
@@ -1355,12 +1525,30 @@ export function ChatView({
   onSubmit(event: FormEvent): void;
   busy: boolean;
   xtraceEnabled: boolean;
+  deploymentMode?: UiSession["deploymentMode"];
 }) {
   return (
     <div className="vsee-content vsee-chat-page">
-      <SectionTitle eyebrow="READ-ONLY QUERY" title="Ask the evidence already in VSee." copy={`Chat never browses the web and never changes Deal state. XTrace recall is ${xtraceEnabled ? "enabled" : "disabled"} for this query.`} />
+      <SectionTitle
+        eyebrow="READ-ONLY QUERY"
+        title={deploymentMode === "product"
+          ? "Search finalized underwriting."
+          : "Ask the evidence already in VSee."}
+        copy={deploymentMode === "product"
+          ? "Search reads finalized persisted Facts, Assumptions, Calculations, Framework Judgments, and Decisions. It cannot browse, run analysis, change policy, or create drafts."
+          : `Chat never browses the web and never changes Deal state. XTrace recall is ${
+              xtraceEnabled ? "enabled" : "disabled"
+            } for this query.`}
+      />
       <div className="vsee-chat-log" aria-live="polite" aria-label="Evidence chat messages">
-        {!messages.length && <Empty title="Try a grounded question" copy="For example: Which supplied companies relate to AI infrastructure? Why did we mark 7bridges as passed?" />}
+        {!messages.length && (
+          <Empty
+            title="Try a grounded question"
+            copy={deploymentMode === "product"
+              ? "Search for a finalized company, framework conclusion, valuation input, or decision."
+              : "For example: Which supplied companies relate to AI infrastructure? Why did we mark 7bridges as passed?"}
+          />
+        )}
         {messages.map((message, index) => (
           <article className={message.role} key={`${message.role}-${index}`}>
             <span>{message.role === "user" ? "YOU" : "VSEE"}</span>
@@ -1406,7 +1594,13 @@ function SettingsView({
   ];
   return (
     <div className="vsee-content">
-      <SectionTitle eyebrow="SERVER-SIDE INTEGRATIONS" title="Demo readiness." copy="Keys remain on the server. This public single-workspace demo never sends credentials to the browser." />
+      <SectionTitle
+        eyebrow="SERVER-SIDE INTEGRATIONS"
+        title={health?.deploymentMode === "product"
+          ? "Workspace readiness."
+          : "Demo readiness."}
+        copy="Keys and authorization remain on the server. Credentials are never sent to the browser."
+      />
       <div className="vsee-health">
         {services.map(([key, name, copy]) => (
           <article key={key}>
@@ -1441,6 +1635,17 @@ function Empty({ title, copy }: { title: string; copy: string }) {
 }
 
 function SourceLink({ source }: { source: Source }) {
+  if (
+    source.provenance === "source_document"
+    && source.url?.startsWith("/api/source-revisions/")
+  ) {
+    return (
+      <SourceRevisionLink revisionId={source.id}>
+        {source.publisher ?? source.title}
+        {source.page ? ` · p.${source.page}` : ""} ↗
+      </SourceRevisionLink>
+    );
+  }
   const href = source.documentId
     ? `/api/documents/${encodeURIComponent(source.documentId)}/access${source.page ? `#page=${source.page}` : ""}`
     : source.url;

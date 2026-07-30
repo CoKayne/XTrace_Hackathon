@@ -6,6 +6,7 @@ import {
   SAMPLE_DEAL_PROFILES,
   type SampleDealProfile,
 } from "./deal-profiles";
+import { UnderwritingSummary } from "./underwriting-summary";
 import type {
   CompanyAnalysis,
   CompanyAnalysisConfidence,
@@ -103,11 +104,19 @@ export function CompanyIntelligenceReport({
   focused,
   allowDraft,
   onDraft,
+  showDemoProfiles = true,
+  underwritingEnabled = false,
+  canSaveActionDrafts = false,
+  companyNames = {},
 }: {
   report: IntelligenceReportView;
   focused: boolean;
   allowDraft: boolean;
   onDraft(report: IntelligenceReportView): void;
+  showDemoProfiles?: boolean;
+  underwritingEnabled?: boolean;
+  canSaveActionDrafts?: boolean;
+  companyNames?: Record<string, string>;
 }) {
   const priority = report.priorityDealId
     ? report.companyAnalyses.find(
@@ -150,6 +159,7 @@ export function CompanyIntelligenceReport({
         <PriorityResult
           analysis={priority}
           onOpenBrief={() => openBrief(priority)}
+          showDemoProfiles={showDemoProfiles}
         />
       ) : (
         <section className="vsee-no-belief-change" role="status">
@@ -163,6 +173,22 @@ export function CompanyIntelligenceReport({
         </section>
       )}
 
+      <UnderwritingSummary
+        reportId={report.id}
+        companyNames={{
+          ...Object.fromEntries(
+            report.companyAnalyses.map((analysis) => [
+              analysis.dealId,
+              analysis.companyName,
+            ]),
+          ),
+          ...companyNames,
+        }}
+        analyses={report.companyAnalyses}
+        enabled={underwritingEnabled}
+        canSaveDrafts={canSaveActionDrafts}
+      />
+
       <CompanyAnalysisList
         analyses={report.companyAnalyses}
         onOpenBrief={openBrief}
@@ -174,6 +200,7 @@ export function CompanyIntelligenceReport({
           activeTab={briefTab}
           onTab={setBriefTab}
           onClose={() => setBriefAnalysis(null)}
+          showDemoProfiles={showDemoProfiles}
         />
       )}
     </article>
@@ -201,9 +228,11 @@ function ReportCoverage({ report }: { report: IntelligenceReportView }) {
 export function PriorityResult({
   analysis,
   onOpenBrief,
+  showDemoProfiles = true,
 }: {
   analysis: CompanyAnalysis;
   onOpenBrief(): void;
+  showDemoProfiles?: boolean;
 }) {
   return (
     <section className="vsee-priority-result" aria-labelledby={`priority-${analysis.id}`}>
@@ -300,7 +329,9 @@ export function PriorityResult({
         </section>
       </div>
 
-      <SampleProfileSections dealId={analysis.dealId} />
+      {showDemoProfiles && (
+        <SampleProfileSections dealId={analysis.dealId} />
+      )}
 
       {analysis.outcome !== "analysis_unavailable" && (
         <section className="vsee-next-move">
@@ -432,11 +463,13 @@ export function CompanyBrief({
   activeTab,
   onTab,
   onClose,
+  showDemoProfiles = true,
 }: {
   analysis: CompanyAnalysis;
   activeTab: BriefTab;
   onTab(tab: BriefTab): void;
   onClose(): void;
+  showDemoProfiles?: boolean;
 }) {
   return (
     <section
@@ -477,7 +510,9 @@ export function CompanyBrief({
             <BriefFieldsWithSample
               fields={analysis.companyBrief.traction}
               sources={analysis.sources}
-              profile={SAMPLE_DEAL_PROFILES[analysis.dealId]}
+              profile={showDemoProfiles
+                ? SAMPLE_DEAL_PROFILES[analysis.dealId]
+                : undefined}
               section="traction"
             />
           )}
@@ -485,7 +520,9 @@ export function CompanyBrief({
             <BriefFieldsWithSample
               fields={analysis.companyBrief.dealTerms}
               sources={analysis.sources}
-              profile={SAMPLE_DEAL_PROFILES[analysis.dealId]}
+              profile={showDemoProfiles
+                ? SAMPLE_DEAL_PROFILES[analysis.dealId]
+                : undefined}
               section="dealTerms"
             />
           )}

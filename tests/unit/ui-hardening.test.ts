@@ -6,6 +6,14 @@ import test from "node:test";
 
 import "../helpers/public-demo";
 import * as pageModule from "../../app/page";
+import * as pageCompanyIntelligenceModule from "../../app/company-intelligence";
+import { ActionDraftEditor } from "../../app/action-draft-dialog";
+import { FundPolicyPanel } from "../../app/fund-policy";
+import { SourceUploadFlow } from "../../app/source-upload-flow";
+import { UnderwritingDetailPanel } from "../../app/underwriting-detail";
+import {
+  UnderwritingSummaryPanel,
+} from "../../app/underwriting-summary";
 import { GET as getHealth } from "../../app/api/settings/health/route";
 import { listPreloadedDocuments } from "../../lib/corpus/manifest";
 import { createDefaultDemoDataStore } from "../../lib/storage/service";
@@ -73,18 +81,76 @@ test("health response exposes worker readiness independently from PostgreSQL con
       new Request("http://localhost/api/settings/health"),
     );
     const body = await response.json() as {
-      data: { postgres: boolean; worker: boolean; corpusReady: boolean };
+      data: {
+        postgres: boolean;
+        worker: boolean;
+        corpusReady: boolean;
+        deploymentMode: string;
+        capabilities: Record<string, boolean>;
+      };
     };
 
     assert.equal(body.data.postgres, false);
     assert.equal(body.data.worker, false);
     assert.equal(body.data.corpusReady, false);
+    assert.equal(body.data.deploymentMode, "public_demo");
+    assert.deepEqual(body.data.capabilities, {
+      runScans: false,
+      resetDemo: false,
+      uploadSources: false,
+      confirmUploads: false,
+      manageFundPolicy: false,
+      saveActionDrafts: false,
+    });
   } finally {
     if (previousUrl === undefined) delete process.env.SUPABASE_URL;
     else process.env.SUPABASE_URL = previousUrl;
     if (previousKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
     else process.env.SUPABASE_SERVICE_ROLE_KEY = previousKey;
   }
+});
+
+test("health exposes product controls from the server-authorized request context", async () => {
+  const response = await getHealth(
+    new Request("http://localhost/api/settings/health"),
+    undefined,
+    {
+      async resolveRequestContext() {
+        return {
+          mode: "product",
+          principal: {
+            userId: "owner_1",
+            email: "owner@example.test",
+          },
+          workspaceId: "workspace_1",
+          role: "owner",
+          permissions: {
+            readWorkspace: true,
+            readPrivateSources: true,
+            mutateSources: true,
+            managePolicy: true,
+            administerFrameworks: false,
+          },
+        };
+      },
+    },
+  );
+  const body = await response.json() as {
+    data: {
+      deploymentMode: string;
+      capabilities: Record<string, boolean>;
+    };
+  };
+
+  assert.equal(body.data.deploymentMode, "product");
+  assert.deepEqual(body.data.capabilities, {
+    runScans: true,
+    resetDemo: false,
+    uploadSources: true,
+    confirmUploads: true,
+    manageFundPolicy: true,
+    saveActionDrafts: true,
+  });
 });
 
 test("health reports XTrace configured for an mmk key without an organization ID", async () => {
@@ -149,14 +215,29 @@ test("dashboard keeps scans honest and requires explicit import review", async (
   assert.match(page, /role="status"/);
 });
 
-test("uploaded-source UI accepts only staged runtime formats and renders confirmation previews", async () => {
-  const page = await readFile(pagePath, "utf8");
+test("uploaded-source UI accepts only staged runtime formats and renders confirmation previews", () => {
+  const html = renderToStaticMarkup(createElement(SourceUploadFlow, {
+    uploads: [upload("awaiting_confirmation", {
+      preview: {
+        candidateCompanyName: "Acme",
+        candidateHeadline: "Acme serves carriers.",
+        facts: [],
+      },
+      candidateDeals: [],
+    })],
+    canUpload: true,
+    canConfirm: true,
+    uploading: false,
+    confirmingUploadId: null,
+    onUpload() {},
+    onConfirm() {},
+  }));
 
-  assert.match(page, /accept="\.txt,\.md,\.jpg,\.jpeg,\.png,\.gif,\.webp"/);
-  assert.match(page, /awaiting_confirmation/);
-  assert.match(page, /Awaiting your confirmation/);
-  assert.doesNotMatch(page, /PDF, DOCX, TXT, or MD/);
-  assert.doesNotMatch(page, /stores it in XTrace as a new Deal memory/);
+  assert.match(html, /accept="\.txt,\.md,\.jpg,\.jpeg,\.png,\.gif,\.webp"/);
+  assert.match(html, /Needs confirmation/);
+  assert.match(html, /Confirm company (?:&amp;|&) Deal ownership/);
+  assert.doesNotMatch(html, /PDF, DOCX, TXT, or MD/);
+  assert.doesNotMatch(html, /stores it in XTrace as a new Deal memory/);
 });
 
 test("dashboard supports report deep links, page anchors, and a two-row mobile nav", async () => {
@@ -301,3 +382,712 @@ test("Chat renders an explicit warning when requested XTrace recall is unavailab
   assert.match(html, /XTRACE RECALL UNAVAILABLE/i);
   assert.match(html, /LOCAL-ONLY ANSWER WITHHELD/i);
 });
+
+test("Fund Policy follows Sources and public demo mutations explain why they are disabled", () => {
+  const Home = pageModule.default;
+  const shell = renderToStaticMarkup(createElement(Home));
+  assert.ok(shell.indexOf("Open Sources") < shell.indexOf("Open Fund Policy"));
+
+  const policy = {
+    id: "policy_workspace_v2",
+    workspaceId: "workspace_1",
+    version: 2,
+    source: "user_custom" as const,
+    values: {
+      id: "fund_policy_balanced_us_software_v1",
+      riskPreference: "balanced",
+      baseCurrency: "USD",
+      stageMandate: ["seed"],
+      businessModelMandate: ["b2b_saas"],
+      geographyMandate: ["us"],
+      committedFundSize: "200000000",
+      remainingDeployableCapital: "140000000",
+      initialCheckMin: "1500000",
+      initialCheckMax: "5000000",
+      targetOwnership: "0.10",
+      targetOwnershipMin: "0.075",
+      targetOwnershipMax: "0.15",
+      hardMinimumOwnership: null,
+      reserveMultipleOfInitialCheck: "1.0",
+      portfolioConcentrationLimit: "0.10",
+      returnTargets: {
+        seed: {
+          grossMoic: "5",
+          grossIrr: "0.2228445449938519",
+          horizonYears: "8",
+        },
+        series_a: {
+          grossMoic: "3",
+          grossIrr: "0.169930812758687",
+          horizonYears: "7",
+        },
+      },
+      scenarioPriceMultipliers: {
+        bear: "0.75",
+        base: "1",
+        bull: "1.25",
+      },
+      valuationPremiumReviewThreshold: "0.25",
+      valuationPremiumBlockerThreshold: "0.50",
+      acceptableFutureDilution: "0.50",
+      humanFinalApproval: true,
+      externalActionMode: "draft_only",
+    },
+    createdByUserId: "owner_1",
+    createdAt: "2026-07-29T12:00:00.000Z",
+  };
+  const html = renderToStaticMarkup(createElement(FundPolicyPanel, {
+    policy,
+    canManage: false,
+    previewOpen: true,
+    applying: false,
+    onOpenPreview() {},
+    onClosePreview() {},
+    onApplyRecommended() {},
+  }));
+
+  assert.match(html, /Fund Policy · Version 2/);
+  assert.match(html, /Initial check max/i);
+  assert.match(html, /\$5,000,000/);
+  assert.match(html, /Initial check max[\s\S]*\$8,000,000/i);
+  assert.match(html, /read-only public demo/i);
+  assert.match(html, /disabled/);
+});
+
+test("source upload renders refresh-safe lifecycle, identity confirmation, and terminal IDs", () => {
+  const uploads = [
+    upload("queued"),
+    upload("extracting"),
+    upload("awaiting_confirmation", {
+      uploadId: "upload_confirm",
+      preview: {
+        candidateCompanyName: "Acme",
+        candidateHeadline: "Acme serves carriers.",
+        facts: [{
+          text: "Acme serves carriers.",
+          excerpt: "Acme serves carriers.",
+          locator: { kind: "text_range" as const, start: 0, end: 21 },
+        }],
+      },
+      candidateDeals: [{
+        dealId: "deal_acme",
+        companyName: "Acme",
+        status: "evaluating" as const,
+      }],
+    }),
+    upload("confirmed"),
+    upload("confirmed", {
+      uploadId: "upload_retryable",
+      failure: "Memory ingestion failed. Retry is available.",
+    }),
+    upload("ready", {
+      uploadId: "upload_ready",
+      dealId: "deal_ready",
+      sourceRevisionId: "revision_ready",
+    }),
+    upload("failed", {
+      uploadId: "upload_failed",
+      failure: "Document processing failed.",
+    }),
+  ];
+  const html = renderToStaticMarkup(createElement(SourceUploadFlow, {
+    uploads,
+    canUpload: true,
+    canConfirm: true,
+    uploading: false,
+    confirmingUploadId: null,
+    onUpload() {},
+    onConfirm() {},
+  }));
+
+  for (const label of [
+    "Queued for extraction",
+    "Extracting preview",
+    "Needs confirmation",
+    "Confirmed for promotion",
+    "Retryable memory failure",
+    "Ready",
+    "Terminal extraction failure",
+  ]) {
+    assert.match(html, new RegExp(label));
+  }
+  assert.match(html, /Company name/);
+  assert.match(html, /Deal ownership/);
+  assert.match(html, /Confirm Acme and Deal ownership/);
+  assert.match(html, /deal_ready/);
+  assert.match(html, /revision_ready/);
+});
+
+test("underwriting summary renders Top-5 states in rank order before not-selected Deals", () => {
+  const html = renderToStaticMarkup(createElement(UnderwritingSummaryPanel, {
+    batch: {
+      batchId: "batch_1",
+      status: "partial",
+      selections: [
+        selection("deal_not_selected", "not_selected", null, null),
+        selection("deal_failed", "failed", 5, "candidate_failed"),
+        selection("deal_completed", "completed", 1, "candidate_completed"),
+        selection("deal_running", "running", 2, "candidate_running"),
+        selection("deal_partial", "partial", 3, "candidate_partial"),
+        selection("deal_queued", "queued", 4, "candidate_queued"),
+      ],
+    },
+    companyNames: {
+      deal_completed: "Completed Co",
+      deal_running: "Running Co",
+      deal_partial: "Partial Co",
+      deal_queued: "Queued Co",
+      deal_failed: "Failed Co",
+      deal_not_selected: "Outside Co",
+    },
+    onOpenCandidate() {},
+  }));
+
+  assert.match(html, /TOP-5 UNDERWRITING/);
+  assert.ok(html.indexOf("Completed Co") < html.indexOf("Outside Co"));
+  for (const label of [
+    "Completed",
+    "Running",
+    "Partial",
+    "Queued",
+    "Failed",
+    "Not selected",
+  ]) {
+    assert.match(html, new RegExp(label));
+  }
+});
+
+test("underwriting detail preserves section order, lineage, public version pins, and draft-only actions", () => {
+  const html = renderToStaticMarkup(createElement(UnderwritingDetailPanel, {
+    companyName: "Acme",
+    analysis: {
+      companyName: "Acme",
+      dealStatus: "evaluating",
+      confidence: "high",
+      marketEvidence: {
+        relationship: "satisfies",
+        explanation: "Carrier adoption accelerated.",
+        events: [{
+          id: "event_1",
+          title: "Carrier capital shifted",
+          eventType: "capital_flow",
+          publishedAt: "2026-07-28T12:00:00.000Z",
+          sourceIds: ["source_public"],
+        }],
+      },
+      implications: {
+        positive: ["Faster enterprise adoption."],
+        negative: ["Pricing pressure may rise."],
+      },
+      investmentMemory: {
+        previousMeetingSummary: "The fund waited for carrier proof.",
+        decisionReason: "Commercial proof was early.",
+      },
+      sources: [{
+        id: "source_public",
+        provenance: "public_web",
+        title: "Carrier News",
+        url: "https://example.test/carrier-news",
+        excerpt: "Carrier adoption accelerated.",
+      }],
+    },
+    detail: underwritingDetailFixture(),
+    drafts: [{
+      id: "draft_1",
+      candidateRunId: "candidate_1",
+      channel: "dd_request",
+      audienceType: "founder",
+      body: "Please share the latest retention schedule.",
+      createdAt: "2026-07-29T12:00:00.000Z",
+      updatedAt: "2026-07-29T12:00:00.000Z",
+    }],
+    canSaveDrafts: true,
+    onEditDraft() {},
+  }));
+
+  const orderedHeadings = [
+    "What happened?",
+    "What is the impact?",
+    "Which historical companies are affected?",
+    "Company underwriting",
+    "Valuation and fund return",
+    "Final conclusion",
+    "What can you do?",
+    "Action drafts",
+  ];
+  for (let index = 1; index < orderedHeadings.length; index += 1) {
+    assert.ok(
+      html.indexOf(orderedHeadings[index - 1])
+        < html.indexOf(orderedHeadings[index]),
+    );
+  }
+  assert.match(html, />Calculation</);
+  assert.match(html, />Fact</);
+  assert.match(html, /Capital flow[\s\S]*?Unsupported/);
+  assert.match(html, /Gross IRR[\s\S]*?Unsupported/);
+  assert.match(html, /Stale benchmark/);
+  assert.match(html, /Open disagreement evidence and lineage/);
+  assert.match(
+    html,
+    /\/api\/source-revisions\/revision_1\/access/,
+  );
+  for (const label of [
+    "Policy",
+    "Benchmark",
+    "Framework",
+    "Research catalog",
+    "Router",
+    "Critical Evidence",
+    "Valuation Method",
+    "Decision",
+    "Formula",
+    "Model",
+    "Prompt",
+    "Schema",
+    "Settings",
+    "Application commit",
+  ]) {
+    assert.match(html, new RegExp(label));
+  }
+  assert.match(html, /framework_1 · sha256:framework/);
+  assert.match(html, /formal decision weight · 0/i);
+  assert.doesNotMatch(html, /\bTo\b|>Send<|>Publish</);
+});
+
+test("action drafts edit only the current body and expose save, copy, and download without delivery controls", () => {
+  const html = renderToStaticMarkup(createElement(ActionDraftEditor, {
+    draft: {
+      id: "draft_1",
+      candidateRunId: "candidate_1",
+      channel: "internal_memo",
+      audienceType: "internal",
+      body: "Current saved body.",
+      createdAt: "2026-07-29T12:00:00.000Z",
+      updatedAt: "2026-07-29T13:00:00.000Z",
+    },
+    body: "Current edited body.",
+    saving: false,
+    canSave: true,
+    statusMessage: "",
+    onBodyChange() {},
+    onSave() {},
+    onCopy() {},
+    onDownload() {},
+  }));
+
+  assert.match(html, /Current edited body/);
+  assert.match(html, /SAVE CURRENT BODY/);
+  assert.match(html, /COPY CURRENT BODY/);
+  assert.match(html, /DOWNLOAD \.TXT/);
+  assert.doesNotMatch(
+    html,
+    /\bTo\b|recipient|delivery state|>Send<|>Publish<|Email provider|LinkedIn provider/i,
+  );
+});
+
+test("product Deals and report priority never render demo profile fixtures as persisted facts", () => {
+  const DealsView = (
+    pageModule as unknown as {
+      DealsView?: ComponentType<{
+        deals: Array<{
+          id: string;
+          companyName: string;
+          status: "screening";
+          documentId: string;
+          sourceTitle: string;
+          sourceUrl: string;
+          sourceRevisionIds: string[];
+          sourceLinks: Array<{
+            sourceRevisionId: string;
+            sourceUrl: string;
+          }>;
+        }>;
+        uploads: [];
+        query: string;
+        deploymentMode: "product";
+        onQuery(value: string): void;
+      }>;
+    }
+  ).DealsView;
+  assert.ok(DealsView);
+  const dealsHtml = renderToStaticMarkup(createElement(DealsView, {
+    deals: [{
+      id: "deal_1906",
+      companyName: "Persisted Company",
+      status: "screening",
+      documentId: "revision_primary",
+      sourceTitle: "2 confirmed sources",
+      sourceUrl: "/api/source-revisions/revision_primary/access",
+      sourceRevisionIds: ["revision_primary", "revision_second"],
+      sourceLinks: [
+        {
+          sourceRevisionId: "revision_primary",
+          sourceUrl: "/api/source-revisions/revision_primary/access",
+        },
+        {
+          sourceRevisionId: "revision_second",
+          sourceUrl: "/api/source-revisions/revision_second/access",
+        },
+      ],
+    }],
+    uploads: [],
+    query: "",
+    deploymentMode: "product",
+    onQuery() {},
+  }));
+  assert.match(dealsHtml, /revision_primary/);
+  assert.match(dealsHtml, /revision_second/);
+  assert.doesNotMatch(dealsHtml, /\$9\.8M|Sample deal profile/);
+
+  const priorityHtml = renderToStaticMarkup(createElement(
+    (
+      awaitImportPriorityResult()
+    ),
+    {
+      analysis: priorityAnalysisFixture(),
+      onOpenBrief() {},
+      showDemoProfiles: false,
+    },
+  ));
+  assert.doesNotMatch(priorityHtml, /\$9\.8M|Sample deal profile/);
+});
+
+function upload(
+  status:
+    | "queued"
+    | "extracting"
+    | "awaiting_confirmation"
+    | "confirmed"
+    | "ingesting_memory"
+    | "ready"
+    | "failed",
+  overrides: Record<string, unknown> = {},
+) {
+  return {
+    uploadId: `upload_${status}`,
+    status,
+    filename: `${status}.md`,
+    contentType: "text/markdown",
+    preview: null,
+    candidateDeals: [],
+    failure: null,
+    dealId: null,
+    sourceRevisionId: null,
+    createdAt: "2026-07-29T12:00:00.000Z",
+    updatedAt: "2026-07-29T12:00:00.000Z",
+    ...overrides,
+  };
+}
+
+function selection(
+  dealId: string,
+  underwritingStatus:
+    | "not_selected"
+    | "queued"
+    | "running"
+    | "partial"
+    | "completed"
+    | "unavailable"
+    | "failed",
+  rank: number | null,
+  candidateRunId: string | null,
+) {
+  return {
+    dealId,
+    underwritingStatus,
+    rank,
+    candidateRunId,
+    decision: underwritingStatus === "completed" ? "Advance" as const : null,
+  };
+}
+
+function underwritingDetailFixture() {
+  return {
+    candidateRunId: "candidate_1",
+    dealId: "deal_1",
+    evidencePack: {
+      id: "evidence_pack_1",
+      version: 1,
+      asOfDate: "2026-07-29",
+      sourceRevisionIds: ["revision_1"],
+      facts: [{
+        id: "fact_1",
+        analysisType: "fact",
+        provenanceOrigin: "uploaded_document",
+        field: "reported_valuation",
+        value: "18000000",
+        unit: "money",
+        currency: "USD",
+        periodStart: null,
+        periodEnd: null,
+        publishedAt: null,
+        eventAt: null,
+        retrievedAt: "2026-07-29T12:00:00.000Z",
+        sourceRevisionId: "revision_1",
+        locator: { kind: "text_range", start: 0, end: 8 },
+        sourceRole: "management",
+        assertionStatus: "reported",
+        verificationMethod: null,
+        freshness: "current",
+        acceptedForGate: true,
+      }],
+      assumptions: [{
+        id: "assumption_1",
+        analysisType: "assumption",
+        provenanceOrigin: "recommended_policy",
+        scenario: "base",
+        field: "future_dilution",
+        value: "0.25",
+        unit: "rate",
+        rationale: "Fund Policy default.",
+        inputRefIds: [],
+        sensitivity: "high",
+        requiresConfirmation: true,
+      }],
+      conflicts: [],
+      coverage: {
+        minimumModelInputsComplete: true,
+        criticalEvidenceComplete: false,
+        missingFieldIds: ["net_retention"],
+        blockingConflictIds: [],
+        decisionCeiling: "Advance",
+        underwritingStatus: "available",
+        reasonCodes: ["MISSING_CRITICAL_EVIDENCE"],
+      },
+      createdAt: "2026-07-29T12:00:00.000Z",
+    },
+    context: {
+      id: "context_1",
+      contextVersion: "1",
+      stage: "seed",
+      businessModel: "b2b_saas",
+      geography: "us",
+      securityType: "preferred",
+      asOfDate: "2026-07-29",
+      criticalEvidenceProfileId: "critical_1",
+      benchmarkPackId: null,
+      benchmarkCompatibility: "unavailable",
+      valuationMethodPolicyId: "valuation_1",
+      decisionPolicyId: "decision_policy_1",
+      frameworkPackId: "framework_1",
+    },
+    scenarioModel: {
+      id: "scenario_1",
+      candidateRunId: "candidate_1",
+      formulaPolicyVersion: "valuation_1",
+      scenarios: [],
+      probabilityWeighted: false,
+    },
+    calculations: [{
+      id: "calculation_1",
+      analysisType: "calculation",
+      formulaId: "venture_method",
+      formulaVersion: "1",
+      inputRefs: [{
+        itemId: "fact_1",
+        value: "18000000",
+        type: "fact",
+      }],
+      output: "24000000",
+      unit: "money",
+      currency: "USD",
+      period: null,
+      roundingPolicy: "half_even_display_only",
+      computedAt: "2026-07-29T12:00:00.000Z",
+      status: "stale_benchmark",
+    }],
+    judgments: [{
+      id: "judgment_1",
+      analysisType: "framework_judgment",
+      frameworkCardId: "core_growth_quality",
+      frameworkVersion: "1",
+      applicability: "applicable",
+      conclusion: "supportive",
+      supportEvidenceItemIds: ["fact_1"],
+      counterEvidenceItemIds: [],
+      unusedEvidenceItemIds: [],
+      strongestSupport: "Carrier traction is source-backed.",
+      strongestCounterargument: "Retention is unavailable.",
+      unknowns: ["Net retention"],
+      limitations: ["Management-reported source"],
+      confidence: {
+        sourceReliability: "medium",
+        evidenceStrength: "medium",
+        evidenceCoverage: "low",
+        applicability: "high",
+        judgment: "medium",
+      },
+      claimEdges: [{
+        claimItemId: "judgment_1",
+        dependencyItemId: "fact_1",
+        dependencyType: "fact",
+      }],
+      frameworkMetadata: {
+        packName: "Named advisory pack",
+        formalDecisionWeight: "0",
+      },
+      fingerprint: "sha256:judgment",
+    }],
+    disagreements: [{
+      id: "disagreement_1",
+      leftJudgmentId: "judgment_1",
+      rightJudgmentId: "judgment_2",
+      topic: "company_quality_vs_price",
+      explanation: "Quality support conflicts with price uncertainty.",
+      evidenceItemIds: ["fact_1"],
+    }],
+    valuation: {
+      id: "valuation_result_1",
+      status: "partial",
+      scenarios: [
+        {
+          name: "bear",
+          valuation: null,
+          calculationIds: [],
+        },
+        {
+          name: "base",
+          valuation: "24000000",
+          calculationIds: ["calculation_1"],
+        },
+        {
+          name: "bull",
+          valuation: null,
+          calculationIds: [],
+        },
+      ],
+      currentAsk: "18000000",
+      maximumAcceptablePreMoney: "24000000",
+      initialOwnership: "0.10",
+      postDilutionOwnership: "0.075",
+      grossMoic: "4",
+      grossIrr: null,
+      pricingPremium: "-0.25",
+      calculationIds: ["calculation_1"],
+      blockerCodes: ["IRR_UNAVAILABLE"],
+    },
+    decision: {
+      id: "decision_1",
+      analysisType: "final_synthesis",
+      companyQuality: "pass",
+      priceAttractiveness: "mixed",
+      fundFit: "pass",
+      decision: "Advance",
+      decisionCeiling: "Advance",
+      hardVeto: false,
+      firedRules: [{
+        ruleId: "rule_1",
+        inputRefs: ["calculation_1"],
+        result: "pass",
+        appliedCeiling: "Advance",
+        veto: false,
+      }],
+      blockingEvidenceItemIds: ["net_retention"],
+      claimEdges: [{
+        claimItemId: "decision_1",
+        dependencyItemId: "judgment_1",
+        dependencyType: "framework_judgment",
+      }],
+      confidence: "medium",
+    },
+    narrative: "Source-grounded diligence supports an Advance, not an investment approval.",
+    claimEdges: [
+      {
+        claimItemId: "calculation_1",
+        dependencyItemId: "fact_1",
+        dependencyType: "fact" as const,
+      },
+      {
+        claimItemId: "judgment_1",
+        dependencyItemId: "fact_1",
+        dependencyType: "fact" as const,
+      },
+      {
+        claimItemId: "decision_1",
+        dependencyItemId: "judgment_1",
+        dependencyType: "framework_judgment" as const,
+      },
+    ],
+    sourceRevisionIds: ["revision_1"],
+    versionSnapshot: {
+      fundPolicyId: "policy_v2",
+      benchmarkPackId: null,
+      benchmarkEntryId: null,
+      benchmarkDefinitionFingerprint: null,
+      frameworkPackId: "framework_1",
+      frameworkPackDefinitionFingerprint: "sha256:framework",
+      routerVersion: "router-v1",
+      criticalEvidenceProfileId: "critical_1",
+      criticalEvidenceProfileDefinitionFingerprint: "sha256:critical",
+      valuationMethodPolicyId: "valuation_1",
+      valuationMethodPolicyDefinitionFingerprint: "sha256:valuation",
+      decisionPolicyId: "decision_policy_1",
+      decisionPolicyDefinitionFingerprint: "sha256:decision",
+      referenceCatalogFingerprint: "sha256:catalog",
+      formulaVersions: ["venture_method@1"],
+      schemaVersion: "schema-v1",
+    },
+  };
+}
+
+function awaitImportPriorityResult() {
+  return (
+    pageCompanyIntelligenceModule as unknown as {
+      PriorityResult: ComponentType<{
+        analysis: ReturnType<typeof priorityAnalysisFixture>;
+        onOpenBrief(): void;
+        showDemoProfiles: boolean;
+      }>;
+    }
+  ).PriorityResult;
+}
+
+function priorityAnalysisFixture() {
+  return {
+    id: "analysis_product",
+    reportId: "report_product",
+    runId: "11111111-1111-4111-8111-111111111111",
+    dealId: "deal_1906",
+    companyName: "Persisted Company",
+    dealStatus: "screening" as const,
+    outcome: "monitor" as const,
+    confidence: "medium" as const,
+    score: 0.5,
+    verifiedSourceCount: 1,
+    investmentMemory: {
+      previousMeetingSummary: "Persisted meeting.",
+      decisionReason: "Persisted reason.",
+      concerns: [],
+      revisitConditions: [],
+      lastEvaluatedAt: null,
+      memoryIds: [],
+      sourceIds: ["source_1"],
+      fixtureIds: [],
+    },
+    marketEvidence: {
+      relationship: "related" as const,
+      explanation: "Persisted evidence.",
+      eventIds: [],
+      events: [],
+      sourceIds: ["source_1"],
+    },
+    implications: { positive: [], negative: [] },
+    recommendedNextMove: "Review persisted evidence.",
+    companyBrief: {
+      icSnapshot: [],
+      traction: [],
+      dealTerms: [],
+      risks: [],
+      decisionHistory: [],
+      sourceLineage: [],
+    },
+    sources: [{
+      id: "source_1",
+      provenance: "source_document" as const,
+      title: "Persisted source",
+      documentId: "revision_primary",
+      excerpt: "Persisted evidence.",
+    }],
+    createdAt: "2026-07-29T12:00:00.000Z",
+  };
+}

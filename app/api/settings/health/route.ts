@@ -10,6 +10,7 @@ import { getProductInputReadiness } from "../../../../lib/corpus/import-readines
 import { readMarketProviderConfiguration } from "../../../../lib/market/config";
 import { createDefaultDemoDataStore } from "../../../../lib/storage/service";
 import { isXTraceConfigured } from "../../../../lib/xtrace/client";
+import { uiSessionForContext } from "../../../ui-capabilities";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export async function GET(
     }
 
     return jsonOk({
+      ...uiSessionForContext(context),
       postgres,
       worker,
       xtrace: isXTraceConfigured(),
