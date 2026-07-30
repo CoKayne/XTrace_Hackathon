@@ -753,6 +753,115 @@ test("Supabase bundles emit the current status from the authoritative Deal row",
   );
 });
 
+test("Supabase exact-source reads bind every ownership dimension", async () => {
+  const requests: string[] = [];
+  const repository = createSupabaseDealRegistry({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      requests.push(url);
+      if (url.includes("/deals?")) {
+        return Response.json([{
+          id: "deal_one",
+          workspace_id: "workspace_one",
+          company_id: "company_one",
+          company_name: "Company one",
+          status: "evaluating",
+          analysis_eligible_at: "2026-07-28T11:00:00.000Z",
+          active_source_revision_fingerprint:
+            sourceRevisionFingerprint(["revision_two"]),
+        }]);
+      }
+      if (
+        url.includes("/deal_source_assignments?")
+        && new URL(url).searchParams.get("select")
+          === "deal_id,source_id,source_revision_id"
+      ) {
+        return Response.json([{
+          deal_id: "deal_one",
+          source_id: "source_one",
+          source_revision_id: "revision_two",
+        }]);
+      }
+      if (url.includes("/deal_source_assignments?")) {
+        return Response.json([{ source_revision_id: "revision_one" }]);
+      }
+      if (url.includes("/source_evidence?")) {
+        return Response.json([{
+          id: "evidence_revision_one",
+          workspace_id: "workspace_one",
+          deal_id: "deal_one",
+          document_id: "source_one",
+          source_revision_id: "revision_one",
+          provenance: "source_document",
+          page: 1,
+          fact: "Fact from revision one.",
+          excerpt: "Fact from revision one.",
+        }]);
+      }
+      if (url.includes("/source_documents?")) {
+        return Response.json([{
+          id: "source_one",
+          title: "source-one.txt",
+        }]);
+      }
+      return Response.json([]);
+    },
+  });
+
+  const exact = await repository.getExactSourceBundle({
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    sourceId: "source_one",
+    sourceRevisionId: "revision_one",
+  });
+  assert.deepEqual(exact, {
+    workspaceId: "workspace_one",
+    dealId: "deal_one",
+    sourceId: "source_one",
+    sourceRevisionId: "revision_one",
+    bundle: {
+      dealId: "deal_one",
+      companyName: "Company one",
+      status: "evaluating",
+      facts: [{
+        text: "Fact from revision one.",
+        sources: [{
+          id: "evidence_revision_one",
+          provenance: "source_document",
+          title: "source-one.txt",
+          documentId: "source_one",
+          page: 1,
+          excerpt: "Fact from revision one.",
+        }],
+      }],
+      interactions: [],
+    },
+  });
+  for (
+    const url of requests.filter((requestUrl) =>
+      requestUrl.includes("/source_evidence?")
+      || (
+        requestUrl.includes("/deal_source_assignments?")
+        && new URL(requestUrl).searchParams.get("select")
+          === "source_revision_id"
+      )
+    )
+  ) {
+    const query = new URL(url).searchParams;
+    assert.equal(query.get("workspace_id"), "eq.workspace_one");
+    assert.equal(query.get("deal_id"), "eq.deal_one");
+    assert.equal(
+      query.get(url.includes("/source_evidence?")
+        ? "document_id"
+        : "source_id"),
+      "eq.source_one",
+    );
+    assert.equal(query.get("source_revision_id"), "eq.revision_one");
+  }
+});
+
 test("Supabase eligible reads reject a stale active-revision fingerprint", async () => {
   const repository = createSupabaseDealRegistry({
     url: "https://example.supabase.co",

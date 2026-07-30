@@ -66,6 +66,8 @@ export interface SourceRegistry {
 }
 
 export interface MemorySourceRegistry extends SourceRegistry {
+  captureAtomicState(): unknown;
+  restoreAtomicState(state: unknown): void;
   inspect(): {
     revisions: SourceRevision[];
     annotations: SourceRevisionAnnotation[];
@@ -148,6 +150,38 @@ export function createMemorySourceRegistry(): MemorySourceRegistry {
   let annotationSequence = 0;
 
   return {
+    captureAtomicState() {
+      return {
+        revisions: structuredClone([...revisions.entries()]),
+        revisionIdsBySource: structuredClone([
+          ...revisionIdsBySource.entries(),
+        ]),
+        annotations: structuredClone(annotations),
+        annotationSequence,
+      };
+    },
+
+    restoreAtomicState(rawState) {
+      const state = rawState as {
+        revisions: Array<[string, SourceRevision]>;
+        revisionIdsBySource: Array<[string, string[]]>;
+        annotations: SourceRevisionAnnotation[];
+        annotationSequence: number;
+      };
+      revisions.clear();
+      for (const [key, revision] of state.revisions) {
+        revisions.set(key, structuredClone(revision));
+      }
+      revisionIdsBySource.clear();
+      for (const [key, ids] of state.revisionIdsBySource) {
+        revisionIdsBySource.set(key, structuredClone(ids));
+      }
+      annotations.splice(0, annotations.length, ...structuredClone(
+        state.annotations,
+      ));
+      annotationSequence = state.annotationSequence;
+    },
+
     async createInitialRevision(rawInput) {
       const input = validatedInput(rawInput);
       const key = sourceIdentity(input.workspaceId, input.sourceId);

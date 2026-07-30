@@ -1,4 +1,4 @@
-import { getUploadedDocumentsRepository } from "../../../../../db/repositories/uploaded-documents";
+import { getSourceRegistry } from "../../../../../db/repositories/source-registry";
 import { errorResponse, jsonError } from "../../../../../lib/api/response";
 import {
   resolveRouteRequestContext,
@@ -35,16 +35,15 @@ export async function GET(
     }
 
     requirePermission(requestContext, "readPrivateSources");
-    const uploaded = preloaded
+    const revision = preloaded
       ? null
       : await (
-          dependencies.uploadedDocuments
-            ?? getUploadedDocumentsRepository()
-        ).get({
+          dependencies.sourceRegistry ?? getSourceRegistry()
+        ).getRevision({
           workspaceId: requestContext.workspaceId,
-          id,
+          revisionId: id,
         });
-    if (!preloaded && !uploaded) {
+    if (!preloaded && !revision) {
       return jsonError("NOT_FOUND", `Document ${id} was not found`, 404);
     }
     const rate = await rateLimitRequest(
@@ -73,7 +72,7 @@ export async function GET(
         capability: {
           workspaceId: requestContext.workspaceId,
           sourceRevisionId: id,
-          objectVersion: preloaded?.checksum ?? uploaded!.checksum,
+          objectVersion: preloaded?.checksum ?? revision!.objectVersion,
           expiresAtEpochSeconds,
           permission: "read",
         },

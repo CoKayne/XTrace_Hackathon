@@ -7,10 +7,7 @@ import {
   type ExtractionPreview,
 } from "../../db/repositories/uploaded-documents";
 import { createXTraceService } from "../../lib/xtrace/service";
-import {
-  processConfirmedSource,
-  selectConfirmedSourceBundle,
-} from "../../worker/ingest-confirmed-source";
+import { processConfirmedSource } from "../../worker/ingest-confirmed-source";
 
 const preview: ExtractionPreview = {
   candidateCompanyName: "Acme",
@@ -85,51 +82,63 @@ test("confirmed-source ingest persists exact revision lineage in jobs and recall
   });
 });
 
-test("confirmed-source ingest excludes evidence and interactions from other revisions", () => {
-  const selected = selectConfirmedSourceBundle({
+test("a newer revision of the same source cannot ingest under an older revision lineage", async () => {
+  const uploads = createMemoryUploadedDocumentsRepository();
+  await uploads.create({
+    id: "upload_old_revision",
+    workspaceId: "workspace_1",
+    filename: "acme.txt",
+    contentType: "text/plain",
+    byteSize: 23,
+    checksum: "old-hash",
+    objectKey: "private/acme-old.txt",
+  });
+  await stageConfirmed(uploads, {
+    id: "upload_old_revision",
     dealId: "deal_1",
-    companyName: "Acme",
-    status: "evaluating",
-    facts: [
-      {
-        text: "New upload fact.",
-        sources: [{
-          id: "evidence_new",
-          documentId: "source_upload_1",
-          provenance: "source_document",
-          title: "new.txt",
-          excerpt: "New upload fact.",
-        }],
-      },
-      {
-        text: "Older source fact.",
-        sources: [{
-          id: "evidence_old",
-          documentId: "source_old",
-          provenance: "source_document",
-          title: "old.txt",
-          excerpt: "Older source fact.",
-        }],
-      },
-    ],
-    interactions: [{
-      id: "interaction_old",
-      occurredAt: "2026-07-01T00:00:00.000Z",
-      summary: "Old meeting",
-      decisionReason: "Old decision",
-      concerns: [],
-      revisitConditions: [],
-      provenance: "demo_fixture",
-      label: "Sample decision record",
-    }],
-  }, "source_upload_1");
+    sourceId: "source_acme",
+    sourceRevisionId: "revision_old",
+  });
+  const claimed = await uploads.claimNextConfirmed("worker-a");
+  assert.ok(claimed);
+  let ingestCalls = 0;
 
-  assert.equal(selected.facts.length, 1);
-  assert.deepEqual(
-    selected.facts[0].sources.map((source) => source.documentId),
-    ["source_upload_1"],
-  );
-  assert.deepEqual(selected.interactions, []);
+  await assert.rejects(processConfirmedSource(claimed, {
+    loadBundle: async () => ({
+      workspaceId: "workspace_1",
+      dealId: "deal_1",
+      sourceId: "source_acme",
+      sourceRevisionId: "revision_new",
+      bundle: {
+        dealId: "deal_1",
+        companyName: "Acme",
+        status: "evaluating",
+        facts: [{
+          text: "Fact from revision two.",
+          sources: [{
+            id: "evidence_revision_two",
+            documentId: "source_acme",
+            provenance: "source_document",
+            title: "acme.txt",
+            excerpt: "Fact from revision two.",
+          }],
+        }],
+        interactions: [],
+      },
+    }),
+    ingest: async () => {
+      ingestCalls += 1;
+      return {
+        dealId: "deal_1",
+        jobId: "job_wrong_revision",
+        status: "succeeded",
+        memoryIds: ["memory_wrong_revision"],
+      };
+    },
+    complete: (input) => uploads.completeConfirmed(input),
+    fail: (input) => uploads.failConfirmed(input),
+  }), /revision/i);
+  assert.equal(ingestCalls, 0);
 });
 
 test("only a confirmed claim reaches XTrace and success is lease-token guarded", async () => {
@@ -156,20 +165,26 @@ test("only a confirmed claim reaches XTrace and success is lease-token guarded",
 
   await processConfirmedSource(claimed, {
     loadBundle: async () => ({
+      workspaceId: "workspace_1",
       dealId: "deal_1",
-      companyName: "Acme",
-      status: "evaluating",
-      facts: [{
-        text: "Acme has ten customers.",
-        sources: [{
-          id: "evidence_upload_1_0",
-          documentId: "source_upload_1",
-          provenance: "source_document",
-          title: "acme.txt",
-          excerpt: "Acme has ten customers.",
+      sourceId: "source_upload_1",
+      sourceRevisionId: "revision_upload_1",
+      bundle: {
+        dealId: "deal_1",
+        companyName: "Acme",
+        status: "evaluating",
+        facts: [{
+          text: "Acme has ten customers.",
+          sources: [{
+            id: "evidence_upload_1_0",
+            documentId: "source_upload_1",
+            provenance: "source_document",
+            title: "acme.txt",
+            excerpt: "Acme has ten customers.",
+          }],
         }],
-      }],
-      interactions: [],
+        interactions: [],
+      },
     }),
     ingest: async (_bundle, exactLineage) => {
       calls.push(JSON.stringify(exactLineage));
@@ -216,20 +231,26 @@ test("XTrace failure returns the upload to a visible retryable confirmed state",
 
   await assert.rejects(processConfirmedSource(claimed, {
     loadBundle: async () => ({
+      workspaceId: "workspace_1",
       dealId: "deal_failure",
-      companyName: "Failure",
-      status: "watchlist",
-      facts: [{
-        text: "Failure source fact.",
-        sources: [{
-          id: "evidence_failure_0",
-          documentId: "source_failure",
-          provenance: "source_document",
-          title: "failure.txt",
-          excerpt: "Failure source fact.",
+      sourceId: "source_failure",
+      sourceRevisionId: "revision_failure",
+      bundle: {
+        dealId: "deal_failure",
+        companyName: "Failure",
+        status: "watchlist",
+        facts: [{
+          text: "Failure source fact.",
+          sources: [{
+            id: "evidence_failure_0",
+            documentId: "source_failure",
+            provenance: "source_document",
+            title: "failure.txt",
+            excerpt: "Failure source fact.",
+          }],
         }],
-      }],
-      interactions: [],
+        interactions: [],
+      },
     }),
     ingest: async () => {
       throw new Error("provider secret diagnostic");

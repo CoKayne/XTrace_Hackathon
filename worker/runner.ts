@@ -391,17 +391,12 @@ export async function runNextConfirmedUpload(): Promise<boolean> {
       lineageRepository: getXTraceLineageRepository(),
     });
     await processConfirmedSource(claimed, {
-      loadBundle: async (upload) => {
-        const bundle = (await deals.listAnalysisEligibleBundles(
-          upload.workspaceId,
-        )).find((candidate) => candidate.dealId === upload.dealId);
-        if (!bundle) {
-          throw new Error(
-            "Confirmed upload Deal is not analysis eligible.",
-          );
-        }
-        return bundle;
-      },
+      loadBundle: (upload) => deals.getExactSourceBundle({
+        workspaceId: upload.workspaceId,
+        dealId: upload.dealId!,
+        sourceId: upload.sourceId!,
+        sourceRevisionId: upload.sourceRevisionId!,
+      }),
       ingest: (bundle, lineage) =>
         xtrace.ingestDealMemory(bundle, lineage),
       poll: (jobId, options) => xtrace.pollIngestJob(jobId, options),

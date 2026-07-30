@@ -55,6 +55,10 @@ export interface DealMemoryLineage {
   interactions: Record<string, DealMemoryOwnership>;
 }
 
+export interface ExactSourceMemoryBundle extends DealMemoryOwnership {
+  bundle: DealMemoryBundle;
+}
+
 export interface DealSourceAssignment {
   id: string;
   requestId: string;
@@ -74,6 +78,9 @@ export interface DealRegistry {
     workspaceId: string,
   ): Promise<AnalysisEligibleSnapshot>;
   listAnalysisEligibleBundles(workspaceId: string): Promise<DealMemoryBundle[]>;
+  getExactSourceBundle(input: DealMemoryOwnership): Promise<
+    ExactSourceMemoryBundle | null
+  >;
   findForWorkspace(input: {
     workspaceId: string;
     dealId: string;
@@ -95,6 +102,9 @@ export interface AnalysisEligibleSnapshot {
 }
 
 export interface MemoryDealRegistry extends DealRegistry {
+  captureAtomicState(): unknown;
+  restoreAtomicState(state: unknown): void;
+  usesSourceRegistry(registry: SourceRegistry): boolean;
   inspect(): {
     deals: RegisteredDeal[];
     assignments: DealSourceAssignment[];
@@ -165,6 +175,93 @@ function validateConfirmation(
   return candidate;
 }
 
+function validateMemoryOwnership(
+  input: DealMemoryOwnership,
+): DealMemoryOwnership {
+  return {
+    workspaceId: requiredWorkspaceId(input.workspaceId),
+    dealId: requiredText(input.dealId, "A Deal id"),
+    sourceId: requiredText(input.sourceId, "A source id"),
+    sourceRevisionId: requiredText(
+      input.sourceRevisionId,
+      "A source revision id",
+    ),
+  };
+}
+
+function exactSourceIdentity(input: DealMemoryOwnership): string {
+  return JSON.stringify([
+    input.workspaceId,
+    input.dealId,
+    input.sourceId,
+    input.sourceRevisionId,
+  ]);
+}
+
+function exactSourceBundlesFromConfirmation(
+  bundle: DealMemoryBundle,
+  lineage: DealMemoryLineage,
+): ExactSourceMemoryBundle[] {
+  const grouped = new Map<string, {
+    ownership: DealMemoryOwnership;
+    facts: DealMemoryBundle["facts"];
+    interactions: DealMemoryBundle["interactions"];
+  }>();
+  const groupFor = (ownership: DealMemoryOwnership) => {
+    const normalized = validateMemoryOwnership(ownership);
+    const key = exactSourceIdentity(normalized);
+    const existing = grouped.get(key);
+    if (existing) return existing;
+    const created = {
+      ownership: normalized,
+      facts: [],
+      interactions: [],
+    };
+    grouped.set(key, created);
+    return created;
+  };
+  for (const fact of bundle.facts) {
+    const sourcesByOwner = new Map<string, typeof fact.sources>();
+    for (const source of fact.sources) {
+      const ownership = lineage.evidence[source.id];
+      if (!ownership) continue;
+      const key = exactSourceIdentity(validateMemoryOwnership(ownership));
+      const sources = sourcesByOwner.get(key) ?? [];
+      sources.push(structuredClone(source));
+      sourcesByOwner.set(key, sources);
+    }
+    for (const [key, sources] of sourcesByOwner) {
+      const ownership = lineage.evidence[sources[0].id];
+      const group = grouped.get(key) ?? groupFor(ownership);
+      group.facts.push({ ...structuredClone(fact), sources });
+    }
+  }
+  for (const interaction of bundle.interactions) {
+    const ownership = lineage.interactions[interaction.id];
+    if (ownership) {
+      groupFor(ownership).interactions.push(structuredClone(interaction));
+    }
+  }
+  return [...grouped.values()].map((group) => ({
+    ...group.ownership,
+    bundle: DealMemoryBundleSchema.parse({
+      ...bundle,
+      facts: group.facts,
+      interactions: group.interactions,
+    }),
+  }));
+}
+
+function replaceMap<T>(
+  target: Map<string, T>,
+  entries: Array<[string, T]>,
+): void {
+  target.clear();
+  for (const [key, value] of entries) {
+    target.set(key, structuredClone(value));
+  }
+}
+
 export function sourceRevisionFingerprint(
   revisionIds: readonly string[],
 ): string {
@@ -228,6 +325,7 @@ export function createMemoryDealRegistry(options: {
   const companies = new Map<string, { id: string; name: string }>();
   const bundles = new Map<string, DealMemoryBundle>();
   const bundleLineage = new Map<string, DealMemoryLineage>();
+  const exactSourceBundles = new Map<string, ExactSourceMemoryBundle>();
   const assignments: DealSourceAssignment[] = [];
   const requestAssignments = new Map<string, DealSourceAssignment>();
   const externalEffects: string[] = [];
@@ -244,6 +342,66 @@ export function createMemoryDealRegistry(options: {
   }
 
   return {
+    captureAtomicState() {
+      return {
+        deals: structuredClone([...deals.entries()]),
+        companies: structuredClone([...companies.entries()]),
+        bundles: structuredClone([...bundles.entries()]),
+        bundleLineage: structuredClone([...bundleLineage.entries()]),
+        exactSourceBundles: structuredClone([
+          ...exactSourceBundles.entries(),
+        ]),
+        assignments: structuredClone(assignments),
+        requestAssignments: [...requestAssignments.entries()].map(
+          ([key, assignment]) => [key, assignment.id] as const,
+        ),
+        externalEffects: structuredClone(externalEffects),
+        assignmentSequence,
+      };
+    },
+
+    restoreAtomicState(rawState) {
+      const state = rawState as {
+        deals: Array<[string, RegisteredDeal]>;
+        companies: Array<[string, { id: string; name: string }]>;
+        bundles: Array<[string, DealMemoryBundle]>;
+        bundleLineage: Array<[string, DealMemoryLineage]>;
+        exactSourceBundles: Array<[string, ExactSourceMemoryBundle]>;
+        assignments: DealSourceAssignment[];
+        requestAssignments: Array<readonly [string, string]>;
+        externalEffects: string[];
+        assignmentSequence: number;
+      };
+      replaceMap(deals, state.deals);
+      replaceMap(companies, state.companies);
+      replaceMap(bundles, state.bundles);
+      replaceMap(bundleLineage, state.bundleLineage);
+      replaceMap(exactSourceBundles, state.exactSourceBundles);
+      assignments.splice(
+        0,
+        assignments.length,
+        ...structuredClone(state.assignments),
+      );
+      const assignmentById = new Map(
+        assignments.map((assignment) => [assignment.id, assignment]),
+      );
+      requestAssignments.clear();
+      for (const [key, assignmentId] of state.requestAssignments) {
+        const assignment = assignmentById.get(assignmentId);
+        if (assignment) requestAssignments.set(key, assignment);
+      }
+      externalEffects.splice(
+        0,
+        externalEffects.length,
+        ...structuredClone(state.externalEffects),
+      );
+      assignmentSequence = state.assignmentSequence;
+    },
+
+    usesSourceRegistry(registry) {
+      return registry === sourceRegistry;
+    },
+
     async getAnalysisEligibleSnapshot(workspaceId) {
       workspaceId = requiredWorkspaceId(workspaceId);
       const eligibleDeals = [...deals.values()]
@@ -318,6 +476,12 @@ export function createMemoryDealRegistry(options: {
               }),
           );
         });
+    },
+
+    async getExactSourceBundle(rawInput) {
+      const input = validateMemoryOwnership(rawInput);
+      const exact = exactSourceBundles.get(exactSourceIdentity(input));
+      return exact ? structuredClone(exact) : null;
     },
 
     findForWorkspace,
@@ -525,6 +689,14 @@ export function createMemoryDealRegistry(options: {
         bundles.set(dealKey, structuredClone(input.memoryBundle));
         if (input.memoryLineage) {
           bundleLineage.set(dealKey, structuredClone(input.memoryLineage));
+          for (
+            const exact of exactSourceBundlesFromConfirmation(
+              input.memoryBundle,
+              input.memoryLineage,
+            )
+          ) {
+            exactSourceBundles.set(exactSourceIdentity(exact), exact);
+          }
         }
       } else if (!bundles.has(dealKey)) {
         bundles.set(dealKey, DealMemoryBundleSchema.parse({
@@ -874,6 +1046,85 @@ export function createSupabaseDealRegistry(options: {
         compareUtf8(left.companyName, right.companyName)
         || compareUtf8(left.dealId, right.dealId)
       );
+    },
+
+    async getExactSourceBundle(rawInput) {
+      const input = validateMemoryOwnership(rawInput);
+      const assignmentQuery = new URLSearchParams({
+        workspace_id: `eq.${input.workspaceId}`,
+        deal_id: `eq.${input.dealId}`,
+        source_id: `eq.${input.sourceId}`,
+        source_revision_id: `eq.${input.sourceRevisionId}`,
+        select: "source_revision_id",
+        limit: "1",
+      });
+      const evidenceQuery = new URLSearchParams({
+        workspace_id: `eq.${input.workspaceId}`,
+        deal_id: `eq.${input.dealId}`,
+        document_id: `eq.${input.sourceId}`,
+        source_revision_id: `eq.${input.sourceRevisionId}`,
+        order: "id.asc",
+        select:
+          "id,workspace_id,deal_id,document_id,source_revision_id,provenance,page,fact,excerpt",
+      });
+      const [deal, assignmentRows, evidenceRows, documentRows] =
+        await Promise.all([
+          findForWorkspace({
+            workspaceId: input.workspaceId,
+            dealId: input.dealId,
+          }),
+          request(`/deal_source_assignments?${assignmentQuery}`) as Promise<
+            Record<string, unknown>[]
+          >,
+          request(`/source_evidence?${evidenceQuery}`) as Promise<
+            Record<string, unknown>[]
+          >,
+          request(`/source_documents?${
+            new URLSearchParams({
+              id: `eq.${input.sourceId}`,
+              select: "id,title",
+              limit: "1",
+            })
+          }`) as Promise<Record<string, unknown>[]>,
+        ]);
+      if (!deal || assignmentRows.length !== 1 || evidenceRows.length === 0) {
+        return null;
+      }
+      for (const evidence of evidenceRows) {
+        if (
+          String(evidence.workspace_id) !== input.workspaceId
+          || String(evidence.deal_id) !== input.dealId
+          || String(evidence.document_id) !== input.sourceId
+          || String(evidence.source_revision_id) !== input.sourceRevisionId
+        ) {
+          throw new Error(
+            "Exact source evidence ownership does not match its query.",
+          );
+        }
+      }
+      const title = documentRows[0]
+        ? String(documentRows[0].title)
+        : input.sourceId;
+      return {
+        ...input,
+        bundle: DealMemoryBundleSchema.parse({
+          dealId: deal.id,
+          companyName: deal.companyName,
+          status: deal.status,
+          facts: evidenceRows.map((evidence) => ({
+            text: evidence.fact,
+            sources: [{
+              id: evidence.id,
+              provenance: evidence.provenance,
+              title,
+              documentId: evidence.document_id,
+              page: Number(evidence.page),
+              excerpt: evidence.excerpt,
+            }],
+          })),
+          interactions: [],
+        }),
+      };
     },
 
     findForWorkspace,

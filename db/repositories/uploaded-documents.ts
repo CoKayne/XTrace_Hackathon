@@ -122,11 +122,17 @@ export interface UploadedDocumentsRepository {
   deleteAll(workspaceId: string): Promise<void>;
 }
 
+export interface MemoryUploadedDocumentsRepository
+  extends UploadedDocumentsRepository {
+  captureAtomicState(): unknown;
+  restoreAtomicState(state: unknown): void;
+}
+
 const LEASE_MS = 5 * 60_000;
 
 export function createMemoryUploadedDocumentsRepository(options: {
   now?: () => Date;
-} = {}): UploadedDocumentsRepository {
+} = {}): MemoryUploadedDocumentsRepository {
   const rows = new Map<string, UploadedDocumentRecord & {
     leaseExpiresAt: number | null;
     workerId: string | null;
@@ -134,6 +140,24 @@ export function createMemoryUploadedDocumentsRepository(options: {
   }>();
   const now = options.now ?? (() => new Date());
   return {
+    captureAtomicState() {
+      return structuredClone([...rows.entries()]);
+    },
+
+    restoreAtomicState(rawState) {
+      const state = rawState as Array<
+        [string, UploadedDocumentRecord & {
+          leaseExpiresAt: number | null;
+          workerId: string | null;
+          leaseToken: string | null;
+        }]
+      >;
+      rows.clear();
+      for (const [key, row] of state) {
+        rows.set(key, structuredClone(row));
+      }
+    },
+
     async create(input) {
       const timestamp = now().toISOString();
       const record = {
@@ -193,6 +217,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
         || !["extracting", "ingesting_memory"].includes(row.status)
         || row.workerId !== input.workerId
         || row.leaseToken !== input.leaseToken
+        || (row.leaseExpiresAt ?? 0) <= now().getTime()
       ) return false;
       row.leaseExpiresAt = now().getTime() + LEASE_MS;
       row.updatedAt = now().toISOString();
@@ -205,6 +230,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
         || row.status !== "extracting"
         || row.workerId !== input.workerId
         || row.leaseToken !== input.leaseToken
+        || (row.leaseExpiresAt ?? 0) <= now().getTime()
       ) return false;
       Object.assign(row, {
         status: "awaiting_confirmation" as const,
@@ -224,6 +250,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
         || row.status !== "extracting"
         || row.workerId !== input.workerId
         || row.leaseToken !== input.leaseToken
+        || (row.leaseExpiresAt ?? 0) <= now().getTime()
       ) return false;
       row.status = "failed";
       row.failureReason = input.reason;
@@ -263,6 +290,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
         || row.status !== "ingesting_memory"
         || row.workerId !== input.workerId
         || row.leaseToken !== input.leaseToken
+        || (row.leaseExpiresAt ?? 0) <= now().getTime()
       ) return false;
       Object.assign(row, {
         status: "ready" as const,
@@ -281,6 +309,7 @@ export function createMemoryUploadedDocumentsRepository(options: {
         || row.status !== "ingesting_memory"
         || row.workerId !== input.workerId
         || row.leaseToken !== input.leaseToken
+        || (row.leaseExpiresAt ?? 0) <= now().getTime()
       ) return false;
       Object.assign(row, {
         status: "confirmed" as const,

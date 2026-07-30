@@ -31,6 +31,7 @@ import {
   createMemoryUploadedDocumentsRepository,
   type ExtractionPreview,
 } from "../../db/repositories/uploaded-documents";
+import { createMemorySourceRegistry } from "../../db/repositories/source-registry";
 import type { RouteDependencies } from "../../lib/api/route-dependencies";
 import {
   listDocumentDeals,
@@ -612,20 +613,113 @@ test("forged workspace selectors cannot redirect import-confirm writes", async (
   await store.resetDemoData(otherWorkspace);
 });
 
-test("an issued private capability is exact across every replay dimension", async () => {
-  const workspaceId = "workspace_capability";
-  const uploadId = "upload_capability";
+test("legacy document routes never issue or honor Source Revision capabilities for staged uploads", async () => {
+  const workspaceId = "workspace_staged_capability";
+  const uploadId = "upload_staged_capability";
   const objectKey = `private/workspaces/${workspaceId}/${uploadId}.txt`;
   const uploads = createMemoryUploadedDocumentsRepository();
   const objects = createMemoryPrivateObjectStorage();
   await uploads.create({
     id: uploadId,
     workspaceId,
-    filename: "capability.txt",
+    filename: "staged.txt",
     contentType: "text/plain",
-    byteSize: 10,
-    checksum: "object-version-one",
+    byteSize: 6,
+    checksum: "staged-version",
     objectKey,
+  });
+  await objects.ensurePrivateObject({
+    key: objectKey,
+    bytes: new TextEncoder().encode("staged"),
+    contentType: "text/plain",
+  });
+  const access = createPrivateDocumentAccess({
+    signingSecret: "staged-capability-test-secret-at-least-32-bytes",
+  });
+  const dependencies: RouteDependencies = {
+    ...productDependencies("partner", workspaceId, "user_staged"),
+    uploadedDocuments: uploads,
+    privateObjectStorage: objects,
+    documentAccess: access,
+  };
+  const forgedStagingUrl = await access.createPrivateReadUrl({
+    capability: {
+      workspaceId,
+      sourceRevisionId: uploadId,
+      objectVersion: "staged-version",
+      expiresAtEpochSeconds: Math.floor(Date.now() / 1_000) + 600,
+      permission: "read",
+    },
+    expiresInSeconds: 600,
+  });
+
+  assert.equal((await documentAccess(
+    request(`/api/documents/${uploadId}/access`),
+    params({ id: uploadId }),
+    dependencies,
+  )).status, 404);
+  assert.equal((await document(
+    new Request(new URL(forgedStagingUrl, "https://vsee.test")),
+    params({ id: uploadId }),
+    dependencies,
+  )).status, 404);
+
+  const claim = await uploads.claimNext("extractor");
+  assert.ok(claim);
+  assert.equal(await uploads.savePreview({
+    workspaceId,
+    id: uploadId,
+    workerId: claim.workerId,
+    leaseToken: claim.leaseToken,
+    preview: {
+      candidateCompanyName: "Staged",
+      candidateHeadline: "Still awaiting confirmation.",
+      facts: [{
+        text: "Still awaiting confirmation.",
+        excerpt: "Still awaiting confirmation.",
+        locator: { kind: "text_range", start: 0, end: 28 },
+      }],
+      extractionMetadata: {
+        extractorId: "plain_text_v1",
+        extractorVersion: "1",
+        extractedAt: "2026-07-29T12:00:00.000Z",
+        contentHash: "staged-version",
+        inputBytes: 6,
+        extractedCharacters: 6,
+        truncated: false,
+      },
+    },
+  }), true);
+  assert.equal((await documentAccess(
+    request(`/api/documents/${uploadId}/access`),
+    params({ id: uploadId }),
+    dependencies,
+  )).status, 404);
+  assert.equal((await document(
+    new Request(new URL(forgedStagingUrl, "https://vsee.test")),
+    params({ id: uploadId }),
+    dependencies,
+  )).status, 404);
+});
+
+test("an issued private capability is exact across every replay dimension", async () => {
+  const workspaceId = "workspace_capability";
+  const revisionId = "revision_capability";
+  const objectKey = `private/workspaces/${workspaceId}/${revisionId}.txt`;
+  const sources = createMemorySourceRegistry();
+  const objects = createMemoryPrivateObjectStorage();
+  await sources.createInitialRevision({
+    id: revisionId,
+    workspaceId,
+    sourceId: "source_capability",
+    contentHash: "content-hash-one",
+    objectKey,
+    objectVersion: "object-version-one",
+    contentType: "text/plain",
+    extractorId: "plain_text_v1",
+    extractorVersion: "1",
+    extractedAt: "2026-07-29T12:00:00.000Z",
+    createdAt: "2026-07-29T12:00:00.000Z",
   });
   await objects.ensurePrivateObject({
     key: objectKey,
@@ -639,14 +733,14 @@ test("an issued private capability is exact across every replay dimension", asyn
   });
   const dependencies: RouteDependencies = {
     ...productDependencies("partner", workspaceId, "user_capability"),
-    uploadedDocuments: uploads,
+    sourceRegistry: sources,
     privateObjectStorage: objects,
     documentAccess: access,
     now: () => now,
   };
   const issued = await documentAccess(
-    request(`/api/documents/${uploadId}/access`),
-    params({ id: uploadId }),
+    request(`/api/documents/${revisionId}/access`),
+    params({ id: revisionId }),
     dependencies,
   );
   assert.equal(issued.status, 307);
@@ -655,7 +749,7 @@ test("an issued private capability is exact across every replay dimension", asyn
 
   const valid = await document(
     new Request(signedUrl),
-    params({ id: uploadId }),
+    params({ id: revisionId }),
     dependencies,
   );
   assert.equal(valid.status, 200);
@@ -663,7 +757,7 @@ test("an issued private capability is exact across every replay dimension", asyn
 
   const wrongWorkspace = await document(
     new Request(signedUrl),
-    params({ id: uploadId }),
+    params({ id: revisionId }),
     {
       ...dependencies,
       ...productDependencies(
@@ -678,49 +772,34 @@ test("an issued private capability is exact across every replay dimension", asyn
   assert.equal(
     (await document(
       new Request(signedUrl),
-      params({ id: "upload_different_path_param" }),
+      params({ id: "revision_different_path_param" }),
       dependencies,
     )).status,
     404,
   );
 
   const wrongSourceRevision = new URL(signedUrl);
-  wrongSourceRevision.pathname = "/api/documents/upload_different_revision";
+  wrongSourceRevision.pathname = "/api/documents/revision_different";
   assert.equal(
     (await document(
       new Request(wrongSourceRevision),
-      params({ id: "upload_different_revision" }),
+      params({ id: "revision_different" }),
       dependencies,
     )).status,
     404,
   );
 
-  await uploads.create({
-    id: uploadId,
-    workspaceId,
-    filename: "capability.txt",
-    contentType: "text/plain",
-    byteSize: 10,
-    checksum: "object-version-two",
-    objectKey,
+  const wrongObjectVersion = tamperCapability(signedUrl, {
+    objectVersion: "object-version-two",
   });
   assert.equal(
     (await document(
-      new Request(signedUrl),
-      params({ id: uploadId }),
+      new Request(wrongObjectVersion),
+      params({ id: revisionId }),
       dependencies,
     )).status,
     404,
   );
-  await uploads.create({
-    id: uploadId,
-    workspaceId,
-    filename: "capability.txt",
-    contentType: "text/plain",
-    byteSize: 10,
-    checksum: "object-version-one",
-    objectKey,
-  });
 
   const permissionTamper = tamperCapability(signedUrl, {
     permission: "write",
@@ -728,18 +807,18 @@ test("an issued private capability is exact across every replay dimension", asyn
   assert.equal(
     (await document(
       new Request(permissionTamper),
-      params({ id: uploadId }),
+      params({ id: revisionId }),
       dependencies,
     )).status,
     404,
   );
 
   const wrongRoute = new URL(signedUrl);
-  wrongRoute.pathname = `/api/not-documents/${uploadId}`;
+  wrongRoute.pathname = `/api/not-documents/${revisionId}`;
   assert.equal(
     (await document(
       new Request(wrongRoute),
-      params({ id: uploadId }),
+      params({ id: revisionId }),
       dependencies,
     )).status,
     404,
@@ -749,7 +828,7 @@ test("an issued private capability is exact across every replay dimension", asyn
   assert.equal(
     (await document(
       new Request(signedUrl),
-      params({ id: uploadId }),
+      params({ id: revisionId }),
       dependencies,
     )).status,
     404,

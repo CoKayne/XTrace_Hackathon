@@ -53,6 +53,12 @@ export class UploadConfirmationConflictError extends Error {
   }
 }
 
+const memoryPromotionLocks = new WeakMap<object, Promise<void>>();
+const confirmationLockSets = new WeakMap<
+  object,
+  Map<string, Promise<void>>
+>();
+
 export function toUploadPreviewDto(
   record: UploadedDocumentRecord,
   candidateDeals: UploadPreviewDto["candidateDeals"],
@@ -82,7 +88,7 @@ export function createUploadConfirmationService(dependencies: {
   now?: () => Date;
 }) {
   const now = dependencies.now ?? (() => new Date());
-  const locks = new Map<string, Promise<void>>();
+  const locks = confirmationLocksFor(dependencies.uploads);
 
   return {
     async listCandidateDeals(workspaceId: string) {
@@ -171,6 +177,67 @@ export function createUploadConfirmationService(dependencies: {
           excerpt: fact.excerpt ?? fact.text,
           page: 1,
         }));
+        const bundle = memoryBundle({
+          upload,
+          dealId: identity.dealId,
+          companyName: identity.companyName,
+          status: identity.status,
+          sourceId,
+          sourceRevisionId,
+        });
+        const memoryLineage = {
+          evidence: Object.fromEntries(bundle.facts.flatMap((fact) =>
+            fact.sources.map((source) => [source.id, {
+              workspaceId: input.workspaceId,
+              dealId: identity.dealId,
+              sourceId,
+              sourceRevisionId,
+            }])
+          )),
+          interactions: {},
+        };
+        const createRevision = () =>
+          dependencies.sources.createInitialRevision({
+            id: sourceRevisionId,
+            workspaceId: input.workspaceId,
+            sourceId,
+            contentHash: upload.checksum,
+            objectKey: upload.objectKey,
+            objectVersion: upload.checksum,
+            contentType: upload.contentType,
+            extractorId:
+              upload.extractionPreview!.extractionMetadata.extractorId,
+            extractorVersion:
+              upload.extractionPreview!.extractionMetadata.extractorVersion,
+            extractedAt:
+              upload.extractionPreview!.extractionMetadata.extractedAt,
+            createdAt: confirmedAt,
+          });
+        const confirmAssignment = (revisionId: string) =>
+          dependencies.deals.confirmSourceAssignment({
+            requestId: `upload-confirmation:${upload.id}:${upload.checksum}`,
+            workspaceId: input.workspaceId,
+            dealId: identity.dealId,
+            companyId: identity.companyId,
+            companyName: identity.companyName,
+            status: identity.status,
+            sourceRevisionId: revisionId,
+            assignedByUserId: input.assignedByUserId,
+            reason:
+              "User confirmed runtime upload identity and Deal assignment.",
+            confirmedAt,
+            memoryBundle: bundle,
+            memoryLineage,
+          });
+        const markUploadConfirmed = () =>
+          dependencies.uploads.markConfirmed({
+            workspaceId: input.workspaceId,
+            id: upload.id,
+            confirmationFingerprint,
+            dealId: identity.dealId,
+            sourceId,
+            sourceRevisionId,
+          });
         if (dependencies.uploads.promoteAtomically) {
           await dependencies.uploads.promoteAtomically({
             workspaceId: input.workspaceId,
@@ -187,61 +254,10 @@ export function createUploadConfirmationService(dependencies: {
             evidence,
           });
         } else {
-          const revision = await dependencies.sources.createInitialRevision({
-            id: sourceRevisionId,
-            workspaceId: input.workspaceId,
-            sourceId,
-            contentHash: upload.checksum,
-            objectKey: upload.objectKey,
-            objectVersion: upload.checksum,
-            contentType: upload.contentType,
-            extractorId:
-              upload.extractionPreview.extractionMetadata.extractorId,
-            extractorVersion:
-              upload.extractionPreview.extractionMetadata.extractorVersion,
-            extractedAt:
-              upload.extractionPreview.extractionMetadata.extractedAt,
-            createdAt: confirmedAt,
-          });
-          const bundle = memoryBundle({
-            upload,
-            dealId: identity.dealId,
-            companyName: identity.companyName,
-            status: identity.status,
-            sourceId,
-            sourceRevisionId,
-          });
-          await dependencies.deals.confirmSourceAssignment({
-            requestId: `upload-confirmation:${upload.id}:${upload.checksum}`,
-            workspaceId: input.workspaceId,
-            dealId: identity.dealId,
-            companyId: identity.companyId,
-            companyName: identity.companyName,
-            status: identity.status,
-            sourceRevisionId: revision.id,
-            assignedByUserId: input.assignedByUserId,
-            reason: "User confirmed runtime upload identity and Deal assignment.",
-            confirmedAt,
-            memoryBundle: bundle,
-            memoryLineage: {
-              evidence: Object.fromEntries(bundle.facts.flatMap((fact) =>
-                fact.sources.map((source) => [source.id, {
-                  workspaceId: input.workspaceId,
-                  dealId: identity.dealId,
-                  sourceId,
-                  sourceRevisionId,
-                }])
-              )),
-              interactions: {},
-            },
-          });
-          await dependencies.uploads.markConfirmed({
-            workspaceId: input.workspaceId,
-            id: upload.id,
-            confirmationFingerprint,
-            dealId: identity.dealId,
-            sourceId,
-            sourceRevisionId,
+          await promoteMemoryAtomically(dependencies, async () => {
+            const revision = await createRevision();
+            await confirmAssignment(revision.id);
+            await markUploadConfirmed();
           });
         }
         return {
@@ -354,6 +370,112 @@ function publicFailure(status: UploadedDocumentRecord["status"]): string {
   return status === "confirmed"
     ? "Memory ingestion failed. Retry is available."
     : "Document processing failed.";
+}
+
+function confirmationLocksFor(
+  repository: UploadedDocumentsRepository,
+): Map<string, Promise<void>> {
+  const existing = confirmationLockSets.get(repository);
+  if (existing) return existing;
+  const created = new Map<string, Promise<void>>();
+  confirmationLockSets.set(repository, created);
+  return created;
+}
+
+interface AtomicMemoryAdapter {
+  captureAtomicState(): unknown;
+  restoreAtomicState(state: unknown): void;
+}
+
+interface AtomicMemoryDealAdapter extends AtomicMemoryAdapter {
+  usesSourceRegistry(registry: SourceRegistry): boolean;
+}
+
+async function promoteMemoryAtomically<T>(
+  dependencies: {
+    uploads: UploadedDocumentsRepository;
+    sources: SourceRegistry;
+    deals: DealRegistry;
+  },
+  operation: () => Promise<T>,
+): Promise<T> {
+  if (
+    !isAtomicMemoryAdapter(dependencies.uploads)
+    || !isAtomicMemoryAdapter(dependencies.sources)
+    || !isAtomicMemoryDealAdapter(dependencies.deals)
+    || !dependencies.deals.usesSourceRegistry(dependencies.sources)
+  ) {
+    throw new Error(
+      "Atomic upload promotion is unavailable for these repositories.",
+    );
+  }
+  const uploads = dependencies.uploads as UploadedDocumentsRepository
+    & AtomicMemoryAdapter;
+  const sources = dependencies.sources as SourceRegistry
+    & AtomicMemoryAdapter;
+  const deals = dependencies.deals as DealRegistry & AtomicMemoryDealAdapter;
+  return withWeakKeyLock(
+    memoryPromotionLocks,
+    uploads,
+    async () => {
+      const adapters: AtomicMemoryAdapter[] = [
+        uploads,
+        sources,
+        deals,
+      ];
+      const checkpoints = adapters.map((adapter) =>
+        adapter.captureAtomicState()
+      );
+      try {
+        return await operation();
+      } catch (error) {
+        for (let index = adapters.length - 1; index >= 0; index -= 1) {
+          adapters[index].restoreAtomicState(checkpoints[index]);
+        }
+        throw error;
+      }
+    },
+  );
+}
+
+function isAtomicMemoryAdapter(value: unknown): value is AtomicMemoryAdapter {
+  return Boolean(
+    value
+      && typeof value === "object"
+      && "captureAtomicState" in value
+      && typeof value.captureAtomicState === "function"
+      && "restoreAtomicState" in value
+      && typeof value.restoreAtomicState === "function",
+  );
+}
+
+function isAtomicMemoryDealAdapter(
+  value: unknown,
+): value is AtomicMemoryDealAdapter {
+  return isAtomicMemoryAdapter(value)
+    && "usesSourceRegistry" in value
+    && typeof value.usesSourceRegistry === "function";
+}
+
+async function withWeakKeyLock<T>(
+  locks: WeakMap<object, Promise<void>>,
+  key: object,
+  operation: () => Promise<T>,
+): Promise<T> {
+  const previous = locks.get(key) ?? Promise.resolve();
+  let release!: () => void;
+  const current = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const queued = previous.then(() => current);
+  locks.set(key, queued);
+  await previous;
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (locks.get(key) === queued) locks.delete(key);
+  }
 }
 
 async function withKeyLock<T>(

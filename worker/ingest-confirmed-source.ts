@@ -3,6 +3,7 @@ import type {
   ClaimedUploadedDocument,
   UploadedDocumentsRepository,
 } from "../db/repositories/uploaded-documents";
+import type { ExactSourceMemoryBundle } from "../db/repositories/deal-registry";
 import type { PersistedIngest } from "../lib/xtrace/service";
 
 export interface ConfirmedSourceLineage {
@@ -11,26 +12,12 @@ export interface ConfirmedSourceLineage {
   fixtureIds: string[];
 }
 
-export function selectConfirmedSourceBundle(
-  bundle: DealMemoryBundle,
-  sourceId: string,
-): DealMemoryBundle {
-  return {
-    ...bundle,
-    facts: bundle.facts.flatMap((fact) => {
-      const sources = fact.sources.filter((source) =>
-        source.documentId === sourceId
-      );
-      return sources.length > 0 ? [{ ...fact, sources }] : [];
-    }),
-    interactions: [],
-  };
-}
-
 export async function processConfirmedSource(
   upload: ClaimedUploadedDocument,
   dependencies: {
-    loadBundle: (upload: ClaimedUploadedDocument) => Promise<DealMemoryBundle>;
+    loadBundle: (
+      upload: ClaimedUploadedDocument,
+    ) => Promise<ExactSourceMemoryBundle | null>;
     ingest: (
       bundle: DealMemoryBundle,
       lineage: ConfirmedSourceLineage,
@@ -47,14 +34,19 @@ export async function processConfirmedSource(
     if (!upload.dealId || !upload.sourceId || !upload.sourceRevisionId) {
       throw new Error("Confirmed upload lineage is incomplete.");
     }
-    const loadedBundle = await dependencies.loadBundle(upload);
-    if (loadedBundle.dealId !== upload.dealId) {
-      throw new Error("Confirmed upload Deal identity changed before ingest.");
+    const exact = await dependencies.loadBundle(upload);
+    if (
+      !exact
+      || exact.workspaceId !== upload.workspaceId
+      || exact.dealId !== upload.dealId
+      || exact.sourceId !== upload.sourceId
+      || exact.sourceRevisionId !== upload.sourceRevisionId
+    ) {
+      throw new Error(
+        "Confirmed source facts do not match the exact revision ownership.",
+      );
     }
-    const bundle = selectConfirmedSourceBundle(
-      loadedBundle,
-      upload.sourceId,
-    );
+    const bundle = exact.bundle;
     if (bundle.facts.length === 0) {
       throw new Error("Confirmed source has no exact source-backed facts.");
     }

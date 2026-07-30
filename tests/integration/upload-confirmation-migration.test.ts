@@ -100,7 +100,7 @@ test(
             'awaiting_confirmation',
             '{"extractionMetadata":{"extractorId":"plain_text_v1","extractorVersion":"1","extractedAt":"2026-07-29T12:00:00.000Z"}}'
           );
-          select (public.confirm_uploaded_document(jsonb_build_object(
+          select public.confirm_uploaded_document(jsonb_build_object(
             'workspaceId', 'workspace_upload',
             'uploadId', 'upload_1',
             'confirmationFingerprint', 'sha256:${"a".repeat(64)}',
@@ -118,34 +118,34 @@ test(
               'excerpt', 'Acme serves carriers.',
               'page', 1
             ))
-          )) -> 'upload' ->> 'status');
-          select status || '|' || deal_id || '|' || source_revision_id
-          from public.uploaded_documents
-          where workspace_id = 'workspace_upload' and id = 'upload_1';
-          select count(*) || '|' ||
-            (select count(*) from public.deal_source_assignments
-             where workspace_id = 'workspace_upload') || '|' ||
-            (select count(*) from public.source_evidence
-             where workspace_id = 'workspace_upload')
-          from public.source_revisions
-          where workspace_id = 'workspace_upload';
-          select worker_id || '|' || (lease_token is not null)::text
+          ));
+          select count(*)
           from public.claim_next_uploaded_document(
             'confirmed', 'worker-a', 300
           );
-          select count(*)
-          from public.claim_next_uploaded_document(
-            'confirmed', 'worker-b', 300
-          );
+          select upload.status || '|' || upload.deal_id || '|' ||
+            upload.source_revision_id || '|' ||
+            (select count(*) from public.source_revisions
+             where workspace_id = 'workspace_upload') || '|' ||
+            (select count(*) from public.deal_source_assignments
+             where workspace_id = 'workspace_upload') || '|' ||
+            (select count(*) from public.source_evidence
+             where workspace_id = 'workspace_upload') || '|' ||
+            upload.worker_id || '|' ||
+            (upload.lease_token is not null)::text || '|' ||
+            (select count(*)
+             from public.claim_next_uploaded_document(
+               'confirmed', 'worker-b', 300
+             ))
+          from public.uploaded_documents as upload
+          where upload.workspace_id = 'workspace_upload'
+            and upload.id = 'upload_1';
         `,
       ], { encoding: "utf8" }).trim();
-      assert.deepEqual(output.split("\n"), [
-        "confirmed",
-        "confirmed|deal_1|revision_1",
-        "1|1|1",
-        "worker-a|true",
-        "0",
-      ]);
+      assert.equal(
+        output,
+        "ingesting_memory|deal_1|revision_1|1|1|1|worker-a|true|0",
+      );
     } finally {
       execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });
     }
