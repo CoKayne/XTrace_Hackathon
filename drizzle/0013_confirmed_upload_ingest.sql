@@ -383,6 +383,7 @@ declare
   canonical_item jsonb;
   structured_complete boolean;
   structured_category text;
+  structured_field text;
   normalized_field text;
   normalized_unit text;
   structured_value text;
@@ -394,6 +395,16 @@ declare
   event_at_value text;
   source_supported_value text;
   source_supported_position integer;
+  source_search_from integer;
+  source_relative_position integer;
+  source_has_valid_occurrence boolean;
+  structured_trim_characters constant text :=
+    ' '
+    || pg_catalog.chr(9)
+    || pg_catalog.chr(10)
+    || pg_catalog.chr(11)
+    || pg_catalog.chr(12)
+    || pg_catalog.chr(13);
 begin
   if jsonb_typeof(p_confirmation) <> 'object' then
     raise exception 'p_confirmation must be a JSON object';
@@ -511,9 +522,13 @@ begin
     )
   loop
     structured_item := evidence_item -> 'structured';
+    structured_field := btrim(
+      coalesce(structured_item ->> 'field', ''),
+      structured_trim_characters
+    );
     normalized_field := btrim(regexp_replace(
       regexp_replace(
-        lower(btrim(coalesce(structured_item ->> 'field', ''))),
+        lower(structured_field),
         '[^a-z0-9]+',
         ' ',
         'g'
@@ -542,36 +557,58 @@ begin
       else null
     end;
     normalized_unit := nullif(
-      lower(btrim(coalesce(structured_item ->> 'unit', ''))),
+      lower(btrim(
+        coalesce(structured_item ->> 'unit', ''),
+        structured_trim_characters
+      )),
       ''
     );
     structured_value := btrim(
-      coalesce(structured_item ->> 'value', '')
+      coalesce(structured_item ->> 'value', ''),
+      structured_trim_characters
     );
     structured_currency := nullif(
-      btrim(coalesce(structured_item ->> 'currency', '')),
+      btrim(
+        coalesce(structured_item ->> 'currency', ''),
+        structured_trim_characters
+      ),
       ''
     );
-    evidence_excerpt := btrim(coalesce(evidence_item ->> 'excerpt', ''));
+    evidence_excerpt := btrim(
+      coalesce(evidence_item ->> 'excerpt', ''),
+      structured_trim_characters
+    );
     period_start_value := nullif(
-      btrim(coalesce(structured_item ->> 'periodStart', '')),
+      btrim(
+        coalesce(structured_item ->> 'periodStart', ''),
+        structured_trim_characters
+      ),
       ''
     );
     period_end_value := nullif(
-      btrim(coalesce(structured_item ->> 'periodEnd', '')),
+      btrim(
+        coalesce(structured_item ->> 'periodEnd', ''),
+        structured_trim_characters
+      ),
       ''
     );
     published_at_value := nullif(
-      btrim(coalesce(structured_item ->> 'publishedAt', '')),
+      btrim(
+        coalesce(structured_item ->> 'publishedAt', ''),
+        structured_trim_characters
+      ),
       ''
     );
     event_at_value := nullif(
-      btrim(coalesce(structured_item ->> 'eventAt', '')),
+      btrim(
+        coalesce(structured_item ->> 'eventAt', ''),
+        structured_trim_characters
+      ),
       ''
     );
     structured_complete :=
       jsonb_typeof(structured_item) = 'object'
-      and btrim(coalesce(structured_item ->> 'field', '')) <> ''
+      and structured_field <> ''
       and structured_value <> ''
       and evidence_excerpt <> ''
       and structured_category is not null
@@ -608,7 +645,7 @@ begin
       );
     if structured_complete then
       foreach source_supported_value in array array[
-        btrim(structured_item ->> 'field'),
+        structured_field,
         structured_value,
         case
           when structured_category = 'currency' then structured_currency
@@ -624,37 +661,47 @@ begin
       ]
       loop
         continue when source_supported_value is null;
-        source_supported_position := position(
-          lower(source_supported_value) in lower(evidence_excerpt)
-        );
-        if source_supported_position = 0
-          or (
-            substring(source_supported_value from 1 for 1)
-              ~ '[A-Za-z0-9]'
-            and source_supported_position > 1
-            and substring(
-              evidence_excerpt
-              from source_supported_position - 1
-              for 1
-            ) ~ '[A-Za-z0-9]'
-          )
-          or (
-            substring(
-              source_supported_value
-              from char_length(source_supported_value)
-              for 1
-            ) ~ '[A-Za-z0-9]'
-            and source_supported_position
-                + char_length(source_supported_value)
-              <= char_length(evidence_excerpt)
-            and substring(
-              evidence_excerpt
-              from source_supported_position
-                + char_length(source_supported_value)
-              for 1
-            ) ~ '[A-Za-z0-9]'
-          )
-        then
+        source_search_from := 1;
+        source_has_valid_occurrence := false;
+        loop
+          source_relative_position := position(
+            lower(source_supported_value)
+            in substring(lower(evidence_excerpt) from source_search_from)
+          );
+          exit when source_relative_position = 0;
+          source_supported_position :=
+            source_search_from + source_relative_position - 1;
+          source_has_valid_occurrence :=
+            (
+              substring(source_supported_value from 1 for 1)
+                !~ '[A-Za-z0-9]'
+              or source_supported_position = 1
+              or substring(
+                evidence_excerpt
+                from source_supported_position - 1
+                for 1
+              ) !~ '[A-Za-z0-9]'
+            )
+            and (
+              substring(
+                source_supported_value
+                from char_length(source_supported_value)
+                for 1
+              ) !~ '[A-Za-z0-9]'
+              or source_supported_position
+                  + char_length(source_supported_value)
+                > char_length(evidence_excerpt)
+              or substring(
+                evidence_excerpt
+                from source_supported_position
+                  + char_length(source_supported_value)
+                for 1
+              ) !~ '[A-Za-z0-9]'
+            );
+          exit when source_has_valid_occurrence;
+          source_search_from := source_supported_position + 1;
+        end loop;
+        if not source_has_valid_occurrence then
           structured_complete := false;
           exit;
         end if;
@@ -728,11 +775,11 @@ begin
       'sourceRevisionId', target_revision_id,
       'provenanceOrigin', 'uploaded_document',
       'field', case
-        when structured_complete then btrim(structured_item ->> 'field')
+        when structured_complete then structured_field
         else 'unstructured_source_fact'
       end,
       'value', case
-        when structured_complete then btrim(structured_item ->> 'value')
+        when structured_complete then structured_value
         else btrim(evidence_item ->> 'fact')
       end,
       'unit', case

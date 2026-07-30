@@ -401,10 +401,10 @@ function completeStructuredFact(
   fact: ExtractionPreview["facts"][number],
 ): NonNullable<typeof fact.structured> | null {
   const structured = fact.structured;
-  const field = structured?.field.trim() ?? "";
-  const value = structured?.value.trim() ?? "";
+  const field = trimStructuredText(structured?.field ?? "");
+  const value = trimStructuredText(structured?.value ?? "");
   if (!structured || !field || !value) return null;
-  const excerpt = fact.excerpt?.trim();
+  const excerpt = trimStructuredText(fact.excerpt ?? "");
   if (
     !excerpt
     || !sourceContains(excerpt, field)
@@ -417,8 +417,9 @@ function completeStructuredFact(
   ];
   if (!category) return null;
 
-  const unit = structured.unit?.trim().toLowerCase() || null;
-  const currency = structured.currency?.trim() || null;
+  const unit = trimStructuredText(structured.unit ?? "").toLowerCase()
+    || null;
+  const currency = trimStructuredText(structured.currency ?? "") || null;
   if (category === "currency") {
     if (
       unit !== "currency"
@@ -444,8 +445,9 @@ function completeStructuredFact(
     return null;
   }
 
-  const periodStart = structured.periodStart?.trim() || null;
-  const periodEnd = structured.periodEnd?.trim() || null;
+  const periodStart = trimStructuredText(structured.periodStart ?? "")
+    || null;
+  const periodEnd = trimStructuredText(structured.periodEnd ?? "") || null;
   if (
     (periodStart === null) !== (periodEnd === null)
     || (
@@ -463,8 +465,9 @@ function completeStructuredFact(
     return null;
   }
 
-  const publishedAt = structured.publishedAt?.trim() || null;
-  const eventAt = structured.eventAt?.trim() || null;
+  const publishedAt = trimStructuredText(structured.publishedAt ?? "")
+    || null;
+  const eventAt = trimStructuredText(structured.eventAt ?? "") || null;
   if (
     [publishedAt, eventAt].some((timestamp) =>
       timestamp !== null
@@ -544,17 +547,33 @@ function normalizedStructuredField(value: string): string {
     .trim();
 }
 
+function trimStructuredText(value: string): string {
+  return value.replace(
+    /^[\u0009-\u000d\u0020]+|[\u0009-\u000d\u0020]+$/g,
+    "",
+  );
+}
+
 function sourceContains(source: string, exactValue: string): boolean {
   const normalizedSource = source.toLowerCase();
   const normalizedValue = exactValue.toLowerCase();
-  const start = normalizedSource.indexOf(normalizedValue);
-  if (start < 0) return false;
-  const before = normalizedSource[start - 1] ?? "";
-  const after = normalizedSource[start + normalizedValue.length] ?? "";
   const beginsWithWord = /^[a-z0-9]/.test(normalizedValue);
   const endsWithWord = /[a-z0-9]$/.test(normalizedValue);
-  return (!beginsWithWord || !/[a-z0-9]/.test(before))
-    && (!endsWithWord || !/[a-z0-9]/.test(after));
+  let searchFrom = 0;
+  while (searchFrom <= normalizedSource.length) {
+    const start = normalizedSource.indexOf(normalizedValue, searchFrom);
+    if (start < 0) return false;
+    const before = normalizedSource[start - 1] ?? "";
+    const after = normalizedSource[start + normalizedValue.length] ?? "";
+    if (
+      (!beginsWithWord || !/[a-z0-9]/.test(before))
+      && (!endsWithWord || !/[a-z0-9]/.test(after))
+    ) {
+      return true;
+    }
+    searchFrom = start + 1;
+  }
+  return false;
 }
 
 function isStrictIsoDate(value: string): boolean {

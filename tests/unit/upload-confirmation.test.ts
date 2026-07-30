@@ -466,6 +466,124 @@ test("confirmation fails closed for unsupported structured semantics and values"
   );
 });
 
+test("confirmation applies one exact edge-whitespace policy to structured fields", async () => {
+  const excerpt =
+    "ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31; "
+    + "event 2025-12-31T23:59:59.000Z; "
+    + "published 2026-01-15T10:30:00.000Z.";
+  const evidence = await confirmEvidence([
+    {
+      text: excerpt,
+      excerpt,
+      locator: { kind: "text_range", start: 0, end: excerpt.length },
+      structured: {
+        field: "\tARR\n",
+        value: "\n$2,000,000\t",
+        unit: "\tcurrency\n",
+        currency: "\nUSD\t",
+        periodStart: "\t2025-01-01\n",
+        periodEnd: "\n2025-12-31\t",
+        publishedAt: "\t2026-01-15T10:30:00.000Z\n",
+        eventAt: "\n2025-12-31T23:59:59.000Z\t",
+      },
+    },
+    {
+      text: excerpt,
+      excerpt,
+      locator: {
+        kind: "text_range",
+        start: excerpt.length + 1,
+        end: excerpt.length * 2 + 1,
+      },
+      structured: {
+        field: "\u00a0ARR\u00a0",
+        value: "$2,000,000",
+        unit: "currency",
+        currency: "USD",
+        periodStart: "2025-01-01",
+        periodEnd: "2025-12-31",
+        publishedAt: "2026-01-15T10:30:00.000Z",
+        eventAt: "2025-12-31T23:59:59.000Z",
+      },
+    },
+  ]);
+
+  assert.deepEqual(
+    evidence.map((item) => ({
+      field: item.field,
+      value: item.value,
+      unit: item.unit,
+      currency: item.currency,
+      periodStart: item.periodStart,
+      periodEnd: item.periodEnd,
+      publishedAt: item.publishedAt,
+      eventAt: item.eventAt,
+      acceptedForGate: item.acceptedForGate,
+    })),
+    [
+      {
+        field: "ARR",
+        value: "$2,000,000",
+        unit: "currency",
+        currency: "USD",
+        periodStart: "2025-01-01",
+        periodEnd: "2025-12-31",
+        publishedAt: "2026-01-15T10:30:00.000Z",
+        eventAt: "2025-12-31T23:59:59.000Z",
+        acceptedForGate: true,
+      },
+      {
+        field: "unstructured_source_fact",
+        value: excerpt,
+        unit: null,
+        currency: null,
+        periodStart: null,
+        periodEnd: null,
+        publishedAt: null,
+        eventAt: null,
+        acceptedForGate: false,
+      },
+    ],
+  );
+});
+
+test("confirmation accepts a later standalone field or currency occurrence", async () => {
+  const excerpts = [
+    "A USDA filing reported ARR of $2,000,000 USD.",
+    "The company carried prior figures; ARR was $2,000,000 USD.",
+  ];
+  const evidence = await confirmEvidence(excerpts.map((excerpt, index) => ({
+    text: excerpt,
+    excerpt,
+    locator: {
+      kind: "text_range" as const,
+      start: index * 100,
+      end: index * 100 + excerpt.length,
+    },
+    structured: {
+      field: "ARR",
+      value: "$2,000,000",
+      unit: "currency",
+      currency: "USD",
+      periodStart: null,
+      periodEnd: null,
+      publishedAt: null,
+      eventAt: null,
+    },
+  })));
+
+  assert.deepEqual(
+    evidence.map(({ field, acceptedForGate }) => ({
+      field,
+      acceptedForGate,
+    })),
+    [
+      { field: "ARR", acceptedForGate: true },
+      { field: "ARR", acceptedForGate: true },
+    ],
+  );
+});
+
 test("atomic upload adapters receive exact locator and structured evidence", async () => {
   const baseUploads = await awaitingUpload(
     createMemoryUploadedDocumentsRepository(),

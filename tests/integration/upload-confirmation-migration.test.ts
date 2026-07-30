@@ -567,6 +567,78 @@ test(
                   'publishedAt', null,
                   'eventAt', '2025-01-01T12:00:00.000+19:00'
                 )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_13',
+                'fact',
+                  'ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31; event 2025-12-31T23:59:59.000Z; published 2026-01-15T10:30:00.000Z.',
+                'excerpt',
+                  'ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31; event 2025-12-31T23:59:59.000Z; published 2026-01-15T10:30:00.000Z.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', E'\\tARR\\n',
+                  'value', E'\\n$2,000,000\\t',
+                  'unit', E'\\tcurrency\\n',
+                  'currency', E'\\nUSD\\t',
+                  'periodStart', E'\\t2025-01-01\\n',
+                  'periodEnd', E'\\n2025-12-31\\t',
+                  'publishedAt',
+                    E'\\t2026-01-15T10:30:00.000Z\\n',
+                  'eventAt',
+                    E'\\n2025-12-31T23:59:59.000Z\\t'
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_14',
+                'fact', 'A USDA filing reported ARR of $2,000,000 USD.',
+                'excerpt', 'A USDA filing reported ARR of $2,000,000 USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_15',
+                'fact',
+                  'The company carried prior figures; ARR was $2,000,000 USD.',
+                'excerpt',
+                  'The company carried prior figures; ARR was $2,000,000 USD.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', 'ARR',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', null,
+                  'periodEnd', null,
+                  'publishedAt', null,
+                  'eventAt', null
+                )
+              ),
+              jsonb_build_object(
+                'id', 'evidence_16',
+                'fact',
+                  'ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31; event 2025-12-31T23:59:59.000Z; published 2026-01-15T10:30:00.000Z.',
+                'excerpt',
+                  'ARR was $2,000,000 USD from 2025-01-01 through 2025-12-31; event 2025-12-31T23:59:59.000Z; published 2026-01-15T10:30:00.000Z.',
+                'page', 1,
+                'structured', jsonb_build_object(
+                  'field', U&'\\00A0ARR\\00A0',
+                  'value', '$2,000,000',
+                  'unit', 'currency',
+                  'currency', 'USD',
+                  'periodStart', '2025-01-01',
+                  'periodEnd', '2025-12-31',
+                  'publishedAt', '2026-01-15T10:30:00.000Z',
+                  'eventAt', '2025-12-31T23:59:59.000Z'
+                )
               )
             )
           ));
@@ -765,6 +837,20 @@ test(
                     )
              from public.source_evidence_items as item
              where item.workspace_id = 'workspace_upload') || '|' ||
+            (select concat_ws(
+                      ':',
+                      item.payload ->> 'field',
+                      item.payload ->> 'value',
+                      item.payload ->> 'unit',
+                      item.payload ->> 'currency',
+                      item.payload ->> 'periodStart',
+                      item.payload ->> 'periodEnd',
+                      item.payload ->> 'publishedAt',
+                      item.payload ->> 'eventAt'
+                    )
+             from public.source_evidence_items as item
+             where item.workspace_id = 'workspace_upload'
+               and item.evidence_id = 'evidence_13') || '|' ||
             (select item.source_id || ':' ||
                     (item.payload ->> 'sourceId')
              from public.source_evidence_items as item
@@ -780,7 +866,7 @@ test(
       ], { encoding: "utf8" }).trim();
       assert.equal(
         output,
-        "confirmed|failed|deal_1|revision_1|1|1|12|12|"
+        "confirmed|failed|deal_1|revision_1|1|1|16|16|"
           + "evidence_1:ARR:true,"
           + "evidence_2:unstructured_source_fact:false,"
           + "evidence_3:unstructured_source_fact:false,"
@@ -793,6 +879,12 @@ test(
           + ",evidence_10:unstructured_source_fact:false"
           + ",evidence_11:unstructured_source_fact:false"
           + ",evidence_12:unstructured_source_fact:false"
+          + ",evidence_13:ARR:true"
+          + ",evidence_14:ARR:true"
+          + ",evidence_15:ARR:true"
+          + ",evidence_16:unstructured_source_fact:false"
+          + "|ARR:$2,000,000:currency:USD:2025-01-01:2025-12-31:"
+          + "2026-01-15T10:30:00.000Z:2025-12-31T23:59:59.000Z"
           + "|source_backfill:source_backfill",
       );
     } finally {
