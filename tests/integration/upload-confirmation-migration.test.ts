@@ -5,8 +5,17 @@ import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
+interface MigrationJournalEntry {
+  idx: number;
+  version: string;
+  when: number;
+  tag: string;
+  breakpoints: boolean;
+}
+
+const task6MigrationName = "0013_confirmed_upload_ingest.sql";
 const migrationPath = fileURLToPath(
-  new URL("../../drizzle/0013_confirmed_upload_ingest.sql", import.meta.url),
+  new URL(`../../drizzle/${task6MigrationName}`, import.meta.url),
 );
 const task13MigrationName = "0012_source_grounded_underwriting.sql";
 const task13MigrationPath = fileURLToPath(
@@ -17,8 +26,105 @@ const journalPath = fileURLToPath(
 );
 const reservedTask13JournalEntry = {
   idx: 12,
+  version: "7",
   when: 1785369431000,
+  tag: "0012_source_grounded_underwriting",
+  breakpoints: true,
 };
+const validTask6JournalEntry: MigrationJournalEntry = {
+  idx: 13,
+  version: "7",
+  when: 1785373200000,
+  tag: "0013_confirmed_upload_ingest",
+  breakpoints: true,
+};
+
+function validatedTaskMigrationNames(
+  entries: MigrationJournalEntry[],
+  task13MigrationExists: boolean,
+): string[] {
+  const task6Indices = entryIndices(
+    entries,
+    validTask6JournalEntry.tag,
+  );
+  assert.equal(
+    task6Indices.length,
+    1,
+    "Task 6 requires one exact journal entry.",
+  );
+  const task6Index = task6Indices[0];
+  const task6Entry = entries[task6Index];
+  assert.deepEqual(
+    journalIdentity(task6Entry),
+    journalIdentity(validTask6JournalEntry),
+  );
+
+  const task13Indices = entryIndices(
+    entries,
+    reservedTask13JournalEntry.tag,
+  );
+  if (!task13MigrationExists) {
+    assert.equal(
+      task13Indices.length,
+      0,
+      "Task 13 cannot be journaled while its migration file is absent.",
+    );
+    assert.ok(
+      reservedTask13JournalEntry.when < task6Entry.when,
+      "Task 6 migration timestamp must follow reserved Task 13.",
+    );
+    return [task6MigrationName];
+  }
+
+  assert.equal(
+    task13Indices.length,
+    1,
+    "Task 13 requires one exact journal entry.",
+  );
+  const task13Index = task13Indices[0];
+  const task13Entry = entries[task13Index];
+  assert.deepEqual(
+    task13Entry,
+    reservedTask13JournalEntry,
+  );
+  assert.ok(
+    task13Index < task6Index,
+    "Task 13 must physically precede Task 6 in the journal.",
+  );
+  assert.ok(
+    task13Entry.when < task6Entry.when,
+    "Task 6 migration timestamp must follow Task 13.",
+  );
+  const taskEntryIndices = new Set([task13Index, task6Index]);
+  return entries.flatMap((entry, index) =>
+    taskEntryIndices.has(index) ? [`${entry.tag}.sql`] : []
+  );
+}
+
+function entryIndices(
+  entries: MigrationJournalEntry[],
+  tag: string,
+): number[] {
+  return entries.flatMap((entry, index) =>
+    entry.tag === tag ? [index] : []
+  );
+}
+
+function journalIdentity(entry: MigrationJournalEntry) {
+  return {
+    idx: entry.idx,
+    version: entry.version,
+    tag: entry.tag,
+    breakpoints: entry.breakpoints,
+  };
+}
+
+function readMigrationJournalEntries(): MigrationJournalEntry[] {
+  const journal = JSON.parse(readFileSync(journalPath, "utf8")) as {
+    entries: MigrationJournalEntry[];
+  };
+  return journal.entries;
+}
 const postgresAvailable = spawnSync(
   "psql",
   [
@@ -36,43 +142,91 @@ const canCreateTemporaryDatabase =
   && spawnSync("dropdb", ["--version"]).status === 0;
 const requirePostgres = process.env.REQUIRE_POSTGRES_MIGRATION_TESTS === "1";
 
+test("task migration journal guard rejects malformed metadata and physical order", () => {
+  const validEntries = [
+    { ...reservedTask13JournalEntry },
+    { ...validTask6JournalEntry },
+  ];
+  assert.deepEqual(
+    validatedTaskMigrationNames(validEntries, true),
+    [task13MigrationName, task6MigrationName],
+  );
+  assert.deepEqual(
+    validatedTaskMigrationNames([{ ...validTask6JournalEntry }], false),
+    [task6MigrationName],
+  );
+
+  const malformedCases: Array<[string, MigrationJournalEntry[]]> = [
+    [
+      "Task 13 version",
+      [{ ...reservedTask13JournalEntry, version: "6" }, validEntries[1]],
+    ],
+    [
+      "Task 6 version",
+      [validEntries[0], { ...validTask6JournalEntry, version: "6" }],
+    ],
+    [
+      "Task 13 breakpoints",
+      [{ ...reservedTask13JournalEntry, breakpoints: false }, validEntries[1]],
+    ],
+    [
+      "Task 6 breakpoints",
+      [validEntries[0], { ...validTask6JournalEntry, breakpoints: false }],
+    ],
+    [
+      "Task 13 identity",
+      [{ ...reservedTask13JournalEntry, idx: 11 }, validEntries[1]],
+    ],
+    [
+      "Task 13 tag",
+      [
+        {
+          ...reservedTask13JournalEntry,
+          tag: "0012_mislabeled",
+        },
+        validEntries[1],
+      ],
+    ],
+    [
+      "Task 6 identity",
+      [validEntries[0], { ...validTask6JournalEntry, idx: 12 }],
+    ],
+    [
+      "Task 6 tag",
+      [
+        validEntries[0],
+        {
+          ...validTask6JournalEntry,
+          tag: "0013_mislabeled",
+        },
+      ],
+    ],
+    [
+      "non-increasing timestamp",
+      [
+        validEntries[0],
+        {
+          ...validTask6JournalEntry,
+          when: reservedTask13JournalEntry.when,
+        },
+      ],
+    ],
+    ["physically reversed order", [...validEntries].reverse()],
+  ];
+  for (const [label, entries] of malformedCases) {
+    assert.throws(
+      () => validatedTaskMigrationNames(entries, true),
+      label,
+    );
+  }
+});
+
 test("Task 6 migration is additive and journaled after the reserved Task 13 migration number", () => {
   assert.equal(existsSync(migrationPath), true);
-  const journal = JSON.parse(readFileSync(journalPath, "utf8")) as {
-    entries: Array<{
-      idx: number;
-      version: string;
-      when: number;
-      tag: string;
-      breakpoints: boolean;
-    }>;
-  };
   const task13MigrationExists = existsSync(task13MigrationPath);
-  const task13Entry = journal.entries.find((entry) =>
-    entry.tag === "0012_source_grounded_underwriting"
-  );
-  const task6Entry = journal.entries.find((entry) =>
-    entry.tag === "0013_confirmed_upload_ingest"
-  );
-  if (task13MigrationExists) {
-    assert.ok(
-      task13Entry,
-      "Task 13 migration file requires its exact journal entry.",
-    );
-    assert.equal(task13Entry.idx, reservedTask13JournalEntry.idx);
-    assert.equal(task13Entry.when, reservedTask13JournalEntry.when);
-  }
-  assert.ok(task6Entry);
-  const task13OrderEntry = task13MigrationExists
-    ? task13Entry!
-    : reservedTask13JournalEntry;
-  assert.deepEqual(
-    [task13OrderEntry.idx, task6Entry.idx],
-    [12, 13],
-  );
-  assert.ok(
-    task13OrderEntry.when < task6Entry.when,
-    "Task 6 migration timestamp must follow Task 13.",
+  validatedTaskMigrationNames(
+    readMigrationJournalEntries(),
+    task13MigrationExists,
   );
 });
 
@@ -90,6 +244,10 @@ test(
     }`;
     execFileSync("createdb", [database], { stdio: "pipe" });
     try {
+      const taskMigrations = validatedTaskMigrationNames(
+        readMigrationJournalEntries(),
+        existsSync(task13MigrationPath),
+      );
       for (const migration of [
         "0000_vsee_postgres.sql",
         "0001_remove_report_delivery.sql",
@@ -103,8 +261,7 @@ test(
         "0009_source_revision_deal_registry.sql",
         "0010_underwriting_references.sql",
         "0011_underwriting_runs.sql",
-        ...(existsSync(task13MigrationPath) ? [task13MigrationName] : []),
-        "0013_confirmed_upload_ingest.sql",
+        ...taskMigrations,
       ]) {
         execFileSync("psql", [
           "-v",
