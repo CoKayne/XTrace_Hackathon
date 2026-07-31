@@ -1,7 +1,7 @@
 # End-to-End Underwriting：已知問題與延後完善清單
 
 更新日期：2026-07-31
-基準 commit：`1ea4a6a`
+基準 commit：`69725d8`
 適用分支：`feat/backend-integration-checkpoint`
 
 ## 1. 文件目的
