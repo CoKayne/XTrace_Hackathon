@@ -110,6 +110,7 @@ const migrationTestNames = [
   "tests/integration/upload-confirmation-migration.test.ts",
   "tests/integration/action-draft-migration.test.ts",
   "tests/integration/framework-catalog-checkpoint-migration.test.ts",
+  "tests/integration/public-sandbox-reset-migration.test.ts",
 ];
 
 test("release migration verification is serial and includes every migration suite", async () => {

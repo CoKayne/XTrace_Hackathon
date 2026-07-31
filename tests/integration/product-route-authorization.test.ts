@@ -31,6 +31,7 @@ import { GET as runs, POST as createRun } from "../../app/api/runs/route";
 import { GET as health } from "../../app/api/settings/health/route";
 import { getDataClient } from "../../db/client";
 import { getIntelligenceRepository } from "../../db/repositories/intelligence";
+import { getTestGenerationRepository } from "../../db/repositories/test-generations";
 import {
   createMemoryUploadedDocumentsRepository,
   type ExtractionPreview,
@@ -118,15 +119,6 @@ const authenticatedProductHandlers: Array<{
     invoke: (dependencies) => dealAnalyses(
       request("/api/deals/deal_7bridges/analyses"),
       params({ id: "deal_7bridges" }),
-      dependencies,
-    ),
-  },
-  {
-    method: "POST",
-    path: "/api/demo/reset",
-    invoke: (dependencies) => resetDemo(
-      jsonRequest("/api/demo/reset", {}),
-      undefined,
       dependencies,
     ),
   },
@@ -363,7 +355,6 @@ const sourceMutationPaths = new Set([
   "/api/uploads",
   "/api/uploads/[id]/confirm",
   "/api/imports/confirm",
-  "/api/demo/reset",
 ]);
 
 for (const route of authenticatedProductHandlers.filter(
@@ -410,14 +401,6 @@ for (const route of [
       dependencies,
     ),
   },
-  {
-    path: "/api/demo/reset",
-    invoke: (dependencies: RouteDependencies) => resetDemo(
-      jsonRequest("/api/demo/reset", {}),
-      undefined,
-      dependencies,
-    ),
-  },
 ]) {
   test(`${route.path} allows partner but denies associate source mutation`, async () => {
     assert.notEqual((await route.invoke(partner)).status, 403);
@@ -427,6 +410,25 @@ for (const route of [
     );
   });
 }
+
+test("/api/demo/reset is forbidden outside the public sandbox", async () => {
+  assert.equal(
+    (await resetDemo(
+      jsonRequest("/api/demo/reset", {}),
+      undefined,
+      partner,
+    )).status,
+    403,
+  );
+  assert.equal(
+    (await resetDemo(
+      jsonRequest("/api/demo/reset", {}),
+      undefined,
+      productDependencies("associate"),
+    )).status,
+    403,
+  );
+});
 
 for (const scenario of ["zero memberships", "ambiguous memberships"]) {
   for (const route of authenticatedProductHandlers) {
@@ -597,7 +599,7 @@ test("forged workspace selectors cannot change product read scope or cross-tenan
   );
 });
 
-test("product reset preserves another tenant's scan products despite forged selectors", async () => {
+test("public sandbox reset ignores forged selectors and preserves immutable reports", async () => {
   const trustedWorkspace = "workspace_reset_trusted";
   const otherWorkspace = "workspace_reset_other";
   const intelligence = getIntelligenceRepository();
@@ -623,20 +625,23 @@ test("product reset preserves another tenant's scan products despite forged sele
       body: JSON.stringify({ workspaceId: otherWorkspace }),
     }),
     undefined,
-    productDependencies(
-      "partner",
-      trustedWorkspace,
-      "user_reset_selector",
-    ),
+    publicSandboxDependencies(trustedWorkspace),
   );
 
   assert.equal(response.status, 200);
-  assert.equal(
+  const resetAt = await getTestGenerationRepository().currentResetAt(
+    trustedWorkspace,
+  );
+  assert.ok(resetAt);
+  assert.ok(
     await intelligence.getReport(trustedWorkspace, "report_reset_shared"),
-    null,
   );
   assert.ok(
     await intelligence.getReport(otherWorkspace, "report_reset_shared"),
+  );
+  assert.deepEqual(
+    await intelligence.listReports(trustedWorkspace, resetAt),
+    [],
   );
   await intelligence.resetScanProducts(otherWorkspace);
 });
@@ -1015,7 +1020,9 @@ function productDependencies(
   };
 }
 
-function publicSandboxDependencies(): RouteDependencies {
+function publicSandboxDependencies(
+  workspaceId = "workspace_demo",
+): RouteDependencies {
   return {
     async resolveRequestContext() {
       return {
@@ -1024,7 +1031,7 @@ function publicSandboxDependencies(): RouteDependencies {
           userId: "system:public-sandbox",
           email: "public-sandbox@invalid.local",
         },
-        workspaceId: "workspace_demo",
+        workspaceId,
         role: "sandbox",
         permissions: {
           readWorkspace: true,
