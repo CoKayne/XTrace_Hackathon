@@ -80,6 +80,15 @@ function executeSql(database: string, sql: string): string {
   ).trim();
 }
 
+function dropOwnerLifecycleTestRoles(): void {
+  executeSql("postgres", `
+    drop role if exists vsee_underwriting_hostile_member;
+    drop role if exists vsee_registry_hostile_member;
+    drop role if exists vsee_underwriting_owner;
+    drop role if exists vsee_registry_owner;
+  `);
+}
+
 async function executeSqlAsync(database: string, sql: string): Promise<string> {
   const result = await execFileAsync(
     "psql",
@@ -529,6 +538,111 @@ test(
 );
 
 test(
+  "owner-role migrations fail closed on unsafe attributes and extra memberships",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  async (t) => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    const migrationPath = (name: string) =>
+      fileURLToPath(new URL(`../../drizzle/${name}`, import.meta.url));
+    const through0008 = [
+      "0000_vsee_postgres.sql",
+      "0001_remove_report_delivery.sql",
+      "0002_durable_decision_lineage.sql",
+      "0003_sanitize_report_next_steps.sql",
+      "0004_company_analyses.sql",
+      "0005_sample_decision_label.sql",
+      "0006_reasoner_judgments.sql",
+      "0007_uploaded_documents.sql",
+      "0008_workspace_composite_identity.sql",
+    ];
+    const scenarios = [
+      {
+        name: "registry owner unsafe attributes",
+        ownerRole: "vsee_registry_owner",
+        hostileMember: null,
+        prerequisites: through0008,
+        target: "0009_source_revision_deal_registry.sql",
+        rollbackSentinel: "public.source_revisions",
+      },
+      {
+        name: "registry owner extra membership",
+        ownerRole: "vsee_registry_owner",
+        hostileMember: "vsee_registry_hostile_member",
+        prerequisites: through0008,
+        target: "0009_source_revision_deal_registry.sql",
+        rollbackSentinel: "public.source_revisions",
+      },
+      {
+        name: "underwriting owner unsafe attributes",
+        ownerRole: "vsee_underwriting_owner",
+        hostileMember: null,
+        prerequisites: [
+          ...through0008,
+          "0009_source_revision_deal_registry.sql",
+          "0010_underwriting_references.sql",
+        ],
+        target: "0011_underwriting_runs.sql",
+        rollbackSentinel: "public.candidate_runs",
+      },
+      {
+        name: "underwriting owner extra membership",
+        ownerRole: "vsee_underwriting_owner",
+        hostileMember: "vsee_underwriting_hostile_member",
+        prerequisites: [
+          ...through0008,
+          "0009_source_revision_deal_registry.sql",
+          "0010_underwriting_references.sql",
+        ],
+        target: "0011_underwriting_runs.sql",
+        rollbackSentinel: "public.candidate_runs",
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      await t.test(scenario.name, () => {
+        dropOwnerLifecycleTestRoles();
+        try {
+          withTemporaryDatabase((database) => {
+            for (const prerequisite of scenario.prerequisites) {
+              applySql(database, migrationPath(prerequisite));
+            }
+            executeSql(database, `
+              create role ${scenario.ownerRole}
+                nologin ${scenario.hostileMember ? "noinherit" : "inherit"};
+              ${
+                scenario.hostileMember
+                  ? `create role ${scenario.hostileMember} nologin noinherit;
+                     grant ${scenario.ownerRole}
+                       to ${scenario.hostileMember};`
+                  : ""
+              }
+            `);
+
+            assert.throws(() =>
+              applySql(database, migrationPath(scenario.target))
+            );
+            assert.equal(
+              executeSql(database, `
+                select pg_catalog.to_regclass(
+                  '${scenario.rollbackSentinel}'
+                ) is null;
+              `),
+              "t",
+            );
+          });
+        } finally {
+          dropOwnerLifecycleTestRoles();
+        }
+      });
+    }
+  },
+);
+
+test(
   "0009 installs immutable workspace-scoped source revisions and atomic Deal assignment",
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   () => {
@@ -551,20 +665,10 @@ test(
         $$;
         do $$
         begin
-          create role vsee_registry_owner;
+          create role vsee_registry_owner nologin noinherit;
         exception when duplicate_object then null;
         end;
         $$;
-        do $$
-        begin
-          create role vsee_registry_hostile_member login inherit;
-        exception when duplicate_object then null;
-        end;
-        $$;
-        alter role vsee_registry_owner
-          superuser createdb createrole replication
-          login inherit bypassrls;
-        grant vsee_registry_owner to vsee_registry_hostile_member;
       `);
       const migrations = [
         "0000_vsee_postgres.sql",
@@ -1130,12 +1234,52 @@ test(
       );
       assert.equal(
         executeSql(database, `
-          select count(*)
-          from pg_auth_members
-          where roleid = 'vsee_registry_owner'::regrole
-            or member = 'vsee_registry_owner'::regrole;
+          select (
+            (select rolsuper from pg_catalog.pg_roles
+              where rolname = current_user)
+            or exists (
+              select 1
+              from pg_catalog.pg_auth_members as membership
+              where membership.roleid =
+                  'vsee_registry_owner'::pg_catalog.regrole
+                and membership.member = (
+                  select oid from pg_catalog.pg_roles
+                  where rolname = current_user
+                )
+                and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+                and membership.admin_option
+                and not membership.inherit_option
+                and not membership.set_option
+            )
+          ) and not exists (
+            select 1
+            from pg_catalog.pg_auth_members as membership
+            where (
+              membership.roleid =
+                'vsee_registry_owner'::pg_catalog.regrole
+              or membership.member =
+                'vsee_registry_owner'::pg_catalog.regrole
+            ) and not (
+              not (
+                select rolsuper from pg_catalog.pg_roles
+                where rolname = current_user
+              )
+              and membership.roleid =
+                'vsee_registry_owner'::pg_catalog.regrole
+              and membership.member = (
+                select oid from pg_catalog.pg_roles
+                where rolname = current_user
+              )
+              and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+              and membership.admin_option
+              and not membership.inherit_option
+              and not membership.set_option
+            )
+          );
         `),
-        "0",
+        "t",
       );
       assert.equal(
         executeSql(database, `
@@ -1567,9 +1711,6 @@ test(
           );
         `)
       );
-      executeSql(database, `
-        drop role if exists vsee_registry_hostile_member;
-      `);
     });
   },
 );

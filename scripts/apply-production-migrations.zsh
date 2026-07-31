@@ -68,6 +68,7 @@ unset DATABASE_URL
 export PGSERVICEFILE="$libpq_service_file"
 export PGSERVICE="vsee-production"
 export PGPASSFILE="$libpq_password_file"
+unset PGPASSWORD
 
 sentinel_sql() {
   case "$1" in

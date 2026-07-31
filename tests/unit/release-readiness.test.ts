@@ -131,6 +131,18 @@ check_variant VSEE_CATALOG_PG176_SUPABASE_0016 0016-current-lineage-supabase-pg1
 check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016 0016-bridged-lineage-supabase-pg17.6 0016
 check_variant VSEE_CATALOG_PG176_SUPABASE_0017 0017-current-lineage-supabase-pg17.6 0017
 check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017 0017-bridged-lineage-supabase-pg17.6 0017
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0009 0009-current-lineage-supabase-createrole-pg17.6 0009,0010
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009 0009-bridged-lineage-supabase-createrole-pg17.6 0009,0010
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0011 0011-current-lineage-supabase-createrole-pg17.6 0011
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0011 0011-bridged-lineage-supabase-createrole-pg17.6 0011
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0012 0012-current-lineage-supabase-createrole-pg17.6 0012
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0012 0012-bridged-lineage-supabase-createrole-pg17.6 0012
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0013 0013-current-lineage-supabase-createrole-pg17.6 0013,0014,0015
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0013 0013-bridged-lineage-supabase-createrole-pg17.6 0013,0014,0015
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0016 0016-current-lineage-supabase-createrole-pg17.6 0016
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0016 0016-bridged-lineage-supabase-createrole-pg17.6 0016
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0017 0017-current-lineage-supabase-createrole-pg17.6 0017
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0017 0017-bridged-lineage-supabase-createrole-pg17.6 0017
 if vsee_catalog_variant "sha256:0884bf536c6724bb90683cd7ab9da6e08cd6ec98fbc1b517e49fddf7b24151f4" >/dev/null; then
   print -- unexpected-create-variant
 else
@@ -152,18 +164,82 @@ fi`,
     "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0008|sha256:c63910c08ee882fee34c23d160438341d81f704d7a193e976e1d27b2255084c6|bridged-0008-supabase-pg17.6|0008",
     "VSEE_CATALOG_PG176_SUPABASE_0009|sha256:4803b01b5b526660faa0059071360c709209c83587edb5bd719c4b855dd2638b|0009-current-lineage-supabase-pg17.6|0009,0010",
     "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0009|sha256:81fddccc188a6e8ee276be9edf39aa41c95309a252f7e37815946f1a2bcef3c1|0009-bridged-lineage-supabase-pg17.6|0009,0010",
-    "VSEE_CATALOG_PG176_SUPABASE_0011|sha256:c2cf1a3504a497a323effc1bdae879fb5f65e95fad7bb32e2d293d9d1bf59054|0011-current-lineage-supabase-pg17.6|0011",
-    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0011|sha256:828347518de99035479fecaf9faf75f2b425e65d9f91e835fed455af0d052643|0011-bridged-lineage-supabase-pg17.6|0011",
-    "VSEE_CATALOG_PG176_SUPABASE_0012|sha256:bfa3af8a518afc2a3c21d6198ec7952dc0331be28c976577591ba7502d76103f|0012-current-lineage-supabase-pg17.6|0012",
-    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0012|sha256:79920418a853b7e68db577bc1b7ed96a544e4551561b3abaea37ce00f26c57e9|0012-bridged-lineage-supabase-pg17.6|0012",
-    "VSEE_CATALOG_PG176_SUPABASE_0013|sha256:23d76cd612b467d847c7147da1975c8954772249d8601c15736eda3df98596c4|0013-current-lineage-supabase-pg17.6|0013,0014,0015",
-    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013|sha256:b230c80db12cb047f27ddc70ef8bd6b7f062dd9415cda7685430bc10d4a21594|0013-bridged-lineage-supabase-pg17.6|0013,0014,0015",
-    "VSEE_CATALOG_PG176_SUPABASE_0016|sha256:d0334555e38278e3f0ed5383af912a9e61cf243668c851e5480ed5ccd5ba8097|0016-current-lineage-supabase-pg17.6|0016",
-    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016|sha256:a1f4bb94b663e7e2e7a6b43d5adb77e65ede7d020a5cc568664634c1993a7eec|0016-bridged-lineage-supabase-pg17.6|0016",
-    "VSEE_CATALOG_PG176_SUPABASE_0017|sha256:e0c03d0415c41bc172809c66e59560fdfa593b40c9225705b97d3a3092b77081|0017-current-lineage-supabase-pg17.6|0017",
-    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017|sha256:be5e711190b6dfe645231c71fb54863cf2477bc0da6a08f51196babcf13218c2|0017-bridged-lineage-supabase-pg17.6|0017",
+    "VSEE_CATALOG_PG176_SUPABASE_0011|sha256:8e77cd04a9b1dd99d9ee3f2c6fdc26728d5bf0298656e1eae85880bce238efe8|0011-current-lineage-supabase-pg17.6|0011",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0011|sha256:70025e158b23b4763bf214d552e62dd2308d5df3d0e826281769605104c5500c|0011-bridged-lineage-supabase-pg17.6|0011",
+    "VSEE_CATALOG_PG176_SUPABASE_0012|sha256:c6e3f7cadea15a856b6dc35d7d48c02e43eac29b9c70fa458d64fd1aaec08373|0012-current-lineage-supabase-pg17.6|0012",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0012|sha256:dd6e0a421ef0f7268250bcfaf2ce8ffacce436f9d80cdd432a7fc3282a8aadc2|0012-bridged-lineage-supabase-pg17.6|0012",
+    "VSEE_CATALOG_PG176_SUPABASE_0013|sha256:0e678aa2e48b6844737ff6f634aad82a673d24e7fabee74c99fd9ced4b7dcb97|0013-current-lineage-supabase-pg17.6|0013,0014,0015",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013|sha256:b6cab17c34755d2f4c05ec408cca8385b5047e293090d79fd789d64125e8fe97|0013-bridged-lineage-supabase-pg17.6|0013,0014,0015",
+    "VSEE_CATALOG_PG176_SUPABASE_0016|sha256:3c8dc4ad0a220168d82cee65f26b2478c7584da7e3a28b9e4dfb35832ee196f1|0016-current-lineage-supabase-pg17.6|0016",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016|sha256:11d6772d9972dc93958c1faa732fc1c5f814cf3e746558dd539cc11774f729a7|0016-bridged-lineage-supabase-pg17.6|0016",
+    "VSEE_CATALOG_PG176_SUPABASE_0017|sha256:471ca93e9532dcde79d963cf8de7520fe1f0d4569e14a57a7830654483956daf|0017-current-lineage-supabase-pg17.6|0017",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017|sha256:f7d0fb4869aff4c12b24a05cd5b637b684846182f20b4363bf83c816337bebbe|0017-bridged-lineage-supabase-pg17.6|0017",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0009|sha256:d72fcf58d6ac83fad33ff74fcc62dcd475ea1894bfcee99d5ac6f9ee82e4a81b|0009-current-lineage-supabase-createrole-pg17.6|0009,0010",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009|sha256:15d4475110a5425162e246a0b33a547f33b8550d1e0327c92f67de9db8f1071e|0009-bridged-lineage-supabase-createrole-pg17.6|0009,0010",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0011|sha256:cabc34dd16625eb8f12319b220aabc0e6ad07309592f31562faaab5ce869f842|0011-current-lineage-supabase-createrole-pg17.6|0011",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0011|sha256:cb889785eb64b9a44940c36aef4875938f2d2c4382cd0da3927919de3d43c9cf|0011-bridged-lineage-supabase-createrole-pg17.6|0011",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0012|sha256:9b52be35bf23b6342b8fd55845617cb6cec8b436cc9963dbd1c2cce6e67686b4|0012-current-lineage-supabase-createrole-pg17.6|0012",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0012|sha256:9d782b4e6480f9b527b21d265a0b7d6d3d6df75f278bbadb1c4e383bcff92cd8|0012-bridged-lineage-supabase-createrole-pg17.6|0012",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0013|sha256:d030330d3ffd1966da82a191e9336bc22a898e4eec4d9bc8ba0926ee58f2546b|0013-current-lineage-supabase-createrole-pg17.6|0013,0014,0015",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0013|sha256:8695f2cbfb93bcf9d9b5dc88597905e2f40c038fe57cc03fbf65b009b60bbc36|0013-bridged-lineage-supabase-createrole-pg17.6|0013,0014,0015",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0016|sha256:c7cc3de50496a8b96eb69d3566a5aa00a44eb9458ba456c20a391fdeab2467b1|0016-current-lineage-supabase-createrole-pg17.6|0016",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0016|sha256:b61191ee0055b6b20a0401d6f18f2ccb71b6013fe9f84215eddc7c4f8d658c12|0016-bridged-lineage-supabase-createrole-pg17.6|0016",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0017|sha256:71ad64d173081f801cbe205c246e86756127b37028c054bb1c1d2321ee752ede|0017-current-lineage-supabase-createrole-pg17.6|0017",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0017|sha256:1e96ca563d4e38886ec7b4059b09270c8a7b8125074ab563ce07a898c1641bd3|0017-bridged-lineage-supabase-createrole-pg17.6|0017",
     "create-variant-refused",
   ]);
+});
+
+test("every reviewed catalog fingerprint is unique and stage-exclusive", () => {
+  const result = spawnSync(
+    "zsh",
+    [
+      "-c",
+      `set -euo pipefail
+source "$1"
+stages=(prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017)
+variable_names=("\${(@f)$(
+  sed -nE 's/^readonly (VSEE_CATALOG_[A-Z0-9_]+)=.*/\\1/p' "$1"
+)}")
+for variable_name in "\${variable_names[@]}"; do
+  fingerprint="\${(P)variable_name}"
+  variant="$(vsee_catalog_variant "$fingerprint")"
+  matches=()
+  for stage in "\${stages[@]}"; do
+    vsee_catalog_matches_stage "$stage" "$fingerprint" \
+      && matches+=("$stage")
+  done
+  print -r -- "$variable_name|$fingerprint|$variant|\${(j:,:)matches}"
+done`,
+      "vsee-all-fingerprint-audit",
+      catalogFingerprintsSourcePath,
+    ],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  const lines = result.stdout.trim().split("\n");
+  assert.equal(lines.length, 63);
+  const seenFingerprints = new Set<string>();
+  for (const line of lines) {
+    const [variableName, fingerprint, variant, actualStages] = line.split("|");
+    assert.match(fingerprint, /^sha256:[0-9a-f]{64}$/);
+    assert.notEqual(variant, "");
+    assert.equal(seenFingerprints.has(fingerprint), false, variableName);
+    seenFingerprints.add(fingerprint);
+
+    const suffix = variableName.match(
+      /_(0007|0008|0009|0011|0012|0013|0016|0017)$/,
+    )?.[1];
+    const expectedStages = variableName.endsWith("PROTOTYPE")
+      ? "prototype"
+      : suffix === "0009"
+      ? "0009,0010"
+      : suffix === "0013"
+      ? "0013,0014,0015"
+      : suffix;
+    assert.equal(actualStages, expectedStages, variableName);
+  }
 });
 
 async function createMigrationRepositoryFixture(t: test.TestContext): Promise<{
@@ -277,6 +353,32 @@ test("release migration verification is serial and includes every migration suit
       `${testName} must occur exactly once`,
     );
     previous = position;
+  }
+});
+
+test("release verification has a mandatory PostgreSQL 17.6 Supabase profile gate", async () => {
+  const packageJson = JSON.parse(
+    await readFile(new URL("package.json", repositoryRoot), "utf8"),
+  ) as { scripts?: Record<string, string> };
+  const command =
+    packageJson.scripts?.["test:migrations:production-pg176"] ?? "";
+
+  assert.match(
+    command,
+    /^REQUIRE_POSTGRES_MIGRATION_TESTS=1\s+REQUIRE_SUPABASE_PG176_MIGRATION_TESTS=1\s+/,
+  );
+  assert.match(command, /--test-concurrency=1(?:\s|$)/);
+  assert.match(command, /--test-name-pattern=/);
+  assert.equal(
+    command.split("tests/integration/production-baseline-bridge.test.ts")
+      .length - 1,
+    1,
+  );
+  for (const testName of [
+    "the PostgreSQL 17.6 Supabase prototype passes both guarded launchers through 0017",
+    "a PostgreSQL 17.6 non-superuser CREATEROLE executor passes both guarded launchers through 0017",
+  ]) {
+    assert.equal(command.split(testName).length - 1, 1, testName);
   }
 });
 

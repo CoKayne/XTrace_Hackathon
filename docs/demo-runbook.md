@@ -26,6 +26,30 @@ The Worker launcher obtains its other required values from Keychain services:
 `vsee-document-url-signing-secret`. `mmk_` XTrace keys do not require an
 XTrace organization ID.
 
+## Required release migration gates
+
+Before applying a reviewed commit to production, run both migration gates on
+disposable databases:
+
+```bash
+npm run test:migrations
+npm run test:migrations:production-pg176
+```
+
+The second command is mandatory and must connect to PostgreSQL `17.6` (server
+version number `170006`). It executes both complete guarded-launcher E2Es: the
+Supabase-shaped superuser profile and the real non-superuser `CREATEROLE`
+executor profile. The command must report exactly two passing tests, zero
+failures, and zero skips. It deliberately fails on PostgreSQL 17.10, a missing
+database, a renamed/nonmatching test, or any run in which one of the two E2Es
+does not execute. The general `test:migrations` suite may also be run on
+PostgreSQL 17.10 for compatibility coverage, but that does not replace the
+17.6 production-profile gate.
+
+Use one disposable PostgreSQL cluster/container per migration job. These tests
+exercise fixed cluster-global production role names and must not share a
+cluster with another parallel job or a real environment.
+
 ## Production baseline maintenance window
 
 The production project may still have the early upload-extraction prototype

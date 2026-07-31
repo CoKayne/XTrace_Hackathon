@@ -72,6 +72,7 @@ unset DATABASE_URL
 export PGSERVICEFILE="$libpq_service_file"
 export PGSERVICE="vsee-production"
 export PGPASSFILE="$libpq_password_file"
+unset PGPASSWORD
 
 baseline_state_sql() {
   case "$1" in
@@ -1052,17 +1053,47 @@ with schema_presence(value) as (
       and not rolreplication
       and not rolbypassrls
   )
+  and (
+    (select rolsuper from pg_catalog.pg_roles where rolname = current_user)
+    or exists (
+      select 1
+      from pg_catalog.pg_auth_members as membership
+      where membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+        and membership.member = (
+          select oid from pg_catalog.pg_roles where rolname = current_user
+        )
+        and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+        and membership.admin_option
+        and not membership.inherit_option
+        and not membership.set_option
+    )
+  )
   and not exists (
     select 1
-    from pg_catalog.pg_auth_members
-    where roleid = (
-      select oid from pg_catalog.pg_roles
-      where rolname = 'vsee_registry_owner'
-    )
-      or member = (
-        select oid from pg_catalog.pg_roles
-        where rolname = 'vsee_registry_owner'
+    from pg_catalog.pg_auth_members as membership
+    where (
+      membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+      or membership.member = 'vsee_registry_owner'::pg_catalog.regrole
+    ) and not (
+      not (
+        select rolsuper
+        from pg_catalog.pg_roles
+        where rolname = current_user
       )
+      and membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+      and membership.member = (
+        select oid from pg_catalog.pg_roles where rolname = current_user
+      )
+      and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+      and membership.admin_option
+      and not membership.inherit_option
+      and not membership.set_option
+    )
+  )
+  and not pg_catalog.has_schema_privilege(
+    'vsee_registry_owner', 'public', 'CREATE'
   ) as complete
 ), rls_exact as (
   select not exists (
@@ -1494,7 +1525,7 @@ while true; do
         exit 1
       fi
       ;;
-    0009-current-lineage|0009-bridged-lineage|0009-current-lineage-supabase-pg17.6|0009-bridged-lineage-supabase-pg17.6)
+    0009-current-lineage|0009-bridged-lineage|0009-current-lineage-supabase-pg17.6|0009-bridged-lineage-supabase-pg17.6|0009-current-lineage-supabase-createrole-pg17.6|0009-bridged-lineage-supabase-createrole-pg17.6)
       if ! registry_backfill_is_exact; then
         print -u2 "The 0009 source-registry data invariants are not satisfied."
         exit 1

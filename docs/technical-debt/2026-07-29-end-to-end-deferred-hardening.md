@@ -1,6 +1,6 @@
 # End-to-End Underwriting：已知問題與延後完善清單
 
-更新日期：2026-07-29  
+更新日期：2026-07-31
 基準 commit：`eec063d`  
 適用分支：`feat/source-grounded-underwriting-v1`
 
@@ -57,6 +57,8 @@
 | TD-RUN-002 | P1 | Production gate | SQL finalization 對 artifact 內部引用只做粗粒度驗證 |
 | TD-RUN-003 | P1 | MVP deferred | 相同 batch fingerprint 的並行 create-or-reuse 仍可能競態 |
 | TD-RUN-004 | P2 | Backlog | 衝突 duplicate identity 的 fingerprint 排序尚未 fail closed |
+| TD-DB-001 | P2 | Test hardening | CREATEROLE current-lineage catalog fingerprints 尚缺 committed dynamic E2E |
+| TD-DB-002 | P2 | Test hardening | 固定的 cluster-global owner test roles 可能在共享／平行 PostgreSQL 互擾 |
 
 ## 4. 詳細問題
 
@@ -527,6 +529,77 @@
     或遇到同 identity 不同 payload 直接拒絕。
 - **重啟時機**
   - 對外開放低階 batch API 或強化 fingerprint fuzz tests 時。
+
+### TD-DB-001：CREATEROLE current-lineage fingerprints 缺少動態 E2E
+
+- **證據**
+  - PostgreSQL 17.6 Supabase non-superuser `CREATEROLE` profile 已保存
+    0009／0011／0012／0013／0016／0017 的 current 與 bridged catalog
+    fingerprints，並有 unique、stage-exclusive 與 exact allowlist 測試。
+  - 真實雙 launcher E2E 會從 Supabase-shaped prototype 經 compatibility
+    bridge 升級至 0017，因此動態覆蓋的是 bridged lineage。
+  - current-lineage fingerprints 是用真實 PostgreSQL 17.6 catalog matrix
+    產生，但目前沒有一個 committed E2E 從每個 current stage 啟動 launcher
+    並逐一驗證其分類與續跑結果。
+- **風險**
+  - 若日後只改壞 current-lineage fingerprint 或 stage mapping，靜態唯一性測試
+    可能仍通過，直到對應的已部署 current catalog 嘗試續跑才會被發現。
+  - 這不影響目前已驗證的 prototype → bridged → 0017 生產升級路徑。
+- **後續測試**
+  - 在 disposable PostgreSQL 17.6 Supabase-shaped cluster 中，以專用 non-super
+    executor 建立每個 current stage fixture。
+  - 對每個 stage 執行 guarded bootstrap／migration launcher，斷言分類精確、
+    只套用後續 migration，最後到 0017；同時保留 drift-negative fixture。
+- **完成條件**
+  - 所有 committed CREATEROLE current fingerprints 都至少被一個真實 catalog
+    E2E 消費；任一 hash 或 stage mapping 變動都會讓測試 fail closed。
+
+### TD-DB-002：固定 cluster-global test roles 可能互擾
+
+- **證據**
+  - production owner role 必須使用固定名稱 `vsee_registry_owner` 與
+    `vsee_underwriting_owner`，測試中的 hostile／non-super executor fixtures
+    也會操作 cluster-global roles。
+  - 2026-07-31 中斷一輪 migration suite 後，另一輪在同一 PostgreSQL cluster
+    讀到殘留的 unsafe owner attributes，於 0009 正確 fail closed；重建乾淨
+    disposable cluster 後不再出現。這證明是 fixture isolation 問題，而不是
+    migration 接受了不安全狀態。
+- **風險**
+  - 兩個 job 共用同一 PostgreSQL cluster、平行執行，或測試程序被強制中止
+    時，可能互相刪除／改寫角色，造成 flaky false failure 或殘留 fixture。
+  - production migration 本身應繼續對同名角色的任何 unsafe drift fail closed；
+    不應為了讓測試方便而放寬安全檢查。
+- **暫時控制**
+  - release migration suite 使用 `--test-concurrency=1`，每個 PostgreSQL
+    version/profile 使用獨立 disposable container，結束後移除整個 container。
+- **後續測試／工具**
+  - CI 為每個 migration job 配置獨立 cluster/container，不共用 role catalog。
+  - 加入 suite-level cleanup trap 與 preflight，列出殘留測試 DB／role 並拒絕
+    在非 disposable cluster 執行破壞性 fixture。
+- **完成條件**
+  - 平行 job 使用不同 cluster 時穩定通過；模擬中斷後的下一輪能以明確
+    preflight 訊息清理或拒絕，而不留下無法判讀的角色狀態。
+
+### TD-DB-003：Bootstrap 尚未在寫入前預檢 executor 的角色能力
+
+- **證據**
+  - 使用 `NOCREATEROLE` 的 non-superuser credential 執行 guarded bootstrap
+    時，系統可先安全提交 compatibility bridge 與 0008，直到 0009 建立／管理
+    owner roles 時才因權限不足而 fail closed。
+- **風險**
+  - 不會繞過角色安全邊界或寫入不完整的 0009，但部署會在已完成前置步驟後
+    才暴露 credential 能力不足，增加維護時段與操作判讀成本。
+- **暫時控制**
+  - 前置步驟皆為 exact、可重入且可安全續跑；修正 credential 後重新執行
+    launcher，會由已記錄的 migration stage 繼續。既有 resume E2E 與 runbook
+    提供恢復路徑。
+- **完整修正**
+  - launcher 在任何 migration 寫入前檢查目前 executor 是否為 superuser，或
+    至少具有後續 owner-role lifecycle 所需的 `CREATEROLE` 能力；不符合時立即
+    以明確訊息退出。
+- **完成條件**
+  - `NOCREATEROLE` fixture 在 bridge／migration ledger／schema 都零變更的情況
+    下失敗；合法 superuser 與 non-superuser `CREATEROLE` fixture 維持通過。
 
 ## 5. 主線仍必須遵守的最低安全界線
 

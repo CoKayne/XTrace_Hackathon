@@ -2,6 +2,119 @@ begin;
 
 set local transaction isolation level read committed;
 
+do $underwriting_owner_prepare$
+declare
+  executor_role text := current_user;
+  executor_is_superuser boolean;
+begin
+  select rolsuper into executor_is_superuser
+  from pg_catalog.pg_roles where rolname = executor_role;
+  if not exists (
+    select 1 from pg_catalog.pg_roles
+    where rolname = 'vsee_underwriting_owner'
+      and not rolsuper and not rolinherit and not rolcreaterole
+      and not rolcreatedb and not rolcanlogin and not rolreplication
+      and not rolbypassrls
+  ) or exists (
+    select 1 from pg_catalog.pg_auth_members as membership
+    where (
+      membership.roleid = 'vsee_underwriting_owner'::pg_catalog.regrole
+      or membership.member = 'vsee_underwriting_owner'::pg_catalog.regrole
+    ) and not (
+      not executor_is_superuser
+      and membership.roleid =
+        'vsee_underwriting_owner'::pg_catalog.regrole
+      and membership.member = (
+        select oid from pg_catalog.pg_roles where rolname = executor_role
+      )
+      and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+      and membership.admin_option
+      and not membership.inherit_option and not membership.set_option
+    )
+  ) then
+    raise exception 'vsee_underwriting_owner is not in its attested state';
+  end if;
+  if not executor_is_superuser then
+    if not exists (
+      select 1 from pg_catalog.pg_auth_members as membership
+      where membership.roleid =
+          'vsee_underwriting_owner'::pg_catalog.regrole
+        and membership.member = (
+          select oid from pg_catalog.pg_roles where rolname = executor_role
+        )
+        and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+      and membership.admin_option
+        and not membership.inherit_option and not membership.set_option
+    ) then
+      raise exception 'The migration executor lacks the attested underwriting-owner administration grant';
+    end if;
+    execute pg_catalog.format(
+      'grant vsee_underwriting_owner to %I with admin false, inherit true, set true',
+      executor_role
+    );
+  end if;
+end;
+$underwriting_owner_prepare$;
+
+do $registry_owner_prepare$
+declare
+  executor_role text := current_user;
+  executor_is_superuser boolean;
+begin
+  select rolsuper into executor_is_superuser
+  from pg_catalog.pg_roles where rolname = executor_role;
+  if not exists (
+    select 1 from pg_catalog.pg_roles
+    where rolname = 'vsee_registry_owner'
+      and not rolsuper and not rolinherit and not rolcreaterole
+      and not rolcreatedb and not rolcanlogin and not rolreplication
+      and not rolbypassrls
+  ) or exists (
+    select 1 from pg_catalog.pg_auth_members as membership
+    where (
+      membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+      or membership.member = 'vsee_registry_owner'::pg_catalog.regrole
+    ) and not (
+      not executor_is_superuser
+      and membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+      and membership.member = (
+        select oid from pg_catalog.pg_roles where rolname = executor_role
+      )
+      and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+      and membership.admin_option
+      and not membership.inherit_option and not membership.set_option
+    )
+  ) then
+    raise exception 'vsee_registry_owner is not in its attested state';
+  end if;
+  if not executor_is_superuser then
+    if not exists (
+      select 1 from pg_catalog.pg_auth_members as membership
+      where membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+        and membership.member = (
+          select oid from pg_catalog.pg_roles where rolname = executor_role
+        )
+        and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+      and membership.admin_option
+        and not membership.inherit_option and not membership.set_option
+    ) then
+      raise exception 'The migration executor lacks the attested registry-owner administration grant';
+    end if;
+    execute pg_catalog.format(
+      'grant vsee_registry_owner to %I with admin false, inherit true, set true',
+      executor_role
+    );
+  end if;
+end;
+$registry_owner_prepare$;
+
+grant create on schema public to vsee_underwriting_owner;
+grant create on schema public to vsee_registry_owner;
+
 lock table
   public.action_drafts,
   public.candidate_runs,
@@ -1110,6 +1223,83 @@ delete from public.intelligence_reports as report
 using quarantined_legacy_image_report_runs as polluted
 where report.workspace_id = polluted.workspace_id
   and report.id = polluted.report_id;
+
+revoke create on schema public from vsee_registry_owner;
+revoke create on schema public from vsee_underwriting_owner;
+
+do $registry_owner_finish$
+declare
+  executor_role text := current_user;
+  executor_is_superuser boolean;
+begin
+  select rolsuper into executor_is_superuser
+  from pg_catalog.pg_roles where rolname = executor_role;
+  if not executor_is_superuser then
+    execute pg_catalog.format(
+      'revoke vsee_registry_owner from %I granted by %I',
+      executor_role,
+      executor_role
+    );
+  end if;
+  if exists (
+    select 1 from pg_catalog.pg_auth_members as membership
+    where (
+      membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+      or membership.member = 'vsee_registry_owner'::pg_catalog.regrole
+    ) and not (
+      not executor_is_superuser
+      and membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+      and membership.member = (
+        select oid from pg_catalog.pg_roles where rolname = executor_role
+      )
+      and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+      and membership.admin_option
+      and not membership.inherit_option and not membership.set_option
+    )
+  ) then
+    raise exception 'vsee_registry_owner did not return to its attested state';
+  end if;
+end;
+$registry_owner_finish$;
+
+do $underwriting_owner_finish$
+declare
+  executor_role text := current_user;
+  executor_is_superuser boolean;
+begin
+  select rolsuper into executor_is_superuser
+  from pg_catalog.pg_roles where rolname = executor_role;
+  if not executor_is_superuser then
+    execute pg_catalog.format(
+      'revoke vsee_underwriting_owner from %I granted by %I',
+      executor_role,
+      executor_role
+    );
+  end if;
+  if exists (
+    select 1 from pg_catalog.pg_auth_members as membership
+    where (
+      membership.roleid = 'vsee_underwriting_owner'::pg_catalog.regrole
+      or membership.member = 'vsee_underwriting_owner'::pg_catalog.regrole
+    ) and not (
+      not executor_is_superuser
+      and membership.roleid =
+        'vsee_underwriting_owner'::pg_catalog.regrole
+      and membership.member = (
+        select oid from pg_catalog.pg_roles where rolname = executor_role
+      )
+      and membership.grantor = 10
+      and (select rolsuper from pg_catalog.pg_roles where oid = membership.grantor)
+      and membership.admin_option
+      and not membership.inherit_option and not membership.set_option
+    )
+  ) then
+    raise exception
+      'vsee_underwriting_owner did not return to its attested state';
+  end if;
+end;
+$underwriting_owner_finish$;
 
 commit;
 

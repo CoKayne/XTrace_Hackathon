@@ -49,6 +49,10 @@ with tracked_relation_names(name) as (
     ('anon'),
     ('authenticated'),
     ('service_role')
+), tracked_owner_role_names(name) as (
+  values
+    ('vsee_registry_owner'),
+    ('vsee_underwriting_owner')
 ), tracked_relations as (
   select relation.*
   from pg_catalog.pg_class as relation
@@ -568,27 +572,54 @@ with tracked_relation_names(name) as (
       'memberships', coalesce(
         (
           select pg_catalog.jsonb_agg(
-            membership_name order by membership_name collate "C"
+            membership_record
+            order by membership_record::text collate "C"
           )
           from (
-            select 'member-of:' || granted.rolname as membership_name
+            select pg_catalog.jsonb_build_object(
+              'grantedRole', case
+                when membership.roleid = role_record.oid
+                  then role_record.rolname
+                when membership.roleid = (select oid from deploy_owner)
+                  then '$deploy_owner'
+                else granted_role.rolname
+              end,
+              'member', case
+                when membership.member = role_record.oid
+                  then role_record.rolname
+                when membership.member = (select oid from deploy_owner)
+                  then '$deploy_owner'
+                else member_role.rolname
+              end,
+              'grantor', case
+                when membership.grantor = 10
+                  and grantor_role.rolsuper
+                  then '$bootstrap_grantor'
+                when membership.grantor = (select oid from deploy_owner)
+                  then '$deploy_owner'
+                else grantor_role.rolname
+              end,
+              'adminOption', membership.admin_option,
+              'inheritOption', membership.inherit_option,
+              'setOption', membership.set_option
+            ) as membership_record
             from pg_catalog.pg_auth_members as membership
-            join pg_catalog.pg_roles as granted
-              on granted.oid = membership.roleid
-            where membership.member = role_record.oid
-            union all
-            select 'granted-to:' || member_role.rolname
-            from pg_catalog.pg_auth_members as membership
+            join pg_catalog.pg_roles as granted_role
+              on granted_role.oid = membership.roleid
             join pg_catalog.pg_roles as member_role
               on member_role.oid = membership.member
-            where membership.roleid = role_record.oid
+            join pg_catalog.pg_roles as grantor_role
+              on grantor_role.oid = membership.grantor
+            where membership.member = role_record.oid
+              or membership.roleid = role_record.oid
           ) as role_memberships
         ),
         '[]'::jsonb
       )
     ) as payload
   from pg_catalog.pg_roles as role_record
-  where role_record.rolname = 'vsee_registry_owner'
+  join tracked_owner_role_names as tracked_owner_role
+    on tracked_owner_role.name = role_record.rolname
 ), schema_rows as (
   select
     'schema:public' as sort_key,

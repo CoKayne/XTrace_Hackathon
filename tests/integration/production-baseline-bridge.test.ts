@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
   chmodSync,
   copyFileSync,
@@ -82,6 +82,19 @@ const canCreateTemporaryDatabase =
   && spawnSync("createdb", ["--version"]).status === 0
   && spawnSync("dropdb", ["--version"]).status === 0;
 const requirePostgres = process.env.REQUIRE_POSTGRES_MIGRATION_TESTS === "1";
+const requireSupabasePg176 =
+  process.env.REQUIRE_SUPABASE_PG176_MIGRATION_TESTS === "1";
+let requiredSupabasePg176Executions = 0;
+
+test.after(() => {
+  if (requireSupabasePg176) {
+    assert.equal(
+      requiredSupabasePg176Executions,
+      2,
+      "the required PostgreSQL 17.6 release gate must execute both launcher E2Es",
+    );
+  }
+});
 const localDatabaseUser = canCreateTemporaryDatabase
   ? execFileSync(
     "psql",
@@ -96,6 +109,34 @@ const localServerVersionNumber = canCreateTemporaryDatabase
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
   ).trim()
   : "";
+type DatabaseCredentials = {
+  user: string;
+  password?: string;
+};
+
+const nonSuperExecutorCredentials: DatabaseCredentials = {
+  user: "vsee_test_migration_executor",
+  password: "test-only-migration-password",
+};
+const localDatabaseCredentials: DatabaseCredentials =
+  process.env.PGPASSWORD === undefined
+    ? { user: localDatabaseUser }
+    : { user: localDatabaseUser, password: process.env.PGPASSWORD };
+
+function databaseUrl(
+  database: string,
+  credentials: DatabaseCredentials,
+): string {
+  const host = process.env.PGHOST && !process.env.PGHOST.startsWith("/")
+    ? process.env.PGHOST
+    : "localhost";
+  const port = process.env.PGPORT ? `:${process.env.PGPORT}` : "";
+  const password = credentials.password === undefined
+    ? ""
+    : `:${encodeURIComponent(credentials.password)}`;
+  return `postgresql://${encodeURIComponent(credentials.user)}${password}`
+    + `@${host}${port}/${database}`;
+}
 
 function withTemporaryDatabase(run: (database: string) => void): void {
   const database =
@@ -108,39 +149,86 @@ function withTemporaryDatabase(run: (database: string) => void): void {
   }
 }
 
-function applySql(database: string, path: string): void {
+function withTemporaryDatabaseOwnedBy(
+  owner: string,
+  run: (database: string) => void,
+): void {
+  const database =
+    `vsee_production_bridge_${process.pid}_${randomUUID().replaceAll("-", "")}`;
+  execFileSync("createdb", ["--owner", owner, database], { stdio: "pipe" });
+  try {
+    run(database);
+  } finally {
+    execFileSync("dropdb", ["--if-exists", database], { stdio: "pipe" });
+  }
+}
+
+function applySql(
+  database: string,
+  path: string,
+  credentials?: DatabaseCredentials,
+): void {
   execFileSync(
     "psql",
-    ["-v", "ON_ERROR_STOP=1", "-d", database, "-f", path],
+    [
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-d",
+      credentials ? databaseUrl(database, credentials) : database,
+      "-f",
+      path,
+    ],
     { stdio: "pipe" },
   );
 }
 
-function executeSql(database: string, sql: string): string {
+function executeSql(
+  database: string,
+  sql: string,
+  credentials?: DatabaseCredentials,
+): string {
   return execFileSync(
     "psql",
-    ["-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
+    [
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-d",
+      credentials ? databaseUrl(database, credentials) : database,
+      "-AtF",
+      "|",
+      "-c",
+      sql,
+    ],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  ).trim();
+}
+
+function readCatalogManifestJson(database: string): string {
+  return execFileSync(
+    "psql",
+    [
+      "-q",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-d",
+      database,
+      "-AtX",
+      "-f",
+      catalogManifestPath,
+    ],
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
   ).trim();
 }
 
 function readCatalogManifest(database: string): Array<Record<string, unknown>> {
-  return JSON.parse(
-    execFileSync(
-      "psql",
-      [
-        "-q",
-        "-v",
-        "ON_ERROR_STOP=1",
-        "-d",
-        database,
-        "-AtX",
-        "-f",
-        catalogManifestPath,
-      ],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
-    ).trim(),
-  ) as Array<Record<string, unknown>>;
+  return JSON.parse(readCatalogManifestJson(database)) as Array<
+    Record<string, unknown>
+  >;
+}
+
+function readCatalogFingerprint(database: string): string {
+  const manifest = readCatalogManifestJson(database);
+  return `sha256:${createHash("sha256").update(manifest).digest("hex")}`;
 }
 
 function dropRegistryOwnerRole(): void {
@@ -152,7 +240,8 @@ function dropRegistryOwnerRole(): void {
       "-d",
       "postgres",
       "-c",
-      "drop role if exists vsee_registry_owner",
+      "drop role if exists vsee_underwriting_owner; "
+        + "drop role if exists vsee_registry_owner",
     ],
     { encoding: "utf8", stdio: "pipe" },
   );
@@ -160,6 +249,24 @@ function dropRegistryOwnerRole(): void {
     result.status,
     0,
     `Could not isolate the registry-owner role fixture: ${result.stderr}`,
+  );
+}
+
+function dropNonSuperExecutorRole(): void {
+  dropRegistryOwnerRole();
+  executeSql(
+    "postgres",
+    `drop role if exists ${nonSuperExecutorCredentials.user};`,
+  );
+}
+
+function createNonSuperExecutorRole(): void {
+  dropNonSuperExecutorRole();
+  executeSql(
+    "postgres",
+    `create role ${nonSuperExecutorCredentials.user}
+      login password '${nonSuperExecutorCredentials.password}'
+      nosuperuser createrole createdb;`,
   );
 }
 
@@ -195,18 +302,14 @@ function ensureProductionRoles(): void {
 function runProductionScript(
   database: string,
   path: string,
+  credentials: DatabaseCredentials = localDatabaseCredentials,
 ): ReturnType<typeof spawnSync> {
   const fixtureDirectory = mkdtempSync(join(tmpdir(), "vsee-security-fixture-"));
   const securityPath = join(fixtureDirectory, "security");
-  const host = process.env.PGHOST && !process.env.PGHOST.startsWith("/")
-    ? process.env.PGHOST
-    : "localhost";
-  const port = process.env.PGPORT ? `:${process.env.PGPORT}` : "";
-  const databaseUrl =
-    `postgresql://${encodeURIComponent(localDatabaseUser)}@${host}${port}/${database}`;
+  const targetDatabaseUrl = databaseUrl(database, credentials);
   writeFileSync(
     securityPath,
-    `#!/bin/sh\nprintf '%s' '${databaseUrl}'\n`,
+    `#!/bin/sh\nprintf '%s' '${targetDatabaseUrl}'\n`,
     "utf8",
   );
   chmodSync(securityPath, 0o755);
@@ -228,8 +331,9 @@ function runProductionScript(
 function runBootstrap(
   database: string,
   path: string = bootstrapPath,
+  credentials?: DatabaseCredentials,
 ): ReturnType<typeof spawnSync> {
-  return runProductionScript(database, path);
+  return runProductionScript(database, path, credentials);
 }
 
 function assertBootstrapRefused(
@@ -240,10 +344,13 @@ function assertBootstrapRefused(
   assert.match(`${result.stdout}${result.stderr}`, pattern);
 }
 
-function installPrototypeSchema(database: string): void {
+function installPrototypeSchema(
+  database: string,
+  credentials?: DatabaseCredentials,
+): void {
   ensureProductionRoles();
   for (const migration of baselineMigrations) {
-    applySql(database, migration);
+    applySql(database, migration, credentials);
   }
   executeSql(database, `
     create table public.uploaded_documents (
@@ -288,7 +395,7 @@ function installPrototypeSchema(database: string): void {
       end if;
     end;
     $$;
-  `);
+  `, credentials);
 }
 
 function insertPrototypeRow(
@@ -300,6 +407,7 @@ function insertPrototypeRow(
     memoryIds?: string;
     workerId?: string;
   },
+  credentials?: DatabaseCredentials,
 ): void {
   executeSql(database, `
     insert into public.workspaces (id, name)
@@ -318,7 +426,7 @@ function insertPrototypeRow(
       '${values.memoryIds ?? "[]"}'::jsonb,
       ${values.workerId ? `'${values.workerId}'` : "null"}
     );
-  `);
+  `, credentials);
 }
 
 test(
@@ -384,6 +492,7 @@ test(
   () => {
     assert.equal(canCreateTemporaryDatabase, true);
     assert.equal(existsSync(bridgePath), true);
+    dropRegistryOwnerRole();
     withTemporaryDatabase((database) => {
       executeSql(database, `
         drop extension if exists pgcrypto cascade;
@@ -602,9 +711,12 @@ test(
 test(
   "the PostgreSQL 17.6 Supabase prototype passes both guarded launchers through 0017",
   {
-    skip: localServerVersionNumber !== "170006",
+    skip: !requireSupabasePg176 && localServerVersionNumber !== "170006",
   },
   () => {
+    if (requireSupabasePg176) {
+      requiredSupabasePg176Executions += 1;
+    }
     assert.equal(canCreateTemporaryDatabase, true);
     assert.equal(localServerVersionNumber, "170006");
     dropRegistryOwnerRole();
@@ -621,13 +733,17 @@ test(
       assert.equal(
         baseline.status,
         0,
-        `${baseline.stdout}${baseline.stderr}`,
+        `${baseline.stdout}${baseline.stderr}\nActual catalog: ${
+          readCatalogFingerprint(database)
+        }`,
       );
       const forward = runProductionScript(database, migrationLauncherPath);
       assert.equal(
         forward.status,
         0,
-        `${forward.stdout}${forward.stderr}`,
+        `${forward.stdout}${forward.stderr}\nActual catalog: ${
+          readCatalogFingerprint(database)
+        }`,
       );
 
       assert.equal(
@@ -641,6 +757,160 @@ test(
         "t",
       );
     });
+  },
+);
+
+test(
+  "a PostgreSQL 17.6 non-superuser CREATEROLE executor passes both guarded launchers through 0017",
+  {
+    skip: !requireSupabasePg176 && localServerVersionNumber !== "170006",
+  },
+  () => {
+    if (requireSupabasePg176) {
+      requiredSupabasePg176Executions += 1;
+    }
+    assert.equal(canCreateTemporaryDatabase, true);
+    assert.equal(localServerVersionNumber, "170006");
+    createNonSuperExecutorRole();
+    try {
+      withTemporaryDatabaseOwnedBy(
+        nonSuperExecutorCredentials.user,
+        (database) => {
+          installPrototypeSchema(database, nonSuperExecutorCredentials);
+          insertPrototypeRow(
+            database,
+            { status: "failed" },
+            nonSuperExecutorCredentials,
+          );
+          executeSql(
+            database,
+            "grant usage on schema public to anon, authenticated, postgres;",
+            nonSuperExecutorCredentials,
+          );
+
+          assert.equal(
+            executeSql(
+              database,
+              "select rolsuper::text || '|' || rolcreaterole::text "
+                + "from pg_roles where rolname = current_user;",
+              nonSuperExecutorCredentials,
+            ),
+            "false|true",
+          );
+
+          const baseline = runBootstrap(
+            database,
+            bootstrapPath,
+            nonSuperExecutorCredentials,
+          );
+          assert.equal(
+            baseline.status,
+            0,
+            `${baseline.stdout}${baseline.stderr}\nActual catalog: ${
+              readCatalogFingerprint(database)
+            }`,
+          );
+          const forward = runProductionScript(
+            database,
+            migrationLauncherPath,
+            nonSuperExecutorCredentials,
+          );
+          assert.equal(
+            forward.status,
+            0,
+            `${forward.stdout}${forward.stderr}\nActual catalog: ${
+              readCatalogFingerprint(database)
+            }`,
+          );
+
+          assert.equal(
+            executeSql(database, `
+              select
+                to_regclass('public.workspace_test_generations') is not null
+                and to_regprocedure(
+                  'public.confirm_source_assignment(jsonb)'
+                ) is not null;
+            `),
+            "t",
+          );
+
+          assert.equal(
+            executeSql(database, `
+              select rolname || '|' || rolsuper::text || '|'
+                || rolinherit::text || '|' || rolcreaterole::text || '|'
+                || rolcreatedb::text || '|' || rolcanlogin::text || '|'
+                || rolreplication::text || '|' || rolbypassrls::text
+              from pg_catalog.pg_roles
+              where rolname in (
+                'vsee_registry_owner', 'vsee_underwriting_owner'
+              )
+              order by rolname;
+            `),
+            [
+              "vsee_registry_owner|false|false|false|false|false|false|false",
+              "vsee_underwriting_owner|false|false|false|false|false|false|false",
+            ].join("\n"),
+          );
+
+          const executorRole = executeSql(
+            database,
+            "select current_user;",
+            nonSuperExecutorCredentials,
+          );
+          assert.equal(executorRole, nonSuperExecutorCredentials.user);
+          assert.equal(
+            executeSql(database, `
+              select owner_role.rolname || '|' || member_role.rolname || '|'
+                || membership.grantor::text || '|'
+                || grantor_role.rolsuper::text || '|'
+                || membership.admin_option::text || '|'
+                || membership.inherit_option::text || '|'
+                || membership.set_option::text
+              from pg_catalog.pg_auth_members as membership
+              join pg_catalog.pg_roles as owner_role
+                on owner_role.oid = membership.roleid
+              join pg_catalog.pg_roles as member_role
+                on member_role.oid = membership.member
+              join pg_catalog.pg_roles as grantor_role
+                on grantor_role.oid = membership.grantor
+              where owner_role.rolname in (
+                'vsee_registry_owner', 'vsee_underwriting_owner'
+              ) or member_role.rolname in (
+                'vsee_registry_owner', 'vsee_underwriting_owner'
+              )
+              order by owner_role.rolname, member_role.rolname;
+            `),
+            [
+              `vsee_registry_owner|${executorRole}|10|true|true|false|false`,
+              `vsee_underwriting_owner|${executorRole}|10|true|true|false|false`,
+            ].join("\n"),
+          );
+
+          assert.equal(
+            executeSql(database, `
+              select owner_role.rolname || '|'
+                || pg_catalog.has_schema_privilege(
+                  owner_role.rolname, 'public', 'CREATE'
+                )::text || '|'
+                || pg_catalog.pg_has_role(
+                  'service_role', owner_role.rolname, 'MEMBER'
+                )::text
+              from pg_catalog.pg_roles as owner_role
+              where owner_role.rolname in (
+                'vsee_registry_owner', 'vsee_underwriting_owner'
+              )
+              order by owner_role.rolname;
+            `),
+            [
+              "vsee_registry_owner|false|false",
+              "vsee_underwriting_owner|false|false",
+            ].join("\n"),
+          );
+        },
+      );
+    } finally {
+      dropNonSuperExecutorRole();
+    }
   },
 );
 

@@ -163,10 +163,16 @@ npm install
 npm run db:seed
 ```
 
-CI and release verification must run `npm run test:migrations`. It executes the
-relevant PostgreSQL migration suites serially to avoid races between tests that
-exercise cluster-global roles, applies the complete `0000`–`0017` path, and
-fails when a disposable PostgreSQL database cannot be created.
+CI and release verification must run both `npm run test:migrations` and
+`npm run test:migrations:production-pg176`. The first command executes the
+general PostgreSQL migration suites serially. The second is the mandatory
+production-profile gate: it must run against a disposable PostgreSQL 17.6
+server and execute both the Supabase-shaped superuser and non-superuser
+`CREATEROLE` guarded-launcher paths with zero skips. It fails closed on any
+other server version or when either E2E is not executed. Together they avoid
+races between tests that exercise cluster-global roles, apply the complete
+`0000`–`0017` path, and fail when a disposable PostgreSQL database cannot be
+created.
 
 ### Product authentication
 
@@ -312,6 +318,7 @@ Set this JSON in `MARKET_OFFICIAL_FEEDS_JSON` or
 ```bash
 npm test
 npm run test:migrations
+npm run test:migrations:production-pg176
 npm run typecheck
 npm run lint
 npm run build
