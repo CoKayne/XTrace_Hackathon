@@ -104,6 +104,7 @@ const migrationNames = [
 const migrationTestNames = [
   "tests/integration/report-next-step-migration.test.ts",
   "tests/integration/company-analyses-migration.test.ts",
+  "tests/integration/production-baseline-bridge.test.ts",
   "tests/integration/workspace-composite-migration.test.ts",
   "tests/integration/schema-migrations.test.ts",
   "tests/integration/underwriting-reference-migration.test.ts",

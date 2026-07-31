@@ -198,16 +198,45 @@ create index if not exists deal_source_assignments_workspace_deal_created
 alter table public.deal_source_assignments
   add column if not exists request_fingerprint text;
 
-create or replace function public.sha256_length_framed(values_to_frame text[])
+do $migration$
+declare
+  digest_schema text;
+begin
+  select namespace.nspname
+  into digest_schema
+  from pg_catalog.pg_extension as extension_record
+  join pg_catalog.pg_depend as dependency
+    on dependency.refclassid = 'pg_catalog.pg_extension'::regclass
+    and dependency.refobjid = extension_record.oid
+    and dependency.classid = 'pg_catalog.pg_proc'::regclass
+    and dependency.deptype = 'e'
+  join pg_catalog.pg_proc as procedure_record
+    on procedure_record.oid = dependency.objid
+  join pg_catalog.pg_namespace as namespace
+    on namespace.oid = procedure_record.pronamespace
+  where extension_record.extname = 'pgcrypto'
+    and procedure_record.proname = 'digest'
+    and procedure_record.proargtypes = '17 25'::oidvector;
+
+  if digest_schema is null then
+    raise exception
+      'pgcrypto digest(bytea, text) is required for source fingerprints';
+  end if;
+
+  execute pg_catalog.format(
+    $function$
+create or replace function public.sha256_length_framed(
+  values_to_frame text[]
+)
 returns text
 language sql
 immutable
 strict
 security invoker
 set search_path = ''
-as $$
+as $body$
   select 'sha256:' || pg_catalog.encode(
-    public.digest(
+    %I.digest(
       pg_catalog.convert_to(
         pg_catalog.string_agg(
           pg_catalog.octet_length(value)::text || ':' || value,
@@ -221,7 +250,12 @@ as $$
   )
   from pg_catalog.unnest(values_to_frame)
     with ordinality as framed(value, ordinal)
-$$;
+$body$;
+    $function$,
+    digest_schema
+  );
+end;
+$migration$;
 
 create or replace function public.canonical_utc_iso_milliseconds(
   p_value timestamptz

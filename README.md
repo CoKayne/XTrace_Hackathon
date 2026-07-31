@@ -123,6 +123,7 @@ without gaps:
 15. [`drizzle/0014_read_api_action_drafts.sql`](drizzle/0014_read_api_action_drafts.sql)
 16. [`drizzle/0015_framework_catalog_checkpoint.sql`](drizzle/0015_framework_catalog_checkpoint.sql)
 17. [`drizzle/0016_confirmed_upload_source_evidence_bridge.sql`](drizzle/0016_confirmed_upload_source_evidence_bridge.sql)
+18. [`drizzle/0017_public_sandbox_test_generations.sql`](drizzle/0017_public_sandbox_test_generations.sql)
 
 `0008` introduces workspace-composite identities, `0009` adds immutable source
 revisions, `0010`–`0012` add versioned underwriting references and artifacts,
@@ -137,6 +138,21 @@ column-level immutable INSERT grants and uses conflict-ignore writes; canonical
 runtime-upload evidence remains writable only through controlled RPCs. Do not
 start Web or Worker against a partial chain.
 
+For the existing public-sandbox production database, do not infer its starting
+point from table names alone. Run the guarded baseline bootstrap followed by
+the forward launcher:
+
+```bash
+./scripts/bootstrap-production-baseline.zsh
+./scripts/apply-production-migrations.zsh
+```
+
+The bootstrap recognizes only the complete current baseline or the exact safe
+early upload prototype. It retains prototype columns and rows, refuses active
+or meaningful legacy payload, and stops on any partial or gapped `0008`/`0009`
+state. See [`docs/demo-runbook.md`](docs/demo-runbook.md) for the production
+procedure.
+
 ```bash
 npm install
 npm run db:seed
@@ -144,7 +160,7 @@ npm run db:seed
 
 CI and release verification must run `npm run test:migrations`. It executes the
 relevant PostgreSQL migration suites serially to avoid races between tests that
-exercise cluster-global roles, applies the complete `0000`–`0016` path, and
+exercise cluster-global roles, applies the complete `0000`–`0017` path, and
 fails when a disposable PostgreSQL database cannot be created.
 
 ### Product authentication

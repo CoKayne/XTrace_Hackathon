@@ -197,7 +197,7 @@ test(
   },
 );
 
-test("operator instructions require every migration through 0016", () => {
+test("operator instructions require every migration through 0017", () => {
   const readme = readFileSync(
     fileURLToPath(new URL("../../README.md", import.meta.url)),
     "utf8",
@@ -216,7 +216,7 @@ test("operator instructions require every migration through 0016", () => {
     },
   ];
   let previous = -1;
-  for (let index = 0; index <= 16; index += 1) {
+  for (let index = 0; index <= 17; index += 1) {
     const marker = `drizzle/${String(index).padStart(4, "0")}_`;
     const position = readme.indexOf(marker);
     assert.ok(position > previous, `${marker} must appear in migration order`);

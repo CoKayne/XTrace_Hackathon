@@ -28,17 +28,39 @@ XTrace organization ID.
 
 ## Database migration
 
-From the checked-out reviewed commit, apply the forward chain with:
+The production project may still have the early upload-extraction prototype
+instead of the final `0007` table contract. From the checked-out reviewed
+commit, first run the guarded baseline bootstrap:
+
+```bash
+./scripts/bootstrap-production-baseline.zsh
+```
+
+The bootstrap never prints the database URL. Before changing anything it
+classifies the complete pre-`0008` boundary, `0008`, `0009`, and all later
+migration sentinels. It accepts only:
+
+- a complete current `0007` boundary; or
+- the exact known prototype `uploaded_documents` shape when no row has an
+  active extraction lease/state and no row contains legacy extracted facts,
+  memory IDs/text, company identity, Deal identity, or XTrace job identity.
+
+For that one safe prototype shape it adds the current extraction-preview
+contract while retaining every legacy column and row, then applies and verifies
+`0008` and `0009`. It refuses unknown, partial, unsafe, or gapped states. Do
+not bypass that refusal or apply the compatibility SQL manually.
+
+After the bootstrap reports that `0009` is complete, apply the forward chain:
 
 ```bash
 ./scripts/apply-production-migrations.zsh
 ```
 
-The launcher never prints the database URL. It requires the complete `0009`
-boundary, inventories the `0010`–`0017` sentinels before changing anything,
-refuses any gap, applies only from the first missing migration in order, and
-re-verifies every sentinel. Resolve a failed sentinel or gap before retrying;
-do not skip a file or run a later migration manually.
+The forward launcher also never prints the database URL. It requires the
+complete `0009` boundary, inventories the `0010`–`0017` sentinels before
+changing anything, refuses any gap, applies only from the first missing
+migration in order, and re-verifies every sentinel. Resolve a failed sentinel
+or gap before retrying; do not skip a file or run a later migration manually.
 
 ## Start the Worker
 
