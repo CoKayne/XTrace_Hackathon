@@ -60,6 +60,7 @@
 | TD-DB-001 | P2 | Test hardening | CREATEROLE current-lineage catalog fingerprints 尚缺 committed dynamic E2E |
 | TD-DB-002 | P2 | Test hardening | 固定的 cluster-global owner test roles 可能在共享／平行 PostgreSQL 互擾 |
 | TD-DB-005 | P2 | Backlog | 0009 ACL 修復的 exact attestation 與 mutation 尚未位於同一交易 |
+| TD-DEP-001 | P1 | Production hardening | `npm audit --omit=dev` 仍回報 Next 轉依賴的 PostCSS／Sharp 風險 |
 
 ## 4. 詳細問題
 
@@ -671,6 +672,45 @@
     `sha256:15d4475110a5425162e246a0b33a547f33b8550d1e0327c92f67de9db8f1071e`；
     任一其他起點或終點都 fail closed，且不提交部分 mutation。
 
+### TD-DEP-001：Next 的轉依賴仍有尚未提供相容修補的安全通報
+
+- **證據**
+  - 2026-07-31 執行 `npm audit --omit=dev` 仍回報 3 個 high severity
+    production dependency findings。
+  - 路徑為 `next@16.2.12` 所帶入的 `postcss@8.4.31` 與
+    `sharp@0.34.5`；目前 npm 建議的自動修正會降級至不相容的 Next 14，
+    不能直接套用。
+  - 完整 `npm audit` 也必須納入 release 檢查，因為部分標示為
+    `devDependency` 的 React Server Components 套件實際會被 Vinext 編入
+    production Worker；不能只依 `--omit=dev` 判斷正式 Bundle。
+  - 修補 RSC 後的完整 audit 仍有 7 個 high、4 個 moderate、1 個 low，
+    主要分布於 Next 轉依賴與 Vite／Drizzle build tooling；這些項目必須以
+    production Bundle 可達性逐一關閉或升級，不能只因列在 devDependencies
+    就自動豁免。
+- **目前暴露面**
+  - Web runtime 由 Vinext／Cloudflare Worker 產生，並未使用 Next server
+    作為正式 request runtime；產品也不接受使用者上傳 CSS。
+  - 圖片處理與 build dependency 的實際可達性仍需逐一確認，因此不能只因
+    audit 路徑存在就宣稱已無風險。
+- **暫時控制**
+  - 固定 dependency lockfile、禁止 `npm audit fix --force`，並持續使用
+    Web parser boundary 驗證，避免文件解析或額外 server parser 進入 Web
+    bundle。
+  - React、React DOM 與 `react-server-dom-webpack` 已同步固定於
+    `19.2.8`，關閉本次審核發現、且實際會進入 production RSC runtime 的
+    Server Functions DoS 通報。
+  - 正式站不提供任意 CSS build 或圖片轉換入口；來源圖片只經既有受控上傳
+    與抽取流程。
+- **完整修正**
+  - 等待 Next 發布採用已修補 PostCSS／Sharp 的相容版本，或移除 Web runtime
+    不需要的直接 Next dependency。
+  - 針對 advisory 所述的 CSS source map 與圖片處理路徑建立實際可達性測試。
+- **完成條件**
+  - 完整 `npm audit` 與 `npm audit --omit=dev` 對 production Bundle
+    可達 dependency 回報 0 個 high／critical，或以可重現的
+    bundle/runtime reachability 證明剩餘通報套件完全不會進入正式執行路徑，
+    並經安全審核接受。
+
 ## 5. 主線仍必須遵守的最低安全界線
 
 以下不是技術債，任何加速實作都不能移除：
@@ -699,8 +739,9 @@
 6. TD-REG-006 legacy lineage migration。
 7. TD-FWK-001／002 framework publication gates。
 8. TD-RUN-001／002／003 的 production persistence hardening。
-9. TD-REG-007、TD-XTR-001、TD-SEED-002、TD-RUN-004、TD-DB-005 與營運
-   便利性工作。
+9. TD-DEP-001 dependency hardening。
+10. TD-REG-007、TD-XTR-001、TD-SEED-002、TD-RUN-004、TD-DB-005 與營運
+    便利性工作。
 
 每次關閉一項技術債時，必須在本文件補上：
 
