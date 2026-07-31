@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import {
   chmod,
   copyFile,
+  lstat,
   mkdir,
   mkdtemp,
   readFile,
   rm,
-  unlink,
   writeFile,
 } from "node:fs/promises";
 import { spawn } from "node:child_process";
@@ -47,6 +47,27 @@ async function runCommand(
 async function writeExecutable(path: string, contents: string): Promise<void> {
   await writeFile(path, contents, "utf8");
   await chmod(path, 0o755);
+}
+
+async function runtimeDirectoryState(path: string): Promise<
+  | { exists: false }
+  | { exists: true; inode: number; isDirectory: boolean; modifiedAt: number; size: number }
+> {
+  try {
+    const state = await lstat(path);
+    return {
+      exists: true,
+      inode: state.ino,
+      isDirectory: state.isDirectory(),
+      modifiedAt: state.mtimeMs,
+      size: state.size,
+    };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return { exists: false };
+    }
+    throw error;
+  }
 }
 
 async function createWorkerRepositoryFixture(t: test.TestContext): Promise<{
@@ -114,7 +135,7 @@ test("keychain worker launcher starts the worker with exact public-sandbox setti
   const tracePath = join(root, "trace.log");
   const environmentPath = join(root, "worker-environment.log");
   const realRuntimeDirectory = join(repositoryRootPath, ".runtime");
-  const realRuntimeSentinel = join(realRuntimeDirectory, "task-7-runtime-sentinel");
+  const realRuntimeBefore = await runtimeDirectoryState(realRuntimeDirectory);
   const secrets = {
     "vsee-supabase-url": "fixture-supabase-url-secret",
     "vsee-supabase-service-role-key": "fixture-service-role-secret",
@@ -123,11 +144,6 @@ test("keychain worker launcher starts the worker with exact public-sandbox setti
     "vsee-document-url-signing-secret": "fixture-document-signing-secret",
   } as const;
   await mkdir(fixtureDirectory, { recursive: true });
-  await mkdir(realRuntimeDirectory, { recursive: true });
-  await writeFile(realRuntimeSentinel, "preserve this real runtime file\n", "utf8");
-  t.after(async () => {
-    await unlink(realRuntimeSentinel).catch(() => undefined);
-  });
   await writeExecutable(
     join(fixtureDirectory, "security"),
     "#!/bin/sh\nprintf 'security %s\\n' \"$5\" >> \"$FAKE_TRACE\"\ncase \"$5\" in\n  vsee-supabase-url) printf '%s' 'fixture-supabase-url-secret' ;;\n  vsee-supabase-service-role-key) printf '%s' 'fixture-service-role-secret' ;;\n  vsee-anthropic-api-key) printf '%s' 'fixture-anthropic-secret' ;;\n  vsee-xtrace-api-key) printf '%s' 'fixture-xtrace-secret' ;;\n  vsee-document-url-signing-secret) printf '%s' 'fixture-document-signing-secret' ;;\n  *) exit 44 ;;\nesac\n",
@@ -186,9 +202,9 @@ test("keychain worker launcher starts the worker with exact public-sandbox setti
     MARKET_OFFICIAL_FEEDS_JSON: '[{"id":"sequoia-official","name":"Sequoia Capital official insights","url":"https://www.sequoiacap.com/feed/","publisher":"Sequoia Capital","eventType":"funding","confidence":"medium"},{"id":"lsvp-official","name":"Lightspeed Venture Partners insights","url":"https://lsvp.com/feed/","publisher":"Lightspeed Venture Partners","eventType":"funding","confidence":"medium"}]',
     MARKET_PUBLISHER_FEEDS_JSON: '[{"id":"a16z-news","name":"a16z News","url":"https://www.a16z.news/feed","publisher":"Andreessen Horowitz","eventType":"trend","confidence":"medium"},{"id":"marijuana-moment","name":"Marijuana Moment policy news","url":"https://www.marijuanamoment.net/feed","publisher":"Marijuana Moment","eventType":"regulatory","confidence":"medium"},{"id":"fierce-healthcare","name":"Fierce Healthcare news","url":"https://www.fiercehealthcare.com/rss/xml","publisher":"Fierce Healthcare","eventType":"commercial","confidence":"medium"},{"id":"supply-chain-dive","name":"Supply Chain Dive news","url":"https://www.supplychaindive.com/feeds/news/","publisher":"Supply Chain Dive","eventType":"commercial","confidence":"medium"},{"id":"retail-dive","name":"Retail Dive news","url":"https://www.retaildive.com/feeds/news/","publisher":"Retail Dive","eventType":"commercial","confidence":"medium"}]',
   });
-  assert.equal(
-    await readFile(realRuntimeSentinel, "utf8"),
-    "preserve this real runtime file\n",
+  assert.deepEqual(
+    await runtimeDirectoryState(realRuntimeDirectory),
+    realRuntimeBefore,
   );
   assert.match(await readFile(join(root, ".runtime", "worker.log"), "utf8"), /^$/);
 });
