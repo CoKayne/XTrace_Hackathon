@@ -7,10 +7,12 @@ import {
   type ExtractionPreview,
 } from "../../db/repositories/uploaded-documents";
 import {
+  DOCX_CONTENT_TYPE,
   resolveRuntimeUploadContentType,
   safeFilename,
   uploadedObjectKey,
 } from "../../lib/uploads/service";
+import { validateUploadBytes } from "../../lib/uploads/file-validation";
 import {
   extractDocumentText,
   extractUploadPreview,
@@ -31,24 +33,54 @@ const RECORD = {
   updatedAt: "2026-07-25T12:00:00.000Z",
 };
 
-for (const [filename, expected] of [
-  ["notes.txt", "text/plain"],
-  ["notes.md", "text/markdown"],
-  ["slide.jpg", "image/jpeg"],
-  ["slide.png", "image/png"],
-  ["slide.gif", "image/gif"],
-  ["slide.webp", "image/webp"],
+for (const [filename, reportedType, expected] of [
+  ["memo.txt", "text/plain", "text/plain"],
+  ["notes.md", "text/markdown", "text/markdown"],
+  ["deck.pdf", "application/pdf", "application/pdf"],
+  ["memo.docx", "application/octet-stream", DOCX_CONTENT_TYPE],
+  ["chart.png", "image/png", "image/png"],
+  ["chart.webp", "image/webp", "image/webp"],
 ] as const) {
   test(`accepts ${filename}`, () => {
-    assert.equal(resolveRuntimeUploadContentType({ filename }), expected);
+    assert.equal(
+      resolveRuntimeUploadContentType({ filename, reportedType }),
+      expected,
+    );
   });
 }
 
-for (const filename of ["deck.pdf", "memo.docx", "call.m4a"]) {
+for (const filename of [
+  "photo.jpg",
+  "photo.jpeg",
+  "animation.gif",
+  "legacy.doc",
+  "meeting.m4a",
+  "clip.mp4",
+]) {
   test(`rejects ${filename}`, () => {
     assert.throws(() => resolveRuntimeUploadContentType({ filename }));
   });
 }
+
+test("rejects a recognized MIME type that contradicts the filename extension", () => {
+  assert.throws(() => resolveRuntimeUploadContentType({
+    filename: "deck.pdf",
+    reportedType: "image/png",
+  }));
+});
+
+test("rejects malformed signatures and invalid UTF-8 upload bytes", () => {
+  for (const [filename, contentType, bytes] of [
+    ["deck.pdf", "application/pdf", new Uint8Array([0x25, 0x50, 0x44, 0x46])],
+    ["chart.png", "image/png", new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a])],
+    ["chart.webp", "image/webp", new TextEncoder().encode("RIFF0000NOPE")],
+    ["memo.docx", DOCX_CONTENT_TYPE, new Uint8Array([0x50, 0x4b, 0x03, 0x05])],
+    ["memo.txt", "text/plain", new Uint8Array([0xc3, 0x28])],
+    ["notes.md", "text/markdown", new TextEncoder().encode(" \n\t ")],
+  ] as const) {
+    assert.throws(() => validateUploadBytes({ filename, contentType, bytes }));
+  }
+});
 
 test("upload filenames and object keys cannot escape their workspace upload prefix", () => {
   assert.equal(safeFilename("../../etc/passwd"), "passwd");

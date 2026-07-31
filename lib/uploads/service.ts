@@ -1,42 +1,55 @@
 export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 
+export const DOCX_CONTENT_TYPE =
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
 export const RUNTIME_UPLOAD_CONTENT_TYPES = [
   "text/plain",
   "text/markdown",
-  "image/jpeg",
+  "application/pdf",
+  DOCX_CONTENT_TYPE,
   "image/png",
-  "image/gif",
   "image/webp",
 ] as const;
 
 export type RuntimeUploadContentType = typeof RUNTIME_UPLOAD_CONTENT_TYPES[number];
 
-const EXTENSION_CONTENT_TYPES: Record<string, RuntimeUploadContentType> = {
+const EXTENSION_CONTENT_TYPES = {
   txt: "text/plain",
   md: "text/markdown",
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
+  pdf: "application/pdf",
+  docx: DOCX_CONTENT_TYPE,
   png: "image/png",
-  gif: "image/gif",
   webp: "image/webp",
-};
+} as const;
 
 export class UnsupportedUploadError extends Error {
   readonly code = "UNSUPPORTED_MEDIA_TYPE";
 }
 
-// The browser's reported MIME type is unreliable (Windows sends
-// application/octet-stream for .docx), so the filename extension decides and
-// the reported type only has to agree when it is one we recognize.
 export function resolveRuntimeUploadContentType(input: {
   filename: string;
   reportedType?: string;
 }): RuntimeUploadContentType {
   const extension = input.filename.split(".").pop()?.toLowerCase() ?? "";
-  const resolved = EXTENSION_CONTENT_TYPES[extension];
+  const resolved = Object.hasOwn(EXTENSION_CONTENT_TYPES, extension)
+    ? EXTENSION_CONTENT_TYPES[extension as keyof typeof EXTENSION_CONTENT_TYPES]
+    : undefined;
   if (!resolved) {
     throw new UnsupportedUploadError(
-      "Upload a TXT, Markdown, JPEG, PNG, GIF, or WebP file.",
+      "Upload a TXT, Markdown, PDF, DOCX, PNG, or WebP file.",
+    );
+  }
+  if (
+    input.reportedType
+    && input.reportedType !== "application/octet-stream"
+    && RUNTIME_UPLOAD_CONTENT_TYPES.includes(
+      input.reportedType as RuntimeUploadContentType,
+    )
+    && input.reportedType !== resolved
+  ) {
+    throw new UnsupportedUploadError(
+      "The uploaded file type does not match its filename extension.",
     );
   }
   return resolved;

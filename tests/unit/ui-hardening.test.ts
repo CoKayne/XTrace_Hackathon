@@ -308,7 +308,9 @@ test("uploaded-source UI accepts only staged runtime formats and renders confirm
     onConfirm() {},
   }));
 
-  assert.match(html, /accept="\.txt,\.md,\.jpg,\.jpeg,\.png,\.gif,\.webp"/);
+  assert.match(html, /accept="\.txt,\.md,\.pdf,\.docx,\.png,\.webp"/);
+  assert.match(html, /TXT, Markdown, PDF, DOCX, PNG, or WebP · 12 MB maximum/);
+  assert.doesNotMatch(html, /JPEG|GIF|audio/i);
   assert.match(html, /Needs confirmation/);
   assert.match(html, /Confirm company (?:&amp;|&) Deal ownership/);
   assert.doesNotMatch(html, /PDF, DOCX, TXT, or MD/);

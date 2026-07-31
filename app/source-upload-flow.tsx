@@ -38,9 +38,9 @@ export function SourceUploadFlow({
           <span className="vsee-eyebrow">CANONICAL SOURCE INTAKE</span>
           <h2 id="upload-title">Upload a source for review.</h2>
           <p>
-            TXT, Markdown, JPEG, PNG, GIF, or WebP. Extraction stops at a
-            preview until a user confirms both company identity and Deal
-            ownership.
+            TXT, Markdown, PDF, DOCX, PNG, or WebP · 12 MB maximum. Extraction
+            stops at a preview until a user confirms both company identity and
+            Deal ownership.
           </p>
           {!canUpload && (
             <p className="vsee-readonly-note" role="status">
@@ -62,7 +62,7 @@ export function SourceUploadFlow({
         <input
           ref={inputRef}
           type="file"
-          accept=".txt,.md,.jpg,.jpeg,.png,.gif,.webp"
+          accept=".txt,.md,.pdf,.docx,.png,.webp"
           aria-label="Choose a source document"
           disabled={!canUpload || uploading}
           hidden

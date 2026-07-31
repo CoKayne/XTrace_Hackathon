@@ -16,6 +16,7 @@ import {
   UnsupportedUploadError,
 } from "../../../lib/uploads/service";
 import { toUploadRecoveryDto } from "../../../lib/uploads/confirmation";
+import { validateUploadBytes } from "../../../lib/uploads/file-validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,6 +80,7 @@ export async function POST(
       reportedType: file.type,
     });
     const bytes = new Uint8Array(await file.arrayBuffer());
+    validateUploadBytes({ filename, contentType, bytes });
     const checksum = await sha256Hex(bytes);
     const uploads = dependencies.uploadedDocuments
       ?? getUploadedDocumentsRepository();
