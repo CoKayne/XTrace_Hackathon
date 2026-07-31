@@ -41,7 +41,7 @@ export function resolveRuntimeUploadContentType(input: {
     );
   }
   if (
-    input.reportedType
+    input.reportedType?.trim()
     && input.reportedType !== "application/octet-stream"
     && input.reportedType !== resolved
   ) {

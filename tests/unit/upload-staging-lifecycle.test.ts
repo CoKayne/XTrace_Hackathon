@@ -74,6 +74,52 @@ test("invalid upload signatures or reported types never reach storage or create 
   }
 });
 
+test("a whitespace-only reported MIME stages a valid supported upload", async () => {
+  const repository = createMemoryUploadedDocumentsRepository();
+  const stored: Array<{ key: string; contentType: string }> = [];
+  const file = new File(
+    [new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])],
+    "deck.pdf",
+    { type: "   " },
+  );
+  assert.equal(file.type, "   ");
+  const form = new FormData();
+  form.set("file", file);
+
+  const request = new Request("https://vsee.test/api/uploads", {
+    method: "POST",
+    headers: { "cf-connecting-ip": "198.51.101.1" },
+  });
+  Object.defineProperty(request, "formData", {
+    value: async () => form,
+  });
+
+  const response = await uploadDocument(
+    request,
+    undefined,
+    {
+      async resolveRequestContext() {
+        return uploadContext();
+      },
+      uploadedDocuments: repository,
+      privateObjectStorage: {
+        async ensurePrivateObject(input) {
+          stored.push({ key: input.key, contentType: input.contentType });
+          return { value: { key: input.key }, created: true };
+        },
+        async readPrivateObject() {
+          return null;
+        },
+      },
+    },
+  );
+
+  assert.equal(response.status, 202);
+  assert.equal(stored.length, 1);
+  assert.equal(stored[0]?.contentType, "application/pdf");
+  assert.equal((await repository.list("workspace_upload_test")).length, 1);
+});
+
 function uploadContext(): AuthorizedRequestContext {
   return {
     mode: "public_sandbox",

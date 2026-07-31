@@ -77,7 +77,7 @@ for (const reportedType of [
   });
 }
 
-for (const reportedType of [undefined, "", "application/octet-stream"]) {
+for (const reportedType of [undefined, "", "   ", "application/octet-stream"]) {
   test(`accepts PDF with ${reportedType || "no"} reported MIME type`, () => {
     assert.equal(
       resolveRuntimeUploadContentType({ filename: "deck.pdf", reportedType }),
