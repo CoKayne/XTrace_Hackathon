@@ -1,7 +1,7 @@
 # End-to-End Underwriting：已知問題與延後完善清單
 
 更新日期：2026-07-31
-基準 commit：`eec063d`  
+基準 commit：`6a5e811`
 適用分支：`feat/source-grounded-underwriting-v1`
 
 ## 1. 文件目的
@@ -59,6 +59,7 @@
 | TD-RUN-004 | P2 | Backlog | 衝突 duplicate identity 的 fingerprint 排序尚未 fail closed |
 | TD-DB-001 | P2 | Test hardening | CREATEROLE current-lineage catalog fingerprints 尚缺 committed dynamic E2E |
 | TD-DB-002 | P2 | Test hardening | 固定的 cluster-global owner test roles 可能在共享／平行 PostgreSQL 互擾 |
+| TD-DB-005 | P2 | Backlog | 0009 ACL 修復的 exact attestation 與 mutation 尚未位於同一交易 |
 
 ## 4. 詳細問題
 
@@ -622,6 +623,54 @@
   - 每個 forward owner preflight 都有 missing-role fixture，確認零 schema mutation、
     明確 attestation 訊息，且 hostile membership 仍 fail closed。
 
+### TD-DB-005：0009 ACL 修復仍有跨 session 的 attestation 時間窗
+
+- **觸發條件**
+  - `bootstrap-production-baseline.zsh` 先在一個 `psql` session 確認 production
+    catalog 是唯一核准的 repair-only fingerprint、0009 為 exact partial state、
+    沒有 forward migration、registry invariants 正確且 worker 已靜止。
+  - 在 bootstrap 啟動另一個 `psql` session 執行 ACL repair transaction 前，另一個
+    具有 DDL／ACL 權限的 operator、migration launcher 或管理程序同時修改 catalog，
+    或開始 forward migration。
+  - Repair transaction 會再次確認 13 筆已知錯誤 grant、registry invariants 與
+    quiescence，但目前不會在該交易內重新計算完整 catalog fingerprint，也不會重新
+    檢查所有 forward sentinels。
+- **影響**
+  - Repair 可能先對一個已經發生額外 drift 的 catalog 提交精準 revoke；bootstrap
+    隨後的 exact postcondition 會偵測不一致並 fail closed，但 mutation 已經發生，
+    需要人工判讀與恢復後才能續跑。
+  - 目前不會把不正確 catalog 誤認為合法 migration stage，也不會自動繼續 forward
+    migrations；風險是「在 drift 下已提交修復」而不是 silent unsafe acceptance。
+  - 此情境需要維護窗口內另一個具資料庫管理能力的 actor 併發寫入，因此列為 P2
+    Backlog，而非正常單一 operator 上線路徑的 blocker。
+- **目前控制**
+  - ACL repair 只能在 exclusive maintenance window 執行：先停止 Worker，不允許
+    其他 deploy、migration、SQL console 或資料庫管理工作，同一時間只保留一個
+    launcher/operator。
+  - Bootstrap 在 repair 前後都驗證 exact catalog fingerprint，repair transaction
+    另行鎖定相關 application tables，並重新檢查 quiescence、registry invariants、
+    精準 grant 集合與 owner-role membership restoration。
+  - 任一 postcondition 不符立即停止，不得手動跳過 fingerprint 或直接續跑 forward
+    migration。
+- **嚴格未來修正**
+  - 將完整 catalog／forward-sentinel attestation 與 ACL mutation 放入同一個資料庫
+    session 與 transaction，並以專用 migration advisory lock 串起 bootstrap、repair
+    與 forward launcher；所有受控 schema mutation 入口必須先取得同一把 lock。
+  - 在 transaction 內、mutation 緊鄰前重新驗證等價於 exact repair-only fingerprint
+    的完整 server-side catalog contract，而不只計算 13 筆預期 grant。
+  - 維運權限與 runbook 同時禁止任何不遵守 migration lock 的管理寫入；若偵測 drift，
+    必須在零 ACL/schema mutation 下 rollback。
+- **完成條件**
+  - 兩個獨立 connection 的並行測試證明：repair 持鎖時，第二個 bootstrap、forward
+    launcher 與 ACL／DDL 管理動作會阻塞或被明確拒絕。
+  - 在 attestation 後、revoke 前注入 catalog drift 或 forward sentinel 時，repair
+    transaction 必須 rollback，catalog、ACL 與 migration ledger 保持零變更。
+  - Exact production-defect fixture 仍只能從
+    `sha256:a5e1729c32fbe1a99a0487ce7a11701e23d09dc4c201fece540967101565591c`
+    原子轉換為
+    `sha256:15d4475110a5425162e246a0b33a547f33b8550d1e0327c92f67de9db8f1071e`；
+    任一其他起點或終點都 fail closed，且不提交部分 mutation。
+
 ## 5. 主線仍必須遵守的最低安全界線
 
 以下不是技術債，任何加速實作都不能移除：
@@ -650,7 +699,8 @@
 6. TD-REG-006 legacy lineage migration。
 7. TD-FWK-001／002 framework publication gates。
 8. TD-RUN-001／002／003 的 production persistence hardening。
-9. TD-REG-007、TD-XTR-001、TD-SEED-002、TD-RUN-004 與營運便利性工作。
+9. TD-REG-007、TD-XTR-001、TD-SEED-002、TD-RUN-004、TD-DB-005 與營運
+   便利性工作。
 
 每次關閉一項技術債時，必須在本文件補上：
 
