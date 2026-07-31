@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
-import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  copyFile,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -9,7 +18,7 @@ const dockerfilePath = new URL("../../Dockerfile.worker", import.meta.url);
 const packagePath = new URL("../../package.json", import.meta.url);
 const readmePath = new URL("../../README.md", import.meta.url);
 const repositoryRootPath = new URL("../../", import.meta.url).pathname;
-const workerLauncherPath = new URL(
+const workerLauncherSourcePath = new URL(
   "../../scripts/run-worker-from-keychain.zsh",
   import.meta.url,
 ).pathname;
@@ -38,6 +47,23 @@ async function runCommand(
 async function writeExecutable(path: string, contents: string): Promise<void> {
   await writeFile(path, contents, "utf8");
   await chmod(path, 0o755);
+}
+
+async function createWorkerRepositoryFixture(t: test.TestContext): Promise<{
+  root: string;
+  launcherPath: string;
+}> {
+  const root = await mkdtemp(join(tmpdir(), "vsee-worker-repository-"));
+  const scriptsDirectory = join(root, "scripts");
+  const launcherPath = join(scriptsDirectory, "run-worker-from-keychain.zsh");
+  await mkdir(scriptsDirectory, { recursive: true });
+  await writeFile(join(root, "package.json"), '{"private":true}\n', "utf8");
+  await copyFile(workerLauncherSourcePath, launcherPath);
+  await chmod(launcherPath, 0o755);
+  t.after(async () => {
+    await rm(root, { recursive: true, force: true });
+  });
+  return { root, launcherPath };
 }
 
 test("worker image has a non-root long-running command and health check", async () => {
@@ -82,35 +108,48 @@ test("worker scripts and production runbook stay documented", async () => {
   assert.match(readme, /worker:health/i);
 });
 
-test("keychain worker launcher starts the worker with public-sandbox settings without exposing secrets", async (t) => {
-  const fixtureDirectory = await mkdtemp(join(tmpdir(), "vsee-worker-launcher-"));
-  const runtimeDirectory = join(repositoryRootPath, ".runtime");
-  const tracePath = join(fixtureDirectory, "trace.log");
-  const secretValue = "worker-secret-must-not-be-printed";
+test("keychain worker launcher starts the worker with exact public-sandbox settings without exposing secrets or touching the real runtime", async (t) => {
+  const { root, launcherPath } = await createWorkerRepositoryFixture(t);
+  const fixtureDirectory = join(root, "bin");
+  const tracePath = join(root, "trace.log");
+  const environmentPath = join(root, "worker-environment.log");
+  const realRuntimeDirectory = join(repositoryRootPath, ".runtime");
+  const realRuntimeSentinel = join(realRuntimeDirectory, "task-7-runtime-sentinel");
+  const secrets = {
+    "vsee-supabase-url": "fixture-supabase-url-secret",
+    "vsee-supabase-service-role-key": "fixture-service-role-secret",
+    "vsee-anthropic-api-key": "fixture-anthropic-secret",
+    "vsee-xtrace-api-key": "fixture-xtrace-secret",
+    "vsee-document-url-signing-secret": "fixture-document-signing-secret",
+  } as const;
+  await mkdir(fixtureDirectory, { recursive: true });
+  await mkdir(realRuntimeDirectory, { recursive: true });
+  await writeFile(realRuntimeSentinel, "preserve this real runtime file\n", "utf8");
   t.after(async () => {
-    await rm(fixtureDirectory, { recursive: true, force: true });
-    await rm(runtimeDirectory, { recursive: true, force: true });
+    await unlink(realRuntimeSentinel).catch(() => undefined);
   });
   await writeExecutable(
     join(fixtureDirectory, "security"),
-    "#!/bin/sh\nprintf 'security %s\\n' \"$5\" >> \"$FAKE_TRACE\"\nprintf '%s' \"$FAKE_SECRET\"\n",
+    "#!/bin/sh\nprintf 'security %s\\n' \"$5\" >> \"$FAKE_TRACE\"\ncase \"$5\" in\n  vsee-supabase-url) printf '%s' 'fixture-supabase-url-secret' ;;\n  vsee-supabase-service-role-key) printf '%s' 'fixture-service-role-secret' ;;\n  vsee-anthropic-api-key) printf '%s' 'fixture-anthropic-secret' ;;\n  vsee-xtrace-api-key) printf '%s' 'fixture-xtrace-secret' ;;\n  vsee-document-url-signing-secret) printf '%s' 'fixture-document-signing-secret' ;;\n  *) exit 44 ;;\nesac\n",
   );
   await writeExecutable(
     join(fixtureDirectory, "npm"),
-    "#!/bin/sh\nprintf 'npm %s %s mode=%s workspace=%s\\n' \"$1\" \"$2\" \"$VSEE_DEPLOYMENT_MODE\" \"$DEMO_WORKSPACE_ID\" >> \"$FAKE_TRACE\"\n",
+    "#!/bin/sh\nprintf 'npm %s %s\\n' \"$1\" \"$2\" >> \"$FAKE_TRACE\"\n{\n  printf 'SUPABASE_URL=%s\\n' \"$SUPABASE_URL\"\n  printf 'SUPABASE_SERVICE_ROLE_KEY=%s\\n' \"$SUPABASE_SERVICE_ROLE_KEY\"\n  printf 'ANTHROPIC_API_KEY=%s\\n' \"$ANTHROPIC_API_KEY\"\n  printf 'XTRACE_API_KEY=%s\\n' \"$XTRACE_API_KEY\"\n  printf 'DOCUMENT_URL_SIGNING_SECRET=%s\\n' \"$DOCUMENT_URL_SIGNING_SECRET\"\n  printf 'VSEE_DEPLOYMENT_MODE=%s\\n' \"$VSEE_DEPLOYMENT_MODE\"\n  printf 'DEMO_WORKSPACE_ID=%s\\n' \"$DEMO_WORKSPACE_ID\"\n  printf 'SUPABASE_STORAGE_BUCKET=%s\\n' \"$SUPABASE_STORAGE_BUCKET\"\n  printf 'ANTHROPIC_MODEL=%s\\n' \"$ANTHROPIC_MODEL\"\n  printf 'XTRACE_API_BASE_URL=%s\\n' \"$XTRACE_API_BASE_URL\"\n  printf 'MARKET_USER_AGENT=%s\\n' \"$MARKET_USER_AGENT\"\n  printf 'MARKET_OFFICIAL_FEEDS_JSON=%s\\n' \"$MARKET_OFFICIAL_FEEDS_JSON\"\n  printf 'MARKET_PUBLISHER_FEEDS_JSON=%s\\n' \"$MARKET_PUBLISHER_FEEDS_JSON\"\n} > \"$FAKE_ENVIRONMENT\"\n",
   );
 
-  const result = await runCommand("zsh", [workerLauncherPath], {
+  const result = await runCommand("zsh", [launcherPath], {
     ...process.env,
     PATH: `${fixtureDirectory}:${process.env.PATH ?? ""}`,
     FAKE_TRACE: tracePath,
-    FAKE_SECRET: secretValue,
+    FAKE_ENVIRONMENT: environmentPath,
     USER: "fixture-user",
   });
 
   assert.equal(result.exitCode, 0);
-  assert.doesNotMatch(result.output, new RegExp(secretValue));
-  assert.doesNotMatch(await readFile(tracePath, "utf8"), new RegExp(secretValue));
+  for (const secretValue of Object.values(secrets)) {
+    assert.doesNotMatch(result.output, new RegExp(secretValue));
+    assert.doesNotMatch(await readFile(tracePath, "utf8"), new RegExp(secretValue));
+  }
   assert.equal(
     await readFile(tracePath, "utf8"),
     [
@@ -119,24 +158,46 @@ test("keychain worker launcher starts the worker with public-sandbox settings wi
       "security vsee-anthropic-api-key",
       "security vsee-xtrace-api-key",
       "security vsee-document-url-signing-secret",
-      "npm run worker mode=public_sandbox workspace=workspace_demo",
+      "npm run worker",
       "",
     ].join("\n"),
   );
-  assert.match(
-    await readFile(join(runtimeDirectory, "worker.log"), "utf8"),
-    /^$/,
+  const environment = Object.fromEntries(
+    (await readFile(environmentPath, "utf8"))
+      .trim()
+      .split("\n")
+      .map((line) => {
+        const separator = line.indexOf("=");
+        return [line.slice(0, separator), line.slice(separator + 1)];
+      }),
   );
+  assert.deepEqual(environment, {
+    SUPABASE_URL: secrets["vsee-supabase-url"],
+    SUPABASE_SERVICE_ROLE_KEY: secrets["vsee-supabase-service-role-key"],
+    ANTHROPIC_API_KEY: secrets["vsee-anthropic-api-key"],
+    XTRACE_API_KEY: secrets["vsee-xtrace-api-key"],
+    DOCUMENT_URL_SIGNING_SECRET: secrets["vsee-document-url-signing-secret"],
+    VSEE_DEPLOYMENT_MODE: "public_sandbox",
+    DEMO_WORKSPACE_ID: "workspace_demo",
+    SUPABASE_STORAGE_BUCKET: "vsee-demo-sources",
+    ANTHROPIC_MODEL: "claude-opus-4-8",
+    XTRACE_API_BASE_URL: "https://api.production.xtrace.ai",
+    MARKET_USER_AGENT: "VSee VC Intelligence public-sandbox",
+    MARKET_OFFICIAL_FEEDS_JSON: '[{"id":"sequoia-official","name":"Sequoia Capital official insights","url":"https://www.sequoiacap.com/feed/","publisher":"Sequoia Capital","eventType":"funding","confidence":"medium"},{"id":"lsvp-official","name":"Lightspeed Venture Partners insights","url":"https://lsvp.com/feed/","publisher":"Lightspeed Venture Partners","eventType":"funding","confidence":"medium"}]',
+    MARKET_PUBLISHER_FEEDS_JSON: '[{"id":"a16z-news","name":"a16z News","url":"https://www.a16z.news/feed","publisher":"Andreessen Horowitz","eventType":"trend","confidence":"medium"},{"id":"marijuana-moment","name":"Marijuana Moment policy news","url":"https://www.marijuanamoment.net/feed","publisher":"Marijuana Moment","eventType":"regulatory","confidence":"medium"},{"id":"fierce-healthcare","name":"Fierce Healthcare news","url":"https://www.fiercehealthcare.com/rss/xml","publisher":"Fierce Healthcare","eventType":"commercial","confidence":"medium"},{"id":"supply-chain-dive","name":"Supply Chain Dive news","url":"https://www.supplychaindive.com/feeds/news/","publisher":"Supply Chain Dive","eventType":"commercial","confidence":"medium"},{"id":"retail-dive","name":"Retail Dive news","url":"https://www.retaildive.com/feeds/news/","publisher":"Retail Dive","eventType":"commercial","confidence":"medium"}]',
+  });
+  assert.equal(
+    await readFile(realRuntimeSentinel, "utf8"),
+    "preserve this real runtime file\n",
+  );
+  assert.match(await readFile(join(root, ".runtime", "worker.log"), "utf8"), /^$/);
 });
 
 test("keychain worker launcher fails closed before npm when a required secret is missing", async (t) => {
-  const fixtureDirectory = await mkdtemp(join(tmpdir(), "vsee-worker-missing-secret-"));
-  const runtimeDirectory = join(repositoryRootPath, ".runtime");
-  const tracePath = join(fixtureDirectory, "trace.log");
-  t.after(async () => {
-    await rm(fixtureDirectory, { recursive: true, force: true });
-    await rm(runtimeDirectory, { recursive: true, force: true });
-  });
+  const { root, launcherPath } = await createWorkerRepositoryFixture(t);
+  const fixtureDirectory = join(root, "bin");
+  const tracePath = join(root, "trace.log");
+  await mkdir(fixtureDirectory, { recursive: true });
   await writeExecutable(
     join(fixtureDirectory, "security"),
     "#!/bin/sh\nprintf 'security %s\\n' \"$5\" >> \"$FAKE_TRACE\"\nif [ \"$5\" = \"vsee-xtrace-api-key\" ]; then exit 44; fi\nprintf '%s' 'available-secret'\n",
@@ -146,7 +207,7 @@ test("keychain worker launcher fails closed before npm when a required secret is
     "#!/bin/sh\nprintf 'npm started\\n' >> \"$FAKE_TRACE\"\n",
   );
 
-  const result = await runCommand("zsh", [workerLauncherPath], {
+  const result = await runCommand("zsh", [launcherPath], {
     ...process.env,
     PATH: `${fixtureDirectory}:${process.env.PATH ?? ""}`,
     FAKE_TRACE: tracePath,

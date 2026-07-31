@@ -40,23 +40,34 @@ SQL
     0012) print -- "-- vsee-sentinel: 0012\nselect to_regclass('public.source_evidence_items') is not null;" ;;
     0013) print -- "-- vsee-sentinel: 0013\nselect exists (select 1 from pg_attribute where attrelid = 'public.uploaded_documents'::regclass and attname = 'confirmation_fingerprint' and not attisdropped);" ;;
     0014) print -- "-- vsee-sentinel: 0014\nselect to_regprocedure('public.replace_action_draft_body(text,text,text)') is not null;" ;;
-    0015) print -- "-- vsee-sentinel: 0015\nselect exists (select 1 from pg_constraint where conname = 'candidate_checkpoints_stage_check' and pg_get_constraintdef(oid) like '%framework_catalog%');" ;;
+    0015) print -- "-- vsee-sentinel: 0015\nselect exists (select 1 from pg_constraint where conrelid = 'public.candidate_checkpoints'::regclass and conname = 'candidate_checkpoints_stage_check' and pg_get_constraintdef(oid) like '%framework_catalog%');" ;;
     0016) print -- "-- vsee-sentinel: 0016\nselect to_regclass('public.source_evidence_items') is not null and exists (select 1 from pg_attribute where attrelid = 'public.source_evidence_items'::regclass and attname = 'source_id' and attnotnull and not attisdropped);" ;;
     0017) print -- "-- vsee-sentinel: 0017\nselect to_regclass('public.workspace_test_generations') is not null and to_regprocedure('public.reset_test_view(text,text)') is not null;" ;;
     *) print -u2 "Unknown migration sentinel: $1"; return 1 ;;
   esac
 }
 
-sentinel_is_complete() {
+inspect_sentinel() {
   local result
   if ! result="$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -At -c "$(sentinel_sql "$1")")"; then
     print -u2 "Could not verify migration sentinel: $1"
     return 1
   fi
-  [[ "$result" == "t" ]]
+  case "$result" in
+    t) SENTINEL_STATE="complete" ;;
+    f) SENTINEL_STATE="incomplete" ;;
+    *)
+      print -u2 "Could not verify migration sentinel: $1"
+      return 1
+      ;;
+  esac
 }
 
-if ! sentinel_is_complete 0009; then
+if ! inspect_sentinel 0009; then
+  exit 1
+fi
+
+if [[ "$SENTINEL_STATE" != "complete" ]]; then
   print -u2 "Migration boundary 0009 is incomplete; refusing to apply forward migrations."
   exit 1
 fi
@@ -76,7 +87,10 @@ migration_files=(
 first_incomplete_index=0
 for index in {1..${#migration_ids}}; do
   migration_id="${migration_ids[$index]}"
-  if sentinel_is_complete "$migration_id"; then
+  if ! inspect_sentinel "$migration_id"; then
+    exit 1
+  fi
+  if [[ "$SENTINEL_STATE" == "complete" ]]; then
     if (( first_incomplete_index > 0 )); then
       print -u2 "Migration sentinel gap: ${migration_id} is complete after ${migration_ids[$first_incomplete_index]} is incomplete."
       exit 1
@@ -101,7 +115,10 @@ for index in {$first_incomplete_index..${#migration_ids}}; do
 
   print "Applying migration ${migration_id}."
   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration_file"
-  if ! sentinel_is_complete "$migration_id"; then
+  if ! inspect_sentinel "$migration_id"; then
+    exit 1
+  fi
+  if [[ "$SENTINEL_STATE" != "complete" ]]; then
     print -u2 "Migration ${migration_id} did not satisfy its sentinel; stopping."
     exit 1
   fi
