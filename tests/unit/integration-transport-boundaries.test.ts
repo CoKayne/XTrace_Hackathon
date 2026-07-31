@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFile, readdir } from "node:fs/promises";
+import path from "node:path";
 import test from "node:test";
 
 import { errorResponse } from "../../lib/api/response";
@@ -124,3 +126,32 @@ test("Anthropic non-retryable 4xx remains internal", async () => {
     messages: [{ role: "user", content: "Test" }],
   })));
 });
+
+test("document parsers stay in the Node worker and out of the production Web bundle", async () => {
+  const workerSource = await readFile(
+    path.join(process.cwd(), "worker", "extract-upload.ts"),
+    "utf8",
+  );
+  assert.match(workerSource, /await import\("unpdf"\)/);
+  assert.match(workerSource, /await import\("mammoth"\)/);
+
+  const clientFiles = await collectFiles(path.join(process.cwd(), "dist", "client"));
+  assert.ok(
+    clientFiles.length > 0,
+    "run npm run build before checking the production Web bundle",
+  );
+  const clientBundle = (
+    await Promise.all(clientFiles.map((file) => readFile(file, "utf8")))
+  ).join("\n");
+  assert.doesNotMatch(clientBundle, /\b(?:mammoth|unpdf)\b/);
+});
+
+async function collectFiles(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = await Promise.all(entries.map((entry) => {
+    const target = path.join(directory, entry.name);
+    if (entry.isDirectory()) return collectFiles(target);
+    return /\.(?:css|html|js|json)$/.test(entry.name) ? [target] : [];
+  }));
+  return files.flat();
+}

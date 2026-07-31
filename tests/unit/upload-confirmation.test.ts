@@ -318,6 +318,22 @@ test("memory confirmation bridges exact source tuples into canonical underwritin
   assert.equal(normalizedArr.currency, "USD");
 });
 
+test("PDF confirmation preserves the exact page locator", async () => {
+  const excerpt =
+    "Second-page evidence: Acme signed three enterprise customers.";
+  const evidence = await confirmEvidence([{
+    text: "Acme signed three enterprise customers.",
+    excerpt,
+    locator: { kind: "pdf_page", page: 2, excerpt },
+  }]);
+
+  assert.deepEqual(evidence.map((item) => item.locator), [{
+    kind: "pdf_page",
+    page: 2,
+    excerpt,
+  }]);
+});
+
 test("image confirmation preserves a null excerpt and accepts only its exact structured locator fact", async () => {
   const imageFact: ExtractionPreview["facts"][number] = {
     text: "The image reports ARR of $2,000,000 USD.",

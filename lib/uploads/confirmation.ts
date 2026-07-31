@@ -267,7 +267,7 @@ export function createUploadConfirmationService(dependencies: {
           id: `evidence_${sourceRevisionId}_${index}`,
           fact: fact.text,
           excerpt: fact.excerpt,
-          page: 1,
+          page: fact.locator.kind === "pdf_page" ? fact.locator.page : 1,
           locator: evidenceLocator(fact),
           structured: completeStructuredFact(fact),
         }));
@@ -429,8 +429,17 @@ function evidenceLocator(
       "Text evidence requires an exact source excerpt.",
     );
   }
+  if (fact.locator.kind === "pdf_page") {
+    return {
+      kind: "pdf_page",
+      page: fact.locator.page,
+      excerpt: fact.excerpt,
+    };
+  }
   return {
-    ...fact.locator,
+    kind: "text_range",
+    start: fact.locator.start,
+    end: fact.locator.end,
     excerpt: fact.excerpt,
   };
 }
@@ -710,7 +719,8 @@ function memoryBundle(input: {
               documentId: input.sourceId,
               provenance: "source_document" as const,
               title: filename,
-              page: 1,
+              page:
+                fact.locator.kind === "pdf_page" ? fact.locator.page : 1,
               excerpt: fact.excerpt,
             }],
           }];

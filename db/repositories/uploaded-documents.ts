@@ -24,6 +24,7 @@ export interface ExtractionPreview {
     excerpt: string | null;
     locator:
       | { kind: "text_range"; start: number; end: number }
+      | { kind: "pdf_page"; page: number; excerpt: string }
       | { kind: "image"; imageIndex: 0 };
     structured?: {
       field: string;
@@ -37,7 +38,11 @@ export interface ExtractionPreview {
     } | null;
   }>;
   extractionMetadata: {
-    extractorId: "plain_text_v1" | "claude_vision_v1";
+    extractorId:
+      | "plain_text_v1"
+      | "pdf_text_v1"
+      | "docx_text_v1"
+      | "claude_vision_v1";
     extractorVersion: "1";
     extractedAt: string;
     contentHash: string;

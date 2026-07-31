@@ -148,6 +148,85 @@ test("product upload returns 202, preview is safe, and explicit confirmation pro
   assert.equal(conflictingReplay.status, 409);
 });
 
+test("PDF page lineage reaches Deal memory only after explicit confirmation", async () => {
+  const dependencies = productDependencies();
+  const excerpt =
+    "Second-page evidence: Acme signed three enterprise customers.";
+  await dependencies.uploadedDocuments!.create({
+    id: "upload_pdf_lineage",
+    workspaceId: "workspace_1",
+    filename: "acme.pdf",
+    contentType: "application/pdf",
+    byteSize: 1_024,
+    checksum: "pdf-lineage-hash",
+    objectKey:
+      "private/workspaces/workspace_1/uploads/upload_pdf_lineage/acme.pdf",
+  });
+  const claimed = await dependencies.uploadedDocuments!.claimNext("extractor");
+  assert.ok(claimed);
+  assert.equal(await dependencies.uploadedDocuments!.savePreview({
+    workspaceId: claimed.workspaceId,
+    id: claimed.id,
+    workerId: claimed.workerId,
+    leaseToken: claimed.leaseToken,
+    preview: {
+      candidateCompanyName: "Acme",
+      candidateHeadline: null,
+      facts: [{
+        text: "Acme signed three enterprise customers.",
+        excerpt,
+        locator: { kind: "pdf_page", page: 2, excerpt },
+      }],
+      extractionMetadata: {
+        extractorId: "pdf_text_v1",
+        extractorVersion: "1",
+        extractedAt: "2026-07-30T12:00:00.000Z",
+        contentHash: "pdf-lineage-hash",
+        inputBytes: 1_024,
+        extractedCharacters: excerpt.length,
+        truncated: false,
+      },
+    },
+  }), true);
+  assert.deepEqual(
+    await dependencies.dealRegistry!.listAnalysisEligibleBundles("workspace_1"),
+    [],
+  );
+
+  const confirmed = await confirmUpload(
+    new Request(
+      "https://vsee.test/api/uploads/upload_pdf_lineage/confirm",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          companyName: "Acme",
+          assignment: { kind: "new_deal", dealStatus: "evaluating" },
+        }),
+      },
+    ),
+    params("upload_pdf_lineage"),
+    dependencies,
+  );
+  assert.equal(confirmed.status, 200);
+  const [bundle] = await dependencies.dealRegistry!
+    .listAnalysisEligibleBundles("workspace_1");
+  assert.ok(bundle);
+  const source = bundle.facts[0]?.sources[0];
+  assert.ok(source);
+  assert.deepEqual({
+    provenance: source.provenance,
+    title: source.title,
+    page: source.page,
+    excerpt: source.excerpt,
+  }, {
+    provenance: "source_document",
+    title: "acme.pdf",
+    page: 2,
+    excerpt,
+  });
+});
+
 test("confirmation cannot select a Deal outside the request workspace", async () => {
   const dependencies = productDependencies("workspace_owner");
   await dependencies.uploadedDocuments!.create({
