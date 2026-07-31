@@ -1,8 +1,8 @@
 # End-to-End Underwriting：已知問題與延後完善清單
 
 更新日期：2026-07-31
-基準 commit：`6a5e811`
-適用分支：`feat/source-grounded-underwriting-v1`
+基準 commit：`1ea4a6a`
+適用分支：`feat/backend-integration-checkpoint`
 
 ## 1. 文件目的
 
@@ -43,6 +43,7 @@
 | TD-SEED-002 | P2 | Backlog | Memory reset 不會同步清除獨立 Registry |
 | TD-IMP-001 | P1 | MVP deferred | Fixed corpus confirmation 不是單一交易 |
 | TD-XTR-001 | P2 | Backlog | 本機 reset 不一定能刪除遠端 XTrace memory |
+| TD-XTR-002 | P1 | Provider compatibility | XTrace derived child ID 缺少可驗證 parent lineage，可能讓單一 Deal fail closed |
 | TD-FWK-001 | P0 | Production gate | Side Quest 框架可產生實驗性觀點，但仍不能成為正式決策因子 |
 | TD-FWK-002 | P1 | Production gate | 真實框架的授權、來源版本與 Decision Utility 尚未全部核准 |
 | TD-COV-001 | P2 | Product limitation | 第一版深度估值只支援 Seed／Series A × B2B SaaS／Enterprise AI |
@@ -266,6 +267,40 @@
     workspace generation 隔離舊 memory。
 - **重啟時機**
   - 正式提供 workspace deletion／reset 前。
+
+### TD-XTR-002：derived child ID 無法對應本機 parent lineage
+
+- **Production 重現**
+  - Fellowtrip 的 XTrace ingest 已成功，本機保存 parent memory ID、Source ID
+    與 Fixture ID。
+  - XTrace 搜尋能找到同一個 `deal:fellowtrip` conversation 的 fact／episode，
+    但回傳的是新的 derived child IDs；目前 provider response 沒有 parent ID 或
+    其他可驗證的 parent-child metadata。
+  - 其他 Deal 若搜尋結果仍包含至少一個本機已信任的 ID，可以正常完成分析；
+    Fellowtrip 的結果只有 derived IDs，因此被標記為 analysis unavailable。
+- **目前影響**
+  - 只影響無法建立可信 lineage 的 Deal；其餘公司、Market Scan、Report 與
+    Underwriting Batch 仍會完成。
+  - 整體 run 會明確標示為 `partial`，不會把無來源鏈的文字當成投資證據。
+- **不可採用的捷徑**
+  - 不得只因 `conv_id`、公司名稱或文字看似相符就建立信任，因為這些欄位不能
+    證明搜尋結果確實衍生自目前 workspace 已確認的來源。
+- **暫時控制**
+  - 維持 fail closed：沒有本機可驗證 lineage 的 Deal 不產生推論，只顯示
+    analysis unavailable 與可操作的 warning。
+- **完整修正**
+  - 優先使用 XTrace 官方提供的 parent-child metadata、ingest receipt 或其他
+    不可混淆的 lineage identifier。
+  - 若 provider 新增可驗證關聯，將 ingest parent、搜尋 child 與本機 Source
+    Revision 串成持久化 reconciliation，並加入跨 Deal／跨 workspace 負向測試。
+- **完成條件**
+  - Fellowtrip 類型的 derived fact／episode 能安全對應到本機 parent memory 與
+    Source Revision。
+  - 偽造相同 `conv_id`、公司名稱或相似文字仍無法通過 lineage 驗證。
+  - 正常掃描不再因這類 provider ID 轉換而成為 `partial`。
+- **重啟時機**
+  - XTrace 提供可驗證 parent-child 關聯，或產品要把目前單一 Deal 相容性缺口
+    提升為 production release gate 時。
 
 ### TD-FWK-001：框架內容尚未可成為正式決策因子
 
@@ -626,6 +661,11 @@
 
 ### TD-DB-005：0009 ACL 修復仍有跨 session 的 attestation 時間窗
 
+- **已完成的前置修復**
+  - 原始 production default-function ACL drift 已由 `6a5e811` 的受控
+    repair-only 路徑修正並以 exact catalog fingerprint 驗證。
+  - 本項只追蹤 attestation 與 mutation 分屬不同 session 的罕見競態，不代表
+    原始多餘 EXECUTE grant 仍存在。
 - **觸發條件**
   - `bootstrap-production-baseline.zsh` 先在一個 `psql` session 確認 production
     catalog 是唯一核准的 repair-only fingerprint、0009 為 exact partial state、
@@ -740,7 +780,7 @@
 7. TD-FWK-001／002 framework publication gates。
 8. TD-RUN-001／002／003 的 production persistence hardening。
 9. TD-DEP-001 dependency hardening。
-10. TD-REG-007、TD-XTR-001、TD-SEED-002、TD-RUN-004、TD-DB-005 與營運
+10. TD-REG-007、TD-XTR-001／002、TD-SEED-002、TD-RUN-004、TD-DB-005 與營運
     便利性工作。
 
 每次關閉一項技術債時，必須在本文件補上：
