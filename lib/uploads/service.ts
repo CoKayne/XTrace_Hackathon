@@ -43,9 +43,6 @@ export function resolveRuntimeUploadContentType(input: {
   if (
     input.reportedType
     && input.reportedType !== "application/octet-stream"
-    && RUNTIME_UPLOAD_CONTENT_TYPES.includes(
-      input.reportedType as RuntimeUploadContentType,
-    )
     && input.reportedType !== resolved
   ) {
     throw new UnsupportedUploadError(

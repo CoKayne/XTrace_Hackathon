@@ -28,9 +28,12 @@ test("extraction stops at confirmation preview without Deal or XTrace side effec
   assert.deepEqual(effects, ["preview"]);
 });
 
-test("invalid upload bytes never reach object storage or create a staged document", async () => {
+test("invalid upload signatures or reported types never reach storage or create a staged document", async () => {
   for (const [filename, contentType, bytes] of [
     ["deck.pdf", "application/pdf", new Uint8Array([0x25, 0x50, 0x44, 0x46])],
+    ["deck.pdf", "image/jpeg", new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])],
+    ["deck.pdf", "audio/mpeg", new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])],
+    ["deck.pdf", "video/mp4", new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])],
     ["chart.png", "image/png", new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a])],
     ["chart.webp", "image/webp", new TextEncoder().encode("RIFF0000NOPE")],
     ["memo.docx", "application/octet-stream", new Uint8Array([0x50, 0x4b, 0x03, 0x05])],

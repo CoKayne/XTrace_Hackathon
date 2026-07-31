@@ -62,12 +62,29 @@ for (const filename of [
   });
 }
 
-test("rejects a recognized MIME type that contradicts the filename extension", () => {
-  assert.throws(() => resolveRuntimeUploadContentType({
-    filename: "deck.pdf",
-    reportedType: "image/png",
-  }));
-});
+for (const reportedType of [
+  "image/png",
+  "image/jpeg",
+  "audio/mpeg",
+  "video/mp4",
+  "application/pdf; charset=binary",
+]) {
+  test(`rejects a PDF filename with contradictory reported MIME type ${reportedType}`, () => {
+    assert.throws(() => resolveRuntimeUploadContentType({
+      filename: "deck.pdf",
+      reportedType,
+    }));
+  });
+}
+
+for (const reportedType of [undefined, "", "application/octet-stream"]) {
+  test(`accepts PDF with ${reportedType || "no"} reported MIME type`, () => {
+    assert.equal(
+      resolveRuntimeUploadContentType({ filename: "deck.pdf", reportedType }),
+      "application/pdf",
+    );
+  });
+}
 
 test("rejects malformed signatures and invalid UTF-8 upload bytes", () => {
   for (const [filename, contentType, bytes] of [
