@@ -18,6 +18,9 @@ import test from "node:test";
 const bootstrapPath = fileURLToPath(
   new URL("../../scripts/bootstrap-production-baseline.zsh", import.meta.url),
 );
+const migrationLauncherPath = fileURLToPath(
+  new URL("../../scripts/apply-production-migrations.zsh", import.meta.url),
+);
 const libpqServiceRendererPath = fileURLToPath(
   new URL("../../scripts/render-private-libpq-service.mjs", import.meta.url),
 );
@@ -86,6 +89,13 @@ const localDatabaseUser = canCreateTemporaryDatabase
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
   ).trim()
   : "";
+const localServerVersionNumber = canCreateTemporaryDatabase
+  ? execFileSync(
+    "psql",
+    ["-d", "postgres", "-Atqc", "show server_version_num"],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  ).trim()
+  : "";
 
 function withTemporaryDatabase(run: (database: string) => void): void {
   const database =
@@ -112,6 +122,25 @@ function executeSql(database: string, sql: string): string {
     ["-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
   ).trim();
+}
+
+function readCatalogManifest(database: string): Array<Record<string, unknown>> {
+  return JSON.parse(
+    execFileSync(
+      "psql",
+      [
+        "-q",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-d",
+        database,
+        "-AtX",
+        "-f",
+        catalogManifestPath,
+      ],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+    ).trim(),
+  ) as Array<Record<string, unknown>>;
 }
 
 function dropRegistryOwnerRole(): void {
@@ -153,20 +182,31 @@ function ensureProductionRoles(): void {
       ) then
         create role authenticated nologin;
       end if;
+      if not exists (
+        select 1 from pg_catalog.pg_roles where rolname = 'postgres'
+      ) then
+        create role postgres nologin;
+      end if;
     end;
     $$;
   `);
 }
 
-function runBootstrap(
+function runProductionScript(
   database: string,
-  path: string = bootstrapPath,
+  path: string,
 ): ReturnType<typeof spawnSync> {
   const fixtureDirectory = mkdtempSync(join(tmpdir(), "vsee-security-fixture-"));
   const securityPath = join(fixtureDirectory, "security");
+  const host = process.env.PGHOST && !process.env.PGHOST.startsWith("/")
+    ? process.env.PGHOST
+    : "localhost";
+  const port = process.env.PGPORT ? `:${process.env.PGPORT}` : "";
+  const databaseUrl =
+    `postgresql://${encodeURIComponent(localDatabaseUser)}@${host}${port}/${database}`;
   writeFileSync(
     securityPath,
-    `#!/bin/sh\nprintf '%s' 'postgresql://${encodeURIComponent(localDatabaseUser)}@localhost/${database}'\n`,
+    `#!/bin/sh\nprintf '%s' '${databaseUrl}'\n`,
     "utf8",
   );
   chmodSync(securityPath, 0o755);
@@ -183,6 +223,13 @@ function runBootstrap(
   } finally {
     rmSync(fixtureDirectory, { recursive: true, force: true });
   }
+}
+
+function runBootstrap(
+  database: string,
+  path: string = bootstrapPath,
+): ReturnType<typeof spawnSync> {
+  return runProductionScript(database, path);
 }
 
 function assertBootstrapRefused(
@@ -439,6 +486,165 @@ test(
 );
 
 test(
+  "the audited Supabase prototype profile changes only redundant public-schema USAGE ACL rows",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
+    withTemporaryDatabase((database) => {
+      installPrototypeSchema(database);
+      const baseline = readCatalogManifest(database);
+
+      executeSql(database, `
+        grant usage on schema public to anon, authenticated, postgres;
+      `);
+      const supabaseProfile = readCatalogManifest(database);
+
+      const changedIndexes = baseline.flatMap((row, index) =>
+        JSON.stringify(row) === JSON.stringify(supabaseProfile[index])
+          ? []
+          : [index]
+      );
+      assert.equal(changedIndexes.length, 1);
+
+      const changedIndex = changedIndexes[0]!;
+      assert.deepEqual(baseline[changedIndex], {
+        acl: [
+          {
+            grantee: "$schema_owner",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "CREATE",
+          },
+          {
+            grantee: "$schema_owner",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+          {
+            grantee: "PUBLIC",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+          {
+            grantee: "service_role",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+        ],
+        kind: "schema",
+        name: "public",
+        owner: "$schema_owner",
+        ownerSupported: true,
+      });
+      assert.deepEqual(supabaseProfile[changedIndex], {
+        acl: [
+          {
+            grantee: "$schema_owner",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "CREATE",
+          },
+          {
+            grantee: "$schema_owner",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+          {
+            grantee: "PUBLIC",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+          {
+            grantee: "anon",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+          {
+            grantee: "authenticated",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+          {
+            grantee: "postgres",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+          {
+            grantee: "service_role",
+            grantor: "$schema_owner",
+            grantable: false,
+            privilege: "USAGE",
+          },
+        ],
+        kind: "schema",
+        name: "public",
+        owner: "$schema_owner",
+        ownerSupported: true,
+      });
+
+      assert.deepEqual(
+        baseline.filter(({ kind }) => kind === "effective-schema-acl"),
+        supabaseProfile.filter(({ kind }) => kind === "effective-schema-acl"),
+      );
+    });
+  },
+);
+
+test(
+  "the PostgreSQL 17.6 Supabase prototype passes both guarded launchers through 0017",
+  {
+    skip: localServerVersionNumber !== "170006",
+  },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    assert.equal(localServerVersionNumber, "170006");
+    dropRegistryOwnerRole();
+    withTemporaryDatabase((database) => {
+      installPrototypeSchema(database);
+      insertPrototypeRow(database, {
+        status: "failed",
+      });
+      executeSql(database, `
+        grant usage on schema public to anon, authenticated, postgres;
+      `);
+
+      const baseline = runBootstrap(database);
+      assert.equal(
+        baseline.status,
+        0,
+        `${baseline.stdout}${baseline.stderr}`,
+      );
+      const forward = runProductionScript(database, migrationLauncherPath);
+      assert.equal(
+        forward.status,
+        0,
+        `${forward.stdout}${forward.stderr}`,
+      );
+
+      assert.equal(
+        executeSql(database, `
+          select
+            to_regclass('public.workspace_test_generations') is not null
+            and to_regprocedure(
+              'public.confirm_source_assignment(jsonb)'
+            ) is not null;
+        `),
+        "t",
+      );
+    });
+  },
+);
+
+test(
   "the guarded bootstrap rejects exact prototype catalog drift before mutation",
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   async (t) => {
@@ -461,6 +667,14 @@ test(
       {
         name: "unexpected public table privilege",
         mutate: "grant select on public.uploaded_documents to public",
+      },
+      {
+        name: "unexpected anonymous schema create privilege",
+        mutate: "grant create on schema public to anon",
+      },
+      {
+        name: "unexpected public schema grantee",
+        mutate: "grant usage on schema public to pg_read_all_data",
       },
       {
         name: "partial service-role table privilege set",

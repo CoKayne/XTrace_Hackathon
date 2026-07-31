@@ -23,6 +23,27 @@ readonly VSEE_CATALOG_0017="sha256:da11946a95fb8354b91a45eeb636987fd4359b827a5fe
 readonly VSEE_CATALOG_BRIDGED_0017="sha256:ba2db22017bffa15cc3d6aecaf602cde9c07e710c4f0e1f85854a193ae1abbaa"
 
 readonly VSEE_CATALOG_PG176_PROTOTYPE="sha256:c5b9d1a84911bda621f472906b4f058a3e477d860cd732fc8893aba706ce5cad"
+# Supabase grants redundant, non-grantable USAGE on public to its API roles
+# and postgres. This attestation differs from the plain PG17.6 prototype only
+# in those three raw schema ACL entries; effective schema privileges and every
+# application-owned object remain identical.
+readonly VSEE_CATALOG_PG176_SUPABASE_PROTOTYPE="sha256:9d54dddfadf68c2a72e1247b182a1998940aadd9110816a63b6c9529835fb3e1"
+readonly VSEE_CATALOG_PG176_SUPABASE_0007="sha256:b2a5465d23e7109638270b72247040060b5f54f16f8846a9bca08a86ebc62f25"
+readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0007="sha256:cc390fa7000e1e85d73c601ec5cef8fd0eb83a5d4ccbb11da3c9a94ebe9fa684"
+readonly VSEE_CATALOG_PG176_SUPABASE_0008="sha256:20b525eb134e2e8726e21f60a52e531d935b4c739824bcfd5f06421bfa696443"
+readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0008="sha256:c63910c08ee882fee34c23d160438341d81f704d7a193e976e1d27b2255084c6"
+readonly VSEE_CATALOG_PG176_SUPABASE_0009="sha256:4803b01b5b526660faa0059071360c709209c83587edb5bd719c4b855dd2638b"
+readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0009="sha256:81fddccc188a6e8ee276be9edf39aa41c95309a252f7e37815946f1a2bcef3c1"
+readonly VSEE_CATALOG_PG176_SUPABASE_0011="sha256:c2cf1a3504a497a323effc1bdae879fb5f65e95fad7bb32e2d293d9d1bf59054"
+readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0011="sha256:828347518de99035479fecaf9faf75f2b425e65d9f91e835fed455af0d052643"
+readonly VSEE_CATALOG_PG176_SUPABASE_0012="sha256:bfa3af8a518afc2a3c21d6198ec7952dc0331be28c976577591ba7502d76103f"
+readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0012="sha256:79920418a853b7e68db577bc1b7ed96a544e4551561b3abaea37ce00f26c57e9"
+readonly VSEE_CATALOG_PG176_SUPABASE_0013="sha256:23d76cd612b467d847c7147da1975c8954772249d8601c15736eda3df98596c4"
+readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013="sha256:b230c80db12cb047f27ddc70ef8bd6b7f062dd9415cda7685430bc10d4a21594"
+readonly VSEE_CATALOG_PG176_SUPABASE_0016="sha256:d0334555e38278e3f0ed5383af912a9e61cf243668c851e5480ed5ccd5ba8097"
+readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016="sha256:a1f4bb94b663e7e2e7a6b43d5adb77e65ede7d020a5cc568664634c1993a7eec"
+readonly VSEE_CATALOG_PG176_SUPABASE_0017="sha256:e0c03d0415c41bc172809c66e59560fdfa593b40c9225705b97d3a3092b77081"
+readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017="sha256:be5e711190b6dfe645231c71fb54863cf2477bc0da6a08f51196babcf13218c2"
 readonly VSEE_CATALOG_PG176_0007="sha256:0fa88731f4b1a914e59b7188640b091d5b7f37efd98b49e908c852eacd48bd57"
 readonly VSEE_CATALOG_PG176_BRIDGED_0007="sha256:bf1e16882f7ed5df4758a8f4c0029f6801cafe59ba7042247ca2476b8d43d1e8"
 readonly VSEE_CATALOG_PG176_0008="sha256:122b735ebd36705b0666996a049678b3b33ec30e8f07a44f585b3266fb433040"
@@ -42,6 +63,23 @@ readonly VSEE_CATALOG_PG176_BRIDGED_0017="sha256:5501e1b4389f64af9d7d2a44a40b54a
 
 vsee_catalog_variant() {
   case "$1" in
+    "$VSEE_CATALOG_PG176_SUPABASE_PROTOTYPE") print -- "prototype-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_0007") print -- "0007-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0007") print -- "bridged-0007-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_0008") print -- "0008-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0008") print -- "bridged-0008-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_0009") print -- "0009-current-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0009") print -- "0009-bridged-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_0011") print -- "0011-current-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0011") print -- "0011-bridged-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_0012") print -- "0012-current-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0012") print -- "0012-bridged-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_0013") print -- "0013-current-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013") print -- "0013-bridged-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_0016") print -- "0016-current-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016") print -- "0016-bridged-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_0017") print -- "0017-current-lineage-supabase-pg17.6" ;;
+    "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017") print -- "0017-bridged-lineage-supabase-pg17.6" ;;
     "$VSEE_CATALOG_PROTOTYPE"|"$VSEE_CATALOG_PG176_PROTOTYPE") print -- "prototype" ;;
     "$VSEE_CATALOG_0007"|"$VSEE_CATALOG_PG176_0007") print -- "0007" ;;
     "$VSEE_CATALOG_BRIDGED_0007"|"$VSEE_CATALOG_PG176_BRIDGED_0007") print -- "bridged-0007" ;;
@@ -69,55 +107,72 @@ vsee_catalog_matches_stage() {
   case "$stage" in
     prototype)
       [[ "$fingerprint" == "$VSEE_CATALOG_PROTOTYPE" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_PROTOTYPE" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_PROTOTYPE" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_PROTOTYPE" ]]
       ;;
     0007)
       [[ "$fingerprint" == "$VSEE_CATALOG_0007" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0007" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0007" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0007" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0007" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_0007" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0007" ]]
       ;;
     0008)
       [[ "$fingerprint" == "$VSEE_CATALOG_0008" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0008" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0008" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0008" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0008" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_0008" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0008" ]]
       ;;
     0009|0010)
       [[ "$fingerprint" == "$VSEE_CATALOG_0009" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0009" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0009" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0009" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0009" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_0009" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0009" ]]
       ;;
     0011)
       [[ "$fingerprint" == "$VSEE_CATALOG_0011" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0011" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0011" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0011" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0011" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_0011" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0011" ]]
       ;;
     0012)
       [[ "$fingerprint" == "$VSEE_CATALOG_0012" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0012" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0012" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0012" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0012" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_0012" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0012" ]]
       ;;
     0013|0014|0015)
       [[ "$fingerprint" == "$VSEE_CATALOG_0013" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0013" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0013" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0013" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0013" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_0013" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013" ]]
       ;;
     0016)
       [[ "$fingerprint" == "$VSEE_CATALOG_0016" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0016" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0016" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0016" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0016" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_0016" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016" ]]
       ;;
     0017)
       [[ "$fingerprint" == "$VSEE_CATALOG_0017" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0017" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0017" \
-        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0017" ]]
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_BRIDGED_0017" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_0017" \
+        || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017" ]]
       ;;
     *) return 1 ;;
   esac

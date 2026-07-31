@@ -1426,10 +1426,10 @@ assert_mutation_preconditions() {
     return 1
   fi
   case "$CATALOG_VARIANT" in
-    prototype)
+    prototype|prototype-supabase-pg17.6)
       assert_legacy_payload_safety prototype_safe || return 1
       ;;
-    bridged-0007)
+    bridged-0007|bridged-0007-supabase-pg17.6)
       assert_legacy_payload_safety bridged_safe || return 1
       ;;
   esac
@@ -1455,20 +1455,21 @@ done
 
 while true; do
   case "$CATALOG_VARIANT" in
-    prototype)
+    prototype|prototype-supabase-pg17.6)
       if ! assert_mutation_preconditions prototype; then
         exit 1
       fi
       print "Applying the guarded 0007 compatibility bridge."
       psql --no-password -v ON_ERROR_STOP=1 -f "$bridge_file"
       if ! inspect_catalog_fingerprint \
-        || [[ "$CATALOG_VARIANT" != "bridged-0007" ]] \
+        || [[ "$CATALOG_VARIANT" != "bridged-0007" \
+          && "$CATALOG_VARIANT" != "bridged-0007-supabase-pg17.6" ]] \
         || ! assert_legacy_payload_safety bridged_safe; then
         print -u2 "The 0007 compatibility bridge did not satisfy its exact postcondition."
         exit 1
       fi
       ;;
-    0007|bridged-0007)
+    0007|bridged-0007|0007-supabase-pg17.6|bridged-0007-supabase-pg17.6)
       if ! assert_mutation_preconditions 0007; then
         exit 1
       fi
@@ -1480,7 +1481,7 @@ while true; do
         exit 1
       fi
       ;;
-    0008|bridged-0008)
+    0008|bridged-0008|0008-supabase-pg17.6|bridged-0008-supabase-pg17.6)
       if ! assert_mutation_preconditions 0008; then
         exit 1
       fi
@@ -1493,7 +1494,7 @@ while true; do
         exit 1
       fi
       ;;
-    0009-current-lineage|0009-bridged-lineage)
+    0009-current-lineage|0009-bridged-lineage|0009-current-lineage-supabase-pg17.6|0009-bridged-lineage-supabase-pg17.6)
       if ! registry_backfill_is_exact; then
         print -u2 "The 0009 source-registry data invariants are not satisfied."
         exit 1

@@ -38,6 +38,10 @@ const registryInvariantsSourcePath = new URL(
   "../../scripts/sql/production-registry-data-invariants.sql",
   import.meta.url,
 ).pathname;
+const catalogFingerprintsSourcePath = new URL(
+  "../../scripts/production-catalog-fingerprints.zsh",
+  import.meta.url,
+).pathname;
 
 type CommandResult = { exitCode: number | null; output: string };
 
@@ -83,6 +87,83 @@ test("the production migration launcher remains directly executable", async () =
     0o111,
     "scripts/apply-production-migrations.zsh must remain executable",
   );
+});
+
+test("the audited PostgreSQL 17.6 Supabase profile is exact and stage-limited", () => {
+  const result = spawnSync(
+    "zsh",
+    [
+      "-c",
+      `set -euo pipefail
+source "$1"
+stages=(prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017)
+check_variant() {
+  local variable_name="$1"
+  local expected_variant="$2"
+  local expected_stages="$3"
+  local fingerprint="\${(P)variable_name}"
+  local actual_variant
+  actual_variant="$(vsee_catalog_variant "$fingerprint")"
+  [[ "$actual_variant" == "$expected_variant" ]]
+  for stage in "\${stages[@]}"; do
+    local expected_match=false
+    local actual_match=false
+    [[ ",$expected_stages," == *",$stage,"* ]] && expected_match=true
+    vsee_catalog_matches_stage "$stage" "$fingerprint" && actual_match=true
+    [[ "$actual_match" == "$expected_match" ]]
+  done
+  print -r -- "$variable_name|$fingerprint|$actual_variant|$expected_stages"
+}
+check_variant VSEE_CATALOG_PG176_SUPABASE_PROTOTYPE prototype-supabase-pg17.6 prototype
+check_variant VSEE_CATALOG_PG176_SUPABASE_0007 0007-supabase-pg17.6 0007
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0007 bridged-0007-supabase-pg17.6 0007
+check_variant VSEE_CATALOG_PG176_SUPABASE_0008 0008-supabase-pg17.6 0008
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0008 bridged-0008-supabase-pg17.6 0008
+check_variant VSEE_CATALOG_PG176_SUPABASE_0009 0009-current-lineage-supabase-pg17.6 0009,0010
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0009 0009-bridged-lineage-supabase-pg17.6 0009,0010
+check_variant VSEE_CATALOG_PG176_SUPABASE_0011 0011-current-lineage-supabase-pg17.6 0011
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0011 0011-bridged-lineage-supabase-pg17.6 0011
+check_variant VSEE_CATALOG_PG176_SUPABASE_0012 0012-current-lineage-supabase-pg17.6 0012
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0012 0012-bridged-lineage-supabase-pg17.6 0012
+check_variant VSEE_CATALOG_PG176_SUPABASE_0013 0013-current-lineage-supabase-pg17.6 0013,0014,0015
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013 0013-bridged-lineage-supabase-pg17.6 0013,0014,0015
+check_variant VSEE_CATALOG_PG176_SUPABASE_0016 0016-current-lineage-supabase-pg17.6 0016
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016 0016-bridged-lineage-supabase-pg17.6 0016
+check_variant VSEE_CATALOG_PG176_SUPABASE_0017 0017-current-lineage-supabase-pg17.6 0017
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017 0017-bridged-lineage-supabase-pg17.6 0017
+if vsee_catalog_variant "sha256:0884bf536c6724bb90683cd7ab9da6e08cd6ec98fbc1b517e49fddf7b24151f4" >/dev/null; then
+  print -- unexpected-create-variant
+else
+  print -- create-variant-refused
+fi`,
+      "vsee-fingerprint-audit",
+      catalogFingerprintsSourcePath,
+    ],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  const lines = result.stdout.trim().split("\n");
+  assert.deepEqual(lines, [
+    "VSEE_CATALOG_PG176_SUPABASE_PROTOTYPE|sha256:9d54dddfadf68c2a72e1247b182a1998940aadd9110816a63b6c9529835fb3e1|prototype-supabase-pg17.6|prototype",
+    "VSEE_CATALOG_PG176_SUPABASE_0007|sha256:b2a5465d23e7109638270b72247040060b5f54f16f8846a9bca08a86ebc62f25|0007-supabase-pg17.6|0007",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0007|sha256:cc390fa7000e1e85d73c601ec5cef8fd0eb83a5d4ccbb11da3c9a94ebe9fa684|bridged-0007-supabase-pg17.6|0007",
+    "VSEE_CATALOG_PG176_SUPABASE_0008|sha256:20b525eb134e2e8726e21f60a52e531d935b4c739824bcfd5f06421bfa696443|0008-supabase-pg17.6|0008",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0008|sha256:c63910c08ee882fee34c23d160438341d81f704d7a193e976e1d27b2255084c6|bridged-0008-supabase-pg17.6|0008",
+    "VSEE_CATALOG_PG176_SUPABASE_0009|sha256:4803b01b5b526660faa0059071360c709209c83587edb5bd719c4b855dd2638b|0009-current-lineage-supabase-pg17.6|0009,0010",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0009|sha256:81fddccc188a6e8ee276be9edf39aa41c95309a252f7e37815946f1a2bcef3c1|0009-bridged-lineage-supabase-pg17.6|0009,0010",
+    "VSEE_CATALOG_PG176_SUPABASE_0011|sha256:c2cf1a3504a497a323effc1bdae879fb5f65e95fad7bb32e2d293d9d1bf59054|0011-current-lineage-supabase-pg17.6|0011",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0011|sha256:828347518de99035479fecaf9faf75f2b425e65d9f91e835fed455af0d052643|0011-bridged-lineage-supabase-pg17.6|0011",
+    "VSEE_CATALOG_PG176_SUPABASE_0012|sha256:bfa3af8a518afc2a3c21d6198ec7952dc0331be28c976577591ba7502d76103f|0012-current-lineage-supabase-pg17.6|0012",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0012|sha256:79920418a853b7e68db577bc1b7ed96a544e4551561b3abaea37ce00f26c57e9|0012-bridged-lineage-supabase-pg17.6|0012",
+    "VSEE_CATALOG_PG176_SUPABASE_0013|sha256:23d76cd612b467d847c7147da1975c8954772249d8601c15736eda3df98596c4|0013-current-lineage-supabase-pg17.6|0013,0014,0015",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013|sha256:b230c80db12cb047f27ddc70ef8bd6b7f062dd9415cda7685430bc10d4a21594|0013-bridged-lineage-supabase-pg17.6|0013,0014,0015",
+    "VSEE_CATALOG_PG176_SUPABASE_0016|sha256:d0334555e38278e3f0ed5383af912a9e61cf243668c851e5480ed5ccd5ba8097|0016-current-lineage-supabase-pg17.6|0016",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016|sha256:a1f4bb94b663e7e2e7a6b43d5adb77e65ede7d020a5cc568664634c1993a7eec|0016-bridged-lineage-supabase-pg17.6|0016",
+    "VSEE_CATALOG_PG176_SUPABASE_0017|sha256:e0c03d0415c41bc172809c66e59560fdfa593b40c9225705b97d3a3092b77081|0017-current-lineage-supabase-pg17.6|0017",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017|sha256:be5e711190b6dfe645231c71fb54863cf2477bc0da6a08f51196babcf13218c2|0017-bridged-lineage-supabase-pg17.6|0017",
+    "create-variant-refused",
+  ]);
 });
 
 async function createMigrationRepositoryFixture(t: test.TestContext): Promise<{
