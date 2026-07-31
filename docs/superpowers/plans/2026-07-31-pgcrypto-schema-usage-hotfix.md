@@ -43,15 +43,16 @@ select public.get_analysis_eligible_snapshot('workspace_empty')->>'count';
 reset role;
 ```
 
-The test must also assert:
+The test must seed the Supabase-shaped pre-existing grants:
 
 ```sql
-select
-  has_schema_privilege('vsee_registry_owner', 'extensions', 'USAGE')
-  and not has_schema_privilege('anon', 'extensions', 'USAGE')
-  and not has_schema_privilege('authenticated', 'extensions', 'USAGE')
-  and not has_schema_privilege('service_role', 'extensions', 'USAGE');
+grant usage on schema extensions to anon, authenticated, service_role;
 ```
+
+It must prove those three existing privileges remain unchanged, that only
+`vsee_registry_owner` gains the missing schema access, and that `anon` and
+`authenticated` still cannot execute
+`public.get_analysis_eligible_snapshot(text)`.
 
 - [ ] **Step 2: Run the focused test and verify RED**
 
@@ -104,7 +105,9 @@ Add the exact `0018_pgcrypto_registry_schema_usage` journal entry and include th
 
 - [ ] **Step 4: Run the focused test and verify GREEN**
 
-Run the same focused command. Expected: PASS, including the service-role snapshot call and negative grants for public API roles.
+Run the same focused command. Expected: PASS, including the service-role
+snapshot call, unchanged Supabase-shaped schema privileges, and denied
+snapshot execution for `anon`／`authenticated`.
 
 - [ ] **Step 5: Commit Task 1**
 
