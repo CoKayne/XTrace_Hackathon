@@ -1041,6 +1041,10 @@ with schema_presence(value) as (
         and lower(pg_catalog.pg_get_functiondef(procedure_record.oid))
           like '%on conflict (workspace_id, id)%'
     ) as complete
+), registry_owner as (
+  select oid
+  from pg_catalog.pg_roles
+  where rolname = 'vsee_registry_owner'
 ), role_exact as (
   select exists (
     select 1 from pg_catalog.pg_roles
@@ -1058,7 +1062,7 @@ with schema_presence(value) as (
     or exists (
       select 1
       from pg_catalog.pg_auth_members as membership
-      where membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+      where membership.roleid = (select oid from registry_owner)
         and membership.member = (
           select oid from pg_catalog.pg_roles where rolname = current_user
         )
@@ -1073,15 +1077,15 @@ with schema_presence(value) as (
     select 1
     from pg_catalog.pg_auth_members as membership
     where (
-      membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
-      or membership.member = 'vsee_registry_owner'::pg_catalog.regrole
+      membership.roleid = (select oid from registry_owner)
+      or membership.member = (select oid from registry_owner)
     ) and not (
       not (
         select rolsuper
         from pg_catalog.pg_roles
         where rolname = current_user
       )
-      and membership.roleid = 'vsee_registry_owner'::pg_catalog.regrole
+      and membership.roleid = (select oid from registry_owner)
       and membership.member = (
         select oid from pg_catalog.pg_roles where rolname = current_user
       )
@@ -1092,8 +1096,11 @@ with schema_presence(value) as (
       and not membership.set_option
     )
   )
-  and not pg_catalog.has_schema_privilege(
-    'vsee_registry_owner', 'public', 'CREATE'
+  and coalesce(
+    not pg_catalog.has_schema_privilege(
+      (select oid from registry_owner), 'public', 'CREATE'
+    ),
+    false
   ) as complete
 ), rls_exact as (
   select not exists (

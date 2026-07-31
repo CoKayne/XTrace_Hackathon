@@ -7,6 +7,7 @@ import {
   existsSync,
   mkdtempSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -229,6 +230,16 @@ function readCatalogManifest(database: string): Array<Record<string, unknown>> {
 function readCatalogFingerprint(database: string): string {
   const manifest = readCatalogManifestJson(database);
   return `sha256:${createHash("sha256").update(manifest).digest("hex")}`;
+}
+
+function readBaselineStateSql(migrationId: "0007" | "0008" | "0009"): string {
+  const source = readFileSync(bootstrapPath, "utf8");
+  const marker = `-- vsee-baseline-state: ${migrationId}`;
+  const start = source.indexOf(marker);
+  assert.notEqual(start, -1, `Missing ${migrationId} baseline-state SQL`);
+  const end = source.indexOf("\nSQL", start);
+  assert.notEqual(end, -1, `Unterminated ${migrationId} baseline-state SQL`);
+  return source.slice(start, end);
 }
 
 function dropRegistryOwnerRole(): void {
@@ -546,6 +557,67 @@ test(
         "t",
       );
     });
+  },
+);
+
+test(
+  "the 0009 baseline inspection classifies exact pre-0009 state when owner roles are absent",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
+    withTemporaryDatabase((database) => {
+      installPrototypeSchema(database);
+      applySql(database, bridgePath);
+      applySql(database, workspaceCompositePath);
+
+      assert.equal(
+        executeSql(database, `
+          select count(*)
+          from pg_catalog.pg_roles
+          where rolname in (
+            'vsee_registry_owner', 'vsee_underwriting_owner'
+          );
+        `),
+        "0",
+      );
+      assert.equal(
+        executeSql(database, readBaselineStateSql("0009")),
+        "absent",
+      );
+    });
+  },
+);
+
+test(
+  "the 0009 baseline inspection remains fail closed for unsafe owner membership",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
+    try {
+      withTemporaryDatabase((database) => {
+        installPrototypeSchema(database);
+        applySql(database, bridgePath);
+        applySql(database, workspaceCompositePath);
+        applySql(database, registryPath);
+
+        assert.equal(
+          executeSql(database, readBaselineStateSql("0009")),
+          "complete",
+        );
+        executeSql(
+          database,
+          "grant vsee_registry_owner to service_role;",
+        );
+        assert.equal(
+          executeSql(database, readBaselineStateSql("0009")),
+          "partial",
+        );
+      });
+    } finally {
+      dropRegistryOwnerRole();
+    }
   },
 );
 

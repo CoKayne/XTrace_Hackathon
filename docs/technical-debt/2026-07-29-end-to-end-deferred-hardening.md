@@ -601,6 +601,27 @@
   - `NOCREATEROLE` fixture 在 bridge／migration ledger／schema 都零變更的情況
     下失敗；合法 superuser 與 non-superuser `CREATEROLE` fixture 維持通過。
 
+### TD-DB-004：Forward migration 的缺失 owner-role 診斷仍使用直接 cast
+
+- **證據**
+  - 0010、0011、0012、0013、0014 與 0016 的 owner-role attestation 仍包含
+    `'<owner-role>'::regrole`。若已完成 0009 後又有人從 cluster 刪除必要 owner
+    role，下一個 migration 會以 PostgreSQL `42704 role does not exist` 中止，
+    而不是回傳專案定義的 attestation 訊息。
+- **風險**
+  - Production launcher 只允許從 owner role 已存在且通過 exact catalog 檢查的
+    0009+ stage 前進，因此這不是 unsafe acceptance 或權限繞過；異常 catalog
+    仍會 fail closed。風險限於錯誤診斷品質與維護時段可用性。
+- **暫時控制**
+  - Launcher 的 exact stage fingerprint 先攔截 owner role 遺失；維運時保留原始
+    SQLSTATE 與 catalog fingerprint，禁止在未釐清 drift 前直接續跑。
+- **完整修正**
+  - 各 forward migration 先以 `pg_roles` 解析 owner OID，再用 OID 執行 membership
+    檢查；OID 不存在時主動拋出一致、可操作的 attestation exception。
+- **完成條件**
+  - 每個 forward owner preflight 都有 missing-role fixture，確認零 schema mutation、
+    明確 attestation 訊息，且 hostile membership 仍 fail closed。
+
 ## 5. 主線仍必須遵守的最低安全界線
 
 以下不是技術債，任何加速實作都不能移除：
