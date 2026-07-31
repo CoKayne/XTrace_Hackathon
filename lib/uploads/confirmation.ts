@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { z } from "zod";
 
 import type {
   ExtractionPreview,
@@ -52,6 +53,57 @@ export interface UploadPreviewDto {
 export const IMAGE_WITHOUT_XTRACE_MEMORY_NOTICE =
   "Ready for underwriting from canonical image evidence. "
   + "No XTrace memory was created because no exact quotation was available.";
+
+const INVALID_PREVIEW_LOCATOR_MESSAGE =
+  "Upload preview contains invalid evidence locators.";
+
+const PersistedPreviewFactLineageSchema = z.object({
+  excerpt: z.string().min(1).nullable(),
+  locator: z.discriminatedUnion("kind", [
+    z.strictObject({
+      kind: z.literal("text_range"),
+      start: z.number().int().nonnegative(),
+      end: z.number().int().positive(),
+    }),
+    z.strictObject({
+      kind: z.literal("pdf_page"),
+      page: z.number().int().positive(),
+      excerpt: z.string().min(1),
+    }),
+    z.strictObject({
+      kind: z.literal("image"),
+      imageIndex: z.literal(0),
+    }),
+  ]),
+}).superRefine((fact, context) => {
+  if (
+    fact.locator.kind === "text_range"
+    && (
+      fact.excerpt === null
+      || fact.locator.end <= fact.locator.start
+    )
+  ) {
+    context.addIssue({
+      code: "custom",
+      message: INVALID_PREVIEW_LOCATOR_MESSAGE,
+    });
+  }
+  if (
+    fact.locator.kind === "pdf_page"
+    && fact.excerpt !== fact.locator.excerpt
+  ) {
+    context.addIssue({
+      code: "custom",
+      message: INVALID_PREVIEW_LOCATOR_MESSAGE,
+    });
+  }
+  if (fact.locator.kind === "image" && fact.excerpt !== null) {
+    context.addIssue({
+      code: "custom",
+      message: INVALID_PREVIEW_LOCATOR_MESSAGE,
+    });
+  }
+});
 
 export type UploadRecoveryFields = {
   dealId: string | null;
@@ -216,6 +268,9 @@ export function createUploadConfirmationService(dependencies: {
             "Confirmation requires at least one source-backed fact.",
           );
         }
+        const evidenceLocators = upload.extractionPreview.facts.map(
+          validatedEvidenceLocator,
+        );
 
         const identity = await resolveDealIdentity({
           workspaceId: input.workspaceId,
@@ -263,14 +318,17 @@ export function createUploadConfirmationService(dependencies: {
         }
 
         const confirmedAt = now().toISOString();
-        const evidence = upload.extractionPreview.facts.map((fact, index) => ({
-          id: `evidence_${sourceRevisionId}_${index}`,
-          fact: fact.text,
-          excerpt: fact.excerpt,
-          page: fact.locator.kind === "pdf_page" ? fact.locator.page : 1,
-          locator: evidenceLocator(fact),
-          structured: completeStructuredFact(fact),
-        }));
+        const evidence = upload.extractionPreview.facts.map((fact, index) => {
+          const locator = evidenceLocators[index]!;
+          return {
+            id: `evidence_${sourceRevisionId}_${index}`,
+            fact: fact.text,
+            excerpt: fact.excerpt,
+            page: locator.kind === "pdf_page" ? locator.page : 1,
+            locator,
+            structured: completeStructuredFact(fact),
+          };
+        });
         const canonicalEvidence = evidence.map((item) =>
           canonicalSourceEvidence({
             item,
@@ -289,6 +347,7 @@ export function createUploadConfirmationService(dependencies: {
           status: identity.status,
           sourceId,
           sourceRevisionId,
+          evidenceLocators,
         });
         const memoryLineage = {
           evidence: Object.fromEntries(bundle.facts.flatMap((fact) =>
@@ -414,27 +473,39 @@ export function createUploadConfirmationService(dependencies: {
   };
 }
 
-function evidenceLocator(
+function validatedEvidenceLocator(
   fact: ExtractionPreview["facts"][number],
 ): SourceEvidenceInput["locator"] {
-  if (fact.locator.kind === "image") {
+  const lineage = PersistedPreviewFactLineageSchema.safeParse(fact);
+  if (!lineage.success) {
+    throw new UploadConfirmationConflictError(
+      INVALID_PREVIEW_LOCATOR_MESSAGE,
+    );
+  }
+  if (
+    lineage.data.locator.kind === "pdf_page"
+    && fact.locator.kind === "pdf_page"
+  ) {
+    return fact.locator;
+  }
+  if (
+    lineage.data.locator.kind === "image"
+    && fact.locator.kind === "image"
+  ) {
     return {
       kind: "image",
       imageIndex: fact.locator.imageIndex,
       region: null,
     };
   }
-  if (!fact.excerpt) {
+  if (
+    lineage.data.locator.kind !== "text_range"
+    || fact.locator.kind !== "text_range"
+    || fact.excerpt === null
+  ) {
     throw new UploadConfirmationConflictError(
-      "Text evidence requires an exact source excerpt.",
+      INVALID_PREVIEW_LOCATOR_MESSAGE,
     );
-  }
-  if (fact.locator.kind === "pdf_page") {
-    return {
-      kind: "pdf_page",
-      page: fact.locator.page,
-      excerpt: fact.excerpt,
-    };
   }
   return {
     kind: "text_range",
@@ -703,6 +774,7 @@ function memoryBundle(input: {
   status: DealStatus;
   sourceId: string;
   sourceRevisionId: string;
+  evidenceLocators: SourceEvidenceInput["locator"][];
 }): DealMemoryBundle {
   const filename = safeFilename(input.upload.filename);
   return {
@@ -711,6 +783,7 @@ function memoryBundle(input: {
     status: input.status,
     facts: input.upload.extractionPreview!.facts.flatMap((fact, index) => {
       const evidenceId = `evidence_${input.sourceRevisionId}_${index}`;
+      const locator = input.evidenceLocators[index]!;
       if (fact.excerpt) {
         return [{
             text: fact.text,
@@ -719,14 +792,13 @@ function memoryBundle(input: {
               documentId: input.sourceId,
               provenance: "source_document" as const,
               title: filename,
-              page:
-                fact.locator.kind === "pdf_page" ? fact.locator.page : 1,
+              page: locator.kind === "pdf_page" ? locator.page : 1,
               excerpt: fact.excerpt,
             }],
           }];
       }
       const structured = completeStructuredFact(fact);
-      if (fact.locator.kind !== "image" || !structured) return [];
+      if (locator.kind !== "image" || !structured) return [];
       const projected = structuredImageDealFact({
         evidence: {
           id: evidenceId,
@@ -739,7 +811,7 @@ function memoryBundle(input: {
           value: structured.value,
           unit: structured.unit,
           currency: structured.currency,
-          locator: fact.locator,
+          locator,
           acceptedForGate: true,
         },
         title: filename,

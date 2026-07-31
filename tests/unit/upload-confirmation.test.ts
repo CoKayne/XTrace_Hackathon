@@ -334,6 +334,92 @@ test("PDF confirmation preserves the exact page locator", async () => {
   }]);
 });
 
+test("confirmation rejects an inconsistent persisted PDF locator before registry writes", async () => {
+  const excerpt =
+    "Second-page evidence: Acme signed three enterprise customers.";
+  const uploads = await awaitingUpload(
+    createMemoryUploadedDocumentsRepository(),
+    {
+      ...preview,
+      facts: [{
+        text: "Acme signed three enterprise customers.",
+        excerpt,
+        locator: {
+          kind: "pdf_page",
+          page: 2,
+          excerpt: "provider-secret mismatched persisted excerpt",
+        },
+      }],
+    },
+  );
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const service = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+    evidencePacks: createMemoryEvidencePacksRepository(),
+  });
+
+  await assert.rejects(service.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  }), {
+    name: "UploadConfirmationConflictError",
+    message: "Upload preview contains invalid evidence locators.",
+  });
+  assert.equal(sources.inspect().revisions.length, 0);
+  assert.equal(deals.inspect().assignments.length, 0);
+  assert.equal((await uploads.get({
+    workspaceId: "workspace_1",
+    id: "upload_1",
+  }))?.status, "awaiting_confirmation");
+});
+
+test("confirmation rejects a malformed persisted PDF locator with a fixed error", async () => {
+  const excerpt =
+    "Second-page evidence: Acme signed three enterprise customers.";
+  const uploads = await awaitingUpload(
+    createMemoryUploadedDocumentsRepository(),
+    {
+      ...preview,
+      facts: [{
+        text: "Acme signed three enterprise customers.",
+        excerpt,
+        locator: { kind: "pdf_page", page: 0, excerpt },
+      }],
+    },
+  );
+  const sources = createMemorySourceRegistry();
+  const deals = createMemoryDealRegistry({ sourceRegistry: sources });
+  const service = createUploadConfirmationService({
+    uploads,
+    sources,
+    deals,
+    evidencePacks: createMemoryEvidencePacksRepository(),
+  });
+
+  await assert.rejects(service.confirm({
+    workspaceId: "workspace_1",
+    uploadId: "upload_1",
+    assignedByUserId: "user_1",
+    choice: {
+      companyName: "Acme",
+      assignment: { kind: "new_deal", dealStatus: "evaluating" },
+    },
+  }), {
+    name: "UploadConfirmationConflictError",
+    message: "Upload preview contains invalid evidence locators.",
+  });
+  assert.equal(sources.inspect().revisions.length, 0);
+  assert.equal(deals.inspect().assignments.length, 0);
+});
+
 test("image confirmation preserves a null excerpt and accepts only its exact structured locator fact", async () => {
   const imageFact: ExtractionPreview["facts"][number] = {
     text: "The image reports ARR of $2,000,000 USD.",

@@ -12,6 +12,7 @@
     "test": "node --import tsx --test --test-concurrency=1 \"tests/**/*.test.ts\"",
     "test:migrations": "REQUIRE_POSTGRES_MIGRATION_TESTS=1 node --import tsx --test --test-concurrency=1 tests/integration/report-next-step-migration.test.ts tests/integration/company-analyses-migration.test.ts tests/integration/workspace-composite-migration.test.ts tests/integration/schema-migrations.test.ts tests/integration/underwriting-reference-migration.test.ts tests/integration/upload-confirmation-migration.test.ts tests/integration/action-draft-migration.test.ts tests/integration/framework-catalog-checkpoint-migration.test.ts",
     "test:legacy": "npm run build && node --test tests/rendered-html.test.mjs",
+    "verify:web-parser-boundary": "node scripts/verify-web-parser-boundary.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "tsc --noEmit",
     "worker": "tsx worker/runner.ts",

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -127,7 +127,18 @@ test("Anthropic non-retryable 4xx remains internal", async () => {
   })));
 });
 
-test("document parsers stay in the Node worker and out of the production Web bundle", async () => {
+const verifyFreshWebBundle =
+  process.env.VSEE_VERIFY_FRESH_WEB_BUNDLE === "1";
+
+test("document parsers stay in the Node worker and out of a fresh production Web bundle", {
+  skip: verifyFreshWebBundle
+    ? false
+    : "run npm run verify:web-parser-boundary for a fresh production build",
+}, async () => {
+  const buildStartedAt = Number(
+    process.env.VSEE_FRESH_WEB_BUNDLE_STARTED_AT,
+  );
+  assert.equal(Number.isFinite(buildStartedAt), true);
   const workerSource = await readFile(
     path.join(process.cwd(), "worker", "extract-upload.ts"),
     "utf8",
@@ -138,8 +149,14 @@ test("document parsers stay in the Node worker and out of the production Web bun
   const clientFiles = await collectFiles(path.join(process.cwd(), "dist", "client"));
   assert.ok(
     clientFiles.length > 0,
-    "run npm run build before checking the production Web bundle",
+    "the fresh production build must create client assets",
   );
+  for (const file of clientFiles) {
+    assert.ok(
+      (await stat(file)).mtimeMs >= buildStartedAt,
+      `production client asset predates the current verification build: ${file}`,
+    );
+  }
   const clientBundle = (
     await Promise.all(clientFiles.map((file) => readFile(file, "utf8")))
   ).join("\n");
