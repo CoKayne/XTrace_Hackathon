@@ -1,117 +1,100 @@
-# VSee Demo Runbook（2026-07-29 release-readiness 版）
+# VSee public-sandbox operations runbook
 
-> **公開網址（交給評審的連結）**：
-> https://vsee-vc-intelligence.dream86625.chatgpt.site
->
-> 公開 Sites Web 使用 `public_demo`：匿名、synthetic、read-only。它不接受
-> upload、reset、run、policy 或 action-draft mutation，也不承載長時間運作的
-> Worker；所以該站 health 的 `worker=false` 是預期狀態，不能拿它證明
-> product manual scan 已可執行。
->
-> 真正的 product acceptance 必須在 `VSEE_DEPLOYMENT_MODE=product`、
-> `VSEE_TRUSTED_AUTH_PROVIDER=openai_sites` 的 Web，加上獨立部署且健康的
-> Worker 上執行。Web 與 Worker 必須來自同一 validated source version、
-> 共用完整 `0000`–`0016` schema、研究 corpus、模型與 provider 設定。
+The production Sites URL is a **public, no-login test sandbox** running
+`VSEE_DEPLOYMENT_MODE=public_sandbox`. Do not upload confidential, personal,
+customer, or production-sensitive data. Anyone with the URL can use the
+sandbox workspace. `public_demo` remains the anonymous, synthetic, read-only
+fallback mode; `product` remains a separately authenticated environment.
 
-> Reports 頁**只顯示最新一份報告**（歷史仍在資料庫與 API，UI 不再列出）。
-> belief_revised 門檻：medium 信心 = 加權分數 ≥ 0.50（2026-07-25 產品決策）。
-> 分數不再每輪浮動：同樣證據的判斷會存進 `reasoner_judgments` 表
-> （migration 0006），之後掃描直接重放同一份判斷；只有證據真的變了
-> 才會重新判斷。worker 加 `REASONER_JUDGMENT_REFRESH=1` 可強制重判
-> （銀行模式，找到好結果後拿掉此變數即凍結）。
+## Before the cutover
 
-## Product 開演前 10 分鐘檢查清單
+Use the exact reviewed commit for both the Sites build and the Worker. Keep the
+Sites Web process and long-running Worker separate, but pointed at the same
+Supabase workspace. Store credentials only in the deployer's macOS Keychain;
+never paste a value into the shell, a runbook, chat, or a `.env` file.
 
-1. 啟動獨立 Worker（本機只適合彩排；正式 product 環境使用持續運作的
-   Worker service）。金鑰從 macOS Keychain 讀取，不會顯示：
+To add or update the database connection, run this locally and enter the value
+only at the Keychain prompt:
 
 ```bash
-cd ~/Documents/Codex/2026-07-21/referenced-chatgpt-conversation-this-is-untrusted/XTrace_Hackathon
-export SUPABASE_URL="$(security find-generic-password -a "$USER" -s vsee-supabase-url -w)"
-export SUPABASE_SERVICE_ROLE_KEY="$(security find-generic-password -a "$USER" -s vsee-supabase-service-role-key -w)"
-export ANTHROPIC_API_KEY="$(security find-generic-password -a "$USER" -s vsee-anthropic-api-key -w)"
-export XTRACE_API_KEY="$(security find-generic-password -a "$USER" -s vsee-xtrace-api-key -w)"
-export MARKET_OFFICIAL_FEEDS_JSON='[{"id":"sequoia-official","name":"Sequoia Capital official insights","url":"https://www.sequoiacap.com/feed/","publisher":"Sequoia Capital","eventType":"funding","confidence":"medium"},{"id":"lsvp-official","name":"Lightspeed Venture Partners insights","url":"https://lsvp.com/feed/","publisher":"Lightspeed Venture Partners","eventType":"funding","confidence":"medium"}]'
-export MARKET_PUBLISHER_FEEDS_JSON='[{"id":"a16z-news","name":"a16z News","url":"https://www.a16z.news/feed","publisher":"Andreessen Horowitz","eventType":"trend","confidence":"medium"},{"id":"marijuana-moment","name":"Marijuana Moment policy news","url":"https://www.marijuanamoment.net/feed/","publisher":"Marijuana Moment","eventType":"regulatory","confidence":"medium"},{"id":"fierce-healthcare","name":"Fierce Healthcare news","url":"https://www.fiercehealthcare.com/rss/xml","publisher":"Fierce Healthcare","eventType":"commercial","confidence":"medium"},{"id":"supply-chain-dive","name":"Supply Chain Dive news","url":"https://www.supplychaindive.com/feeds/news/","publisher":"Supply Chain Dive","eventType":"commercial","confidence":"medium"},{"id":"retail-dive","name":"Retail Dive news","url":"https://www.retaildive.com/feeds/news/","publisher":"Retail Dive","eventType":"commercial","confidence":"medium"}]'
-npm run worker
+security add-generic-password -U -a "$USER" -s "vsee-supabase-db-url" -w
 ```
 
-2. 使用同一 validated source version 的 product Web。真正 acceptance 的
-   OpenAI Sites 身分標頭必須由平台注入；直接在本機 `npm run dev`、手動偽造
-   header 不能算通過 product authentication。公開 `public_demo` Sites 也不能
-   代替 product acceptance。
+The Worker launcher obtains its other required values from Keychain services:
+`vsee-supabase-url`, `vsee-supabase-service-role-key`,
+`vsee-anthropic-api-key`, `vsee-xtrace-api-key`, and
+`vsee-document-url-signing-secret`. `mmk_` XTrace keys do not require an
+XTrace organization ID.
 
-3. 登入 product Sites 後，用同一個已驗證的瀏覽器 session 查看頁面 health
-   狀態（或在該 session 內讀取 `/api/settings/health`）。`postgres` 與
-   `worker` 全部 true 才能按 manual run；未帶平台 Sites 身分的本機
-   `curl` 會正確回 401，不能當 acceptance probe。
+## Database migration
 
-## Demo 編排：乾淨開場、現場揭曉（2026-07-25 定案）
+From the checked-out reviewed commit, apply the forward chain with:
 
-原則：**頁面在分析跑完之前不知道結果**。belief revision 的數字與
-PRIORITY RESULT 區塊只在掃描真的產出時才出現；開場時 Reports 頁是
-「No intelligence report yet」的空狀態，數字是台上按掃描後當場跳出的。
-（2026-07-25 彩排實測：空狀態 → 掃描 16 秒 → 1906 belief_revised
-medium 52.5% 出現，與凍結判斷一致。）
+```bash
+./scripts/apply-production-migrations.zsh
+```
 
-**重置改為手動：頂欄的 RESET DEMO 按鈕**會清空所有掃描產物——報告、
-分析、已完成的 run 歷史、市場事件。保留 Deal 語料、來源、XTrace 記憶
-與判斷快取；排隊中/執行中的掃描不受影響。頁面重整**不會**清資料
-（這段只適用 product；公開 `public_demo` 根本不開放 reset）。
+The launcher never prints the database URL. It requires the complete `0009`
+boundary, inventories the `0010`–`0017` sentinels before changing anything,
+refuses any gap, applies only from the first missing migration in order, and
+re-verifies every sentinel. Resolve a failed sentinel or gap before retrying;
+do not skip a file or run a later migration manually.
 
-1. **開演前 1-2 小時彩排**：按 WAKE AGENT & SCAN MARKET。記下結果——
-   證據沒變的話台上會得到一模一樣的報告；有新證據則是誠實的新判斷。
-2. **上台前**：按一次 **RESET DEMO**，所有頁面回到不知情狀態
-   （Reports =「No intelligence report yet」、Overview =「No report yet」）。
-3. **台上**：按 WAKE AGENT & SCAN MARKET → 進度畫面走完整管線
-   （市場掃描 → XTrace 記憶召回 → 19 家逐一分析 → 報告）→ 約 16-30 秒
-   後報告生成，belief revision 第一次出現在畫面上。
-4. 手滑清掉了也沒事：再按一次掃描，判斷重放會在約 16 秒內重現
-   同一份報告。
+## Start the Worker
 
-## 展示順序
+Start one foreground Worker from the same reviewed commit:
 
-1. Overview：19 筆 Deal、Sample decision record 標籤、XTrace 開關。
-2. Reports 頁：現在是空的——「系統還沒有任何結論」。
-3. **現場按 WAKE AGENT & SCAN MARKET**（主秀）：進度畫面走完整管線，
-   約 20-30 秒後報告當場生成。
-4. 講解跳出的 BELIEF REVISED：Then（當初 pass 的決策脈絡，來自 XTrace
-   recall）對 Now（真實市場事件，引用點開是真的 federalregister.gov /
-   官方來源），建議行動走白名單；低於門檻的相關訊號誠實標 monitor。
+```bash
+./scripts/run-worker-from-keychain.zsh
+```
 
-## 現場掃描的話術（重要）
+It uses `public_sandbox`, the `workspace_demo` workspace, the production
+XTrace API endpoint, and the configured public market feeds. It writes its
+combined output only to `.runtime/worker.log`, which is ignored by Git. Stop
+the foreground process before starting another Worker so workers do not contend
+for the same queue.
 
-結果每次會不同（真實市場 + 嚴格證據門檻）。事先講：
-「系統只在證據真正達標時才升級為 belief revision——低於門檻的相關訊號誠實
-標為 monitor，完全無關就說 no material change。它寧可說『這週沒有推翻決策
-級的證據』也不編造推薦。」現場只出 monitor 時，這句話就是加分項。
+## Health gate before Scan
 
-## 疑難排解
+Open the public Sites URL and confirm its health display shows all required
+integrations ready: PostgreSQL, the Worker heartbeat, Anthropic, and XTrace
+when the XTrace toggle is on. The **WAKE AGENT & SCAN MARKET** action must stay
+disabled until that health gate passes. If the Worker is not healthy, inspect
+`.runtime/worker.log`, correct the Keychain/configuration issue, restart the
+single Worker, and wait for its heartbeat instead of bypassing the check.
 
-- 公開 `public_demo` health 的 worker=false：預期狀態，不要偽造 heartbeat。
-- product health 的 worker=false：Worker 沒在跑或剛重啟，等 15 秒或重跑
-  步驟 1。
-- POST /api/runs 回 503：fail-closed 機制，同上，等 worker 心跳恢復。
-- 換新資料庫部署時：migrations 必須依序套用 0000 到 0016（README 已更新）。
-- 0016 之後 `service_role` 只能以欄位級 INSERT 建立 immutable upload
-  staging／bundled corpus 列；claim、lease、transition、confirmation 與
-  canonical evidence 寫入全部走受控 RPC。舊版純文字確認會保守回填，
-  無法證明逐字來源的舊版圖片摘要不會被冒充為引用。
-- 彩排結果不理想且證據已變（凍結模式會把第一次的新判斷存起來重放）：
-  刪掉最新一列判斷快取，強制下一掃重新判斷：
-  `curl -s "$SUPABASE_URL/rest/v1/reasoner_judgments?select=fingerprint&order=updated_at.desc&limit=1" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"`
-  取得 fingerprint 後
-  `curl -s -X DELETE "$SUPABASE_URL/rest/v1/reasoner_judgments?fingerprint=eq.<fp>" -H "apikey: $SRK" -H "Authorization: Bearer $SRK"`
-- 兩個 worker 同時在跑會搶工作：`ps aux | grep runner.ts` 檢查，多的殺掉。
+## Public-sandbox test flow
 
-## 關鍵事實（評審問答備用）
+1. Upload a non-confidential PDF or DOCX source.
+2. Wait for Worker extraction, review the extracted evidence, and confirm the
+   source-to-Deal assignment.
+3. Enable XTrace when memory-backed recall is part of the test.
+4. Run **WAKE AGENT & SCAN MARKET** after the health gate is green.
+5. Review the generated report and its traceable evidence rather than treating
+   the sandbox result as a customer investment decision.
 
-- XTrace 整合：真連線 api.production.xtrace.ai，ingest 每 Deal 一份 bundle，
-  recall 每 Deal 一條內容化查詢（25 req/min 分散式限流），記憶 id 全部解析回
-  本機來源 lineage 才能當證據。
-- 誠實三層防線：逐字 excerpt grounding、確定性 overlap 驗證、白名單化的
-  建議行動。分析中沒有任何一句話能脫離已存證據。
-- XTrace 失敗絕不靜默 fallback：該 Deal 標 analysis_unavailable、報告標
-  incomplete。
-- 信心門檻：加權分數 ≥ 0.78 = high、≥ 0.50 = medium；belief_revised 需要
-  medium 以上，低於門檻的相關訊號一律 monitor。
+The report includes the market-scan result and company analyses; opening a
+candidate exposes these named underwriting sections: **What happened?**,
+**Changed assumptions**, **Which historical companies are affected?**, and
+**Company underwriting**. The Company underwriting section identifies CORE
+FRAMEWORK versus NAMED ADVISORY judgments, the advisory pack/version,
+component cards, exact source lineage, supporting/counterevidence Evidence Pack
+IDs, limitations, and independent disagreements. Named advisory viewpoints have
+formal decision weight zero.
+
+## Reset test view
+
+**RESET TEST VIEW** advances the sandbox generation marker. It clears the
+current test view's scan-derived reports, analyses, runs, and observed market
+events without deleting durable source material, confirmed uploads, XTrace
+memory, or framework definitions. A browser refresh does not reset anything;
+queued or running work is not a substitute for a clean reset, so wait for a
+quiet Worker before starting a new test flow.
+
+## Rollback
+
+If the public-sandbox cutover fails, stop the Worker, restore the previously
+saved Sites version, and change the Sites runtime mode back to
+`VSEE_DEPLOYMENT_MODE=public_demo`. Verify the restored public site is the
+anonymous synthetic read-only demo. **Do not roll back database migrations:**
+the `0010`–`0017` forward migrations remain applied during a Sites rollback.
