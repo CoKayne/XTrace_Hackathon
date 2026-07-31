@@ -223,11 +223,16 @@ test("operator instructions require every migration through 0017", () => {
     previous = position;
   }
   const staleMigrationRange =
-    /\bmigrations?\b[^\n.]{0,160}(?:through|to|套到|到|`?0000`?\s*(?:-|–|—|→))\s*`?(?:000[0-9]|001[0-5])`?/iu;
+    /\bmigrations?\b[^\n.]{0,160}(?:through|to|套到|到|`?0000`?\s*(?:-|–|—|→))\s*`?(?:000[0-9]|001[0-6])`?/iu;
   assert.match(
     "migrations 必須依序套用 0000 到 0006",
     staleMigrationRange,
     "operator-doc regression must recognize the active Chinese range syntax",
+  );
+  assert.match(
+    "apply migrations 0000 through 0016 in order",
+    staleMigrationRange,
+    "operator-doc regression must recognize the immediately previous release range",
   );
   for (const instruction of operatorInstructions) {
     assert.doesNotMatch(
@@ -235,6 +240,28 @@ test("operator instructions require every migration through 0017", () => {
       staleMigrationRange,
       `${instruction.path} must not retain a stale migration range`,
     );
+  }
+
+  const runbook = operatorInstructions[1]!.content;
+  const maintenanceWindowSteps = [
+    /stop (?:the )?Worker and (?:the )?Web writers/i,
+    /no active scan or upload leases?/i,
+    /database snapshot/i,
+    /bootstrap-production-baseline\.zsh/i,
+    /apply-production-migrations\.zsh/i,
+    /verify[^\n.]{0,100}`?0017`?/i,
+    /resume (?:the )?Web and (?:the )?Worker/i,
+  ];
+  let previousMaintenanceStep = -1;
+  for (const expectedStep of maintenanceWindowSteps) {
+    const match = expectedStep.exec(runbook);
+    assert.ok(match, `runbook must document maintenance step ${expectedStep}`);
+    const position = match.index;
+    assert.ok(
+      position > previousMaintenanceStep,
+      `runbook maintenance step ${expectedStep} must appear in operational order`,
+    );
+    previousMaintenanceStep = position;
   }
 
   const releaseVerification = readme.match(

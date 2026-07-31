@@ -27,7 +27,8 @@ declare
     'created_at:timestamp with time zone:true',
     'updated_at:timestamp with time zone:true'
   ];
-  status_definition text;
+  prototype_relation oid := 'public.uploaded_documents'::regclass;
+  prototype_owner oid;
 begin
   select array_agg(
     attribute.attname::text || ':'
@@ -46,45 +47,141 @@ begin
       'The uploaded_documents table is not the exact supported prototype shape';
   end if;
 
-  if not exists (
+  if exists (
+    select 1
+    from (
+      values
+        ('status', '''queued''::text'),
+        ('extracted_facts', '''[]''::jsonb'),
+        ('memory_texts', '''[]''::jsonb'),
+        ('memory_ids', '''[]''::jsonb'),
+        ('created_at', 'now()'),
+        ('updated_at', 'now()')
+    ) as expected(attname, expression)
+    left join pg_catalog.pg_attribute as attribute
+      on attribute.attrelid = prototype_relation
+      and attribute.attname = expected.attname
+      and not attribute.attisdropped
+    left join pg_catalog.pg_attrdef as default_record
+      on default_record.adrelid = attribute.attrelid
+      and default_record.adnum = attribute.attnum
+    where pg_catalog.pg_get_expr(
+      default_record.adbin,
+      default_record.adrelid
+    ) is distinct from expected.expression
+  ) or exists (
+    select 1
+    from pg_catalog.pg_attrdef as default_record
+    join pg_catalog.pg_attribute as attribute
+      on attribute.attrelid = default_record.adrelid
+      and attribute.attnum = default_record.adnum
+    where default_record.adrelid = prototype_relation
+      and attribute.attname not in (
+        'status', 'extracted_facts', 'memory_texts', 'memory_ids',
+        'created_at', 'updated_at'
+      )
+  ) then
+    raise exception
+      'The uploaded_documents prototype defaults are not supported';
+  end if;
+
+  if (
+    select count(*)
+    from pg_catalog.pg_constraint
+    where conrelid = prototype_relation
+  ) <> 5
+  or not exists (
     select 1
     from pg_catalog.pg_constraint as constraint_record
-    where constraint_record.conrelid =
-      'public.uploaded_documents'::regclass
+    where constraint_record.conrelid = prototype_relation
       and constraint_record.contype = 'p'
       and pg_catalog.pg_get_constraintdef(constraint_record.oid)
         = 'PRIMARY KEY (id)'
-  ) or not exists (
+  )
+  or not exists (
     select 1
     from pg_catalog.pg_constraint as constraint_record
-    where constraint_record.conrelid =
-      'public.uploaded_documents'::regclass
+    where constraint_record.conrelid = prototype_relation
       and constraint_record.contype = 'u'
       and pg_catalog.pg_get_constraintdef(constraint_record.oid)
         = 'UNIQUE (workspace_id, checksum)'
-  ) then
-    raise exception
-      'The uploaded_documents prototype identity constraints are not supported';
-  end if;
-
-  select pg_catalog.pg_get_constraintdef(constraint_record.oid)
-  into status_definition
-  from pg_catalog.pg_constraint as constraint_record
-  where constraint_record.conrelid = 'public.uploaded_documents'::regclass
-    and constraint_record.conname = 'uploaded_documents_status_check'
-    and constraint_record.contype = 'c';
-
-  if status_definition is null
-    or status_definition not like '%queued%'
-    or status_definition not like '%extracting%'
-    or status_definition not like '%ready%'
-    or status_definition not like '%failed%'
-    or status_definition like '%awaiting_confirmation%'
-    or status_definition like '%confirmed%'
-    or status_definition like '%ingesting_memory%'
+  )
+  or not exists (
+    select 1
+    from pg_catalog.pg_constraint as constraint_record
+    where constraint_record.conrelid = prototype_relation
+      and constraint_record.contype = 'f'
+      and pg_catalog.pg_get_constraintdef(constraint_record.oid)
+        = 'FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE'
+  )
+  or not exists (
+    select 1
+    from pg_catalog.pg_constraint as constraint_record
+    where constraint_record.conrelid = prototype_relation
+      and constraint_record.contype = 'c'
+      and pg_catalog.pg_get_constraintdef(constraint_record.oid)
+        = 'CHECK ((byte_size > 0))'
+  )
+  or not exists (
+    select 1
+    from pg_catalog.pg_constraint as constraint_record
+    where constraint_record.conrelid = prototype_relation
+      and constraint_record.contype = 'c'
+      and constraint_record.conname = 'uploaded_documents_status_check'
+      and pg_catalog.pg_get_constraintdef(constraint_record.oid)
+        = 'CHECK ((status = ANY (ARRAY['
+          || '''queued''::text, ''extracting''::text, ''ready''::text, '
+          || '''failed''::text])))'
+  )
   then
     raise exception
-      'The uploaded_documents prototype status constraint is not supported';
+      'The uploaded_documents prototype constraints are not supported';
+  end if;
+
+  if (
+    select count(*)
+    from pg_catalog.pg_index as index_record
+    left join pg_catalog.pg_constraint as constraint_record
+      on constraint_record.conindid = index_record.indexrelid
+    where index_record.indrelid = prototype_relation
+      and constraint_record.oid is null
+  ) <> 2
+  or not exists (
+    select 1
+    from pg_catalog.pg_index as index_record
+    join pg_catalog.pg_class as index_relation
+      on index_relation.oid = index_record.indexrelid
+    left join pg_catalog.pg_constraint as constraint_record
+      on constraint_record.conindid = index_record.indexrelid
+    where index_record.indrelid = prototype_relation
+      and constraint_record.oid is null
+      and index_relation.relname = 'uploaded_documents_claimable'
+      and not index_record.indisunique
+      and index_record.indpred is null
+      and pg_catalog.pg_get_indexdef(index_record.indexrelid)
+        = 'CREATE INDEX uploaded_documents_claimable ON '
+          || 'public.uploaded_documents USING btree '
+          || '(status, lease_expires_at)'
+  )
+  or not exists (
+    select 1
+    from pg_catalog.pg_index as index_record
+    join pg_catalog.pg_class as index_relation
+      on index_relation.oid = index_record.indexrelid
+    left join pg_catalog.pg_constraint as constraint_record
+      on constraint_record.conindid = index_record.indexrelid
+    where index_record.indrelid = prototype_relation
+      and constraint_record.oid is null
+      and index_relation.relname = 'uploaded_documents_workspace_created'
+      and not index_record.indisunique
+      and index_record.indpred is null
+      and pg_catalog.pg_get_indexdef(index_record.indexrelid)
+        = 'CREATE INDEX uploaded_documents_workspace_created ON '
+          || 'public.uploaded_documents USING btree '
+          || '(workspace_id, created_at DESC)'
+  ) then
+    raise exception
+      'The uploaded_documents prototype indexes are not supported';
   end if;
 
   if exists (
@@ -119,13 +216,74 @@ begin
       'Prototype uploads contain meaningful legacy payload requiring manual migration';
   end if;
 
+  select relation.relowner
+  into prototype_owner
+  from pg_catalog.pg_class as relation
+  where relation.oid = prototype_relation;
+
   if not (
-    select relation.relrowsecurity
+    select relation.relrowsecurity and not relation.relforcerowsecurity
     from pg_catalog.pg_class as relation
-    where relation.oid = 'public.uploaded_documents'::regclass
+    where relation.oid = prototype_relation
+  )
+  or exists (
+    select 1
+    from pg_catalog.pg_policy
+    where polrelid = prototype_relation
+  )
+  or exists (
+    select 1
+    from pg_catalog.pg_trigger
+    where tgrelid = prototype_relation
+      and not tgisinternal
+  )
+  or exists (
+    select 1
+    from pg_catalog.aclexplode(
+      coalesce(
+        (
+          select relation.relacl
+          from pg_catalog.pg_class as relation
+          where relation.oid = prototype_relation
+        ),
+        pg_catalog.acldefault('r', prototype_owner)
+      )
+    ) as privilege
+    where privilege.grantee <> prototype_owner
+      and not exists (
+        select 1
+        from pg_catalog.pg_roles as role_record
+        where role_record.rolname = 'service_role'
+          and role_record.oid = privilege.grantee
+      )
+  )
+  or exists (
+    select 1
+    from pg_catalog.pg_roles as role_record
+    where role_record.rolname in ('anon', 'authenticated')
+      and pg_catalog.has_table_privilege(
+        role_record.oid,
+        prototype_relation,
+        'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'
+      )
+  )
+  or (
+    exists (
+      select 1
+      from pg_catalog.pg_roles
+      where rolname = 'service_role'
+    )
+    and not pg_catalog.has_table_privilege(
+      (
+        select oid from pg_catalog.pg_roles
+        where rolname = 'service_role'
+      ),
+      prototype_relation,
+      'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'
+    )
   ) then
     raise exception
-      'The uploaded_documents prototype is missing its RLS boundary';
+      'The uploaded_documents prototype access boundary is not supported';
   end if;
 end;
 $$;
@@ -159,6 +317,35 @@ begin
     where attribute.attrelid = 'public.uploaded_documents'::regclass
       and attribute.attname = 'memory_texts'
       and not attribute.attisdropped
+  ) or not exists (
+    select 1
+    from pg_catalog.pg_constraint as constraint_record
+    where constraint_record.conrelid =
+      'public.uploaded_documents'::regclass
+      and constraint_record.conname = 'uploaded_documents_status_check'
+      and constraint_record.contype = 'c'
+      and pg_catalog.pg_get_constraintdef(constraint_record.oid)
+        = 'CHECK ((status = ANY (ARRAY['
+          || '''queued''::text, ''extracting''::text, '
+          || '''awaiting_confirmation''::text, ''confirmed''::text, '
+          || '''ingesting_memory''::text, ''ready''::text, '
+          || '''failed''::text])))'
+  ) or exists (
+    select 1
+    from public.uploaded_documents as upload
+    where upload.status not in ('queued', 'failed')
+      or upload.lease_expires_at is not null
+      or (upload.status = 'queued' and upload.worker_id is not null)
+      or upload.company_name is not null
+      or upload.headline is not null
+      or upload.xtrace_job_id is not null
+      or upload.deal_id is not null
+      or pg_catalog.jsonb_typeof(upload.extracted_facts) <> 'array'
+      or pg_catalog.jsonb_typeof(upload.memory_texts) <> 'array'
+      or pg_catalog.jsonb_typeof(upload.memory_ids) <> 'array'
+      or pg_catalog.jsonb_array_length(upload.extracted_facts) <> 0
+      or pg_catalog.jsonb_array_length(upload.memory_texts) <> 0
+      or pg_catalog.jsonb_array_length(upload.memory_ids) <> 0
   ) then
     raise exception
       'The uploaded_documents compatibility bridge postcondition failed';

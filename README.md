@@ -133,14 +133,19 @@ checkpoint replay. `0016` upgrades already-applied `0013` databases with the
 confirmed-upload source-evidence bridge, conservative legacy text-evidence
 backfill, byte-checksum preservation, immutable image evidence locators, and
 least-privilege upload/source-table grants. Legacy image summaries are not
-promoted as quotations. The bundled corpus loader retains only exact
+promoted as quotations. `0017` adds the durable public-sandbox generation
+marker and controlled reset boundary. The bundled corpus loader retains only exact
 column-level immutable INSERT grants and uses conflict-ignore writes; canonical
 runtime-upload evidence remains writable only through controlled RPCs. Do not
 start Web or Worker against a partial chain.
 
 For the existing public-sandbox production database, do not infer its starting
 point from table names alone. Run the guarded baseline bootstrap followed by
-the forward launcher:
+the forward launcher only inside the no-traffic maintenance window documented
+in [`docs/demo-runbook.md`](docs/demo-runbook.md). Stop all Web and Worker
+writes, prove the scan/upload queues are quiet, take a restorable database
+snapshot, run both launchers, and verify the chain through `0017` before
+restoring traffic:
 
 ```bash
 ./scripts/bootstrap-production-baseline.zsh
@@ -150,8 +155,8 @@ the forward launcher:
 The bootstrap recognizes only the complete current baseline or the exact safe
 early upload prototype. It retains prototype columns and rows, refuses active
 or meaningful legacy payload, and stops on any partial or gapped `0008`/`0009`
-state. See [`docs/demo-runbook.md`](docs/demo-runbook.md) for the production
-procedure.
+state. Do not bypass a refusal or run either launcher while the Web App or
+Worker can write to PostgreSQL.
 
 ```bash
 npm install
@@ -238,7 +243,7 @@ worker heartbeat.
 
 ### Worker runbook
 
-1. For a new database, apply migrations `0000` through `0016` in order; for an
+1. For a new database, apply migrations `0000` through `0017` in order; for an
    existing database, apply the migrations it is missing in order. Then seed
    the corpus before starting the Worker.
 2. Start the Worker and wait for the container health status to become

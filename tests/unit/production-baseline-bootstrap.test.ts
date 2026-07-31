@@ -18,6 +18,10 @@ const bootstrapSourcePath = new URL(
   "../../scripts/bootstrap-production-baseline.zsh",
   import.meta.url,
 ).pathname;
+const libpqServiceRendererSourcePath = new URL(
+  "../../scripts/render-private-libpq-service.mjs",
+  import.meta.url,
+).pathname;
 
 type CommandResult = { exitCode: number | null; output: string };
 
@@ -69,6 +73,10 @@ async function createFixture(t: test.TestContext): Promise<{
   await mkdir(drizzleDirectory, { recursive: true });
   await mkdir(fixtureBin, { recursive: true });
   await copyFile(bootstrapSourcePath, bootstrapPath);
+  await copyFile(
+    libpqServiceRendererSourcePath,
+    join(scriptsDirectory, "render-private-libpq-service.mjs"),
+  );
   await chmod(bootstrapPath, 0o755);
   await writeFile(
     join(sqlDirectory, "upgrade-prototype-uploaded-documents-to-0007.sql"),
@@ -116,7 +124,11 @@ sentinel_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-sentinel: \\(001[0-7]\\)
 if [ -n "$baseline_id" ]; then
   printf 'state %s\\n' "$baseline_id" >> "$FAKE_TRACE"
   if grep -qx "$baseline_id" "$FAKE_APPLIED" 2>/dev/null; then
-    printf 'complete\\n'
+    if [ "$baseline_id" = "0007" ]; then
+      printf 'bridged_safe\\n'
+    else
+      printf 'complete\\n'
+    fi
   else
     case "$baseline_id" in
       0007) printf '%s\\n' "$FAKE_0007_STATE" ;;
@@ -126,6 +138,17 @@ if [ -n "$baseline_id" ]; then
   fi
   exit 0
 fi
+case "$args" in
+  *'vsee-baseline-quiescence'*)
+    printf 'quiet\\n' >> "$FAKE_TRACE"
+    printf '%s\\n' "$FAKE_QUIET"
+    exit 0
+    ;;
+  *'vsee-registry-backfill'*)
+    printf 't\\n'
+    exit 0
+    ;;
+esac
 if [ -n "$sentinel_id" ]; then
   printf 'query %s\\n' "$sentinel_id" >> "$FAKE_TRACE"
   case ",$FAKE_FORWARD_COMPLETE," in
@@ -155,7 +178,7 @@ function fixtureEnvironment(
     tracePath: string;
     appliedPath: string;
   },
-  overrides: NodeJS.ProcessEnv = {},
+  overrides: Partial<NodeJS.ProcessEnv> = {},
 ): NodeJS.ProcessEnv {
   return {
     ...process.env,
@@ -167,6 +190,7 @@ function fixtureEnvironment(
     FAKE_0008_STATE: "complete",
     FAKE_0009_STATE: "complete",
     FAKE_FORWARD_COMPLETE: "",
+    FAKE_QUIET: "t",
     USER: "fixture-user",
     ...overrides,
   };
@@ -205,14 +229,97 @@ test("baseline bootstrap inventories first, bridges the safe prototype, then app
       "query 0015",
       "query 0016",
       "query 0017",
+      "state 0007",
+      "quiet",
       "apply 0007",
       "state 0007",
+      "state 0007",
+      "quiet",
       "apply 0008",
       "state 0008",
+      "state 0007",
+      "quiet",
       "apply 0009",
       "state 0009",
     ],
   );
+});
+
+test("baseline bootstrap refuses mutation while scans or upload leases are active", async (t) => {
+  const fixture = await createFixture(t);
+  const result = await runCommand(
+    "zsh",
+    [fixture.bootstrapPath],
+    fixtureEnvironment(fixture, {
+      FAKE_0007_STATE: "complete",
+      FAKE_0008_STATE: "absent",
+      FAKE_0009_STATE: "absent",
+      FAKE_QUIET: "f",
+    }),
+  );
+
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.output, /active scans|upload leases|maintenance/i);
+  const trace = await readFile(fixture.tracePath, "utf8");
+  assert.match(trace, /^quiet$/m);
+  assert.doesNotMatch(trace, /^apply /m);
+});
+
+test("baseline bootstrap keeps the Keychain URI out of psql argv and removes its private service file", async (t) => {
+  const fixture = await createFixture(t);
+  const argvPath = join(fixture.root, "psql-argv.log");
+  const serviceDetailsPath = join(fixture.root, "service-details.log");
+  const databaseUrl =
+    "postgresql://fixture-user:baseline-argv-secret@db.example.test:5432/postgres";
+  const originalPsqlPath = join(fixture.fixtureBin, "psql");
+  await writeExecutable(
+    originalPsqlPath,
+    `#!/bin/sh
+printf '%s\\n' "$*" >> "$FAKE_PSQL_ARGV"
+if [ -n "\${PGSERVICEFILE:-}" ] && [ ! -s "$FAKE_SERVICE_DETAILS" ]; then
+  mode=$(stat -f '%Lp' "$PGSERVICEFILE" 2>/dev/null || stat -c '%a' "$PGSERVICEFILE" 2>/dev/null)
+  pass_mode=$(stat -f '%Lp' "$PGPASSFILE" 2>/dev/null || stat -c '%a' "$PGPASSFILE" 2>/dev/null)
+  printf 'path=%s\\nmode=%s\\npass_path=%s\\npass_mode=%s\\nservice=%s\\n' "$PGSERVICEFILE" "$mode" "$PGPASSFILE" "$pass_mode" "\${PGSERVICE:-}" > "$FAKE_SERVICE_DETAILS"
+fi
+args="$*"
+baseline_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-baseline-state: \\(000[789]\\).*/\\1/p')
+sentinel_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-sentinel: \\(001[0-7]\\).*/\\1/p')
+if [ -n "$baseline_id" ]; then printf 'complete\\n'; exit 0; fi
+if [ -n "$sentinel_id" ]; then printf 't\\n'; exit 0; fi
+case "$args" in
+  *'vsee-registry-backfill'*) printf 't\\n'; exit 0 ;;
+esac
+exit 69
+`,
+  );
+
+  const result = await runCommand(
+    "zsh",
+    [fixture.bootstrapPath],
+    fixtureEnvironment(fixture, {
+      FAKE_DATABASE_URL: databaseUrl,
+      FAKE_PSQL_ARGV: argvPath,
+      FAKE_SERVICE_DETAILS: serviceDetailsPath,
+    }),
+  );
+
+  assert.equal(result.exitCode, 0);
+  assert.doesNotMatch(result.output, new RegExp(databaseUrl));
+  const argvLog = await readFile(argvPath, "utf8");
+  assert.doesNotMatch(argvLog, /baseline-argv-secret/);
+  assert.doesNotMatch(argvLog, /postgres(?:ql)?:\/\//);
+  const serviceDetails = await readFile(serviceDetailsPath, "utf8");
+  assert.match(serviceDetails, /^path=.+$/m);
+  assert.match(serviceDetails, /^mode=600$/m);
+  assert.match(serviceDetails, /^pass_path=.+$/m);
+  assert.match(serviceDetails, /^pass_mode=600$/m);
+  assert.match(serviceDetails, /^service=vsee-production$/m);
+  const serviceFilePath = serviceDetails.match(/^path=(.+)$/m)?.[1];
+  const passwordFilePath = serviceDetails.match(/^pass_path=(.+)$/m)?.[1];
+  assert.ok(serviceFilePath);
+  assert.ok(passwordFilePath);
+  await assert.rejects(readFile(serviceFilePath, "utf8"));
+  await assert.rejects(readFile(passwordFilePath, "utf8"));
 });
 
 test("baseline bootstrap refuses unsafe prototype payload and active-state drift before applying anything", async (t) => {

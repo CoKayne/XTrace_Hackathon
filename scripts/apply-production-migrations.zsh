@@ -3,9 +3,15 @@ set -euo pipefail
 
 script_directory="${0:A:h}"
 repository_root="${script_directory:h}"
+libpq_service_renderer="${script_directory}/render-private-libpq-service.mjs"
 
 if [[ ! -d "${repository_root}/drizzle" ]]; then
   print -u2 "Unable to locate the migration directory."
+  exit 1
+fi
+
+if [[ ! -f "$libpq_service_renderer" ]]; then
+  print -u2 "Unable to locate the private libpq configuration renderer."
   exit 1
 fi
 
@@ -20,6 +26,39 @@ if [[ -z "$DATABASE_URL" ]]; then
   print -u2 "Required Keychain service is empty: vsee-supabase-db-url"
   exit 1
 fi
+
+if [[ "$DATABASE_URL" == *$'\n'* || "$DATABASE_URL" == *$'\r'* ]]; then
+  print -u2 "Required Keychain service is not a valid single-line connection URI."
+  exit 1
+fi
+
+libpq_service_directory="$(
+  mktemp -d "${TMPDIR:-/tmp}/vsee-production-libpq.XXXXXXXX"
+)"
+libpq_service_file="${libpq_service_directory}/pg_service.conf"
+libpq_password_file="${libpq_service_directory}/pgpass"
+
+cleanup_libpq_service() {
+  command rm -f -- "$libpq_service_file" "$libpq_password_file"
+  command rmdir -- "$libpq_service_directory" 2>/dev/null || true
+}
+trap cleanup_libpq_service EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+chmod 700 "$libpq_service_directory"
+typeset +x DATABASE_URL
+if ! print -rn -- "$DATABASE_URL" \
+  | node "$libpq_service_renderer" "$libpq_service_file" "$libpq_password_file"; then
+  unset DATABASE_URL
+  print -u2 "Could not prepare the private database connection configuration."
+  exit 1
+fi
+unset DATABASE_URL
+export PGSERVICEFILE="$libpq_service_file"
+export PGSERVICE="vsee-production"
+export PGPASSFILE="$libpq_password_file"
 
 sentinel_sql() {
   case "$1" in
@@ -49,7 +88,9 @@ SQL
 
 inspect_sentinel() {
   local result
-  if ! result="$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -At -c "$(sentinel_sql "$1")")"; then
+  if ! result="$(
+    psql --no-password -v ON_ERROR_STOP=1 -At -c "$(sentinel_sql "$1")"
+  )"; then
     print -u2 "Could not verify migration sentinel: $1"
     return 1
   fi
@@ -114,7 +155,7 @@ for index in {$first_incomplete_index..${#migration_ids}}; do
   fi
 
   print "Applying migration ${migration_id}."
-  psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration_file"
+  psql --no-password -v ON_ERROR_STOP=1 -f "$migration_file"
   if ! inspect_sentinel "$migration_id"; then
     exit 1
   fi

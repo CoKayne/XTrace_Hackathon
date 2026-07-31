@@ -19,6 +19,10 @@ const migrationLauncherSourcePath = new URL(
   "../../scripts/apply-production-migrations.zsh",
   import.meta.url,
 ).pathname;
+const libpqServiceRendererSourcePath = new URL(
+  "../../scripts/render-private-libpq-service.mjs",
+  import.meta.url,
+).pathname;
 
 type CommandResult = { exitCode: number | null; output: string };
 
@@ -73,6 +77,10 @@ async function createMigrationRepositoryFixture(t: test.TestContext): Promise<{
     ),
   );
   await copyFile(migrationLauncherSourcePath, launcherPath);
+  await copyFile(
+    libpqServiceRendererSourcePath,
+    join(scriptsDirectory, "render-private-libpq-service.mjs"),
+  );
   await chmod(launcherPath, 0o755);
   t.after(async () => {
     await rm(root, { recursive: true, force: true });
@@ -222,6 +230,59 @@ test("production migration launcher inventories sentinels, applies from the firs
     assert.ok(applyIndex > 0, `${id} must be applied`);
     assert.equal(trace[applyIndex + 1], `query ${id}`, `${id} must be verified after apply`);
   }
+});
+
+test("production migration launcher keeps the Keychain URI out of psql argv and removes its private service file", async (t) => {
+  const { root, launcherPath } = await createMigrationRepositoryFixture(t);
+  const fixtureDirectory = join(root, "bin");
+  const argvPath = join(root, "psql-argv.log");
+  const serviceDetailsPath = join(root, "service-details.log");
+  const databaseUrl =
+    "postgresql://fixture-user:argv-secret-value@db.example.test:5432/postgres";
+  await mkdir(fixtureDirectory, { recursive: true });
+  await writeExecutable(
+    join(fixtureDirectory, "security"),
+    "#!/bin/sh\nprintf '%s' \"$FAKE_DATABASE_URL\"\n",
+  );
+  await writeExecutable(
+    join(fixtureDirectory, "psql"),
+    `#!/bin/sh
+printf '%s\\n' "$*" >> "$FAKE_PSQL_ARGV"
+if [ -n "\${PGSERVICEFILE:-}" ] && [ ! -s "$FAKE_SERVICE_DETAILS" ]; then
+  mode=$(stat -f '%Lp' "$PGSERVICEFILE" 2>/dev/null || stat -c '%a' "$PGSERVICEFILE" 2>/dev/null)
+  pass_mode=$(stat -f '%Lp' "$PGPASSFILE" 2>/dev/null || stat -c '%a' "$PGPASSFILE" 2>/dev/null)
+  printf 'path=%s\\nmode=%s\\npass_path=%s\\npass_mode=%s\\nservice=%s\\n' "$PGSERVICEFILE" "$mode" "$PGPASSFILE" "$pass_mode" "\${PGSERVICE:-}" > "$FAKE_SERVICE_DETAILS"
+fi
+printf 't\\n'
+`,
+  );
+
+  const result = await runCommand("zsh", [launcherPath], {
+    ...process.env,
+    PATH: `${fixtureDirectory}:${process.env.PATH ?? ""}`,
+    FAKE_DATABASE_URL: databaseUrl,
+    FAKE_PSQL_ARGV: argvPath,
+    FAKE_SERVICE_DETAILS: serviceDetailsPath,
+    USER: "fixture-user",
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.doesNotMatch(result.output, new RegExp(databaseUrl));
+  const argvLog = await readFile(argvPath, "utf8");
+  assert.doesNotMatch(argvLog, /argv-secret-value/);
+  assert.doesNotMatch(argvLog, /postgres(?:ql)?:\/\//);
+  const serviceDetails = await readFile(serviceDetailsPath, "utf8");
+  assert.match(serviceDetails, /^path=.+$/m);
+  assert.match(serviceDetails, /^mode=600$/m);
+  assert.match(serviceDetails, /^pass_path=.+$/m);
+  assert.match(serviceDetails, /^pass_mode=600$/m);
+  assert.match(serviceDetails, /^service=vsee-production$/m);
+  const serviceFilePath = serviceDetails.match(/^path=(.+)$/m)?.[1];
+  const passwordFilePath = serviceDetails.match(/^pass_path=(.+)$/m)?.[1];
+  assert.ok(serviceFilePath);
+  assert.ok(passwordFilePath);
+  await assert.rejects(readFile(serviceFilePath, "utf8"));
+  await assert.rejects(readFile(passwordFilePath, "utf8"));
 });
 
 test("production migration launcher rejects a later complete sentinel after a gap without applying migrations", async (t) => {

@@ -26,41 +26,83 @@ The Worker launcher obtains its other required values from Keychain services:
 `vsee-document-url-signing-secret`. `mmk_` XTrace keys do not require an
 XTrace organization ID.
 
-## Database migration
+## Production baseline maintenance window
 
 The production project may still have the early upload-extraction prototype
-instead of the final `0007` table contract. From the checked-out reviewed
-commit, first run the guarded baseline bootstrap:
+instead of the final `0007` table contract. Treat its baseline upgrade as an
+exclusive maintenance operation. Do not run either migration launcher while a
+Web request or Worker process can write to PostgreSQL.
 
-```bash
-./scripts/bootstrap-production-baseline.zsh
-```
+1. Stop the Worker and the Web writers. Stop the foreground/container Worker,
+   and disable the production Web deployment or route it to a read-only
+   maintenance response. Confirm that a browser can no longer enqueue scans,
+   upload files, confirm sources, reset the sandbox, change policy, or edit
+   drafts.
+2. Prove there are no active scan or upload leases. Run these read-only checks
+   in the Supabase SQL editor. Both result sets must contain zero rows:
 
-The bootstrap never prints the database URL. Before changing anything it
-classifies the complete pre-`0008` boundary, `0008`, `0009`, and all later
-migration sentinels. It accepts only:
+   ```sql
+   select id, status, worker_id, lease_expires_at
+   from public.scan_runs
+   where status in ('queued', 'running')
+      or lease_expires_at is not null;
 
-- a complete current `0007` boundary; or
-- the exact known prototype `uploaded_documents` shape when no row has an
-  active extraction lease/state and no row contains legacy extracted facts,
-  memory IDs/text, company identity, Deal identity, or XTrace job identity.
+   select id, status, worker_id, lease_expires_at
+   from public.uploaded_documents
+   where status in ('extracting', 'ingesting_memory')
+      or lease_expires_at is not null;
+   ```
 
-For that one safe prototype shape it adds the current extraction-preview
-contract while retaining every legacy column and row, then applies and verifies
-`0008` and `0009`. It refuses unknown, partial, unsafe, or gapped states. Do
-not bypass that refusal or apply the compatibility SQL manually.
+   If either query returns a row, abort the maintenance attempt. Do not clear a
+   lease or change a status by hand. Restore the matching reviewed application
+   version, let its Worker finish or reclaim the work, then begin a new
+   maintenance window and repeat both checks.
+3. Create a restorable database snapshot after the quiet-state checks. Use the
+   Supabase-managed backup/snapshot facility (or an independently verified
+   PostgreSQL backup), record its identifier and timestamp, and confirm that
+   the operator has permission to restore it. Do not proceed with an
+   unverified or still-running backup.
+4. With Web and Worker traffic still stopped, run the guarded baseline
+   bootstrap from the exact reviewed commit:
 
-After the bootstrap reports that `0009` is complete, apply the forward chain:
+   ```bash
+   ./scripts/bootstrap-production-baseline.zsh
+   ```
 
-```bash
-./scripts/apply-production-migrations.zsh
-```
+   The bootstrap never prints the database URL. Before changing anything it
+   classifies the complete pre-`0008` boundary, `0008`, `0009`, and all later
+   migration sentinels. It accepts only:
 
-The forward launcher also never prints the database URL. It requires the
-complete `0009` boundary, inventories the `0010`–`0017` sentinels before
-changing anything, refuses any gap, applies only from the first missing
-migration in order, and re-verifies every sentinel. Resolve a failed sentinel
-or gap before retrying; do not skip a file or run a later migration manually.
+   - a complete current `0007` boundary; or
+   - the exact known prototype `uploaded_documents` shape when no row has an
+     active extraction lease/state and no row contains legacy extracted facts,
+     memory IDs/text, company identity, Deal identity, or XTrace job identity.
+
+   For that one safe prototype shape it adds the current extraction-preview
+   contract while retaining every legacy column and row, then applies and
+   verifies `0008` and `0009`. It refuses unknown, partial, unsafe, or gapped
+   states. Do not bypass that refusal or apply the compatibility SQL manually.
+5. In the same no-traffic maintenance window, run the forward launcher:
+
+   ```bash
+   ./scripts/apply-production-migrations.zsh
+   ```
+
+   The forward launcher also never prints the database URL. It requires the
+   complete `0009` boundary, inventories the `0010`–`0017` sentinels before
+   changing anything, refuses any gap, applies only from the first missing
+   migration in order, and re-verifies every sentinel. Resolve a failed
+   sentinel or gap before retrying; do not skip a file or run a later migration
+   manually.
+6. Verify `0017` before restoring traffic. The forward launcher must report
+   that every production sentinel through `0017` is complete. Rerun it once
+   after the first successful pass and require the same all-complete result
+   with no migration applied. Repeat the two quiet-state SQL checks above; both
+   must still return zero rows.
+7. Resume the Web and the Worker only after all verification succeeds. Start
+   one Worker first, wait for its fresh PostgreSQL heartbeat, restore the Web
+   deployment/traffic, and then complete the health gate below. Retain the
+   database snapshot until the post-cutover smoke test is complete.
 
 ## Start the Worker
 

@@ -3,8 +3,10 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import {
   chmodSync,
+  copyFileSync,
   existsSync,
   mkdtempSync,
+  mkdirSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -15,6 +17,9 @@ import test from "node:test";
 
 const bootstrapPath = fileURLToPath(
   new URL("../../scripts/bootstrap-production-baseline.zsh", import.meta.url),
+);
+const libpqServiceRendererPath = fileURLToPath(
+  new URL("../../scripts/render-private-libpq-service.mjs", import.meta.url),
 );
 const bridgePath = fileURLToPath(
   new URL(
@@ -84,6 +89,61 @@ function executeSql(database: string, sql: string): string {
   ).trim();
 }
 
+function dropRegistryOwnerRole(): void {
+  const result = spawnSync(
+    "psql",
+    [
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-d",
+      "postgres",
+      "-c",
+      "drop role if exists vsee_registry_owner",
+    ],
+    { encoding: "utf8", stdio: "pipe" },
+  );
+  assert.equal(
+    result.status,
+    0,
+    `Could not isolate the registry-owner role fixture: ${result.stderr}`,
+  );
+}
+
+function runBootstrap(
+  database: string,
+  path: string = bootstrapPath,
+): ReturnType<typeof spawnSync> {
+  const fixtureDirectory = mkdtempSync(join(tmpdir(), "vsee-security-fixture-"));
+  const securityPath = join(fixtureDirectory, "security");
+  writeFileSync(
+    securityPath,
+    `#!/bin/sh\nprintf '%s' 'postgresql:///${database}'\n`,
+    "utf8",
+  );
+  chmodSync(securityPath, 0o755);
+  try {
+    return spawnSync("zsh", [path], {
+      env: {
+        ...process.env,
+        PATH: `${fixtureDirectory}:${process.env.PATH ?? ""}`,
+        USER: "fixture-user",
+      },
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  } finally {
+    rmSync(fixtureDirectory, { recursive: true, force: true });
+  }
+}
+
+function assertBootstrapRefused(
+  result: ReturnType<typeof spawnSync>,
+  pattern: RegExp = /partial|refus|unsafe|prototype|baseline/i,
+): void {
+  assert.notEqual(result.status, 0);
+  assert.match(`${result.stdout}${result.stderr}`, pattern);
+}
+
 function installPrototypeSchema(database: string): void {
   for (const migration of baselineMigrations) {
     applySql(database, migration);
@@ -120,6 +180,17 @@ function installPrototypeSchema(database: string): void {
     create index uploaded_documents_claimable
       on public.uploaded_documents (status, lease_expires_at);
     alter table public.uploaded_documents enable row level security;
+    revoke all privileges on table public.uploaded_documents from public;
+    do $$
+    begin
+      if exists (
+        select 1 from pg_catalog.pg_roles where rolname = 'service_role'
+      ) then
+        grant all privileges on table public.uploaded_documents
+          to service_role;
+      end if;
+    end;
+    $$;
   `);
 }
 
@@ -270,6 +341,7 @@ test(
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   () => {
     assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
     withTemporaryDatabase((database) => {
       executeSql(database, `
         drop extension if exists pgcrypto cascade;
@@ -282,28 +354,12 @@ test(
         workerId: "stale-production-worker",
       });
 
-      const fixtureDirectory = mkdtempSync(join(tmpdir(), "vsee-security-fixture-"));
-      const securityPath = join(fixtureDirectory, "security");
-      writeFileSync(
-        securityPath,
-        `#!/bin/sh\nprintf '%s' 'postgresql:///${database}'\n`,
-        "utf8",
+      const result = runBootstrap(database);
+      assert.equal(
+        result.status,
+        0,
+        `${result.stdout}${result.stderr}`,
       );
-      chmodSync(securityPath, 0o755);
-      try {
-        assert.doesNotThrow(() =>
-          execFileSync("zsh", [bootstrapPath], {
-            env: {
-              ...process.env,
-              PATH: `${fixtureDirectory}:${process.env.PATH ?? ""}`,
-              USER: "fixture-user",
-            },
-            stdio: "pipe",
-          })
-        );
-      } finally {
-        rmSync(fixtureDirectory, { recursive: true, force: true });
-      }
 
       assert.equal(
         executeSql(database, `
@@ -322,6 +378,368 @@ test(
         "t",
       );
     });
+  },
+);
+
+test(
+  "the guarded bootstrap rejects exact prototype catalog drift before mutation",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  async (t) => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    const scenarios: Array<{ name: string; mutate: string }> = [
+      {
+        name: "wrong status default",
+        mutate:
+          "alter table public.uploaded_documents alter column status set default 'failed'",
+      },
+      {
+        name: "missing workspace foreign key",
+        mutate:
+          "alter table public.uploaded_documents drop constraint uploaded_documents_workspace_id_fkey",
+      },
+      {
+        name: "missing claimable index",
+        mutate: "drop index public.uploaded_documents_claimable",
+      },
+      {
+        name: "unexpected public table privilege",
+        mutate: "grant select on public.uploaded_documents to public",
+      },
+      {
+        name: "unexpected non-internal trigger",
+        mutate: `
+          create function public.prototype_drift_trigger()
+          returns trigger language plpgsql as $$
+          begin
+            return new;
+          end;
+          $$;
+          create trigger uploaded_documents_unexpected
+          before update on public.uploaded_documents
+          for each row execute function public.prototype_drift_trigger();
+        `,
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      await t.test(scenario.name, () => {
+        dropRegistryOwnerRole();
+        withTemporaryDatabase((database) => {
+          installPrototypeSchema(database);
+          insertPrototypeRow(database, { status: "failed" });
+          executeSql(database, scenario.mutate);
+
+          assertBootstrapRefused(runBootstrap(database));
+          assert.equal(
+            executeSql(database, `
+              select count(*)
+              from information_schema.columns
+              where table_schema = 'public'
+                and table_name = 'uploaded_documents'
+                and column_name = 'extraction_preview';
+            `),
+            "0",
+          );
+        });
+      });
+    }
+  },
+);
+
+test(
+  "a bridged prototype with newly meaningful legacy payload is never treated as current",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
+    withTemporaryDatabase((database) => {
+      installPrototypeSchema(database);
+      insertPrototypeRow(database, { status: "failed" });
+      applySql(database, bridgePath);
+      executeSql(database, `
+        update public.uploaded_documents
+        set memory_texts = '["material legacy memory"]'::jsonb;
+      `);
+
+      assertBootstrapRefused(runBootstrap(database), /legacy|unsafe|0007/i);
+      assert.equal(
+        executeSql(database, `
+          select pg_catalog.pg_get_constraintdef(oid)
+          from pg_catalog.pg_constraint
+          where conrelid = 'public.companies'::regclass
+            and contype = 'p';
+        `),
+        "PRIMARY KEY (id)",
+      );
+    });
+  },
+);
+
+test(
+  "the guarded bootstrap safely resumes after an injected failure between the bridge and 0008",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
+    withTemporaryDatabase((database) => {
+      installPrototypeSchema(database);
+      insertPrototypeRow(database, { status: "failed" });
+
+      const fixtureRoot = mkdtempSync(join(tmpdir(), "vsee-baseline-retry-"));
+      const fixtureScripts = join(fixtureRoot, "scripts");
+      const fixtureSql = join(fixtureScripts, "sql");
+      const fixtureDrizzle = join(fixtureRoot, "drizzle");
+      mkdirSync(fixtureSql, { recursive: true });
+      mkdirSync(fixtureDrizzle, { recursive: true });
+      const fixtureBootstrap = join(
+        fixtureScripts,
+        "bootstrap-production-baseline.zsh",
+      );
+      copyFileSync(bootstrapPath, fixtureBootstrap);
+      copyFileSync(
+        libpqServiceRendererPath,
+        join(fixtureScripts, "render-private-libpq-service.mjs"),
+      );
+      copyFileSync(
+        bridgePath,
+        join(fixtureSql, "upgrade-prototype-uploaded-documents-to-0007.sql"),
+      );
+      copyFileSync(
+        registryPath,
+        join(fixtureDrizzle, "0009_source_revision_deal_registry.sql"),
+      );
+      writeFileSync(
+        join(fixtureDrizzle, "0008_workspace_composite_identity.sql"),
+        "begin; select 1 / 0; commit;\n",
+        "utf8",
+      );
+
+      try {
+        assertBootstrapRefused(runBootstrap(database, fixtureBootstrap));
+        assert.equal(
+          executeSql(database, `
+            select
+              exists (
+                select 1 from information_schema.columns
+                where table_schema = 'public'
+                  and table_name = 'uploaded_documents'
+                  and column_name = 'extraction_preview'
+              )::text || '|' ||
+              exists (
+                select 1 from information_schema.columns
+                where table_schema = 'public'
+                  and table_name = 'uploaded_documents'
+                  and column_name = 'memory_texts'
+              )::text;
+          `),
+          "true|true",
+        );
+
+        copyFileSync(
+          workspaceCompositePath,
+          join(fixtureDrizzle, "0008_workspace_composite_identity.sql"),
+        );
+        const retry = runBootstrap(database, fixtureBootstrap);
+        assert.equal(
+          retry.status,
+          0,
+          `${retry.stdout}${retry.stderr}`,
+        );
+        assert.equal(
+          executeSql(database, `
+            select to_regprocedure(
+              'public.confirm_source_assignment(jsonb)'
+            ) is not null;
+          `),
+          "t",
+        );
+      } finally {
+        rmSync(fixtureRoot, { recursive: true, force: true });
+      }
+    });
+  },
+);
+
+test(
+  "the guarded bootstrap rejects same-name 0008 constraint and function drift",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  async (t) => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    const scenarios: Array<{ name: string; mutate: string }> = [
+      {
+        name: "foreign key action drift",
+        mutate: `
+          alter table public.deals
+            drop constraint deals_workspace_company_fkey;
+          alter table public.deals
+            add constraint deals_workspace_company_fkey
+            foreign key (workspace_id, company_id)
+            references public.companies(workspace_id, id)
+            on delete restrict;
+        `,
+      },
+      {
+        name: "missing report-deal uniqueness",
+        mutate: `
+          alter table public.company_analyses
+            drop constraint company_analyses_workspace_report_deal_unique;
+        `,
+      },
+      {
+        name: "report saver semantic and security drift",
+        mutate: `
+          create or replace function public.save_intelligence_report(
+            p_report jsonb,
+            p_analyses jsonb
+          )
+          returns setof public.intelligence_reports
+          language sql
+          security definer
+          set search_path = public
+          as $$
+            select report.*
+            from public.intelligence_reports as report
+            where false
+          $$;
+        `,
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      await t.test(scenario.name, () => {
+        dropRegistryOwnerRole();
+        withTemporaryDatabase((database) => {
+          applySql(database, baselineMigrations[0]!);
+          for (const migration of baselineMigrations.slice(1)) {
+            applySql(database, migration);
+          }
+          applySql(
+            database,
+            fileURLToPath(
+              new URL("../../drizzle/0007_uploaded_documents.sql", import.meta.url),
+            ),
+          );
+          applySql(database, workspaceCompositePath);
+          executeSql(database, scenario.mutate);
+
+          assertBootstrapRefused(runBootstrap(database), /0008|partial/i);
+          assert.equal(
+            executeSql(database, `
+              select to_regclass('public.source_revisions') is null;
+            `),
+            "t",
+          );
+        });
+      });
+    }
+  },
+);
+
+test(
+  "the guarded bootstrap rejects incomplete 0009 security and registry catalogs",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  async (t) => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    const scenarios: Array<{ name: string; mutate: string }> = [
+      {
+        name: "annotation RLS disabled",
+        mutate:
+          "alter table public.source_revision_annotations disable row level security",
+      },
+      {
+        name: "immutable trigger missing",
+        mutate:
+          "drop trigger source_revision_annotations_immutable on public.source_revision_annotations",
+      },
+      {
+        name: "definer function changed to invoker",
+        mutate: `
+          alter function public.confirm_source_assignment(jsonb)
+            security invoker;
+          alter function public.confirm_source_assignment(jsonb)
+            set search_path = public;
+        `,
+      },
+      {
+        name: "service role regained direct destructive registry access",
+        mutate: `
+          grant delete, truncate on public.deals to service_role;
+          grant delete, truncate on public.companies to service_role;
+        `,
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      await t.test(scenario.name, () => {
+        dropRegistryOwnerRole();
+        withTemporaryDatabase((database) => {
+          executeSql(database, `
+            do $$
+            begin
+              if not exists (
+                select 1 from pg_catalog.pg_roles
+                where rolname = 'service_role'
+              ) then
+                create role service_role nologin;
+              end if;
+            end;
+            $$;
+          `);
+          for (const migration of baselineMigrations) {
+            applySql(database, migration);
+          }
+          applySql(
+            database,
+            fileURLToPath(
+              new URL("../../drizzle/0007_uploaded_documents.sql", import.meta.url),
+            ),
+          );
+          applySql(database, workspaceCompositePath);
+          applySql(database, registryPath);
+          executeSql(database, scenario.mutate);
+
+          assertBootstrapRefused(runBootstrap(database), /0009|partial/i);
+        });
+      });
+    }
+  },
+);
+
+test(
+  "a pre-existing registry owner without 0009 schema is partial rather than absent",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
+    try {
+      executeSql(
+        "postgres",
+        "create role vsee_registry_owner nologin noinherit nobypassrls",
+      );
+      withTemporaryDatabase((database) => {
+        for (const migration of baselineMigrations) {
+          applySql(database, migration);
+        }
+        applySql(
+          database,
+          fileURLToPath(
+            new URL("../../drizzle/0007_uploaded_documents.sql", import.meta.url),
+          ),
+        );
+        applySql(database, workspaceCompositePath);
+
+        assertBootstrapRefused(runBootstrap(database), /0009|partial/i);
+        assert.equal(
+          executeSql(
+            database,
+            "select to_regclass('public.source_revisions') is null",
+          ),
+          "t",
+        );
+      });
+    } finally {
+      dropRegistryOwnerRole();
+    }
   },
 );
 
