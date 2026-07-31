@@ -1340,7 +1340,10 @@ export function createSupabaseDealRegistry(options: {
           ],
           interactions: dealInteractions.map((interaction) => ({
             id: interaction.id,
-            occurredAt: interaction.occurred_at,
+            occurredAt: requiredIsoDateTime(
+              String(interaction.occurred_at),
+              "An interaction occurrence time",
+            ),
             summary: interaction.meeting_summary,
             decisionReason: interaction.decision_reason,
             concerns: interaction.concerns,

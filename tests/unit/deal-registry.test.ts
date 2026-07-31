@@ -871,6 +871,64 @@ test("Supabase bundles emit the current status from the authoritative Deal row",
   );
 });
 
+test("Supabase eligible bundles normalize PostgREST offset interaction timestamps", async () => {
+  const repository = createSupabaseDealRegistry({
+    url: "https://example.supabase.co",
+    serviceRoleKey: "test-service-role-key",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      if (url.includes("/deals?")) {
+        return Response.json([{
+          id: "deal_one",
+          workspace_id: "workspace_one",
+          company_id: "company_one",
+          company_name: "Company one",
+          status: "screening",
+          analysis_eligible_at: "2026-07-28T11:00:00+00:00",
+          active_source_revision_fingerprint:
+            sourceRevisionFingerprint(["revision_one"]),
+        }]);
+      }
+      if (url.includes("/deal_source_assignments?")) {
+        return Response.json([{
+          deal_id: "deal_one",
+          source_id: "source_one",
+          source_revision_id: "revision_one",
+        }]);
+      }
+      if (url.includes("/deal_interactions?")) {
+        return Response.json([{
+          id: "interaction_one",
+          workspace_id: "workspace_one",
+          deal_id: "deal_one",
+          document_id: "source_one",
+          source_revision_id: "revision_one",
+          occurred_at: "2026-07-28T10:00:00+00:00",
+          meeting_summary: "Founder meeting.",
+          decision_reason: "Market timing was early.",
+          concerns: ["Adoption"],
+          revisit_conditions: ["Enterprise traction"],
+          provenance: "demo_fixture",
+          label: "Sample decision record",
+        }]);
+      }
+      if (url.includes("/source_documents?")) {
+        return Response.json([{
+          id: "source_one",
+          title: "meeting.md",
+        }]);
+      }
+      return Response.json([]);
+    },
+  });
+
+  const bundles = await repository.listAnalysisEligibleBundles("workspace_one");
+  assert.equal(
+    bundles[0]?.interactions[0]?.occurredAt,
+    "2026-07-28T10:00:00.000Z",
+  );
+});
+
 test("Supabase exact-source reads bind every ownership dimension", async () => {
   const requests: string[] = [];
   const repository = createSupabaseDealRegistry({
