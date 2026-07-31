@@ -97,19 +97,19 @@ test(
           create extension pgcrypto with schema extensions;
           do $$
           begin
-            create role anon nologin noinherit;
+            create role anon nologin inherit;
           exception when duplicate_object then null;
           end;
           $$;
           do $$
           begin
-            create role authenticated nologin noinherit;
+            create role authenticated nologin inherit;
           exception when duplicate_object then null;
           end;
           $$;
           do $$
           begin
-            create role service_role nologin noinherit bypassrls;
+            create role service_role nologin inherit bypassrls;
           exception when duplicate_object then null;
           end;
           $$;
