@@ -335,6 +335,7 @@ test(
       "0015_framework_catalog_checkpoint.sql",
       "0016_confirmed_upload_source_evidence_bridge.sql",
       "0017_public_sandbox_test_generations.sql",
+      "0018_pgcrypto_registry_schema_usage.sql",
     ];
     const guardCases = [
       {

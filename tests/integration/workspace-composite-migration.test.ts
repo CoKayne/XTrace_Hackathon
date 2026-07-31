@@ -197,7 +197,7 @@ test(
   },
 );
 
-test("operator instructions require every migration through 0017", () => {
+test("operator instructions require every migration through 0018", () => {
   const readme = readFileSync(
     fileURLToPath(new URL("../../README.md", import.meta.url)),
     "utf8",
@@ -216,7 +216,7 @@ test("operator instructions require every migration through 0017", () => {
     },
   ];
   let previous = -1;
-  for (let index = 0; index <= 17; index += 1) {
+  for (let index = 0; index <= 18; index += 1) {
     const marker = `drizzle/${String(index).padStart(4, "0")}_`;
     const position = readme.indexOf(marker);
     assert.ok(position > previous, `${marker} must appear in migration order`);
@@ -249,7 +249,7 @@ test("operator instructions require every migration through 0017", () => {
     /database snapshot/i,
     /bootstrap-production-baseline\.zsh/i,
     /apply-production-migrations\.zsh/i,
-    /verify[^\n.]{0,100}`?0017`?/i,
+    /verify[^\n.]{0,100}`?0018`?/i,
     /resume (?:the )?Web and (?:the )?Worker/i,
   ];
   let previousMaintenanceStep = -1;

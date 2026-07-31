@@ -216,7 +216,7 @@ case "$args" in
     ;;
 esac
 baseline_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-baseline-state: \\(000[789]\\).*/\\1/p')
-sentinel_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-sentinel: \\(001[0-7]\\).*/\\1/p')
+sentinel_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-sentinel: \\(001[0-8]\\).*/\\1/p')
 if [ -n "$baseline_id" ]; then
   printf 'state %s\\n' "$baseline_id" >> "$FAKE_TRACE"
   if [ "$baseline_id" = "0009" ] \
@@ -331,6 +331,7 @@ test("baseline bootstrap inventories first, bridges the safe prototype, then app
       "query 0015",
       "query 0016",
       "query 0017",
+      "query 0018",
       "state 0007",
       "quiet",
       "apply 0007",
@@ -387,7 +388,7 @@ case "$args" in
   *'vsee-registry-data-invariants'*) printf 't\\n'; exit 0 ;;
 esac
 baseline_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-baseline-state: \\(000[789]\\).*/\\1/p')
-sentinel_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-sentinel: \\(001[0-7]\\).*/\\1/p')
+sentinel_id=$(printf '%s\\n' "$args" | sed -n 's/.*vsee-sentinel: \\(001[0-8]\\).*/\\1/p')
 if [ -n "$baseline_id" ]; then printf 'complete\\n'; exit 0; fi
 if [ -n "$sentinel_id" ]; then printf 'f\\n'; exit 0; fi
 case "$args" in
@@ -512,6 +513,7 @@ test("baseline bootstrap repairs only the exact reviewed 0009 default-function A
       "query 0015",
       "query 0016",
       "query 0017",
+      "query 0018",
       "state 0009",
       "quiet",
       "apply repair-0009-default-function-acl",

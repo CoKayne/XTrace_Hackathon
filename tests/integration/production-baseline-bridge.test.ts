@@ -979,7 +979,7 @@ test(
 );
 
 test(
-  "the PostgreSQL 17.6 Supabase prototype passes both guarded launchers through 0017",
+  "the PostgreSQL 17.6 Supabase prototype passes both guarded launchers through 0018",
   {
     skip: !requireSupabasePg176 && localServerVersionNumber !== "170006",
   },
@@ -1016,6 +1016,8 @@ test(
           readCatalogFingerprint(database)
         }`,
       );
+      assert.match(`${baseline.stdout}${baseline.stderr}`, /0010 through 0018/i);
+      assert.match(`${forward.stdout}${forward.stderr}`, /through 0018.*complete.*verified/i);
 
       assert.equal(
         executeSql(database, `
@@ -1023,7 +1025,26 @@ test(
             to_regclass('public.workspace_test_generations') is not null
             and to_regprocedure(
               'public.confirm_source_assignment(jsonb)'
-            ) is not null;
+            ) is not null
+            and exists (
+              select 1
+              from pg_catalog.pg_extension as extension_record
+              join pg_catalog.pg_depend as dependency
+                on dependency.refclassid = 'pg_catalog.pg_extension'::regclass
+                and dependency.refobjid = extension_record.oid
+                and dependency.classid = 'pg_catalog.pg_proc'::regclass
+                and dependency.deptype = 'e'
+              join pg_catalog.pg_proc as procedure_record
+                on procedure_record.oid = dependency.objid
+              join pg_catalog.pg_namespace as namespace
+                on namespace.oid = procedure_record.pronamespace
+              where extension_record.extname = 'pgcrypto'
+                and procedure_record.proname = 'digest'
+                and procedure_record.proargtypes = '17 25'::oidvector
+                and pg_catalog.has_schema_privilege(
+                  'vsee_registry_owner', namespace.oid, 'USAGE'
+                )
+            );
         `),
         "t",
       );
@@ -1042,7 +1063,7 @@ test(
 );
 
 test(
-  "a PostgreSQL 17.6 non-superuser CREATEROLE executor passes both guarded launchers through 0017",
+  "a PostgreSQL 17.6 non-superuser CREATEROLE executor passes both guarded launchers through 0018",
   {
     skip: !requireSupabasePg176 && localServerVersionNumber !== "170006",
   },
@@ -1106,6 +1127,8 @@ test(
               readCatalogFingerprint(database)
             }`,
           );
+          assert.match(`${baseline.stdout}${baseline.stderr}`, /0010 through 0018/i);
+          assert.match(`${forward.stdout}${forward.stderr}`, /through 0018.*complete.*verified/i);
 
           assert.equal(
             executeSql(database, `
@@ -1113,7 +1136,26 @@ test(
                 to_regclass('public.workspace_test_generations') is not null
                 and to_regprocedure(
                   'public.confirm_source_assignment(jsonb)'
-                ) is not null;
+                ) is not null
+                and exists (
+                  select 1
+                  from pg_catalog.pg_extension as extension_record
+                  join pg_catalog.pg_depend as dependency
+                    on dependency.refclassid = 'pg_catalog.pg_extension'::regclass
+                    and dependency.refobjid = extension_record.oid
+                    and dependency.classid = 'pg_catalog.pg_proc'::regclass
+                    and dependency.deptype = 'e'
+                  join pg_catalog.pg_proc as procedure_record
+                    on procedure_record.oid = dependency.objid
+                  join pg_catalog.pg_namespace as namespace
+                    on namespace.oid = procedure_record.pronamespace
+                  where extension_record.extname = 'pgcrypto'
+                    and procedure_record.proname = 'digest'
+                    and procedure_record.proargtypes = '17 25'::oidvector
+                    and pg_catalog.has_schema_privilege(
+                      'vsee_registry_owner', namespace.oid, 'USAGE'
+                    )
+                );
             `),
             "t",
           );

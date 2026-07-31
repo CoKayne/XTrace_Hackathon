@@ -1333,6 +1333,7 @@ forward_sentinel_sql() {
     0015) print -- "-- vsee-sentinel: 0015\nselect exists (select 1 from pg_catalog.pg_constraint where conrelid = to_regclass('public.candidate_checkpoints') and conname = 'candidate_checkpoints_stage_check' and pg_catalog.pg_get_constraintdef(oid) like '%framework_catalog%');" ;;
     0016) print -- "-- vsee-sentinel: 0016\nselect to_regclass('public.source_evidence_items') is not null and exists (select 1 from pg_catalog.pg_attribute where attrelid = to_regclass('public.source_evidence_items') and attname = 'source_id' and attnotnull and not attisdropped);" ;;
     0017) print -- "-- vsee-sentinel: 0017\nselect to_regclass('public.workspace_test_generations') is not null and to_regprocedure('public.reset_test_view(text,text)') is not null;" ;;
+    0018) print -- "-- vsee-sentinel: 0018\nselect to_regclass('public.workspace_test_generations') is not null and to_regprocedure('public.reset_test_view(text,text)') is not null and exists (select 1 from pg_catalog.pg_extension as extension_record join pg_catalog.pg_depend as dependency on dependency.refclassid = 'pg_catalog.pg_extension'::regclass and dependency.refobjid = extension_record.oid and dependency.classid = 'pg_catalog.pg_proc'::regclass and dependency.deptype = 'e' join pg_catalog.pg_proc as procedure_record on procedure_record.oid = dependency.objid join pg_catalog.pg_namespace as namespace on namespace.oid = procedure_record.pronamespace where extension_record.extname = 'pgcrypto' and procedure_record.proname = 'digest' and procedure_record.proargtypes = '17 25'::oidvector and pg_catalog.has_schema_privilege(to_regrole('vsee_registry_owner'), namespace.oid, 'USAGE'));" ;;
     *)
       print -u2 "Unknown forward sentinel: $1"
       return 1
@@ -1510,7 +1511,7 @@ fi
 
 # Baseline bootstrap never mutates a database already carrying a forward
 # migration. The forward launcher validates those reviewed states separately.
-forward_ids=(0010 0011 0012 0013 0014 0015 0016 0017)
+forward_ids=(0010 0011 0012 0013 0014 0015 0016 0017 0018)
 for migration_id in "${forward_ids[@]}"; do
   if ! inspect_forward_sentinel "$migration_id"; then
     exit 1
@@ -1597,4 +1598,4 @@ while true; do
 done
 
 print "Production baseline through 0009 matches the reviewed catalog and data invariants."
-print "Continue with ./scripts/apply-production-migrations.zsh for 0010 through 0017."
+print "Continue with ./scripts/apply-production-migrations.zsh for 0010 through 0018."

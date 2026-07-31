@@ -218,7 +218,7 @@ vsee_catalog_matches_stage() {
         || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0016" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0016" ]]
       ;;
-    0017)
+    0017|0018)
       [[ "$fingerprint" == "$VSEE_CATALOG_0017" \
         || "$fingerprint" == "$VSEE_CATALOG_BRIDGED_0017" \
         || "$fingerprint" == "$VSEE_CATALOG_PG176_0017" \

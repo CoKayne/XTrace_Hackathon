@@ -92,6 +92,7 @@ SQL
     0015) print -- "-- vsee-sentinel: 0015\nselect exists (select 1 from pg_catalog.pg_constraint where conrelid = to_regclass('public.candidate_checkpoints') and conname = 'candidate_checkpoints_stage_check' and pg_catalog.pg_get_constraintdef(oid) like '%framework_catalog%');" ;;
     0016) print -- "-- vsee-sentinel: 0016\nselect to_regclass('public.source_evidence_items') is not null and exists (select 1 from pg_catalog.pg_attribute where attrelid = to_regclass('public.source_evidence_items') and attname = 'source_id' and attnotnull and not attisdropped);" ;;
     0017) print -- "-- vsee-sentinel: 0017\nselect to_regclass('public.workspace_test_generations') is not null and to_regprocedure('public.reset_test_view(text,text)') is not null;" ;;
+    0018) print -- "-- vsee-sentinel: 0018\nselect to_regclass('public.workspace_test_generations') is not null and to_regprocedure('public.reset_test_view(text,text)') is not null and exists (select 1 from pg_catalog.pg_extension as extension_record join pg_catalog.pg_depend as dependency on dependency.refclassid = 'pg_catalog.pg_extension'::regclass and dependency.refobjid = extension_record.oid and dependency.classid = 'pg_catalog.pg_proc'::regclass and dependency.deptype = 'e' join pg_catalog.pg_proc as procedure_record on procedure_record.oid = dependency.objid join pg_catalog.pg_namespace as namespace on namespace.oid = procedure_record.pronamespace where extension_record.extname = 'pgcrypto' and procedure_record.proname = 'digest' and procedure_record.proargtypes = '17 25'::oidvector and pg_catalog.has_schema_privilege(to_regrole('vsee_registry_owner'), namespace.oid, 'USAGE'));" ;;
     *) print -u2 "Unknown migration sentinel: $1"; return 1 ;;
   esac
 }
@@ -155,7 +156,7 @@ $(<"$registry_invariants")"
   fi
 }
 
-migration_ids=(0009 0010 0011 0012 0013 0014 0015 0016 0017)
+migration_ids=(0009 0010 0011 0012 0013 0014 0015 0016 0017 0018)
 migration_files=(
   ''
   0010_underwriting_references.sql
@@ -166,6 +167,7 @@ migration_files=(
   0015_framework_catalog_checkpoint.sql
   0016_confirmed_upload_source_evidence_bridge.sql
   0017_public_sandbox_test_generations.sql
+  0018_pgcrypto_registry_schema_usage.sql
 )
 
 first_incomplete_index=0
@@ -196,7 +198,7 @@ if ! assert_catalog_stage "$last_complete_id" || ! assert_registry_invariants; t
 fi
 
 if (( first_incomplete_index == 0 )); then
-  print "All production migrations through 0017 match their reviewed catalog and data invariants."
+  print "All production migrations through 0018 match their reviewed catalog and data invariants."
   exit 0
 fi
 
@@ -229,4 +231,4 @@ for index in {$first_incomplete_index..${#migration_ids}}; do
   last_complete_id="$migration_id"
 done
 
-print "Production migrations through 0017 are complete and verified."
+print "Production migrations through 0018 are complete and verified."

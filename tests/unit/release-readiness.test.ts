@@ -78,6 +78,7 @@ const productionMigrationFiles = [
   "0015_framework_catalog_checkpoint.sql",
   "0016_confirmed_upload_source_evidence_bridge.sql",
   "0017_public_sandbox_test_generations.sql",
+  "0018_pgcrypto_registry_schema_usage.sql",
 ];
 
 test("the production migration launcher remains directly executable", async () => {
@@ -96,7 +97,7 @@ test("the audited PostgreSQL 17.6 Supabase profile is exact and stage-limited", 
       "-c",
       `set -euo pipefail
 source "$1"
-stages=(prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017)
+stages=(prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017 0018)
 check_variant() {
   local variable_name="$1"
   local expected_variant="$2"
@@ -129,8 +130,8 @@ check_variant VSEE_CATALOG_PG176_SUPABASE_0013 0013-current-lineage-supabase-pg1
 check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013 0013-bridged-lineage-supabase-pg17.6 0013,0014,0015
 check_variant VSEE_CATALOG_PG176_SUPABASE_0016 0016-current-lineage-supabase-pg17.6 0016
 check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016 0016-bridged-lineage-supabase-pg17.6 0016
-check_variant VSEE_CATALOG_PG176_SUPABASE_0017 0017-current-lineage-supabase-pg17.6 0017
-check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017 0017-bridged-lineage-supabase-pg17.6 0017
+check_variant VSEE_CATALOG_PG176_SUPABASE_0017 0017-current-lineage-supabase-pg17.6 0017,0018
+check_variant VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017 0017-bridged-lineage-supabase-pg17.6 0017,0018
 check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0009 0009-current-lineage-supabase-createrole-pg17.6 0009,0010
 check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009 0009-bridged-lineage-supabase-createrole-pg17.6 0009,0010
 check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0011 0011-current-lineage-supabase-createrole-pg17.6 0011
@@ -141,8 +142,8 @@ check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0013 0013-current-lineage-s
 check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0013 0013-bridged-lineage-supabase-createrole-pg17.6 0013,0014,0015
 check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0016 0016-current-lineage-supabase-createrole-pg17.6 0016
 check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0016 0016-bridged-lineage-supabase-createrole-pg17.6 0016
-check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0017 0017-current-lineage-supabase-createrole-pg17.6 0017
-check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0017 0017-bridged-lineage-supabase-createrole-pg17.6 0017
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0017 0017-current-lineage-supabase-createrole-pg17.6 0017,0018
+check_variant VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0017 0017-bridged-lineage-supabase-createrole-pg17.6 0017,0018
 if vsee_catalog_variant "sha256:0884bf536c6724bb90683cd7ab9da6e08cd6ec98fbc1b517e49fddf7b24151f4" >/dev/null; then
   print -- unexpected-create-variant
 else
@@ -172,8 +173,8 @@ fi`,
     "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0013|sha256:b6cab17c34755d2f4c05ec408cca8385b5047e293090d79fd789d64125e8fe97|0013-bridged-lineage-supabase-pg17.6|0013,0014,0015",
     "VSEE_CATALOG_PG176_SUPABASE_0016|sha256:3c8dc4ad0a220168d82cee65f26b2478c7584da7e3a28b9e4dfb35832ee196f1|0016-current-lineage-supabase-pg17.6|0016",
     "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0016|sha256:11d6772d9972dc93958c1faa732fc1c5f814cf3e746558dd539cc11774f729a7|0016-bridged-lineage-supabase-pg17.6|0016",
-    "VSEE_CATALOG_PG176_SUPABASE_0017|sha256:471ca93e9532dcde79d963cf8de7520fe1f0d4569e14a57a7830654483956daf|0017-current-lineage-supabase-pg17.6|0017",
-    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017|sha256:f7d0fb4869aff4c12b24a05cd5b637b684846182f20b4363bf83c816337bebbe|0017-bridged-lineage-supabase-pg17.6|0017",
+    "VSEE_CATALOG_PG176_SUPABASE_0017|sha256:471ca93e9532dcde79d963cf8de7520fe1f0d4569e14a57a7830654483956daf|0017-current-lineage-supabase-pg17.6|0017,0018",
+    "VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017|sha256:f7d0fb4869aff4c12b24a05cd5b637b684846182f20b4363bf83c816337bebbe|0017-bridged-lineage-supabase-pg17.6|0017,0018",
     "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0009|sha256:d72fcf58d6ac83fad33ff74fcc62dcd475ea1894bfcee99d5ac6f9ee82e4a81b|0009-current-lineage-supabase-createrole-pg17.6|0009,0010",
     "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009|sha256:15d4475110a5425162e246a0b33a547f33b8550d1e0327c92f67de9db8f1071e|0009-bridged-lineage-supabase-createrole-pg17.6|0009,0010",
     "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0011|sha256:cabc34dd16625eb8f12319b220aabc0e6ad07309592f31562faaab5ce869f842|0011-current-lineage-supabase-createrole-pg17.6|0011",
@@ -184,8 +185,8 @@ fi`,
     "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0013|sha256:8695f2cbfb93bcf9d9b5dc88597905e2f40c038fe57cc03fbf65b009b60bbc36|0013-bridged-lineage-supabase-createrole-pg17.6|0013,0014,0015",
     "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0016|sha256:c7cc3de50496a8b96eb69d3566a5aa00a44eb9458ba456c20a391fdeab2467b1|0016-current-lineage-supabase-createrole-pg17.6|0016",
     "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0016|sha256:b61191ee0055b6b20a0401d6f18f2ccb71b6013fe9f84215eddc7c4f8d658c12|0016-bridged-lineage-supabase-createrole-pg17.6|0016",
-    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0017|sha256:71ad64d173081f801cbe205c246e86756127b37028c054bb1c1d2321ee752ede|0017-current-lineage-supabase-createrole-pg17.6|0017",
-    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0017|sha256:1e96ca563d4e38886ec7b4059b09270c8a7b8125074ab563ce07a898c1641bd3|0017-bridged-lineage-supabase-createrole-pg17.6|0017",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0017|sha256:71ad64d173081f801cbe205c246e86756127b37028c054bb1c1d2321ee752ede|0017-current-lineage-supabase-createrole-pg17.6|0017,0018",
+    "VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0017|sha256:1e96ca563d4e38886ec7b4059b09270c8a7b8125074ab563ce07a898c1641bd3|0017-bridged-lineage-supabase-createrole-pg17.6|0017,0018",
     "create-variant-refused",
   ]);
 });
@@ -197,7 +198,7 @@ test("every reviewed catalog fingerprint is unique and stage-exclusive", () => {
       "-c",
       `set -euo pipefail
 source "$1"
-stages=(prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017)
+stages=(prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017 0018)
 variable_names=("\${(@f)$(
   sed -nE 's/^readonly (VSEE_CATALOG_[A-Z0-9_]+)=.*/\\1/p' "$1"
 )}")
@@ -237,6 +238,8 @@ done`,
       ? "0009,0010"
       : suffix === "0013"
       ? "0013,0014,0015"
+      : suffix === "0017"
+      ? "0017,0018"
       : suffix;
     assert.equal(actualStages, expectedStages, variableName);
   }
@@ -254,7 +257,7 @@ source "$1"
 [[ "$VSEE_REPAIRABLE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009_DEFAULT_FUNCTION_ACL" == "$2" ]]
 [[ "$(vsee_repairable_catalog_variant "$2")" == "0009-bridged-lineage-supabase-createrole-pg17.6-default-function-acl" ]]
 if vsee_catalog_variant "$2" >/dev/null; then exit 81; fi
-for stage in prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017; do
+for stage in prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017 0018; do
   if vsee_catalog_matches_stage "$stage" "$2"; then exit 82; fi
 done`,
       "vsee-repair-fingerprint-audit",
@@ -345,6 +348,7 @@ const migrationNames = [
   "0015_framework_catalog_checkpoint.sql",
   "0016_confirmed_upload_source_evidence_bridge.sql",
   "0017_public_sandbox_test_generations.sql",
+  "0018_pgcrypto_registry_schema_usage.sql",
 ];
 
 const migrationTestNames = [
@@ -358,6 +362,7 @@ const migrationTestNames = [
   "tests/integration/action-draft-migration.test.ts",
   "tests/integration/framework-catalog-checkpoint-migration.test.ts",
   "tests/integration/public-sandbox-reset-migration.test.ts",
+  "tests/integration/pgcrypto-registry-schema-usage-migration.test.ts",
 ];
 
 test("release migration verification is serial and includes every migration suite", async () => {
@@ -400,15 +405,15 @@ test("release verification has a mandatory PostgreSQL 17.6 Supabase profile gate
     1,
   );
   for (const testName of [
-    "the PostgreSQL 17.6 Supabase prototype passes both guarded launchers through 0017",
-    "a PostgreSQL 17.6 non-superuser CREATEROLE executor passes both guarded launchers through 0017",
+    "the PostgreSQL 17.6 Supabase prototype passes both guarded launchers through 0018",
+    "a PostgreSQL 17.6 non-superuser CREATEROLE executor passes both guarded launchers through 0018",
     "the guarded bootstrap repairs the exact PostgreSQL 17.6 Supabase default-function ACL defect",
   ]) {
     assert.equal(command.split(testName).length - 1, 1, testName);
   }
 });
 
-test("the physical migration chain is contiguous from 0000 through 0017", async () => {
+test("the physical migration chain is contiguous from 0000 through 0018", async () => {
   const actual = (await readdir(new URL("drizzle/", repositoryRoot)))
     .filter((filename) => /^\d{4}_.+\.sql$/.test(filename))
     .sort();
@@ -416,7 +421,7 @@ test("the physical migration chain is contiguous from 0000 through 0017", async 
   assert.deepEqual(actual, migrationNames);
 });
 
-test("journaled forward migrations preserve physical order and include 0010 through 0017", async () => {
+test("journaled forward migrations preserve physical order and include 0010 through 0018", async () => {
   const journal = JSON.parse(
     await readFile(
       new URL("drizzle/meta/_journal.json", repositoryRoot),
@@ -429,7 +434,7 @@ test("journaled forward migrations preserve physical order and include 0010 thro
   );
 
   assert.deepEqual(
-    actualForwardEntries.filter((tag) => /^001[0-7]_/.test(tag)),
+    actualForwardEntries.filter((tag) => /^001[0-8]_/.test(tag)),
     physicalTags.slice(10),
   );
   let previousPhysicalPosition = -1;
@@ -479,7 +484,7 @@ test("production migration launcher inventories sentinels, applies from the firs
   assert.equal(result.exitCode, 0);
   assert.doesNotMatch(result.output, new RegExp(databaseUrl));
   const trace = (await readFile(tracePath, "utf8")).trim().split("\n");
-  assert.deepEqual(trace.slice(0, 10), [
+  assert.deepEqual(trace.slice(0, 11), [
     "security vsee-supabase-db-url",
     "query 0009",
     "query 0010",
@@ -490,8 +495,9 @@ test("production migration launcher inventories sentinels, applies from the firs
     "query 0015",
     "query 0016",
     "query 0017",
+    "query 0018",
   ]);
-  for (const id of ["0012", "0013", "0014", "0015", "0016", "0017"]) {
+  for (const id of ["0012", "0013", "0014", "0015", "0016", "0017", "0018"]) {
     const applyIndex = trace.indexOf(`apply ${id}`);
     assert.ok(applyIndex > 0, `${id} must be applied`);
     assert.equal(trace[applyIndex + 1], `query ${id}`, `${id} must be verified after apply`);
