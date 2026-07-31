@@ -43,6 +43,12 @@ const registryInvariantsPath = fileURLToPath(
     import.meta.url,
   ),
 );
+const aclRepairPath = fileURLToPath(
+  new URL(
+    "../../scripts/sql/repair-0009-default-function-acl.sql",
+    import.meta.url,
+  ),
+);
 const bridgePath = fileURLToPath(
   new URL(
     "../../scripts/sql/upgrade-prototype-uploaded-documents-to-0007.sql",
@@ -91,8 +97,8 @@ test.after(() => {
   if (requireSupabasePg176) {
     assert.equal(
       requiredSupabasePg176Executions,
-      2,
-      "the required PostgreSQL 17.6 release gate must execute both launcher E2Es",
+      3,
+      "the required PostgreSQL 17.6 release gate must execute both launcher E2Es and the ACL repair E2E",
     );
   }
 });
@@ -622,6 +628,117 @@ test(
 );
 
 test(
+  "migration 0009 normalizes Supabase default function grants to the reviewed ACL contract",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
+    try {
+      withTemporaryDatabase((database) => {
+        installPrototypeSchema(database);
+        applySql(database, bridgePath);
+        applySql(database, workspaceCompositePath);
+        executeSql(database, `
+          alter default privileges in schema public
+            grant execute on functions to anon, authenticated, service_role;
+        `);
+
+        applySql(database, registryPath);
+
+        assert.equal(
+          executeSql(database, `
+            with target(signature, service_role_is_explicit) as (
+              values
+                ('public.canonical_utc_iso_milliseconds(timestamp with time zone)', false),
+                ('public.save_intelligence_report(jsonb,jsonb)', true),
+                ('public.sha256_length_framed(text[])', false),
+                ('public.source_assignment_result(deals,source_revisions,text[],boolean)', true),
+                ('public.source_revision_set_fingerprint(text[])', false)
+            ), explicit_grants as (
+              select
+                target.signature,
+                target.service_role_is_explicit,
+                grantee.rolname
+              from target
+              join pg_catalog.pg_proc as procedure_record
+                on procedure_record.oid = to_regprocedure(target.signature)
+              cross join lateral pg_catalog.aclexplode(
+                coalesce(procedure_record.proacl, '{}'::aclitem[])
+              ) as privilege_record
+              join pg_catalog.pg_roles as grantee
+                on grantee.oid = privilege_record.grantee
+              where privilege_record.privilege_type = 'EXECUTE'
+            )
+            select
+              count(*) filter (
+                where rolname in ('anon', 'authenticated')
+                  or (rolname = 'service_role'
+                    and not service_role_is_explicit)
+              )::text || '|' ||
+              count(*) filter (
+                where rolname = 'service_role'
+                  and service_role_is_explicit
+              )::text
+            from explicit_grants;
+          `),
+          "0|2",
+        );
+
+        assert.equal(
+          executeSql(database, `
+            with target(role_name, signature) as (
+              values
+                ('anon', 'public.canonical_utc_iso_milliseconds(timestamp with time zone)'),
+                ('anon', 'public.save_intelligence_report(jsonb,jsonb)'),
+                ('anon', 'public.sha256_length_framed(text[])'),
+                ('anon', 'public.source_assignment_result(deals,source_revisions,text[],boolean)'),
+                ('anon', 'public.source_revision_set_fingerprint(text[])'),
+                ('authenticated', 'public.canonical_utc_iso_milliseconds(timestamp with time zone)'),
+                ('authenticated', 'public.save_intelligence_report(jsonb,jsonb)'),
+                ('authenticated', 'public.sha256_length_framed(text[])'),
+                ('authenticated', 'public.source_assignment_result(deals,source_revisions,text[],boolean)'),
+                ('authenticated', 'public.source_revision_set_fingerprint(text[])'),
+                ('service_role', 'public.canonical_utc_iso_milliseconds(timestamp with time zone)'),
+                ('service_role', 'public.save_intelligence_report(jsonb,jsonb)'),
+                ('service_role', 'public.sha256_length_framed(text[])'),
+                ('service_role', 'public.source_assignment_result(deals,source_revisions,text[],boolean)'),
+                ('service_role', 'public.source_revision_set_fingerprint(text[])')
+            )
+            select string_agg(
+              role_name || '|' || signature || '|' ||
+                pg_catalog.has_function_privilege(
+                  role_name, to_regprocedure(signature), 'EXECUTE'
+                )::text,
+              E'\\n' order by role_name, signature
+            )
+            from target;
+          `),
+          [
+            "anon|public.canonical_utc_iso_milliseconds(timestamp with time zone)|false",
+            "anon|public.save_intelligence_report(jsonb,jsonb)|false",
+            "anon|public.sha256_length_framed(text[])|true",
+            "anon|public.source_assignment_result(deals,source_revisions,text[],boolean)|false",
+            "anon|public.source_revision_set_fingerprint(text[])|true",
+            "authenticated|public.canonical_utc_iso_milliseconds(timestamp with time zone)|false",
+            "authenticated|public.save_intelligence_report(jsonb,jsonb)|false",
+            "authenticated|public.sha256_length_framed(text[])|true",
+            "authenticated|public.source_assignment_result(deals,source_revisions,text[],boolean)|false",
+            "authenticated|public.source_revision_set_fingerprint(text[])|true",
+            "service_role|public.canonical_utc_iso_milliseconds(timestamp with time zone)|false",
+            "service_role|public.save_intelligence_report(jsonb,jsonb)|true",
+            "service_role|public.sha256_length_framed(text[])|true",
+            "service_role|public.source_assignment_result(deals,source_revisions,text[],boolean)|true",
+            "service_role|public.source_revision_set_fingerprint(text[])|true",
+          ].join("\n"),
+        );
+      });
+    } finally {
+      dropRegistryOwnerRole();
+    }
+  },
+);
+
+test(
   "the guarded bootstrap classifies and upgrades the production-shaped prototype on real PostgreSQL",
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   () => {
@@ -987,6 +1104,124 @@ test(
 );
 
 test(
+  "the guarded bootstrap repairs the exact PostgreSQL 17.6 Supabase default-function ACL defect",
+  {
+    skip: !requireSupabasePg176 && localServerVersionNumber !== "170006",
+  },
+  () => {
+    if (requireSupabasePg176) {
+      requiredSupabasePg176Executions += 1;
+    }
+    assert.equal(canCreateTemporaryDatabase, true);
+    assert.equal(localServerVersionNumber, "170006");
+    assert.equal(existsSync(aclRepairPath), true);
+    createNonSuperExecutorRole();
+    try {
+      withTemporaryDatabaseOwnedBy(
+        nonSuperExecutorCredentials.user,
+        (database) => {
+          installPrototypeSchema(database, nonSuperExecutorCredentials);
+          insertPrototypeRow(
+            database,
+            { status: "failed" },
+            nonSuperExecutorCredentials,
+          );
+          executeSql(
+            database,
+            "grant usage on schema public to anon, authenticated, postgres;",
+            nonSuperExecutorCredentials,
+          );
+          applySql(database, bridgePath, nonSuperExecutorCredentials);
+          applySql(database, workspaceCompositePath, nonSuperExecutorCredentials);
+          executeSql(database, `
+            alter default privileges in schema public
+              grant execute on functions
+              to anon, authenticated, service_role;
+          `, nonSuperExecutorCredentials);
+          applySql(database, registryPath, nonSuperExecutorCredentials);
+
+          assert.equal(
+            readCatalogFingerprint(database),
+            "sha256:15d4475110a5425162e246a0b33a547f33b8550d1e0327c92f67de9db8f1071e",
+          );
+
+          executeSql(database, `
+            set role vsee_registry_owner;
+            grant execute on function
+              public.canonical_utc_iso_milliseconds(timestamptz)
+              to anon, authenticated, service_role;
+            grant execute on function
+              public.save_intelligence_report(jsonb, jsonb)
+              to anon, authenticated;
+            grant execute on function public.sha256_length_framed(text[])
+              to anon, authenticated, service_role;
+            grant execute on function public.source_assignment_result(
+              public.deals, public.source_revisions, text[], boolean
+            ) to anon, authenticated;
+            grant execute on function
+              public.source_revision_set_fingerprint(text[])
+              to anon, authenticated, service_role;
+            reset role;
+          `);
+
+          assert.equal(
+            readCatalogFingerprint(database),
+            "sha256:a5e1729c32fbe1a99a0487ce7a11701e23d09dc4c201fece540967101565591c",
+          );
+          assert.equal(
+            executeSql(
+              database,
+              readBaselineStateSql("0009"),
+              nonSuperExecutorCredentials,
+            ),
+            "partial",
+          );
+
+          const repair = runBootstrap(
+            database,
+            bootstrapPath,
+            nonSuperExecutorCredentials,
+          );
+          assert.equal(
+            repair.status,
+            0,
+            `${repair.stdout}${repair.stderr}\nActual catalog: ${
+              readCatalogFingerprint(database)
+            }`,
+          );
+          assert.match(
+            `${repair.stdout}${repair.stderr}`,
+            /default-function ACL repair reached the reviewed catalog/i,
+          );
+          assert.equal(
+            readCatalogFingerprint(database),
+            "sha256:15d4475110a5425162e246a0b33a547f33b8550d1e0327c92f67de9db8f1071e",
+          );
+          assert.equal(
+            executeSql(
+              database,
+              readBaselineStateSql("0009"),
+              nonSuperExecutorCredentials,
+            ),
+            "complete",
+          );
+          assert.equal(
+            executeSql(
+              database,
+              readFileSync(registryInvariantsPath, "utf8"),
+              nonSuperExecutorCredentials,
+            ),
+            "t",
+          );
+        },
+      );
+    } finally {
+      dropNonSuperExecutorRole();
+    }
+  },
+);
+
+test(
   "the guarded bootstrap rejects exact prototype catalog drift before mutation",
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   async (t) => {
@@ -1136,6 +1371,10 @@ test(
       copyFileSync(
         registryInvariantsPath,
         join(fixtureSql, "production-registry-data-invariants.sql"),
+      );
+      copyFileSync(
+        aclRepairPath,
+        join(fixtureSql, "repair-0009-default-function-acl.sql"),
       );
       copyFileSync(
         bridgePath,

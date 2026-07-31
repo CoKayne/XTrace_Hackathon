@@ -10,6 +10,7 @@ catalog_manifest="${script_directory}/sql/production-baseline-catalog-manifest.s
 catalog_hasher="${script_directory}/hash-stdin-sha256.mjs"
 catalog_fingerprints="${script_directory}/production-catalog-fingerprints.zsh"
 registry_invariants="${script_directory}/sql/production-registry-data-invariants.sql"
+repair_0009_default_function_acl="${script_directory}/sql/repair-0009-default-function-acl.sql"
 migration_0008="${repository_root}/drizzle/0008_workspace_composite_identity.sql"
 migration_0009="${repository_root}/drizzle/0009_source_revision_deal_registry.sql"
 
@@ -20,6 +21,7 @@ for required_file in \
   "$catalog_hasher" \
   "$catalog_fingerprints" \
   "$registry_invariants" \
+  "$repair_0009_default_function_acl" \
   "$migration_0008" \
   "$migration_0009"; do
   if [[ ! -f "$required_file" ]]; then
@@ -1430,10 +1432,38 @@ $(<"$catalog_manifest")" \
     print -u2 "Could not inspect the exact production baseline catalog."
     return 1
   fi
-  if ! CATALOG_VARIANT="$(vsee_catalog_variant "$CATALOG_FINGERPRINT")"; then
-    print -u2 "The application-owned production catalog is not a reviewed PostgreSQL 17 state."
+  if CATALOG_VARIANT="$(vsee_catalog_variant "$CATALOG_FINGERPRINT")"; then
+    CATALOG_REPAIR_REQUIRED=false
+    return 0
+  fi
+  if CATALOG_VARIANT="$(
+    vsee_repairable_catalog_variant "$CATALOG_FINGERPRINT"
+  )"; then
+    CATALOG_REPAIR_REQUIRED=true
+    return 0
+  fi
+  CATALOG_REPAIR_REQUIRED=false
+  print -u2 "The application-owned production catalog is not a reviewed PostgreSQL 17 state."
+  return 1
+}
+
+assert_default_function_acl_repair_preconditions() {
+  if ! inspect_catalog_fingerprint \
+    || [[ "$CATALOG_REPAIR_REQUIRED" != true ]] \
+    || [[ "$CATALOG_FINGERPRINT" \
+      != "$VSEE_REPAIRABLE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009_DEFAULT_FUNCTION_ACL" ]]; then
+    print -u2 "The repair-only 0009 ACL catalog changed before maintenance."
     return 1
   fi
+  if ! inspect_baseline_state 0009 || [[ "$BASELINE_STATE" != "partial" ]]; then
+    print -u2 "The repair-only 0009 baseline is not the exact reviewed partial state."
+    return 1
+  fi
+  if ! registry_backfill_is_exact; then
+    print -u2 "The 0009 source-registry data invariants are not satisfied; refusing ACL repair."
+    return 1
+  fi
+  inspect_quiescence
 }
 
 assert_catalog_stage() {
@@ -1490,6 +1520,26 @@ for migration_id in "${forward_ids[@]}"; do
     exit 1
   fi
 done
+
+if [[ "$CATALOG_REPAIR_REQUIRED" == true ]]; then
+  if ! assert_default_function_acl_repair_preconditions; then
+    exit 1
+  fi
+  print "Applying the guarded 0009 default-function ACL repair."
+  psql --no-password -v ON_ERROR_STOP=1 \
+    -f "$repair_0009_default_function_acl"
+  if ! inspect_catalog_fingerprint \
+    || [[ "$CATALOG_REPAIR_REQUIRED" != false ]] \
+    || [[ "$CATALOG_FINGERPRINT" \
+      != "$VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009" ]] \
+    || ! inspect_baseline_state 0009 \
+    || [[ "$BASELINE_STATE" != "complete" ]] \
+    || ! registry_backfill_is_exact; then
+    print -u2 "The 0009 default-function ACL repair did not reach its exact reviewed postcondition."
+    exit 1
+  fi
+  print "The 0009 default-function ACL repair reached the reviewed catalog."
+fi
 
 while true; do
   case "$CATALOG_VARIANT" in

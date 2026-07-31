@@ -50,6 +50,11 @@ readonly VSEE_CATALOG_PG176_SUPABASE_BRIDGED_0017="sha256:f7d0fb4869aff4c12b24a0
 # Supabase catalog from migration 0009 onward.
 readonly VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0009="sha256:d72fcf58d6ac83fad33ff74fcc62dcd475ea1894bfcee99d5ac6f9ee82e4a81b"
 readonly VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009="sha256:15d4475110a5425162e246a0b33a547f33b8550d1e0327c92f67de9db8f1071e"
+# A repair-only fingerprint captured after the first production 0009 run.
+# It differs from the reviewed bridged boundary only by Supabase's explicit
+# default EXECUTE grants on five 0009 functions. It is intentionally excluded
+# from vsee_catalog_variant and every migration-stage matcher.
+readonly VSEE_REPAIRABLE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009_DEFAULT_FUNCTION_ACL="sha256:a5e1729c32fbe1a99a0487ce7a11701e23d09dc4c201fece540967101565591c"
 readonly VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0011="sha256:cabc34dd16625eb8f12319b220aabc0e6ad07309592f31562faaab5ce869f842"
 readonly VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0011="sha256:cb889785eb64b9a44940c36aef4875938f2d2c4382cd0da3927919de3d43c9cf"
 readonly VSEE_CATALOG_PG176_SUPABASE_CREATEROLE_0012="sha256:9b52be35bf23b6342b8fd55845617cb6cec8b436cc9963dbd1c2cce6e67686b4"
@@ -76,6 +81,15 @@ readonly VSEE_CATALOG_PG176_0016="sha256:7c4f0ac11d90e3ba8602b19cff3ca212a4dbfc8
 readonly VSEE_CATALOG_PG176_BRIDGED_0016="sha256:d9749609197b04d479b767408ffff881f68d50ad29dbd803e4561fb5155d63b4"
 readonly VSEE_CATALOG_PG176_0017="sha256:e3d0358049556d56faa922d481b512b01964784778710efcbe5a749da8000a89"
 readonly VSEE_CATALOG_PG176_BRIDGED_0017="sha256:786e4ef58412f7016a6934f453b284c0c3c0dc621438eb06ff535857e102e097"
+
+vsee_repairable_catalog_variant() {
+  case "$1" in
+    "$VSEE_REPAIRABLE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009_DEFAULT_FUNCTION_ACL")
+      print -- "0009-bridged-lineage-supabase-createrole-pg17.6-default-function-acl"
+      ;;
+    *) return 1 ;;
+  esac
+}
 
 vsee_catalog_variant() {
   case "$1" in

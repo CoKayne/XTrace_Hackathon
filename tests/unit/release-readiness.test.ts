@@ -242,6 +242,31 @@ done`,
   }
 });
 
+test("the production ACL defect fingerprint is repair-only and never a valid migration stage", () => {
+  const defectiveFingerprint =
+    "sha256:a5e1729c32fbe1a99a0487ce7a11701e23d09dc4c201fece540967101565591c";
+  const result = spawnSync(
+    "zsh",
+    [
+      "-c",
+      `set -euo pipefail
+source "$1"
+[[ "$VSEE_REPAIRABLE_CATALOG_PG176_SUPABASE_CREATEROLE_BRIDGED_0009_DEFAULT_FUNCTION_ACL" == "$2" ]]
+[[ "$(vsee_repairable_catalog_variant "$2")" == "0009-bridged-lineage-supabase-createrole-pg17.6-default-function-acl" ]]
+if vsee_catalog_variant "$2" >/dev/null; then exit 81; fi
+for stage in prototype 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017; do
+  if vsee_catalog_matches_stage "$stage" "$2"; then exit 82; fi
+done`,
+      "vsee-repair-fingerprint-audit",
+      catalogFingerprintsSourcePath,
+      defectiveFingerprint,
+    ],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  );
+
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
 async function createMigrationRepositoryFixture(t: test.TestContext): Promise<{
   root: string;
   launcherPath: string;
@@ -377,6 +402,7 @@ test("release verification has a mandatory PostgreSQL 17.6 Supabase profile gate
   for (const testName of [
     "the PostgreSQL 17.6 Supabase prototype passes both guarded launchers through 0017",
     "a PostgreSQL 17.6 non-superuser CREATEROLE executor passes both guarded launchers through 0017",
+    "the guarded bootstrap repairs the exact PostgreSQL 17.6 Supabase default-function ACL defect",
   ]) {
     assert.equal(command.split(testName).length - 1, 1, testName);
   }

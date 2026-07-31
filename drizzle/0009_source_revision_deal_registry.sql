@@ -1493,6 +1493,26 @@ begin
       restricted_role
     );
     execute format(
+      'revoke all on function public.save_intelligence_report(jsonb, jsonb) from %I',
+      restricted_role
+    );
+    execute format(
+      'revoke all on function public.canonical_utc_iso_milliseconds(timestamptz) from %I',
+      restricted_role
+    );
+    execute format(
+      'revoke all on function public.sha256_length_framed(text[]) from %I',
+      restricted_role
+    );
+    execute format(
+      'revoke all on function public.source_assignment_result(public.deals, public.source_revisions, text[], boolean) from %I',
+      restricted_role
+    );
+    execute format(
+      'revoke all on function public.source_revision_set_fingerprint(text[]) from %I',
+      restricted_role
+    );
+    execute format(
       'revoke all on function public.reset_intelligence_products(text) from %I',
       restricted_role
     );
@@ -1564,6 +1584,13 @@ begin
       from service_role;
     revoke all on function
       public.reject_immutable_source_registry_mutation()
+      from service_role;
+    revoke all on function
+      public.canonical_utc_iso_milliseconds(timestamptz)
+      from service_role;
+    revoke all on function public.sha256_length_framed(text[])
+      from service_role;
+    revoke all on function public.source_revision_set_fingerprint(text[])
       from service_role;
   end if;
 end;
