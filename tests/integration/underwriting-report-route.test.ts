@@ -1,10 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 import { GET as getReport } from "../../app/api/reports/[id]/route";
 import { GET as getUnderwriting } from "../../app/api/reports/[id]/underwriting/[dealId]/route";
 import { GET as listActionDrafts } from "../../app/api/action-drafts/route";
 import { GET as search } from "../../app/api/search/route";
+import { ReportsView } from "../../app/page";
+import {
+  type CandidateUnderwritingDetailDto,
+  UnderwritingDetailPanel,
+} from "../../app/underwriting-detail";
 import {
   createMemoryIntelligenceRepository,
 } from "../../db/repositories/intelligence";
@@ -16,9 +23,14 @@ import {
   createMemoryUnderwritingRunsRepository,
 } from "../../db/repositories/underwriting-runs";
 import type { RouteDependencies } from "../../lib/api/route-dependencies";
+import type { ClaudeClient, ClaudeCompleteInput } from "../../lib/claude/client";
+import type { CandidateRun } from "../../lib/contracts/underwriting";
 import {
   createActionDraftGenerator,
 } from "../../lib/underwriting/action-drafts";
+import {
+  createContextAwareFrameworkLensResolver,
+} from "../../lib/underwriting/frameworks/service";
 import {
   buildUnderwritingNarrative,
 } from "../../lib/underwriting/narrative";
@@ -56,6 +68,32 @@ function productDependencies(
           readPrivateSources: true,
           mutateSources: false,
           managePolicy: false,
+          administerFrameworks: false,
+        },
+      };
+    },
+    ...overrides,
+  };
+}
+
+function sandboxDependencies(
+  overrides: Partial<RouteDependencies> = {},
+): RouteDependencies {
+  return {
+    async resolveRequestContext() {
+      return {
+        mode: "public_sandbox",
+        principal: {
+          userId: "system:public-sandbox",
+          email: "public-sandbox@invalid.local",
+        },
+        workspaceId: WORKSPACE_ID,
+        role: "sandbox",
+        permissions: {
+          readWorkspace: true,
+          readPrivateSources: true,
+          mutateSources: true,
+          managePolicy: true,
           administerFrameworks: false,
         },
       };
@@ -496,7 +534,12 @@ function finalizedBundle(input: {
   return bundle;
 }
 
-async function readRepositories() {
+async function readRepositories(options: {
+  prepareBundle?: (
+    bundle: CandidateArtifactBundle,
+    candidate: CandidateRun,
+  ) => Promise<CandidateArtifactBundle>;
+} = {}) {
   let sequence = 0;
   const artifacts = createMemoryUnderwritingArtifactsRepository();
   const runs = createMemoryUnderwritingRunsRepository({
@@ -545,11 +588,234 @@ async function readRepositories() {
     batchId: batch.id,
     dealIds: ["deal_selected"],
   });
-  artifacts.commitPrepared(finalizedBundle({
+  const prepared = finalizedBundle({
     candidateRunId: candidate.id,
-  }));
+  });
+  artifacts.commitPrepared(
+    options.prepareBundle
+      ? await options.prepareBundle(prepared, candidate)
+      : prepared,
+  );
   return { artifacts, runs, intelligence, batch, candidate };
 }
+
+test("public sandbox renders the complete persisted canonical named-advisory report", async () => {
+  const resolver = createContextAwareFrameworkLensResolver({
+    cards: [],
+    client: deterministicAdvisoryClient(),
+    execution: {
+      provider: "anthropic",
+      model: "deterministic-public-sandbox-test",
+      promptVersion: "framework-lens-v1",
+      schemaVersion: "framework-judgment-v1",
+      settingsFingerprint: `sha256:${"d".repeat(64)}`,
+      applicationCommit: "task-6-acceptance",
+    },
+  });
+  let persistedBundle: CandidateArtifactBundle | undefined;
+  const repositories = await readRepositories({
+    async prepareBundle(bundle, candidate) {
+      const selection = await resolver.resolve(bundle.context);
+      assert.deepEqual(selection.catalog.stats, {
+        packCount: 20,
+        cardCount: 199,
+        sourceCount: 270,
+        eligibleCardCount: 180,
+        excludedCardCount: 19,
+      });
+      const advisory = await selection.service.runAll({
+        candidate,
+        pack: bundle.evidencePack,
+        context: bundle.context,
+        calculations: bundle.calculations,
+      });
+      const evidenceItemIds = new Set([
+        ...bundle.evidencePack.facts.map(({ id }) => id),
+        ...bundle.evidencePack.assumptions.map(({ id }) => id),
+      ]);
+      const applicableNamed = advisory.judgments.filter(
+        ({ applicability, frameworkMetadata }) =>
+          applicability === "applicable" && frameworkMetadata !== undefined,
+      );
+      assert.equal(applicableNamed.length, 19);
+      assert.equal(
+        applicableNamed.every((judgment) =>
+          [
+            ...judgment.supportEvidenceItemIds,
+            ...judgment.counterEvidenceItemIds,
+          ].every((itemId) => evidenceItemIds.has(itemId))
+        ),
+        true,
+      );
+      assert.equal(
+        advisory.judgments.every(
+          ({ frameworkMetadata }) =>
+            frameworkMetadata?.formalDecisionWeight === "0",
+        ),
+        true,
+      );
+      const coreJudgment = structuredClone(bundle.judgments[0]!);
+      delete coreJudgment.frameworkMetadata;
+      coreJudgment.limitations = [PUBLIC_JUDGMENT_LIMITATION];
+      persistedBundle = {
+        ...bundle,
+        judgments: [coreJudgment, ...advisory.judgments],
+        disagreements: advisory.disagreements,
+        claimEdges: [
+          ...bundle.claimEdges,
+          ...advisory.judgments.flatMap(({ claimEdges }) => claimEdges),
+        ],
+        versionSnapshot: {
+          ...bundle.versionSnapshot,
+          frameworkCatalogVersion: selection.catalogVersion,
+          frameworkCatalogFingerprint: selection.catalogFingerprint,
+          frameworkCorpusDigest: selection.corpusDigest,
+        },
+      };
+      return persistedBundle;
+    },
+  });
+  assert.ok(persistedBundle);
+
+  const response = await getUnderwriting(
+    new Request(
+      `https://vsee.test/api/reports/${REPORT_ID}/underwriting/deal_selected`,
+    ),
+    params(REPORT_ID, "deal_selected") as {
+      params: Promise<{ id: string; dealId: string }>;
+    },
+    sandboxDependencies({
+      intelligence: repositories.intelligence,
+      underwritingRuns: repositories.runs,
+      underwritingArtifacts: repositories.artifacts,
+    }),
+  );
+  assert.equal(response.status, 200);
+  const detail = (await response.json() as {
+    data: CandidateUnderwritingDetailDto & {
+      judgments: Array<
+        CandidateUnderwritingDetailDto["judgments"][number] & {
+          supportEvidenceItemIds?: string[];
+          counterEvidenceItemIds?: string[];
+        }
+      >;
+    };
+  }).data;
+  const html = renderToStaticMarkup(createElement(UnderwritingDetailPanel, {
+    companyName: "Canonical Sandbox Company",
+    analysis: null,
+    detail,
+    drafts: [],
+    canSaveDrafts: true,
+    onEditDraft() {},
+  }));
+  const reportHtml = renderToStaticMarkup(createElement(ReportsView, {
+    reports: [sandboxReportUiFixture()],
+    deals: [],
+    onDraft() {},
+    focusedReportId: REPORT_ID,
+    deploymentMode: "public_sandbox",
+    canSaveActionDrafts: true,
+  }));
+
+  assert.match(
+    reportHtml,
+    /Loading persisted candidate states/,
+    "public sandbox ReportsView must enter the durable underwriting UI",
+  );
+  assert.doesNotMatch(reportHtml, /synthetic and read-only/);
+  const peter = detail.judgments.find(
+    ({ frameworkMetadata }) =>
+      frameworkMetadata?.packId === "peter_thiel_public_frameworks_v0_1",
+  );
+  assert.ok(peter);
+  assert.ok(peter.frameworkMetadata);
+  assert.deepEqual(peter.supportEvidenceItemIds, ["fact_searchable"]);
+  assert.deepEqual(
+    peter.counterEvidenceItemIds,
+    ["assumption_searchable"],
+  );
+  assert.equal(detail.decision.decision, persistedBundle.decision.decision);
+  assert.match(html, /NAMED ADVISORY/);
+  assert.match(html, /Support/);
+  assert.match(html, /Counterevidence/);
+  assert.match(html, /Unknowns/);
+  assert.match(html, /Limitations/);
+  assert.match(html, /Independent disagreements/);
+  assert.match(html, /Exact source lineage/);
+  assert.match(html, /Supporting Evidence Pack IDs/);
+  assert.match(html, /Counterevidence Evidence Pack IDs/);
+  assert.match(html, /fact_searchable/);
+  assert.match(html, /assumption_searchable/);
+  assert.match(
+    html,
+    /Confidence<\/dt><dd>source medium · strength medium · coverage medium · applicability high · judgment medium/,
+  );
+  assert.match(
+    html,
+    new RegExp(escapeRegExp(peter.frameworkMetadata.sources[0]!.url)),
+  );
+  assert.match(
+    html,
+    new RegExp(
+      escapeRegExp(
+        peter.frameworkMetadata.components[0]!.sourceRefs[0]!.locator.value,
+      ),
+    ),
+  );
+  assert.match(html, /not an endorsement/i);
+  assert.match(html, /private reasoning|hidden chain of thought/i);
+  const namedJudgments = detail.judgments.filter(
+    ({ frameworkMetadata }) => frameworkMetadata !== undefined,
+  );
+  assert.equal(namedJudgments.length, 20);
+  assert.equal(
+    html.match(/NAMED ADVISORY ·/g)?.length,
+    namedJudgments.length,
+  );
+  const evidenceItemIds = new Set([
+    ...detail.evidencePack.facts.map(({ id }) => id),
+    ...detail.evidencePack.assumptions.map(({ id }) => id),
+  ]);
+  for (const judgment of namedJudgments) {
+    assert.ok(judgment.frameworkMetadata);
+    assert.equal(judgment.frameworkMetadata.formalDecisionWeight, "0");
+    if (judgment.applicability === "applicable") {
+      assert.ok(judgment.supportEvidenceItemIds?.length);
+      assert.ok(judgment.counterEvidenceItemIds?.length);
+      for (const itemId of [
+        ...judgment.supportEvidenceItemIds,
+        ...judgment.counterEvidenceItemIds,
+      ]) {
+        assert.equal(evidenceItemIds.has(itemId), true);
+        assert.match(html, new RegExp(escapeRegExp(itemId)));
+      }
+    }
+    const sourcesById = new Map(
+      judgment.frameworkMetadata.sources.map((source) => [
+        source.sourceId,
+        source,
+      ]),
+    );
+    for (const component of judgment.frameworkMetadata.components) {
+      for (const sourceRef of component.sourceRefs) {
+        const source = sourcesById.get(sourceRef.sourceId);
+        assert.ok(source);
+        assert.ok(
+          html.includes(encodeHtml(source.url)),
+          `missing rendered public URL ${source.url}`,
+        );
+        assert.match(
+          html,
+          new RegExp(escapeRegExp(encodeHtml(sourceRef.locator.value))),
+        );
+      }
+    }
+  }
+  for (const privateMarker of PRIVATE_LIMITATION_MARKERS) {
+    assert.doesNotMatch(html, new RegExp(escapeRegExp(privateMarker)));
+  }
+});
 
 test("report detail attaches an explicit persisted underwriting batch summary", async () => {
   const repositories = await readRepositories();
@@ -1145,3 +1411,182 @@ test("public demo cannot query product underwriting search", async () => {
   );
   assert.equal(response.status, 403);
 });
+
+function deterministicAdvisoryClient(): ClaudeClient {
+  return {
+    async complete(request) {
+      const payload = frameworkPromptPayload(request);
+      const factId = payload.evidencePack.facts[0]?.id;
+      const assumptionId = payload.evidencePack.assumptions[0]?.id;
+      assert.ok(factId);
+      assert.ok(assumptionId);
+      const peterThiel =
+        payload.card.experimentalAdvisory?.packId
+          === "peter_thiel_public_frameworks_v0_1";
+      return JSON.stringify({
+        applicability: "applicable",
+        conclusion: peterThiel ? "supportive" : "negative",
+        supportEvidenceItemIds: [factId],
+        counterEvidenceItemIds: [assumptionId],
+        unusedEvidenceItemIds: [],
+        strongestSupport:
+          "The retained Fact supports this bounded independent viewpoint.",
+        strongestCounterargument:
+          "The retained Assumption is explicit counterevidence.",
+        unknowns: ["Independent customer confirmation remains outstanding."],
+        limitations: [
+          "This public advisory viewpoint cannot create or modify the formal decision.",
+        ],
+        confidence: {
+          sourceReliability: "medium",
+          evidenceStrength: "medium",
+          evidenceCoverage: "medium",
+          applicability: "high",
+          judgment: "medium",
+        },
+        frameworkRuleRefs: [payload.card.id],
+      });
+    },
+  };
+}
+
+function frameworkPromptPayload(request: ClaudeCompleteInput): {
+  card: {
+    id: string;
+    experimentalAdvisory?: {
+      packId: string;
+    };
+  };
+  evidencePack: {
+    facts: Array<{ id: string }>;
+    assumptions: Array<{ id: string }>;
+  };
+} {
+  const content = request.messages[0]?.content;
+  if (typeof content !== "string") {
+    throw new Error("Framework prompt must be text-only.");
+  }
+  const parsed = JSON.parse(content) as {
+    card?: {
+      id: string;
+      experimentalAdvisory?: {
+        packId: string;
+      };
+    };
+    evidencePack?: {
+      facts: Array<{ id: string }>;
+      assumptions: Array<{ id: string }>;
+    };
+    originalRequest?: {
+      card: {
+        id: string;
+        experimentalAdvisory?: {
+          packId: string;
+        };
+      };
+      evidencePack: {
+        facts: Array<{ id: string }>;
+        assumptions: Array<{ id: string }>;
+      };
+    };
+  };
+  const payload = parsed.originalRequest ?? parsed;
+  if (!payload.card || !payload.evidencePack) {
+    throw new Error("Framework prompt is missing its immutable inputs.");
+  }
+  return {
+    card: payload.card,
+    evidencePack: payload.evidencePack,
+  };
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function encodeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("<", "&lt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#x27;");
+}
+
+function sandboxReportUiFixture() {
+  return {
+    id: REPORT_ID,
+    workspaceId: WORKSPACE_ID,
+    runId: RUN_ID,
+    createdAt: "2026-07-29T12:00:00.000Z",
+    marketSummary: "Persisted public sandbox report.",
+    opportunities: [],
+    analysisStatus: "completed" as const,
+    evidenceCoverage: {
+      acceptedPublicEvents: 1,
+      excludedPublicItems: 0,
+      truncatedPublicEvents: 0,
+      recalledDealCount: 1,
+      unavailableDealCount: 0,
+    },
+    counts: {
+      companyCount: 1,
+      beliefRevised: 0,
+      monitor: 1,
+      noMaterialChange: 0,
+      analysisUnavailable: 0,
+    },
+    priorityDealId: null,
+    companyAnalyses: [{
+      id: "analysis_sandbox_ui",
+      reportId: REPORT_ID,
+      runId: "11111111-1111-4111-8111-111111111111",
+      dealId: "deal_selected",
+      companyName: "Canonical Sandbox Company",
+      dealStatus: "screening" as const,
+      outcome: "monitor" as const,
+      confidence: "medium" as const,
+      score: 0.5,
+      verifiedSourceCount: 1,
+      investmentMemory: {
+        previousMeetingSummary: "Persisted meeting summary.",
+        decisionReason: "Persisted decision reason.",
+        concerns: [],
+        revisitConditions: [],
+        lastEvaluatedAt: null,
+        memoryIds: [],
+        sourceIds: ["source_sandbox_ui"],
+        fixtureIds: [],
+      },
+      marketEvidence: {
+        relationship: "related" as const,
+        explanation: "Persisted source-grounded evidence.",
+        eventIds: [],
+        events: [],
+        sourceIds: ["source_sandbox_ui"],
+      },
+      implications: {
+        positive: [],
+        negative: [],
+      },
+      recommendedNextMove: "Review the persisted evidence.",
+      companyBrief: {
+        icSnapshot: [],
+        traction: [],
+        dealTerms: [],
+        risks: [],
+        decisionHistory: [],
+        sourceLineage: [],
+      },
+      sources: [{
+        id: "source_sandbox_ui",
+        provenance: "source_document" as const,
+        title: "Persisted sandbox source",
+        documentId: "document_sandbox_ui",
+        page: 1,
+        excerpt: "Persisted source-grounded evidence.",
+      }],
+      createdAt: "2026-07-29T12:00:00.000Z",
+    }],
+  };
+}

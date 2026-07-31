@@ -194,12 +194,15 @@ function toPublicFrameworkJudgment(
     conclusion: judgment.conclusion,
     strongestSupport: judgment.strongestSupport,
     strongestCounterargument: judgment.strongestCounterargument,
+    supportEvidenceItemIds: [...judgment.supportEvidenceItemIds],
+    counterEvidenceItemIds: [...judgment.counterEvidenceItemIds],
     unknowns: [...judgment.unknowns],
     limitations: publicFrameworkLimitations(judgment),
     confidence: {
       sourceReliability: judgment.confidence.sourceReliability,
       evidenceStrength: judgment.confidence.evidenceStrength,
       evidenceCoverage: judgment.confidence.evidenceCoverage,
+      applicability: judgment.confidence.applicability,
       judgment: judgment.confidence.judgment,
     },
     ...(judgment.frameworkMetadata

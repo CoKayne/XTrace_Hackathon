@@ -452,7 +452,7 @@ test("reports make structured image fallback and missing XTrace memory explicit"
       allowDraft: false,
       onDraft() {},
       showDemoProfiles: false,
-      underwritingEnabled: false,
+      underwritingEnabled: true,
       canSaveActionDrafts: false,
     },
   ));
@@ -463,6 +463,9 @@ test("reports make structured image fallback and missing XTrace memory explicit"
   assert.match(html, /not counted as recalled Deal memories/);
   assert.match(html, />1<\/strong><span>Structured image fallbacks<\/span>/);
   assert.match(html, /1 traceable source/);
+  assert.match(html, /DURABLE UNDERWRITING REPORT/);
+  assert.match(html, /independent named-advisory viewpoints/i);
+  assert.match(html, /formal deterministic decision/i);
   assert.doesNotMatch(html, /verified sources?/i);
 });
 
@@ -713,6 +716,8 @@ test("underwriting summary renders Top-5 states in rank order before not-selecte
   }));
 
   assert.match(html, /TOP-5 UNDERWRITING/);
+  assert.match(html, /independent named-advisory viewpoints/i);
+  assert.match(html, /exact public-source lineage/i);
   assert.ok(html.indexOf("Completed Co") < html.indexOf("Outside Co"));
   for (const label of [
     "Completed",

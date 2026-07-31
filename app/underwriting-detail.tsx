@@ -62,12 +62,15 @@ type JudgmentView = {
   conclusion: string;
   strongestSupport: string | null;
   strongestCounterargument: string | null;
+  supportEvidenceItemIds: string[];
+  counterEvidenceItemIds: string[];
   unknowns: string[];
   limitations: string[];
   confidence: {
     sourceReliability: string;
     evidenceStrength: string;
     evidenceCoverage: string;
+    applicability: string;
     judgment: string;
   };
   frameworkMetadata?: {
@@ -512,6 +515,14 @@ export function UnderwritingDetailPanel({
                 label="Counterevidence"
                 value={judgment.strongestCounterargument ?? "Unavailable"}
               />
+              <Definition
+                label="Supporting Evidence Pack IDs"
+                value={join(judgment.supportEvidenceItemIds)}
+              />
+              <Definition
+                label="Counterevidence Evidence Pack IDs"
+                value={join(judgment.counterEvidenceItemIds)}
+              />
               <Definition label="Unknowns" value={join(judgment.unknowns)} />
               <Definition
                 label="Limitations"
@@ -523,6 +534,7 @@ export function UnderwritingDetailPanel({
                   `source ${judgment.confidence.sourceReliability}`,
                   `strength ${judgment.confidence.evidenceStrength}`,
                   `coverage ${judgment.confidence.evidenceCoverage}`,
+                  `applicability ${judgment.confidence.applicability}`,
                   `judgment ${judgment.confidence.judgment}`,
                 ].join(" · ")}
               />
@@ -821,6 +833,21 @@ function AdvisoryFrameworkProvenance({
   return (
     <details className="vsee-details vsee-advisory-provenance">
       <summary>Open complete advisory provenance</summary>
+      <div className="vsee-advisory-contract" role="note">
+        <p>
+          This experimental product synthesis is not an endorsement by any
+          named person or organization.
+        </p>
+        <p>
+          It uses only retained public-source paraphrases and does not claim
+          or reconstruct private reasoning or hidden chain of thought.
+        </p>
+        <p>
+          Every named advisory viewpoint remains independent, has formal
+          decision weight zero, and cannot create or modify the deterministic
+          investment decision.
+        </p>
+      </div>
       <dl>
         <dt>Pack identity</dt>
         <dd>{metadata.packId}</dd>
@@ -861,7 +888,7 @@ function AdvisoryFrameworkProvenance({
           </li>
         ))}
       </ul>
-      <h5>Public source references</h5>
+      <h5>Exact source lineage</h5>
       <ul>
         {metadata.sources.map((source) => {
           const href = safeExternalHttpUrl(source.url);

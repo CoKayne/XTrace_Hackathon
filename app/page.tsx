@@ -146,6 +146,12 @@ interface MarketEvent {
 
 type Report = IntelligenceReportView;
 
+export function isDurableWorkspaceUiMode(
+  deploymentMode: UiSession["deploymentMode"],
+): boolean {
+  return deploymentMode !== "public_demo";
+}
+
 interface Health {
   deploymentMode: UiSession["deploymentMode"];
   canonicalAppOrigin?: string;
@@ -713,7 +719,7 @@ export default function Home() {
     setBusy("chat");
     setError("");
     try {
-      if (uiSession.deploymentMode === "product") {
+      if (isDurableWorkspaceUiMode(uiSession.deploymentMode)) {
         const search = await api<{
           query: string;
           results: UnderwritingSearchResult[];
@@ -1046,7 +1052,7 @@ function OverviewView({
           <p className="vsee-eyebrow">SECOND LOOK ENGINE</p>
           <h1>The market changed.<br /><em>Your old Deal memory should know.</em></h1>
           <p>
-            {deploymentMode === "product"
+            {isDurableWorkspaceUiMode(deploymentMode)
               ? "VSee uses persisted Deal Registry sources, finalized report artifacts, and exact Source Revision lineage to surface source-grounded reasons to look again."
               : `VSee scans the last 14 days of public evidence, recalls historical Deals ${
                   xtraceEnabled
@@ -1057,7 +1063,7 @@ function OverviewView({
         </div>
         <div className="vsee-hero-card">
           <span>
-            {deploymentMode === "product"
+            {isDurableWorkspaceUiMode(deploymentMode)
               ? "PERSISTED DEAL REGISTRY"
               : "FIXED MVP CORPUS"}
           </span>
@@ -1066,11 +1072,11 @@ function OverviewView({
           <div>
             <b>{overview.stats.marketReports}</b> reports{" "}
             <b>
-              {deploymentMode === "product"
+              {isDurableWorkspaceUiMode(deploymentMode)
                 ? overview.stats.activeSourceRevisions ?? 0
                 : overview.stats.fixtureDeals}
             </b>{" "}
-            {deploymentMode === "product"
+            {isDurableWorkspaceUiMode(deploymentMode)
               ? "active Source Revisions"
               : "labeled VC decisions"}
           </div>
@@ -1081,7 +1087,7 @@ function OverviewView({
         <Metric
           label="Historical Deals"
           value={String(overview.stats.deals)}
-          note={deploymentMode === "product"
+          note={isDurableWorkspaceUiMode(deploymentMode)
             ? "Persisted Deal Registry"
             : "From 9 supplied pitch deck files"}
         />
@@ -1210,7 +1216,7 @@ export function DealsView({
       <SectionTitle
         eyebrow="HISTORICAL MEMORY"
         title="Every Deal you have already met."
-        copy={deploymentMode === "product"
+        copy={isDurableWorkspaceUiMode(deploymentMode)
           ? "Company identity, status, and exact source links come from the persisted Deal Registry."
           : "Company facts come from the supplied pitch decks. Investment state and prior decision context are synthetic demo fixtures only when explicitly labeled."}
       />
@@ -1235,7 +1241,7 @@ export function DealsView({
             const profile = deploymentMode === "public_demo"
               ? SAMPLE_DEAL_PROFILES[deal.id]
               : undefined;
-            const sourceLinks = deploymentMode === "product"
+            const sourceLinks = isDurableWorkspaceUiMode(deploymentMode)
               ? deal.sourceLinks ?? []
               : [];
             return (
@@ -1288,7 +1294,7 @@ export function DealsView({
                 <>
                   <b>SOURCE LINEAGE</b>
                   <span>
-                    {deploymentMode === "product"
+                    {isDurableWorkspaceUiMode(deploymentMode)
                       ? `${deal.sourceRevisionIds?.length ?? sourceLinks.length} confirmed Source Revision(s).`
                       : "No synthetic decision record attached."}
                   </span>
@@ -1402,13 +1408,13 @@ function SourcesView({
   return (
     <div className="vsee-content">
       <SectionTitle
-        eyebrow={deploymentMode === "product"
-          ? "PRIVATE SOURCE REGISTRY"
+        eyebrow={isDurableWorkspaceUiMode(deploymentMode)
+          ? "DURABLE SOURCE REGISTRY"
           : "PRELOADED SOURCES"}
-        title={deploymentMode === "product"
+        title={isDurableWorkspaceUiMode(deploymentMode)
           ? "Review and confirm source identity."
           : "Inspect the evidence corpus."}
-        copy={deploymentMode === "product"
+        copy={isDurableWorkspaceUiMode(deploymentMode)
           ? "Uploaded sources remain staged until company identity and Deal ownership are explicitly confirmed."
           : "The public demo exposes its supplied source list for inspection, while all source mutations remain disabled."}
       />
@@ -1424,7 +1430,12 @@ function SourcesView({
       />
       {documents.length > 0 && (
         <div className="vsee-source-actions">
-          <span>{selected.length} selected · read-only demo corpus</span>
+          <span>
+            {selected.length} selected ·{" "}
+            {isDurableWorkspaceUiMode(deploymentMode)
+              ? "durable source corpus"
+              : "read-only demo corpus"}
+          </span>
           <button
             onClick={() => onSelected(importableIds)}
             disabled={!capabilities.confirmUploads}
@@ -1544,7 +1555,7 @@ function MarketView({ events }: { events: MarketEvent[] }) {
   );
 }
 
-function ReportsView({
+export function ReportsView({
   reports,
   deals,
   onDraft,
@@ -1575,7 +1586,7 @@ function ReportsView({
           allowDraft
           onDraft={onDraft}
           showDemoProfiles={deploymentMode === "public_demo"}
-          underwritingEnabled={deploymentMode === "product"}
+          underwritingEnabled={isDurableWorkspaceUiMode(deploymentMode)}
           canSaveActionDrafts={canSaveActionDrafts}
           companyNames={Object.fromEntries(
             deals.map((deal) => [deal.id, deal.companyName]),
@@ -1672,10 +1683,10 @@ export function ChatView({
     <div className="vsee-content vsee-chat-page">
       <SectionTitle
         eyebrow="READ-ONLY QUERY"
-        title={deploymentMode === "product"
+        title={isDurableWorkspaceUiMode(deploymentMode)
           ? "Search finalized underwriting."
           : "Ask the evidence already in VSee."}
-        copy={deploymentMode === "product"
+        copy={isDurableWorkspaceUiMode(deploymentMode)
           ? "Search reads finalized persisted Facts, Assumptions, Calculations, Framework Judgments, and Decisions. It cannot browse, run analysis, change policy, or create drafts."
           : `Chat never browses the web and never changes Deal state. XTrace recall is ${
               xtraceEnabled ? "enabled" : "disabled"
@@ -1685,7 +1696,7 @@ export function ChatView({
         {!messages.length && (
           <Empty
             title="Try a grounded question"
-            copy={deploymentMode === "product"
+            copy={isDurableWorkspaceUiMode(deploymentMode)
               ? "Search for a finalized company, framework conclusion, valuation input, or decision."
               : "For example: Which supplied companies relate to AI infrastructure? Why did we mark 7bridges as passed?"}
           />
@@ -1737,7 +1748,7 @@ function SettingsView({
     <div className="vsee-content">
       <SectionTitle
         eyebrow="SERVER-SIDE INTEGRATIONS"
-        title={health?.deploymentMode === "product"
+        title={health && isDurableWorkspaceUiMode(health.deploymentMode)
           ? "Workspace readiness."
           : "Demo readiness."}
         copy="Keys and authorization remain on the server. Credentials are never sent to the browser."

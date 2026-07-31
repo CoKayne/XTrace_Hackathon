@@ -159,6 +159,24 @@ export function CompanyIntelligenceReport({
 
       <ReportCoverage report={report} />
 
+      {underwritingEnabled && (
+        <section
+          className="vsee-underwriting-summary vsee-underwriting-report-contract"
+          role="note"
+        >
+          <header>
+            <div>
+              <span className="vsee-eyebrow">DURABLE UNDERWRITING REPORT</span>
+              <p>
+                Finalized candidate detail keeps the formal deterministic
+                decision separate from independent named-advisory viewpoints,
+                with exact Evidence Pack and public-source lineage.
+              </p>
+            </div>
+          </header>
+        </section>
+      )}
+
       {(report.evidenceCoverage.structuredImageFallbackDealCount ?? 0) > 0 && (
         <section
           className="vsee-no-belief-change vsee-partial-coverage"

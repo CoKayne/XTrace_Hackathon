@@ -207,8 +207,9 @@ export function UnderwritingSummaryPanel({
           <h2 id="top-five-underwriting">Auditable candidate states</h2>
           <p>
             Every eligible Deal retains an explicit selection and execution
-            state. Open finalized candidates for source and calculation
-            lineage.
+            state. Open finalized candidates for calculations, independent
+            named-advisory viewpoints, Evidence Pack IDs, and exact
+            public-source lineage.
           </p>
         </div>
         {batch && (
