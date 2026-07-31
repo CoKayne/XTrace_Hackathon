@@ -113,17 +113,22 @@ alter table public.uploaded_documents
   add column if not exists source_revision_id text,
   add column if not exists confirmation_fingerprint text;
 
--- An upgrade may catch an extractor whose pre-0013 claim has no capability
--- token. Return only that incomplete lease to its target-safe queue.
+-- Active extraction and ingestion were rejected by the maintenance-quiescence
+-- guard above. Older upload paths could nevertheless leave a worker id on a
+-- queued or terminal row after clearing its lease expiry. Those fields no
+-- longer represent live work, so remove the stale lease metadata without
+-- changing the upload status, failure detail, or source identity.
 update public.uploaded_documents
-set status = 'queued',
-    worker_id = null,
+set worker_id = null,
     lease_token = null,
     lease_expires_at = null,
     updated_at = clock_timestamp()
-where status = 'extracting'
-  and worker_id is not null
-  and lease_token is null;
+where status not in ('extracting', 'ingesting_memory')
+  and (
+    worker_id is not null
+    or lease_token is not null
+    or lease_expires_at is not null
+  );
 
 -- Task 1 IDs embedded the workspace id. No Task 6 foreign keys exist yet, so
 -- normalize staged IDs to content-derived opaque values before promotion.

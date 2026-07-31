@@ -567,6 +567,87 @@ test(
 );
 
 test(
+  "0013 clears a stale worker from the quiescent failed upload preserved by the production bridge",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    dropRegistryOwnerRole();
+    try {
+      withTemporaryDatabase((database) => {
+        executeSql(database, `
+          drop extension if exists pgcrypto cascade;
+          create schema if not exists extensions;
+          create extension pgcrypto with schema extensions;
+        `);
+        installPrototypeSchema(database);
+        insertPrototypeRow(database, {
+          status: "failed",
+          workerId: "stale-production-worker",
+        });
+
+        applySql(database, bridgePath);
+        applySql(database, workspaceCompositePath);
+        applySql(database, registryPath);
+        for (const migration of [
+          "0010_underwriting_references.sql",
+          "0011_underwriting_runs.sql",
+          "0012_source_grounded_underwriting.sql",
+        ]) {
+          applySql(
+            database,
+            fileURLToPath(new URL(`../../drizzle/${migration}`, import.meta.url)),
+          );
+        }
+
+        assert.equal(
+          executeSql(database, `
+            select status || '|' || failure_reason || '|' || worker_id || '|'
+              || (lease_expires_at is null)::text
+            from public.uploaded_documents;
+          `),
+          "failed|prototype failure|stale-production-worker|true",
+        );
+
+        applySql(
+          database,
+          fileURLToPath(
+            new URL(
+              "../../drizzle/0013_confirmed_upload_ingest.sql",
+              import.meta.url,
+            ),
+          ),
+        );
+
+        assert.equal(
+          executeSql(database, `
+            select
+              id || '|' || workspace_id || '|' || filename || '|'
+                || content_type || '|' || byte_size::text || '|' || checksum
+                || '|' || object_key || '|' || status || '|'
+                || failure_reason || '|' || (worker_id is null)::text || '|'
+                || (lease_token is null)::text || '|'
+                || (lease_expires_at is null)::text || '|'
+                || exists (
+                  select 1
+                  from pg_catalog.pg_constraint
+                  where conrelid = 'public.uploaded_documents'::regclass
+                    and conname = 'uploaded_documents_lease_shape_check'
+                    and convalidated
+                )::text
+            from public.uploaded_documents;
+          `),
+          "upload_checksum_bridge|workspace_bridge|bridge.pdf|application/pdf|"
+            + "42|checksum_bridge|private/workspace_bridge/bridge.pdf|failed|"
+            + "prototype failure|true|true|true|true",
+        );
+      });
+    } finally {
+      dropRegistryOwnerRole();
+    }
+  },
+);
+
+test(
   "the 0009 baseline inspection classifies exact pre-0009 state when owner roles are absent",
   { skip: !canCreateTemporaryDatabase && !requirePostgres },
   () => {
@@ -913,6 +994,7 @@ test(
       installPrototypeSchema(database);
       insertPrototypeRow(database, {
         status: "failed",
+        workerId: "stale-production-worker",
       });
       executeSql(database, `
         grant usage on schema public to anon, authenticated, postgres;
@@ -945,6 +1027,16 @@ test(
         `),
         "t",
       );
+      assert.equal(
+        executeSql(database, `
+          select status || '|' || failure_reason || '|'
+            || (worker_id is null)::text || '|'
+            || (lease_token is null)::text || '|'
+            || (lease_expires_at is null)::text
+          from public.uploaded_documents;
+        `),
+        "failed|prototype failure|true|true|true",
+      );
     });
   },
 );
@@ -968,7 +1060,10 @@ test(
           installPrototypeSchema(database, nonSuperExecutorCredentials);
           insertPrototypeRow(
             database,
-            { status: "failed" },
+            {
+              status: "failed",
+              workerId: "stale-production-worker",
+            },
             nonSuperExecutorCredentials,
           );
           executeSql(
@@ -1021,6 +1116,16 @@ test(
                 ) is not null;
             `),
             "t",
+          );
+          assert.equal(
+            executeSql(database, `
+              select status || '|' || failure_reason || '|'
+                || (worker_id is null)::text || '|'
+                || (lease_token is null)::text || '|'
+                || (lease_expires_at is null)::text
+              from public.uploaded_documents;
+            `),
+            "failed|prototype failure|true|true|true",
           );
 
           assert.equal(
