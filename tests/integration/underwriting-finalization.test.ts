@@ -2277,7 +2277,7 @@ function applySql(database: string, path: string): void {
 function executeSql(database: string, sql: string): string {
   return execFileSync(
     "psql",
-    ["-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
+    ["-q", "-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
   ).trim();
 }
@@ -2286,7 +2286,7 @@ function executeSqlAsync(database: string, sql: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(
       "psql",
-      ["-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
+      ["-q", "-v", "ON_ERROR_STOP=1", "-d", database, "-AtF", "|", "-c", sql],
       { stdio: ["ignore", "pipe", "pipe"] },
     );
     let stdout = "";

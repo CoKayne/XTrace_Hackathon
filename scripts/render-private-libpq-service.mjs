@@ -93,28 +93,28 @@ async function main() {
     throw new Error("Connection URI fragments are unsupported.");
   }
 
-  const serviceEntries = [];
-  if (parsed.hostname) {
-    const hostname = parsed.hostname.startsWith("[")
-      ? parsed.hostname.slice(1, -1)
-      : parsed.hostname;
-    serviceEntries.push(["host", assertServiceValue(hostname, "host")]);
+  if (!parsed.hostname || !parsed.username || parsed.pathname.length <= 1) {
+    throw new Error(
+      "Connection URI must include a hostname, username, and database name.",
+    );
   }
+
+  const serviceEntries = [];
+  const hostname = parsed.hostname.startsWith("[")
+    ? parsed.hostname.slice(1, -1)
+    : parsed.hostname;
+  serviceEntries.push(["host", assertServiceValue(hostname, "host")]);
   if (parsed.port) {
     serviceEntries.push(["port", assertServiceValue(parsed.port, "port")]);
   }
-  if (parsed.username) {
-    serviceEntries.push([
-      "user",
-      decodeUriComponent(parsed.username, "username"),
-    ]);
-  }
-  if (parsed.pathname.length > 1) {
-    serviceEntries.push([
-      "dbname",
-      decodeUriComponent(parsed.pathname.slice(1), "database name"),
-    ]);
-  }
+  serviceEntries.push([
+    "user",
+    decodeUriComponent(parsed.username, "username"),
+  ]);
+  serviceEntries.push([
+    "dbname",
+    decodeUriComponent(parsed.pathname.slice(1), "database name"),
+  ]);
 
   const seenQueryParameters = new Set();
   for (const [key, value] of parsed.searchParams) {

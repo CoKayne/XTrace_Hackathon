@@ -1,16 +1,25 @@
 #!/bin/zsh
+set +x
 set -euo pipefail
 
 script_directory="${0:A:h}"
 repository_root="${script_directory:h}"
 libpq_service_renderer="${script_directory}/render-private-libpq-service.mjs"
 bridge_file="${script_directory}/sql/upgrade-prototype-uploaded-documents-to-0007.sql"
+catalog_manifest="${script_directory}/sql/production-baseline-catalog-manifest.sql"
+catalog_hasher="${script_directory}/hash-stdin-sha256.mjs"
+catalog_fingerprints="${script_directory}/production-catalog-fingerprints.zsh"
+registry_invariants="${script_directory}/sql/production-registry-data-invariants.sql"
 migration_0008="${repository_root}/drizzle/0008_workspace_composite_identity.sql"
 migration_0009="${repository_root}/drizzle/0009_source_revision_deal_registry.sql"
 
 for required_file in \
   "$libpq_service_renderer" \
   "$bridge_file" \
+  "$catalog_manifest" \
+  "$catalog_hasher" \
+  "$catalog_fingerprints" \
+  "$registry_invariants" \
   "$migration_0008" \
   "$migration_0009"; do
   if [[ ! -f "$required_file" ]]; then
@@ -18,6 +27,8 @@ for required_file in \
     exit 1
   fi
 done
+
+source "$catalog_fingerprints"
 
 if ! DATABASE_URL="$(security find-generic-password -a "$USER" -s "vsee-supabase-db-url" -w)"; then
   print -u2 "Required Keychain service unavailable: vsee-supabase-db-url"
@@ -1292,48 +1303,8 @@ forward_sentinel_sql() {
 registry_backfill_is_exact() {
   local result
   if ! result="$(
-    psql --no-password -v ON_ERROR_STOP=1 -At -c "
-      -- vsee-registry-backfill
-      select
-        not exists (
-          select 1
-          from public.deals as deal
-          left join lateral (
-            select array_agg(
-              assignment.source_revision_id
-              order by assignment.source_revision_id collate \"C\"
-            ) as revision_ids
-            from public.deal_source_assignments as assignment
-            where assignment.workspace_id = deal.workspace_id
-              and assignment.deal_id = deal.id
-              and assignment.superseded_at is null
-          ) as active on true
-          where (
-            (deal.analysis_eligible_at is not null)
-              <> (coalesce(cardinality(active.revision_ids), 0) > 0)
-          )
-            or (
-              deal.analysis_eligible_at is not null
-              and deal.active_source_revision_fingerprint
-                is distinct from
-                public.source_revision_set_fingerprint(
-                  active.revision_ids
-                )
-            )
-        )
-        and not exists (
-          select 1
-          from public.source_evidence
-          where document_id is not null
-            and source_revision_id is null
-        )
-        and not exists (
-          select 1
-          from public.deal_interactions
-          where document_id is not null
-            and source_revision_id is null
-        );
-    "
+    psql --no-password -v ON_ERROR_STOP=1 -At -c "-- vsee-sentinel: 0009
+$(<"$registry_invariants")"
   )"; then
     return 1
   fi
@@ -1412,119 +1383,129 @@ inspect_quiescence() {
   fi
 }
 
-assert_mutation_preconditions() {
+inspect_catalog_fingerprint() {
+  if ! CATALOG_FINGERPRINT="$(
+    psql --no-password -v ON_ERROR_STOP=1 -At -c "-- vsee-sentinel: 0009
+$(<"$catalog_manifest")" \
+      | node "$catalog_hasher"
+  )"; then
+    print -u2 "Could not inspect the exact production baseline catalog."
+    return 1
+  fi
+  if ! CATALOG_VARIANT="$(vsee_catalog_variant "$CATALOG_FINGERPRINT")"; then
+    print -u2 "The application-owned production catalog is not a reviewed PostgreSQL 17 state."
+    return 1
+  fi
+}
+
+assert_catalog_stage() {
+  local stage="$1"
+  if ! inspect_catalog_fingerprint; then
+    return 1
+  fi
+  if ! vsee_catalog_matches_stage "$stage" "$CATALOG_FINGERPRINT"; then
+    print -u2 "The production catalog changed while preparing migration ${stage}."
+    return 1
+  fi
+}
+
+assert_legacy_payload_safety() {
+  local expected="$1"
   if ! inspect_baseline_state 0007; then
     return 1
   fi
-  case "$BASELINE_STATE" in
-    complete|bridged_safe|prototype_safe) ;;
-    *)
-      print -u2 "The 0007 baseline or retained legacy payload changed during maintenance."
-      return 1
+  if [[ "$BASELINE_STATE" != "$expected" ]]; then
+    print -u2 "The retained prototype payload is unsafe or changed during maintenance."
+    return 1
+  fi
+}
+
+assert_mutation_preconditions() {
+  local stage="$1"
+  if ! assert_catalog_stage "$stage"; then
+    return 1
+  fi
+  case "$CATALOG_VARIANT" in
+    prototype)
+      assert_legacy_payload_safety prototype_safe || return 1
+      ;;
+    bridged-0007)
+      assert_legacy_payload_safety bridged_safe || return 1
       ;;
   esac
   inspect_quiescence
 }
 
-typeset -A baseline_states
-for migration_id in 0007 0008 0009; do
-  if ! inspect_baseline_state "$migration_id"; then
-    exit 1
-  fi
-  baseline_states[$migration_id]="$BASELINE_STATE"
-done
+if ! inspect_catalog_fingerprint; then
+  exit 1
+fi
 
+# Baseline bootstrap never mutates a database already carrying a forward
+# migration. The forward launcher validates those reviewed states separately.
 forward_ids=(0010 0011 0012 0013 0014 0015 0016 0017)
-typeset -A forward_states
 for migration_id in "${forward_ids[@]}"; do
   if ! inspect_forward_sentinel "$migration_id"; then
     exit 1
   fi
-  forward_states[$migration_id]="$FORWARD_STATE"
-done
-
-case "${baseline_states[0007]}" in
-  complete|prototype_safe|bridged_safe) ;;
-  prototype_unsafe|bridged_unsafe)
-    print -u2 "The 0007 prototype or bridged schema contains active state or meaningful legacy payload; refusing automatic migration."
-    exit 1
-    ;;
-  *)
-    print -u2 "The 0007 production baseline is partial or unknown; refusing automatic migration."
-    exit 1
-    ;;
-esac
-
-for migration_id in 0008 0009; do
-  if [[ "${baseline_states[$migration_id]}" == "partial" ]]; then
-    print -u2 "Migration ${migration_id} is partial; refusing automatic migration."
+  if [[ "$FORWARD_STATE" == "complete" ]]; then
+    print -u2 "Forward migration ${migration_id} is already present; use apply-production-migrations.zsh."
     exit 1
   fi
 done
 
-if [[ "${baseline_states[0008]}" == "absent" \
-  && "${baseline_states[0009]}" == "complete" ]]; then
-  print -u2 "Migration gap: 0009 is complete while 0008 is absent."
-  exit 1
-fi
-
-baseline_is_incomplete=false
-if [[ "${baseline_states[0007]}" != "complete" \
-  && "${baseline_states[0007]}" != "bridged_safe" ]]; then
-  baseline_is_incomplete=true
-fi
-if [[ "${baseline_states[0008]}" != "complete" \
-  || "${baseline_states[0009]}" != "complete" ]]; then
-  baseline_is_incomplete=true
-fi
-
-if [[ "$baseline_is_incomplete" == "true" ]]; then
-  for migration_id in "${forward_ids[@]}"; do
-    if [[ "${forward_states[$migration_id]}" == "complete" ]]; then
-      print -u2 "Migration gap: ${migration_id} is complete before the 0009 baseline."
+while true; do
+  case "$CATALOG_VARIANT" in
+    prototype)
+      if ! assert_mutation_preconditions prototype; then
+        exit 1
+      fi
+      print "Applying the guarded 0007 compatibility bridge."
+      psql --no-password -v ON_ERROR_STOP=1 -f "$bridge_file"
+      if ! inspect_catalog_fingerprint \
+        || [[ "$CATALOG_VARIANT" != "bridged-0007" ]] \
+        || ! assert_legacy_payload_safety bridged_safe; then
+        print -u2 "The 0007 compatibility bridge did not satisfy its exact postcondition."
+        exit 1
+      fi
+      ;;
+    0007|bridged-0007)
+      if ! assert_mutation_preconditions 0007; then
+        exit 1
+      fi
+      print "Applying migration 0008."
+      psql --no-password -v ON_ERROR_STOP=1 -f "$migration_0008"
+      if ! inspect_catalog_fingerprint \
+        || ! vsee_catalog_matches_stage 0008 "$CATALOG_FINGERPRINT"; then
+        print -u2 "Migration 0008 did not satisfy its exact postcondition."
+        exit 1
+      fi
+      ;;
+    0008|bridged-0008)
+      if ! assert_mutation_preconditions 0008; then
+        exit 1
+      fi
+      print "Applying migration 0009."
+      psql --no-password -v ON_ERROR_STOP=1 -f "$migration_0009"
+      if ! inspect_catalog_fingerprint \
+        || ! vsee_catalog_matches_stage 0009 "$CATALOG_FINGERPRINT" \
+        || ! registry_backfill_is_exact; then
+        print -u2 "Migration 0009 did not satisfy its exact catalog and data postconditions."
+        exit 1
+      fi
+      ;;
+    0009-current-lineage|0009-bridged-lineage)
+      if ! registry_backfill_is_exact; then
+        print -u2 "The 0009 source-registry data invariants are not satisfied."
+        exit 1
+      fi
+      break
+      ;;
+    *)
+      print -u2 "The reviewed catalog belongs to a forward migration; use apply-production-migrations.zsh."
       exit 1
-    fi
-  done
-fi
+      ;;
+  esac
+done
 
-if [[ "${baseline_states[0007]}" == "prototype_safe" ]]; then
-  if ! assert_mutation_preconditions; then
-    exit 1
-  fi
-  print "Applying the guarded 0007 compatibility bridge."
-  psql --no-password -v ON_ERROR_STOP=1 -f "$bridge_file"
-  if ! inspect_baseline_state 0007 \
-    || [[ "$BASELINE_STATE" != "bridged_safe" ]]; then
-    print -u2 "The 0007 compatibility bridge did not satisfy its postcondition."
-    exit 1
-  fi
-fi
-
-if [[ "${baseline_states[0008]}" == "absent" ]]; then
-  if ! assert_mutation_preconditions; then
-    exit 1
-  fi
-  print "Applying migration 0008."
-  psql --no-password -v ON_ERROR_STOP=1 -f "$migration_0008"
-  if ! inspect_baseline_state 0008 \
-    || [[ "$BASELINE_STATE" != "complete" ]]; then
-    print -u2 "Migration 0008 did not satisfy its postcondition."
-    exit 1
-  fi
-fi
-
-if [[ "${baseline_states[0009]}" == "absent" ]]; then
-  if ! assert_mutation_preconditions; then
-    exit 1
-  fi
-  print "Applying migration 0009."
-  psql --no-password -v ON_ERROR_STOP=1 -f "$migration_0009"
-  if ! inspect_baseline_state 0009 \
-    || [[ "$BASELINE_STATE" != "complete" ]]; then
-    print -u2 "Migration 0009 did not satisfy its postcondition."
-    exit 1
-  fi
-fi
-
-print "Production baseline through 0009 is complete."
+print "Production baseline through 0009 matches the reviewed catalog and data invariants."
 print "Continue with ./scripts/apply-production-migrations.zsh for 0010 through 0017."

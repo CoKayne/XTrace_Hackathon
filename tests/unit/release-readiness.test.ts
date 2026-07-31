@@ -7,9 +7,12 @@ import {
   readdir,
   readFile,
   rm,
+  stat,
   writeFile,
 } from "node:fs/promises";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -21,6 +24,18 @@ const migrationLauncherSourcePath = new URL(
 ).pathname;
 const libpqServiceRendererSourcePath = new URL(
   "../../scripts/render-private-libpq-service.mjs",
+  import.meta.url,
+).pathname;
+const catalogManifestSourcePath = new URL(
+  "../../scripts/sql/production-baseline-catalog-manifest.sql",
+  import.meta.url,
+).pathname;
+const catalogHasherSourcePath = new URL(
+  "../../scripts/hash-stdin-sha256.mjs",
+  import.meta.url,
+).pathname;
+const registryInvariantsSourcePath = new URL(
+  "../../scripts/sql/production-registry-data-invariants.sql",
   import.meta.url,
 ).pathname;
 
@@ -61,15 +76,26 @@ const productionMigrationFiles = [
   "0017_public_sandbox_test_generations.sql",
 ];
 
+test("the production migration launcher remains directly executable", async () => {
+  const launcherMode = (await stat(migrationLauncherSourcePath)).mode;
+  assert.equal(
+    launcherMode & 0o111,
+    0o111,
+    "scripts/apply-production-migrations.zsh must remain executable",
+  );
+});
+
 async function createMigrationRepositoryFixture(t: test.TestContext): Promise<{
   root: string;
   launcherPath: string;
 }> {
   const root = await mkdtemp(join(tmpdir(), "vsee-migration-repository-"));
   const scriptsDirectory = join(root, "scripts");
+  const scriptsSqlDirectory = join(scriptsDirectory, "sql");
   const drizzleDirectory = join(root, "drizzle");
   const launcherPath = join(scriptsDirectory, "apply-production-migrations.zsh");
   await mkdir(scriptsDirectory, { recursive: true });
+  await mkdir(scriptsSqlDirectory, { recursive: true });
   await mkdir(drizzleDirectory, { recursive: true });
   await Promise.all(
     productionMigrationFiles.map((filename) =>
@@ -80,6 +106,36 @@ async function createMigrationRepositoryFixture(t: test.TestContext): Promise<{
   await copyFile(
     libpqServiceRendererSourcePath,
     join(scriptsDirectory, "render-private-libpq-service.mjs"),
+  );
+  await copyFile(
+    catalogManifestSourcePath,
+    join(scriptsSqlDirectory, "production-baseline-catalog-manifest.sql"),
+  );
+  await copyFile(
+    catalogHasherSourcePath,
+    join(scriptsDirectory, "hash-stdin-sha256.mjs"),
+  );
+  await copyFile(
+    registryInvariantsSourcePath,
+    join(scriptsSqlDirectory, "production-registry-data-invariants.sql"),
+  );
+  const fixtureFingerprint = `sha256:${
+    createHash("sha256").update("t").digest("hex")
+  }`;
+  await writeFile(
+    join(scriptsDirectory, "production-catalog-fingerprints.zsh"),
+    `#!/bin/zsh
+readonly VSEE_CATALOG_PROTOTYPE="${fixtureFingerprint}"
+readonly VSEE_CATALOG_0007="${fixtureFingerprint}"
+readonly VSEE_CATALOG_BRIDGED_0007="${fixtureFingerprint}"
+readonly VSEE_CATALOG_0008="${fixtureFingerprint}"
+readonly VSEE_CATALOG_BRIDGED_0008="${fixtureFingerprint}"
+readonly VSEE_CATALOG_0009="${fixtureFingerprint}"
+readonly VSEE_CATALOG_BRIDGED_0009="${fixtureFingerprint}"
+vsee_catalog_variant() { [[ "$1" == "${fixtureFingerprint}" ]] && print -- fixture; }
+vsee_catalog_matches_stage() { [[ "$2" == "${fixtureFingerprint}" ]]; }
+`,
+    "utf8",
   );
   await chmod(launcherPath, 0o755);
   t.after(async () => {
@@ -189,7 +245,8 @@ test("production migration launcher inventories sentinels, applies from the firs
   const fixtureDirectory = join(root, "bin");
   const tracePath = join(root, "trace.log");
   const appliedPath = join(root, "applied.log");
-  const databaseUrl = "postgres://do-not-print-this-database-url";
+  const databaseUrl =
+    "postgresql://fixture-user:do-not-print-this-database-url@db.example.test/postgres";
   await mkdir(fixtureDirectory, { recursive: true });
   await writeExecutable(
     join(fixtureDirectory, "security"),
@@ -285,11 +342,71 @@ printf 't\\n'
   await assert.rejects(readFile(passwordFilePath, "utf8"));
 });
 
+test("production launchers suppress inherited zsh tracing before reading the Keychain secret", async (t) => {
+  const { root, launcherPath } = await createMigrationRepositoryFixture(t);
+  const fixtureDirectory = join(root, "bin");
+  const tracePath = join(root, "trace.log");
+  const databaseUrl =
+    "postgresql://fixture-user:must-not-appear-in-xtrace@db.example.test:5432/postgres";
+  await mkdir(fixtureDirectory, { recursive: true });
+  await writeExecutable(
+    join(fixtureDirectory, "security"),
+    "#!/bin/sh\nprintf '%s' \"$FAKE_DATABASE_URL\"\n",
+  );
+  await writeExecutable(
+    join(fixtureDirectory, "psql"),
+    "#!/bin/sh\nprintf 't\\n'\n",
+  );
+
+  const result = await runCommand("zsh", ["-x", launcherPath], {
+    ...process.env,
+    PATH: `${fixtureDirectory}:${process.env.PATH ?? ""}`,
+    FAKE_DATABASE_URL: databaseUrl,
+    FAKE_TRACE: tracePath,
+    USER: "fixture-user",
+  });
+
+  assert.equal(result.exitCode, 0, result.output);
+  assert.doesNotMatch(result.output, /must-not-appear-in-xtrace/);
+  assert.doesNotMatch(result.output, /postgres(?:ql)?:\/\//);
+});
+
+test("private libpq renderer rejects a missing host, username, or database name", async (t) => {
+  for (const scenario of [
+    { name: "host", uri: "postgresql:///postgres" },
+    { name: "username", uri: "postgresql://db.example.test/postgres" },
+    { name: "database", uri: "postgresql://fixture-user@db.example.test/" },
+  ]) {
+    await t.test(scenario.name, async (subtest) => {
+      const root = await mkdtemp(join(tmpdir(), "vsee-libpq-renderer-"));
+      subtest.after(async () => {
+        await rm(root, { recursive: true, force: true });
+      });
+      const servicePath = join(root, "pg_service.conf");
+      const passwordPath = join(root, "pgpass");
+      const result = spawnSync(
+        process.execPath,
+        [libpqServiceRendererSourcePath, servicePath, passwordPath],
+        {
+          input: scenario.uri,
+          encoding: "utf8",
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      );
+
+      assert.notEqual(result.status, 0);
+      assert.equal(existsSync(servicePath), false);
+      assert.equal(existsSync(passwordPath), false);
+    });
+  }
+});
+
 test("production migration launcher rejects a later complete sentinel after a gap without applying migrations", async (t) => {
   const { root, launcherPath } = await createMigrationRepositoryFixture(t);
   const fixtureDirectory = join(root, "bin");
   const tracePath = join(root, "trace.log");
-  const databaseUrl = "postgres://do-not-print-this-database-url";
+  const databaseUrl =
+    "postgresql://fixture-user:do-not-print-this-database-url@db.example.test/postgres";
   await mkdir(fixtureDirectory, { recursive: true });
   await writeExecutable(
     join(fixtureDirectory, "security"),
@@ -321,7 +438,7 @@ test("production migration launcher stops before a later file when an applied mi
   await mkdir(fixtureDirectory, { recursive: true });
   await writeExecutable(
     join(fixtureDirectory, "security"),
-    "#!/bin/sh\nprintf '%s' 'postgres://fixture-url'\n",
+    "#!/bin/sh\nprintf '%s' 'postgresql://fixture-user:fixture-password@db.example.test/postgres'\n",
   );
   await writeExecutable(
     join(fixtureDirectory, "psql"),
@@ -348,7 +465,8 @@ test("production migration launcher aborts before every apply when a sentinel qu
       const { root, launcherPath } = await createMigrationRepositoryFixture(subtest);
       const fixtureDirectory = join(root, "bin");
       const tracePath = join(root, "trace.log");
-      const databaseUrl = "postgres://do-not-print-this-database-url";
+      const databaseUrl =
+        "postgresql://fixture-user:do-not-print-this-database-url@db.example.test/postgres";
       await mkdir(fixtureDirectory, { recursive: true });
       await writeExecutable(
         join(fixtureDirectory, "security"),
@@ -383,7 +501,7 @@ test("production migration launcher scopes the 0015 framework catalog sentinel t
   await mkdir(fixtureDirectory, { recursive: true });
   await writeExecutable(
     join(fixtureDirectory, "security"),
-    "#!/bin/sh\nprintf '%s' 'postgres://fixture-url'\n",
+    "#!/bin/sh\nprintf '%s' 'postgresql://fixture-user:fixture-password@db.example.test/postgres'\n",
   );
   await writeExecutable(
     join(fixtureDirectory, "psql"),
@@ -400,6 +518,6 @@ test("production migration launcher scopes the 0015 framework catalog sentinel t
   assert.equal(result.exitCode, 0);
   assert.match(
     await readFile(queryPath, "utf8"),
-    /conrelid\s*=\s*'public\.candidate_checkpoints'::regclass/i,
+    /conrelid\s*=\s*to_regclass\('public\.candidate_checkpoints'\)/i,
   );
 });

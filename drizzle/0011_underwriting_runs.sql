@@ -1,5 +1,68 @@
 begin;
 
+set local transaction isolation level read committed;
+
+do $maintenance_locks$
+declare
+  app_table_name text;
+begin
+  foreach app_table_name in array array[
+    'action_drafts',
+    'benchmark_packs',
+    'candidate_checkpoints',
+    'candidate_context_snapshots',
+    'candidate_runs',
+    'candidate_version_snapshots',
+    'deals',
+    'evidence_packs',
+    'final_syntheses',
+    'framework_disagreement_artifacts',
+    'framework_judgment_artifacts',
+    'fund_policy_versions',
+    'scan_runs',
+    'scenario_models',
+    'underwriting_batches',
+    'underwriting_calculations',
+    'underwriting_claim_edges',
+    'underwriting_narratives',
+    'underwriting_selections',
+    'uploaded_documents',
+    'valuation_evaluations',
+    'workspaces'
+  ]
+  loop
+    if pg_catalog.to_regclass(
+      pg_catalog.format('public.%I', app_table_name)
+    ) is not null then
+      execute pg_catalog.format(
+        'lock table public.%I in access exclusive mode',
+        app_table_name
+      );
+    end if;
+  end loop;
+end;
+$maintenance_locks$;
+
+do $maintenance_quiescence$
+begin
+  if exists (
+    select 1
+    from public.scan_runs
+    where status in ('queued', 'running')
+      or lease_expires_at is not null
+  ) or exists (
+    select 1
+    from public.uploaded_documents
+    where status in ('extracting', 'ingesting_memory')
+      or lease_expires_at is not null
+  ) then
+    raise exception
+      'Active scans or upload leases remain; production migration requires a maintenance window'
+      using errcode = '55006';
+  end if;
+end;
+$maintenance_quiescence$;
+
 do $$
 begin
   if not exists (

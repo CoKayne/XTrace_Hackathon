@@ -1,5 +1,44 @@
 begin;
 
+set local transaction isolation level read committed;
+
+lock table
+  public.action_drafts,
+  public.candidate_runs,
+  public.company_analyses,
+  public.intelligence_reports,
+  public.scan_runs,
+  public.source_documents,
+  public.source_evidence,
+  public.source_evidence_items,
+  public.source_revisions,
+  public.underwriting_batches,
+  public.uploaded_documents,
+  public.workspace_documents,
+  public.xtrace_ingest_jobs,
+  public.xtrace_memory_links
+in access exclusive mode;
+
+do $maintenance_quiescence$
+begin
+  if exists (
+    select 1
+    from public.scan_runs
+    where status in ('queued', 'running')
+      or lease_expires_at is not null
+  ) or exists (
+    select 1
+    from public.uploaded_documents
+    where status in ('extracting', 'ingesting_memory')
+      or lease_expires_at is not null
+  ) then
+    raise exception
+      'Active scans or upload leases remain; production migration requires a maintenance window'
+      using errcode = '55006';
+  end if;
+end;
+$maintenance_quiescence$;
+
 alter table public.source_documents
   drop constraint if exists source_documents_checksum_key;
 create index if not exists source_documents_checksum_idx

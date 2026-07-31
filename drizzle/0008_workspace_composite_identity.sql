@@ -1,5 +1,7 @@
 begin;
 
+set local transaction isolation level read committed;
+
 -- These tables currently use globally unique fixture/import identifiers even
 -- though the rows belong to workspaces. Take a single deterministic lock set so
 -- no write can move a parent or child between workspaces while the keys change.
@@ -16,6 +18,30 @@ lock table
   public.xtrace_memory_links,
   public.uploaded_documents
 in access exclusive mode;
+
+-- The launcher checks this before opening the migration, but that check alone
+-- has a race: a writer can begin after inspection and commit while the lock is
+-- waiting. Re-check inside the transaction immediately after every writer is
+-- excluded so a newly committed worker is visible before any catalog change.
+do $maintenance_quiescence$
+begin
+  if exists (
+    select 1
+    from public.scan_runs
+    where status in ('queued', 'running')
+      or lease_expires_at is not null
+  ) or exists (
+    select 1
+    from public.uploaded_documents
+    where status in ('extracting', 'ingesting_memory')
+      or lease_expires_at is not null
+  ) then
+    raise exception
+      'Active scans or upload leases remain; production migration requires a maintenance window'
+      using errcode = '55006';
+  end if;
+end;
+$maintenance_quiescence$;
 
 alter table public.scan_run_steps
   add column if not exists workspace_id text;

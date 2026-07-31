@@ -1,5 +1,33 @@
 begin;
 
+set local transaction isolation level read committed;
+
+lock table
+  public.action_drafts,
+  public.scan_runs,
+  public.uploaded_documents
+in access exclusive mode;
+
+do $maintenance_quiescence$
+begin
+  if exists (
+    select 1
+    from public.scan_runs
+    where status in ('queued', 'running')
+      or lease_expires_at is not null
+  ) or exists (
+    select 1
+    from public.uploaded_documents
+    where status in ('extracting', 'ingesting_memory')
+      or lease_expires_at is not null
+  ) then
+    raise exception
+      'Active scans or upload leases remain; production migration requires a maintenance window'
+      using errcode = '55006';
+  end if;
+end;
+$maintenance_quiescence$;
+
 create unique index if not exists action_drafts_workspace_artifact_unique
 on public.action_drafts (workspace_id, artifact_id);
 

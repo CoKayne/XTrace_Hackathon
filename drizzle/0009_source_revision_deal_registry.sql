@@ -1,5 +1,61 @@
 begin;
 
+set local transaction isolation level read committed;
+
+-- Lock every pre-existing table whose data or catalog this migration may use.
+-- The conditional entries make replay safe after the registry tables exist.
+do $maintenance_locks$
+declare
+  app_table_name text;
+begin
+  foreach app_table_name in array array[
+    'companies',
+    'company_analyses',
+    'deal_interactions',
+    'deal_source_assignments',
+    'deals',
+    'intelligence_reports',
+    'scan_runs',
+    'source_documents',
+    'source_evidence',
+    'source_revision_annotations',
+    'source_revisions',
+    'uploaded_documents',
+    'workspaces'
+  ]
+  loop
+    if pg_catalog.to_regclass(
+      pg_catalog.format('public.%I', app_table_name)
+    ) is not null then
+      execute pg_catalog.format(
+        'lock table public.%I in access exclusive mode',
+        app_table_name
+      );
+    end if;
+  end loop;
+end;
+$maintenance_locks$;
+
+do $maintenance_quiescence$
+begin
+  if exists (
+    select 1
+    from public.scan_runs
+    where status in ('queued', 'running')
+      or lease_expires_at is not null
+  ) or exists (
+    select 1
+    from public.uploaded_documents
+    where status in ('extracting', 'ingesting_memory')
+      or lease_expires_at is not null
+  ) then
+    raise exception
+      'Active scans or upload leases remain; production migration requires a maintenance window'
+      using errcode = '55006';
+  end if;
+end;
+$maintenance_quiescence$;
+
 do $$
 begin
   if not exists (
@@ -13,6 +69,10 @@ $$;
 alter role vsee_registry_owner
   nosuperuser nocreatedb nocreaterole noreplication
   nologin noinherit nobypassrls;
+
+revoke create on schema public from public;
+revoke all on schema public from vsee_registry_owner;
+grant usage on schema public to vsee_registry_owner;
 
 do $$
 declare
@@ -1322,6 +1382,12 @@ alter function public.source_revision_set_fingerprint(text[])
   owner to vsee_registry_owner;
 alter function public.get_analysis_eligible_snapshot(text)
   owner to vsee_registry_owner;
+alter function public.validate_source_revision_insert()
+  owner to vsee_registry_owner;
+alter function public.reject_immutable_source_registry_mutation()
+  owner to vsee_registry_owner;
+alter function public.save_intelligence_report_legacy_0009(jsonb, jsonb)
+  owner to vsee_registry_owner;
 
 revoke all privileges on table public.source_revisions from public;
 revoke all privileges on table public.source_revision_annotations from public;
@@ -1345,6 +1411,10 @@ revoke all on function
 revoke all on function public.source_assignment_result(
   public.deals, public.source_revisions, text[], boolean
 ) from public;
+revoke all on function public.validate_source_revision_insert()
+  from public;
+revoke all on function public.reject_immutable_source_registry_mutation()
+  from public;
 
 do $$
 declare
@@ -1353,6 +1423,10 @@ begin
   for restricted_role in
     select rolname from pg_roles where rolname in ('anon', 'authenticated')
   loop
+    execute format(
+      'revoke all on schema public from %I',
+      restricted_role
+    );
     execute format(
       'revoke all privileges on table public.source_revisions from %I',
       restricted_role
@@ -1389,9 +1463,22 @@ begin
       'revoke all on function public.get_analysis_eligible_snapshot(text) from %I',
       restricted_role
     );
+    execute format(
+      'revoke all on function public.validate_source_revision_insert() from %I',
+      restricted_role
+    );
+    execute format(
+      'revoke all on function public.reject_immutable_source_registry_mutation() from %I',
+      restricted_role
+    );
+    execute format(
+      'revoke all on function public.save_intelligence_report_legacy_0009(jsonb, jsonb) from %I',
+      restricted_role
+    );
   end loop;
 
   if exists (select 1 from pg_roles where rolname = 'service_role') then
+    revoke all on schema public from service_role;
     grant usage on schema public to service_role;
     revoke all privileges on table public.source_revisions from service_role;
     revoke all privileges on table public.source_revision_annotations
@@ -1435,6 +1522,11 @@ begin
       public.get_analysis_eligible_snapshot(text) to service_role;
     revoke all on function
       public.save_intelligence_report_legacy_0009(jsonb, jsonb)
+      from service_role;
+    revoke all on function public.validate_source_revision_insert()
+      from service_role;
+    revoke all on function
+      public.reject_immutable_source_registry_mutation()
       from service_role;
   end if;
 end;

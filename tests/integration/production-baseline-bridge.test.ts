@@ -21,6 +21,24 @@ const bootstrapPath = fileURLToPath(
 const libpqServiceRendererPath = fileURLToPath(
   new URL("../../scripts/render-private-libpq-service.mjs", import.meta.url),
 );
+const catalogManifestPath = fileURLToPath(
+  new URL(
+    "../../scripts/sql/production-baseline-catalog-manifest.sql",
+    import.meta.url,
+  ),
+);
+const catalogHasherPath = fileURLToPath(
+  new URL("../../scripts/hash-stdin-sha256.mjs", import.meta.url),
+);
+const catalogFingerprintsPath = fileURLToPath(
+  new URL("../../scripts/production-catalog-fingerprints.zsh", import.meta.url),
+);
+const registryInvariantsPath = fileURLToPath(
+  new URL(
+    "../../scripts/sql/production-registry-data-invariants.sql",
+    import.meta.url,
+  ),
+);
 const bridgePath = fileURLToPath(
   new URL(
     "../../scripts/sql/upgrade-prototype-uploaded-documents-to-0007.sql",
@@ -61,6 +79,13 @@ const canCreateTemporaryDatabase =
   && spawnSync("createdb", ["--version"]).status === 0
   && spawnSync("dropdb", ["--version"]).status === 0;
 const requirePostgres = process.env.REQUIRE_POSTGRES_MIGRATION_TESTS === "1";
+const localDatabaseUser = canCreateTemporaryDatabase
+  ? execFileSync(
+    "psql",
+    ["-d", "postgres", "-Atqc", "select current_user"],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  ).trim()
+  : "";
 
 function withTemporaryDatabase(run: (database: string) => void): void {
   const database =
@@ -109,6 +134,30 @@ function dropRegistryOwnerRole(): void {
   );
 }
 
+function ensureProductionRoles(): void {
+  executeSql("postgres", `
+    do $$
+    begin
+      if not exists (
+        select 1 from pg_catalog.pg_roles where rolname = 'service_role'
+      ) then
+        create role service_role nologin;
+      end if;
+      if not exists (
+        select 1 from pg_catalog.pg_roles where rolname = 'anon'
+      ) then
+        create role anon nologin;
+      end if;
+      if not exists (
+        select 1 from pg_catalog.pg_roles where rolname = 'authenticated'
+      ) then
+        create role authenticated nologin;
+      end if;
+    end;
+    $$;
+  `);
+}
+
 function runBootstrap(
   database: string,
   path: string = bootstrapPath,
@@ -117,7 +166,7 @@ function runBootstrap(
   const securityPath = join(fixtureDirectory, "security");
   writeFileSync(
     securityPath,
-    `#!/bin/sh\nprintf '%s' 'postgresql:///${database}'\n`,
+    `#!/bin/sh\nprintf '%s' 'postgresql://${encodeURIComponent(localDatabaseUser)}@localhost/${database}'\n`,
     "utf8",
   );
   chmodSync(securityPath, 0o755);
@@ -138,13 +187,14 @@ function runBootstrap(
 
 function assertBootstrapRefused(
   result: ReturnType<typeof spawnSync>,
-  pattern: RegExp = /partial|refus|unsafe|prototype|baseline/i,
+  pattern: RegExp = /partial|refus|unsafe|prototype|baseline|catalog|reviewed/i,
 ): void {
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}${result.stderr}`, pattern);
 }
 
 function installPrototypeSchema(database: string): void {
+  ensureProductionRoles();
   for (const migration of baselineMigrations) {
     applySql(database, migration);
   }
@@ -303,6 +353,13 @@ test(
       applySql(database, workspaceCompositePath);
       applySql(database, registryPath);
 
+      const verified = runBootstrap(database);
+      assert.equal(
+        verified.status,
+        0,
+        `${verified.stdout}${verified.stderr}`,
+      );
+
       assert.equal(
         executeSql(database, `
           select public.sha256_length_framed(array['a', 'bc']);
@@ -406,6 +463,14 @@ test(
         mutate: "grant select on public.uploaded_documents to public",
       },
       {
+        name: "partial service-role table privilege set",
+        mutate: `
+          revoke all privileges on public.uploaded_documents
+            from service_role;
+          grant select on public.uploaded_documents to service_role;
+        `,
+      },
+      {
         name: "unexpected non-internal trigger",
         mutate: `
           create function public.prototype_drift_trigger()
@@ -499,6 +564,22 @@ test(
       copyFileSync(
         libpqServiceRendererPath,
         join(fixtureScripts, "render-private-libpq-service.mjs"),
+      );
+      copyFileSync(
+        catalogHasherPath,
+        join(fixtureScripts, "hash-stdin-sha256.mjs"),
+      );
+      copyFileSync(
+        catalogFingerprintsPath,
+        join(fixtureScripts, "production-catalog-fingerprints.zsh"),
+      );
+      copyFileSync(
+        catalogManifestPath,
+        join(fixtureSql, "production-baseline-catalog-manifest.sql"),
+      );
+      copyFileSync(
+        registryInvariantsPath,
+        join(fixtureSql, "production-registry-data-invariants.sql"),
       );
       copyFileSync(
         bridgePath,
@@ -622,7 +703,10 @@ test(
           applySql(database, workspaceCompositePath);
           executeSql(database, scenario.mutate);
 
-          assertBootstrapRefused(runBootstrap(database), /0008|partial/i);
+          assertBootstrapRefused(
+            runBootstrap(database),
+            /0008|partial|catalog|reviewed/i,
+          );
           assert.equal(
             executeSql(database, `
               select to_regclass('public.source_revisions') is null;
@@ -667,6 +751,89 @@ test(
           grant delete, truncate on public.companies to service_role;
         `,
       },
+      {
+        name: "privileged function body changed without metadata drift",
+        mutate: `
+          create or replace function public.confirm_source_assignment(
+            p_assignment jsonb
+          )
+          returns jsonb
+          language plpgsql
+          security definer
+          set search_path = ''
+          as $$
+          begin
+            return '{}'::jsonb;
+          end;
+          $$;
+        `,
+      },
+      {
+        name: "trigger function body changed without metadata drift",
+        mutate: `
+          create or replace function
+            public.reject_immutable_source_registry_mutation()
+          returns trigger
+          language plpgsql
+          security invoker
+          set search_path = ''
+          as $$
+          begin
+            return old;
+          end;
+          $$;
+        `,
+      },
+      {
+        name: "trigger definition changed with the same function",
+        mutate: `
+          drop trigger source_revision_annotations_immutable
+            on public.source_revision_annotations;
+          create trigger source_revision_annotations_immutable
+          before update on public.source_revision_annotations
+          for each row execute function
+            public.reject_immutable_source_registry_mutation();
+        `,
+      },
+      {
+        name: "unexpected registry column",
+        mutate:
+          "alter table public.source_revisions add column drift text",
+      },
+      {
+        name: "unexpected registry constraint",
+        mutate: `
+          alter table public.source_revisions
+            add constraint source_revisions_drift_check check (true);
+        `,
+      },
+      {
+        name: "unexpected registry index",
+        mutate: `
+          create index source_revisions_drift_idx
+            on public.source_revisions (created_at);
+        `,
+      },
+      {
+        name: "unexpected registry policy",
+        mutate: `
+          create policy source_revisions_drift_policy
+            on public.source_revisions for select
+            to public using (true);
+        `,
+      },
+      {
+        name: "partial service-role column privilege set",
+        mutate: `
+          revoke insert (status) on public.deals from service_role;
+        `,
+      },
+      {
+        name: "unexpected table grantee",
+        mutate: `
+          grant select on public.deal_source_assignments to public;
+        `,
+      },
     ];
 
     for (const scenario of scenarios) {
@@ -698,7 +865,10 @@ test(
           applySql(database, registryPath);
           executeSql(database, scenario.mutate);
 
-          assertBootstrapRefused(runBootstrap(database), /0009|partial/i);
+          assertBootstrapRefused(
+            runBootstrap(database),
+            /0009|partial|catalog|reviewed/i,
+          );
         });
       });
     }
@@ -728,7 +898,10 @@ test(
         );
         applySql(database, workspaceCompositePath);
 
-        assertBootstrapRefused(runBootstrap(database), /0009|partial/i);
+        assertBootstrapRefused(
+          runBootstrap(database),
+          /0009|partial|catalog|reviewed/i,
+        );
         assert.equal(
           executeSql(
             database,
@@ -738,6 +911,62 @@ test(
         );
       });
     } finally {
+      dropRegistryOwnerRole();
+    }
+  },
+);
+
+test(
+  "the guarded bootstrap rejects inherited service-role privileges",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  () => {
+    assert.equal(canCreateTemporaryDatabase, true);
+    ensureProductionRoles();
+    dropRegistryOwnerRole();
+    try {
+      withTemporaryDatabase((database) => {
+        for (const migration of baselineMigrations) {
+          applySql(database, migration);
+        }
+        applySql(
+          database,
+          fileURLToPath(
+            new URL("../../drizzle/0007_uploaded_documents.sql", import.meta.url),
+          ),
+        );
+        applySql(database, workspaceCompositePath);
+        applySql(database, registryPath);
+
+        const exactBoundary = runBootstrap(database);
+        assert.equal(
+          exactBoundary.status,
+          0,
+          `${exactBoundary.stdout}${exactBoundary.stderr}`,
+        );
+
+        executeSql("postgres", "grant service_role to anon");
+        assert.equal(
+          executeSql(database, `
+            select
+              pg_catalog.has_table_privilege(
+                'anon', 'public.deals', 'SELECT'
+              )::text
+              || '|'
+              || pg_catalog.has_function_privilege(
+                'anon',
+                'public.confirm_source_assignment(jsonb)',
+                'EXECUTE'
+              )::text;
+          `),
+          "true|true",
+        );
+        assertBootstrapRefused(
+          runBootstrap(database),
+          /0009|catalog|reviewed/i,
+        );
+      });
+    } finally {
+      executeSql("postgres", "revoke service_role from anon");
       dropRegistryOwnerRole();
     }
   },

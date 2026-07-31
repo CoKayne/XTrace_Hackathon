@@ -250,11 +250,17 @@ begin
       )
     ) as privilege
     where privilege.grantee <> prototype_owner
-      and not exists (
-        select 1
-        from pg_catalog.pg_roles as role_record
-        where role_record.rolname = 'service_role'
-          and role_record.oid = privilege.grantee
+      and not (
+        privilege.grantee = (
+          select oid from pg_catalog.pg_roles
+          where rolname = 'service_role'
+        )
+        and privilege.grantor = prototype_owner
+        and not privilege.is_grantable
+        and privilege.privilege_type in (
+          'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE',
+          'REFERENCES', 'TRIGGER', 'MAINTAIN'
+        )
       )
   )
   or exists (
@@ -273,13 +279,21 @@ begin
       from pg_catalog.pg_roles
       where rolname = 'service_role'
     )
-    and not pg_catalog.has_table_privilege(
-      (
-        select oid from pg_catalog.pg_roles
-        where rolname = 'service_role'
-      ),
-      prototype_relation,
-      'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'
+    and exists (
+      select 1
+      from (
+        values
+          ('SELECT'), ('INSERT'), ('UPDATE'), ('DELETE'),
+          ('TRUNCATE'), ('REFERENCES'), ('TRIGGER'), ('MAINTAIN')
+      ) as required(privilege_name)
+      where not pg_catalog.has_table_privilege(
+        (
+          select oid from pg_catalog.pg_roles
+          where rolname = 'service_role'
+        ),
+        prototype_relation,
+        required.privilege_name
+      )
     )
   ) then
     raise exception

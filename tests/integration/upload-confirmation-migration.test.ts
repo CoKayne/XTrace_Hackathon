@@ -1049,7 +1049,7 @@ test(
             and extraction.workspace_id = 'workspace_upload'
             and extraction.id = 'upload_2';
         `,
-      ], { encoding: "utf8" }).trim();
+      ], { encoding: "utf8" }).trim().split(/\r?\n/).at(-1) ?? "";
       assert.equal(
         output,
         "confirmed|failed|deal_1|revision_1|1|1|content-hash|content-hash|20|21|"

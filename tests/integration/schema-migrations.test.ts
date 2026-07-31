@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFile, execFileSync, spawnSync } from "node:child_process";
+import { execFile, execFileSync, spawn, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -88,6 +88,407 @@ async function executeSqlAsync(database: string, sql: string): Promise<string> {
   );
   return result.stdout.trim();
 }
+
+type PsqlExit = {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  stdout: string;
+  stderr: string;
+};
+
+function spawnPsql(
+  database: string,
+  arguments_: string[] = [],
+  environment: Partial<NodeJS.ProcessEnv> = {},
+) {
+  const child = spawn(
+    "psql",
+    ["-v", "ON_ERROR_STOP=1", "-d", database, "-qAt", ...arguments_],
+    {
+      env: { ...process.env, ...environment },
+      stdio: ["pipe", "pipe", "pipe"],
+    },
+  );
+  child.stdout.setEncoding("utf8");
+  child.stderr.setEncoding("utf8");
+  return child;
+}
+
+function observePsqlExit(child: ReturnType<typeof spawnPsql>): Promise<PsqlExit> {
+  let stdout = "";
+  let stderr = "";
+  child.stdout.on("data", (chunk: string) => {
+    stdout += chunk;
+  });
+  child.stderr.on("data", (chunk: string) => {
+    stderr += chunk;
+  });
+  return new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("close", (code, signal) => {
+      resolve({ code, signal, stdout, stderr });
+    });
+  });
+}
+
+function waitForPsqlMarker(
+  child: ReturnType<typeof spawnPsql>,
+  marker: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let stdout = "";
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error(`Timed out waiting for PostgreSQL marker: ${marker}`));
+    }, 5_000);
+    const onData = (chunk: string) => {
+      stdout += chunk;
+      if (stdout.includes(marker)) {
+        cleanup();
+        resolve();
+      }
+    };
+    const onClose = () => {
+      cleanup();
+      reject(new Error(`PostgreSQL exited before marker: ${marker}`));
+    };
+    const cleanup = () => {
+      clearTimeout(timeout);
+      child.stdout.off("data", onData);
+      child.off("close", onClose);
+    };
+    child.stdout.on("data", onData);
+    child.once("close", onClose);
+  });
+}
+
+const delay = (milliseconds: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+
+async function waitForMigrationRelationLock(
+  database: string,
+  migrationApplicationName: string,
+  writerApplicationName: string,
+  relationName: string,
+  migration: ReturnType<typeof spawnPsql>,
+): Promise<boolean> {
+  const deadline = Date.now() + 5_000;
+  while (
+    Date.now() < deadline
+    && migration.exitCode === null
+    && migration.signalCode === null
+  ) {
+    const waiting = executeSql(database, `
+      select exists (
+        select 1
+        from pg_catalog.pg_stat_activity as migration_activity
+        join pg_catalog.pg_locks as waiting_lock
+          on waiting_lock.pid = migration_activity.pid
+        where migration_activity.application_name = '${migrationApplicationName}'
+          and migration_activity.wait_event_type = 'Lock'
+          and waiting_lock.relation = 'public.${relationName}'::regclass
+          and waiting_lock.mode = 'AccessExclusiveLock'
+          and not waiting_lock.granted
+          and exists (
+            select 1
+            from pg_catalog.pg_stat_activity as writer_activity
+            join pg_catalog.pg_locks as writer_lock
+              on writer_lock.pid = writer_activity.pid
+            where writer_activity.application_name = '${writerApplicationName}'
+              and writer_lock.relation = waiting_lock.relation
+              and writer_lock.mode = 'RowExclusiveLock'
+              and writer_lock.granted
+          )
+      );
+    `);
+    if (waiting === "t") {
+      return true;
+    }
+    await delay(25);
+  }
+  return false;
+}
+
+async function assertMigrationWaitsForWriterThenRefuses(input: {
+  database: string;
+  migration: string;
+  writerSql: string;
+  writerRelation: string;
+  targetAbsentSql: string;
+}): Promise<void> {
+  const writerApplicationName = `vsee-writer-guard-${randomUUID()}`;
+  const writer = spawnPsql(
+    input.database,
+    [],
+    { PGAPPNAME: writerApplicationName },
+  );
+  const writerExit = observePsqlExit(writer);
+  let migration: ReturnType<typeof spawnPsql> | undefined;
+  let migrationExit: Promise<PsqlExit> | undefined;
+  try {
+    writer.stdin.write(`begin;\n${input.writerSql}\nselect 'writer-ready';\n`);
+    await waitForPsqlMarker(writer, "writer-ready");
+
+    const migrationApplicationName =
+      `vsee-migration-guard-${randomUUID()}`;
+    migration = spawnPsql(
+      input.database,
+      [
+        "-c",
+        "set default_transaction_isolation to 'repeatable read'",
+        "-f",
+        input.migration,
+      ],
+      { PGAPPNAME: migrationApplicationName },
+    );
+    migrationExit = observePsqlExit(migration);
+    const initialState = await waitForMigrationRelationLock(
+      input.database,
+      migrationApplicationName,
+      writerApplicationName,
+      input.writerRelation,
+      migration,
+    );
+    assert.equal(
+      initialState,
+      true,
+      "the migration must wait for the uncommitted writer's table lock",
+    );
+
+    writer.stdin.end("commit;\n\\q\n");
+    const [writerResult, migrationResult] = await Promise.all([
+      writerExit,
+      migrationExit,
+    ]);
+    assert.equal(
+      writerResult.code,
+      0,
+      `writer failed: ${writerResult.stdout}${writerResult.stderr}`,
+    );
+    assert.notEqual(
+      migrationResult.code,
+      0,
+      "the migration must abort after observing the newly committed active work",
+    );
+    assert.match(
+      `${migrationResult.stdout}${migrationResult.stderr}`,
+      /active scans or upload leases remain|maintenance/i,
+    );
+    assert.equal(executeSql(input.database, input.targetAbsentSql), "t");
+  } finally {
+    if (writer.exitCode === null && writer.signalCode === null) {
+      writer.stdin.end("rollback;\n\\q\n");
+      await Promise.race([writerExit, delay(1_000)]);
+      if (writer.exitCode === null && writer.signalCode === null) {
+        writer.kill("SIGKILL");
+      }
+    }
+    if (
+      migration
+      && migration.exitCode === null
+      && migration.signalCode === null
+    ) {
+      migration.kill("SIGKILL");
+      if (migrationExit) {
+        await Promise.race([migrationExit, delay(1_000)]);
+      }
+    }
+  }
+}
+
+test(
+  "production migrations wait for concurrent writers and reject their newly committed active work",
+  { skip: !canCreateTemporaryDatabase && !requirePostgres },
+  async (t) => {
+    assert.equal(
+      canCreateTemporaryDatabase,
+      true,
+      "PostgreSQL with temporary-database privileges is required.",
+    );
+    const migrationPath = (filename: string) =>
+      fileURLToPath(new URL(`../../drizzle/${filename}`, import.meta.url));
+    const migrations = [
+      "0000_vsee_postgres.sql",
+      "0001_remove_report_delivery.sql",
+      "0002_durable_decision_lineage.sql",
+      "0003_sanitize_report_next_steps.sql",
+      "0004_company_analyses.sql",
+      "0005_sample_decision_label.sql",
+      "0006_reasoner_judgments.sql",
+      "0007_uploaded_documents.sql",
+      "0008_workspace_composite_identity.sql",
+      "0009_source_revision_deal_registry.sql",
+      "0010_underwriting_references.sql",
+      "0011_underwriting_runs.sql",
+      "0012_source_grounded_underwriting.sql",
+      "0013_confirmed_upload_ingest.sql",
+      "0014_read_api_action_drafts.sql",
+      "0015_framework_catalog_checkpoint.sql",
+      "0016_confirmed_upload_source_evidence_bridge.sql",
+      "0017_public_sandbox_test_generations.sql",
+    ];
+    const guardCases = [
+      {
+        id: "0008",
+        writer: "scan",
+        targetAbsentSql: `
+          select not exists (
+            select 1
+            from information_schema.columns
+            where table_schema = 'public'
+              and table_name = 'scan_run_steps'
+              and column_name = 'workspace_id'
+          )
+        `,
+      },
+      {
+        id: "0009",
+        writer: "upload_without_token",
+        targetAbsentSql:
+          "select to_regclass('public.source_revisions') is null",
+      },
+      {
+        id: "0010",
+        writer: "scan",
+        targetAbsentSql:
+          "select to_regclass('public.benchmark_packs') is null",
+      },
+      {
+        id: "0011",
+        writer: "scan",
+        targetAbsentSql:
+          "select to_regclass('public.underwriting_batches') is null",
+      },
+      {
+        id: "0012",
+        writer: "scan",
+        targetAbsentSql: `
+          select not exists (
+            select 1
+            from information_schema.columns
+            where table_schema = 'public'
+              and table_name = 'candidate_runs'
+              and column_name = 'artifact_source_candidate_run_id'
+          )
+        `,
+      },
+      {
+        id: "0013",
+        writer: "upload_without_token",
+        targetAbsentSql: `
+          select not exists (
+            select 1
+            from information_schema.columns
+            where table_schema = 'public'
+              and table_name = 'uploaded_documents'
+              and column_name = 'lease_token'
+          )
+        `,
+      },
+      {
+        id: "0014",
+        writer: "scan",
+        targetAbsentSql: `
+          select to_regclass(
+            'public.action_drafts_workspace_artifact_unique'
+          ) is null
+        `,
+      },
+      {
+        id: "0015",
+        writer: "scan",
+        targetAbsentSql: `
+          select not exists (
+            select 1
+            from pg_catalog.pg_constraint
+            where conrelid = 'public.candidate_checkpoints'::regclass
+              and conname = 'candidate_checkpoints_stage_check'
+              and pg_catalog.pg_get_constraintdef(oid)
+                like '%framework_catalog%'
+          )
+        `,
+      },
+      {
+        id: "0016",
+        writer: "upload_with_token",
+        targetAbsentSql: `
+          select not exists (
+            select 1
+            from information_schema.columns
+            where table_schema = 'public'
+              and table_name = 'source_evidence_items'
+              and column_name = 'source_id'
+          )
+        `,
+      },
+      {
+        id: "0017",
+        writer: "scan",
+        targetAbsentSql:
+          "select to_regclass('public.workspace_test_generations') is null",
+      },
+    ] as const;
+
+    for (const guardCase of guardCases) {
+      const writerLabel = guardCase.writer === "scan" ? "scan" : "upload";
+      await t.test(`${writerLabel} writer blocks ${guardCase.id}`, async () => {
+        await withTemporaryDatabaseAsync(async (database) => {
+          const migrationIndex = migrations.findIndex((migration) =>
+            migration.startsWith(`${guardCase.id}_`)
+          );
+          assert.notEqual(migrationIndex, -1);
+          for (const migration of migrations.slice(0, migrationIndex)) {
+            applySql(database, migrationPath(migration));
+          }
+          const workspaceId = `workspace_guard_${guardCase.id}`;
+          executeSql(database, `
+            insert into public.workspaces (id, name)
+            values ('${workspaceId}', 'Guard ${guardCase.id}');
+          `);
+          const writerSql = guardCase.writer === "scan"
+            ? `
+              insert into public.scan_runs (
+                workspace_id, mode, status, worker_id, lease_expires_at
+              ) values (
+                '${workspaceId}', 'structured', 'running',
+                'writer-before-${guardCase.id}',
+                clock_timestamp() + interval '10 minutes'
+              );
+            `
+            : `
+              insert into public.uploaded_documents (
+                id, workspace_id, filename, content_type, byte_size,
+                checksum, object_key, status, worker_id,
+                ${guardCase.writer === "upload_with_token"
+                  ? "lease_token,"
+                  : ""}
+                lease_expires_at
+              ) values (
+                'upload_guard_${guardCase.id}', '${workspaceId}',
+                'guard.txt', 'text/plain', 12,
+                'checksum_guard_${guardCase.id}',
+                'private/${workspaceId}/guard.txt', 'extracting',
+                'writer-before-${guardCase.id}',
+                ${guardCase.writer === "upload_with_token"
+                  ? "gen_random_uuid(),"
+                  : ""}
+                clock_timestamp() + interval '10 minutes'
+              );
+            `;
+          await assertMigrationWaitsForWriterThenRefuses({
+            database,
+            migration: migrationPath(migrations[migrationIndex]!),
+            writerSql,
+            writerRelation: guardCase.writer === "scan"
+              ? "scan_runs"
+              : "uploaded_documents",
+            targetAbsentSql: guardCase.targetAbsentSql,
+          });
+        });
+      });
+    }
+  },
+);
 
 test(
   "fresh PostgreSQL schema requires durable decision and XTrace reuse metadata",
