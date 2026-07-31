@@ -85,6 +85,13 @@
       "when": 1785398400000,
       "tag": "0017_public_sandbox_test_generations",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1785402000000,
+      "tag": "0018_pgcrypto_registry_schema_usage",
+      "breakpoints": true
     }
   ]
 }
